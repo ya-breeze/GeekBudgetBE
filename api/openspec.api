@@ -1,0 +1,866 @@
+openapi: 3.0.3
+info:
+  title: Geek Budget - OpenAPI 3.0
+  contact:
+    email: ilya.korolev@outlook.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+tags:
+  - name: user
+    description: Operations for base user's data
+  - name: transactions
+    description: Operations for transactions
+paths:
+  /v1/authorize:
+    post:
+      tags:
+        - auth
+      summary: validate user/password and return token
+      operationId: authorize
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthData"
+        required: true
+      responses:
+        "200":
+          description: return token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "401":
+          description: Authentification failed
+
+  /v1/user:
+    get:
+      tags:
+        - user
+      summary: return user object
+      operationId: getUser
+      responses:
+        "200":
+          description: user object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /v1/accounts/{accountId}/history:
+    get:
+      tags:
+        - accounts
+      summary: return list of dates when this account was used in some transaction
+      operationId: getAccountHistory
+      parameters:
+        - name: "accountId"
+          in: "path"
+          description: "ID of account"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: list of dates when this account was used in some transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountHistory"
+
+  /v1/accounts:
+    post:
+      tags:
+        - accounts
+      summary: create new account
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountNoID"
+      responses:
+        "200":
+          description: created account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+
+  /v1/accounts/{id}:
+    put:
+      tags:
+        - accounts
+      summary: update account
+      operationId: updateAccount
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the account"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountNoID"
+      responses:
+        "200":
+          description: updated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+    delete:
+      tags:
+        - accounts
+      summary: delete account
+      operationId: deleteAccount
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the account"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+
+  /v1/currencies:
+    post:
+      tags:
+        - currencies
+      summary: create new currency
+      operationId: createCurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CurrencyNoID"
+      responses:
+        "200":
+          description: created currency
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Currency"
+    get:
+      tags:
+        - currencies
+      summary: get all currencies
+      operationId: getCurrencies
+      responses:
+        "200":
+          description: currencies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Currency"
+
+  /v1/currencies/{id}:
+    put:
+      tags:
+        - currencies
+      summary: update currency
+      operationId: updateCurrency
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the currency"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CurrencyNoID"
+      responses:
+        "200":
+          description: updated currency
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Currency"
+    delete:
+      tags:
+        - currencies
+      summary: delete currency
+      operationId: deleteCurrency
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the currency"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+
+  /v1/bankImporters:
+    get:
+      tags:
+        - bank importers
+      summary: get all bank importers
+      operationId: getBankImporters
+      responses:
+        "200":
+          description: bank importers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BankImporter"
+    post:
+      tags:
+        - bank importers
+      summary: create new bank importer
+      operationId: createBankImporter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BankImporterNoID"
+      responses:
+        "200":
+          description: created bank importer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankImporter"
+
+  /v1/bankImporters/{id}:
+    put:
+      tags:
+        - bank importers
+      summary: update bank importer
+      operationId: updateBankImporter
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the bank importer"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BankImporterNoID"
+      responses:
+        "200":
+          description: updated bank importer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankImporter"
+    delete:
+      tags:
+        - bank importers
+      summary: delete bank importer
+      operationId: deleteBankImporter
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the bankimporter"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+
+  /v1/transactions:
+    get:
+      tags:
+        - transactions
+      summary: get all transactions which matches given filters
+      operationId: getTransactions
+      parameters:
+        - name: "description"
+          in: "query"
+          description: "Filter by description"
+          schema:
+            type: "string"
+        - name: amountFrom
+          in: "query"
+          description: "Don't return transactions with amount less than this"
+          schema:
+            type: "number"
+            format: "double"
+        - name: amountTo
+          in: "query"
+          description: "Don't return transactions with amount more than this"
+          schema:
+            type: "number"
+            format: "double"
+      responses:
+        "200":
+          description: transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      tags:
+        - transactions
+      summary: create new transaction
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionNoID"
+      responses:
+        "200":
+          description: created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+  /v1/transactions/{id}:
+    put:
+      tags:
+        - transactions
+      summary: update transaction
+      operationId: updateTransaction
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionNoID"
+      responses:
+        "200":
+          description: updated transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+    get:
+      tags:
+        - transactions
+      summary: get transaction
+      operationId: getTransaction
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+    delete:
+      tags:
+        - transactions
+      summary: delete transaction
+      operationId: deleteTransaction
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+
+  /v1/unprocessedTransactions:
+    get:
+      tags:
+        - unprocessed transactions
+      summary: get all unprocessed transactions
+      operationId: getUnprocessedTransactions
+      responses:
+        "200":
+          description: unprocessed transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UnprocessedTransaction"
+
+  /v1/unprocessedTransactions/{id}/convert:
+    post:
+      tags:
+        - unprocessed transactions
+      summary: convert unprocessed transactions into normal transaction
+      operationId: convertUnprocessedTransaction
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionNoID"
+      responses:
+        "200":
+          description: created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+  /v1/unprocessedTransactions/{id}:
+    delete:
+      tags:
+        - unprocessed transactions
+      summary: delete unprocessed transaction
+      operationId: deleteUnprocessedTransaction
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+        - name: duplicateOf
+          description: "ID of transaction which is duplicate of this one"
+          in: query
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+
+  /v1/balances:
+    get:
+      tags:
+        - aggregations
+      summary: get balance for filtered transactions
+      operationId: getBalances
+      parameters:
+        - name: from
+          in: query
+          description: "Uses transactions from this date"
+          schema:
+            type: "string"
+            format: "date-time"
+            example: "2020-01-01T00:00:00Z"
+        - name: to
+          in: query
+          description: "Uses transactions to this date"
+          schema:
+            type: "string"
+            format: "date-time"
+            example: "2020-01-01T00:00:00Z"
+        - name: outputCurrencyID
+          in: query
+          description: "Converts all transactions to this currency"
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: calculated balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Aggregation"
+
+  /v1/expenses:
+    get:
+      tags:
+        - aggregations
+      summary: get expenses for filtered transactions
+      operationId: getExpenses
+      parameters:
+        - name: from
+          in: query
+          description: "Uses transactions from this date"
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: to
+          in: query
+          description: "Uses transactions to this date"
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: outputCurrencyID
+          in: query
+          description: "Converts all transactions to this currency"
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: calculated expenses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Aggregation"
+
+  /v1/incomes:
+    get:
+      tags:
+        - aggregations
+      summary: get incomes for filtered transactions
+      operationId: getIncomes
+      parameters:
+        - name: from
+          in: query
+          description: "Uses transactions from this date"
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: to
+          in: query
+          description: "Uses transactions to this date"
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: outputCurrencyID
+          in: query
+          description: "Converts all transactions to this currency"
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: calculated incomes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Aggregation"
+
+  /v1/notifications:
+    get:
+      tags:
+        - notifications
+      summary: return all notifications
+      operationId: getNotifications
+      responses:
+        "200":
+          description: notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /v1/notifications/{id}:
+    delete:
+      tags:
+        - notifications
+      summary: delete notification
+      operationId: deleteNotification
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthData:
+      type: object
+      properties:
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: "12345"
+
+    Entity:
+      type: object
+      properties:
+        id:
+          type: string
+
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        name:
+          type: string
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+
+    AccountNoID:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          enum:
+            - expense
+            - income
+            - asset
+    Account:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - $ref: "#/components/schemas/AccountNoID"
+
+    Notification:
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "123e4567-e89b-12d3-a456-426614174000"
+            date:
+              type: string
+              format: date-time
+              example: "2020-01-01T00:00:00Z"
+            type:
+              enum:
+                - other
+                - balanceMatch
+                - balanceDoesntMatch
+            url:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+
+    CurrencyNoID:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    Currency:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - $ref: "#/components/schemas/CurrencyNoID"
+
+    AccountHistory:
+      type: array
+      items:
+        type: string
+        format: date-time
+        example: "2020-01-01T00:00:00Z"
+
+    BankImporterNoID:
+      type: object
+      properties:
+        id:
+          type: string
+    BankImporter:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - $ref: "#/components/schemas/BankImporterNoID"
+
+    TransactionNoID:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        description:
+          type: string
+        place:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        partnerName:
+          type: string
+        partnerAccount:
+          type: string
+        partnerInternalID:
+          type: string
+          description: Internal bank's ID to be able to match later if necessary
+        extra:
+          type: string
+          description: >-
+            Stores extra data about transaction. For example could hold "variable symbol" to
+            distinguish payment for the same account, but with different meaning
+        unprocessedSources:
+          type: string
+          description: >-
+            Stores FULL unprocessed transactions which was source of this transaction.
+            Could be used later for detailed analysis
+        externalIDs:
+          type: string
+          description: >-
+            IDs of unprocessed transaction - to match later
+        movements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Movement"
+    Transaction:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - $ref: "#/components/schemas/TransactionNoID"
+
+    Movement:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+        currencyID:
+          type: string
+        accountID:
+          type: string
+        description:
+          type: string
+
+    UnprocessedTransaction:
+      type: object
+      properties:
+        transaction:
+          $ref: "#/components/schemas/Transaction"
+        matched:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatcherAndTransaction"
+        duplicates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+
+    MatcherAndTransaction:
+      type: object
+      properties:
+        matcherID:
+          type: string
+        transaction:
+          $ref: "#/components/schemas/TransactionNoID"
+
+    Aggregation:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00Z"
+        to:
+          type: string
+          format: date-time
+          example: "2020-01-01T00:00:00Z"
+        granularity:
+          type: string
+          enum:
+            - month
+            - year
+        intervals:
+          type: array
+          items:
+            type: string
+            format: date-time
+            example: "2020-01-01T00:00:00Z"
+        currencies:
+          type: array
+          items:
+            $ref: "#/components/schemas/CurrencyAggregation"
+
+    CurrencyAggregation:
+      type: object
+      properties:
+        currencyID:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountAggregation"
+
+    AccountAggregation:
+      type: object
+      properties:
+        accountID:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        amounts:
+          type: array
+          items:
+            type: number
+            format: double
