@@ -35,9 +35,11 @@ paths:
                 properties:
                   token:
                     type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    example: "eyJhbGc..."
+                required:
+                  - token
         "401":
-          description: Authentification failed
+          description: Authentication failed
 
   /v1/user:
     get:
@@ -620,6 +622,118 @@ paths:
         "200":
           description: no body
 
+  /v1/matchers:
+    post:
+      tags:
+        - matchers
+      summary: create new matcher
+      operationId: createMatcher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatcherNoID"
+      responses:
+        "200":
+          description: created matcher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matcher"
+    get:
+      tags:
+        - matchers
+      summary: get all matchers
+      operationId: getMatchers
+      responses:
+        "200":
+          description: matchers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Matcher"
+
+  /v1/matchers/{id}:
+    put:
+      tags:
+        - matchers
+      summary: update matcher
+      operationId: updateMatcher
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the matcher"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatcherNoID"
+      responses:
+        "200":
+          description: updated matcher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matcher"
+    delete:
+      tags:
+        - matchers
+      summary: delete matcher
+      operationId: deleteMatcher
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the matcher"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+  /v1/matchers/check:
+    post:
+      tags:
+        - matchers
+      summary: check if passed matcher matches given transaction
+      operationId: checkMatcher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                matcher:
+                  $ref: "#/components/schemas/MatcherNoID"
+                transaction:
+                  $ref: "#/components/schemas/TransactionNoID"
+              required:
+                - matcher
+                - transaction
+      responses:
+        "200":
+          description: true/false if matcher works
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: boolean
+        "400":
+          description: bad request
+
 security:
   - bearerAuth: []
 
@@ -639,12 +753,19 @@ components:
         password:
           type: string
           example: "12345"
+      required:
+        - email
+        - password
 
     Entity:
       type: object
       properties:
         id:
           type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      required:
+        - id
 
     User:
       type: object
@@ -654,8 +775,9 @@ components:
         startDate:
           type: string
           format: date-time
-        name:
-          type: string
+      required:
+        - email
+        - startDate
       allOf:
         - $ref: "#/components/schemas/Entity"
 
@@ -671,6 +793,9 @@ components:
             - expense
             - income
             - asset
+      required:
+        - name
+        - type
     Account:
       type: object
       allOf:
@@ -682,10 +807,6 @@ components:
         - $ref: "#/components/schemas/Entity"
         - type: object
           properties:
-            id:
-              type: string
-              format: uuid
-              example: "123e4567-e89b-12d3-a456-426614174000"
             date:
               type: string
               format: date-time
@@ -701,6 +822,11 @@ components:
               type: string
             description:
               type: string
+          required:
+            - date
+            - type
+            - title
+            - description
 
     CurrencyNoID:
       type: object
@@ -709,6 +835,8 @@ components:
           type: string
         description:
           type: string
+      required:
+        - name
     Currency:
       type: object
       allOf:
@@ -772,6 +900,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Movement"
+      required:
+        - date
+        - movements
     Transaction:
       type: object
       allOf:
@@ -790,6 +921,10 @@ components:
           type: string
         description:
           type: string
+      required:
+        - amount
+        - currencyID
+        - accountID
 
     UnprocessedTransaction:
       type: object
@@ -804,6 +939,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Transaction"
+      required:
+        - transaction
+        - matched
+        - duplicates
 
     MatcherAndTransaction:
       type: object
@@ -812,6 +951,9 @@ components:
           type: string
         transaction:
           $ref: "#/components/schemas/TransactionNoID"
+      required:
+        - matcherID
+        - transaction
 
     Aggregation:
       type: object
@@ -839,6 +981,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CurrencyAggregation"
+      required:
+        - from
+        - to
+        - granularity
+        - intervals
+        - currencies
 
     CurrencyAggregation:
       type: object
@@ -851,6 +999,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AccountAggregation"
+      required:
+        - currencyID
+        - accounts
 
     AccountAggregation:
       type: object
@@ -864,3 +1015,38 @@ components:
           items:
             type: number
             format: double
+      required:
+        - accountID
+        - amounts
+
+    MatcherNoID:
+      type: object
+      properties:
+        name:
+          type: string
+        outputDescription:
+          type: string
+        amount:
+          type: number
+          format: double
+        currencyRegExp:
+          type: string
+        partnerNameRegExp:
+          type: string
+        partnerAccountNumber:
+          type: string
+        descriptionRegExp:
+          type: string
+        extraRegExp:
+          type: string
+        outputMovements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Movement"
+      required:
+        - name
+    Matcher:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - $ref: "#/components/schemas/MatcherNoID"
