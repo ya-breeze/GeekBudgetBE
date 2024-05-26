@@ -16,8 +16,12 @@
 			"extensions": [
 				"streetsidesoftware.code-spell-checker",
 				"ms-vscode.makefile-tools",
-				"42Crunch.vscode-openapi"
+				"42Crunch.vscode-openapi",
+				"redhat.vscode-yaml"
 			]
 		}
+	},
+	"containerEnv": {
+		"HOST_PWD": "${localWorkspaceFolder}"
 	}
 }
