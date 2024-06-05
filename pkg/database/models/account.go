@@ -7,13 +7,6 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
-// type AccountNoId struct {
-// 	gorm.Model
-// 	goserver.AccountNoId
-
-// 	userId string
-// }
-
 type Account struct {
 	gorm.Model
 
