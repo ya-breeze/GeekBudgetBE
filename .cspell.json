@@ -2,6 +2,10 @@
     "version": "0.2",
     "allowCompoundWords": true,
     "words": [
-        "devcontainers"
+        "devcontainers",
+        "geekbudgetbe",
+        "goclient",
+        "gorm",
+        "goserver"
     ]
 }
