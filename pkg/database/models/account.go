@@ -15,3 +15,12 @@ type Account struct {
 
 	goserver.AccountNoId
 }
+
+func (a *Account) FromDb() goserver.Account {
+	return goserver.Account{
+		Id:          a.ID.String(),
+		Name:        a.Name,
+		Type:        a.Type,
+		Description: a.Description,
+	}
+}

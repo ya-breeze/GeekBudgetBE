@@ -1,51 +1,49 @@
 package main
 
 import (
-	"github.com/google/uuid"
+	"log/slog"
+	"os"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
-	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
 func main() {
-	db, err := database.OpenSqlite()
-	if err != nil {
-		panic("failed to connect database")
-	}
-	if err := database.Migrate(db); err != nil {
-		panic("failed to migrate database")
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger.Info("Starting GeekBudget...")
+
+	cfg := &config.Config{}
+
+	storage := database.NewStorage(logger, cfg)
+	if storage.Open() != nil {
+		logger.Error("Failed to open storage")
+		return
 	}
 
 	userId := "123e4567-e89b-12d3-a456-426614174000"
-	account := models.Account{
-		ID:     uuid.New(),
-		UserId: userId,
-		AccountNoId: goserver.AccountNoId{
-			Name:        "Test Account",
-			Type:        "CHECKING",
-			Description: "Test Account Description",
-		},
-	}
-	db.Create(&account)
 
-	result, err := db.Model(&models.Account{}).Where("user_id = ?", userId).Rows()
+	acc := &goserver.AccountNoId{
+		Name:        "Test Account",
+		Type:        "CHECKING",
+		Description: "Test Account Description",
+	}
+
+	account, err := storage.CreateAccount(userId, acc)
 	if err != nil {
-		panic(err)
+		logger.Error("Failed to create account")
+		return
 	}
-	defer result.Close()
 
-	for result.Next() {
-		var account models.Account
-		if err := db.ScanRows(result, &account); err != nil {
-			panic(err)
-		}
-		println("Account:")
-		println(account.ID.String())
-		println(account.UserId)
-		println(account.Name)
-		println(account.Type)
-		println(account.Description)
-		println()
+	logger.With("account", account).Info("Account created")
+
+	accounts, err := storage.GetAccounts(userId)
+	if err != nil {
+		logger.Error("Failed to get accounts")
+		return
 	}
+
+	logger.With("accounts", accounts).Info("Accounts retrieved")
+
+	logger.Info("GeekBudget stopped")
 }

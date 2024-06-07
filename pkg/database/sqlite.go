@@ -5,6 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func OpenSqlite() (*gorm.DB, error) {
+func openSqlite() (*gorm.DB, error) {
 	return gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 }

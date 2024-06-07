@@ -6,7 +6,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 )
 
-func Migrate(db *gorm.DB) error {
+func migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.Account{},
 	)
