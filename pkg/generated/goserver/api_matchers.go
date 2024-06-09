@@ -21,7 +21,7 @@ import (
 
 // MatchersAPIController binds http requests to an api service and writes the service results to the http response
 type MatchersAPIController struct {
-	service MatchersAPIServicer
+	service      MatchersAPIServicer
 	errorHandler ErrorHandler
 }
 

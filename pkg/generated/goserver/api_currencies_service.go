@@ -13,8 +13,8 @@ package goserver
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 // CurrenciesAPIService is a service that implements the logic for the CurrenciesAPIServicer

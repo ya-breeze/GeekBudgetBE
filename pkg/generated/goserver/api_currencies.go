@@ -21,7 +21,7 @@ import (
 
 // CurrenciesAPIController binds http requests to an api service and writes the service results to the http response
 type CurrenciesAPIController struct {
-	service CurrenciesAPIServicer
+	service      CurrenciesAPIServicer
 	errorHandler ErrorHandler
 }
 

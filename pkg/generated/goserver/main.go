@@ -10,13 +10,15 @@
  */
 
 package goserver
+
 import (
-	"log"
+	"fmt"
 	"net/http"
+
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 )
 
-func main() {
-	log.Printf("Server started")
+func Serve(cfg *config.Config) error {
 
 	AccountsAPIService := NewAccountsAPIService()
 	AccountsAPIController := NewAccountsAPIController(AccountsAPIService)
@@ -50,5 +52,5 @@ func main() {
 
 	router := NewRouter(AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	return http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), router)
 }

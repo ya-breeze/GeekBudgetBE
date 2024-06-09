@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type CheckMatcherRequest struct {
-
 	Matcher MatcherNoId `json:"matcher"`
 
 	Transaction TransactionNoId `json:"transaction"`
@@ -24,7 +20,7 @@ type CheckMatcherRequest struct {
 // AssertCheckMatcherRequestRequired checks if the required fields are not zero-ed
 func AssertCheckMatcherRequestRequired(obj CheckMatcherRequest) error {
 	elements := map[string]interface{}{
-		"matcher": obj.Matcher,
+		"matcher":     obj.Matcher,
 		"transaction": obj.Transaction,
 	}
 	for name, el := range elements {

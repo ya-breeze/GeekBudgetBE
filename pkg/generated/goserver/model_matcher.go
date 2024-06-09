@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type Matcher struct {
-
 	Id string `json:"id"`
 
 	Name string `json:"name"`
@@ -40,7 +36,7 @@ type Matcher struct {
 // AssertMatcherRequired checks if the required fields are not zero-ed
 func AssertMatcherRequired(obj Matcher) error {
 	elements := map[string]interface{}{
-		"id": obj.Id,
+		"id":   obj.Id,
 		"name": obj.Name,
 	}
 	for name, el := range elements {

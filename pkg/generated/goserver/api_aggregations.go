@@ -19,7 +19,7 @@ import (
 
 // AggregationsAPIController binds http requests to an api service and writes the service results to the http response
 type AggregationsAPIController struct {
-	service AggregationsAPIServicer
+	service      AggregationsAPIServicer
 	errorHandler ErrorHandler
 }
 
@@ -76,7 +76,7 @@ func (c *AggregationsAPIController) GetBalances(w http.ResponseWriter, r *http.R
 		return
 	}
 	var fromParam time.Time
-	if query.Has("from"){
+	if query.Has("from") {
 		param, err := parseTime(query.Get("from"))
 		if err != nil {
 			c.errorHandler(w, r, &ParsingError{Param: "from", Err: err}, nil)
@@ -87,7 +87,7 @@ func (c *AggregationsAPIController) GetBalances(w http.ResponseWriter, r *http.R
 	} else {
 	}
 	var toParam time.Time
-	if query.Has("to"){
+	if query.Has("to") {
 		param, err := parseTime(query.Get("to"))
 		if err != nil {
 			c.errorHandler(w, r, &ParsingError{Param: "to", Err: err}, nil)
@@ -122,7 +122,7 @@ func (c *AggregationsAPIController) GetExpenses(w http.ResponseWriter, r *http.R
 		return
 	}
 	var fromParam time.Time
-	if query.Has("from"){
+	if query.Has("from") {
 		param, err := parseTime(query.Get("from"))
 		if err != nil {
 			c.errorHandler(w, r, &ParsingError{Param: "from", Err: err}, nil)
@@ -133,7 +133,7 @@ func (c *AggregationsAPIController) GetExpenses(w http.ResponseWriter, r *http.R
 	} else {
 	}
 	var toParam time.Time
-	if query.Has("to"){
+	if query.Has("to") {
 		param, err := parseTime(query.Get("to"))
 		if err != nil {
 			c.errorHandler(w, r, &ParsingError{Param: "to", Err: err}, nil)
@@ -168,7 +168,7 @@ func (c *AggregationsAPIController) GetIncomes(w http.ResponseWriter, r *http.Re
 		return
 	}
 	var fromParam time.Time
-	if query.Has("from"){
+	if query.Has("from") {
 		param, err := parseTime(query.Get("from"))
 		if err != nil {
 			c.errorHandler(w, r, &ParsingError{Param: "from", Err: err}, nil)
@@ -179,7 +179,7 @@ func (c *AggregationsAPIController) GetIncomes(w http.ResponseWriter, r *http.Re
 	} else {
 	}
 	var toParam time.Time
-	if query.Has("to"){
+	if query.Has("to") {
 		param, err := parseTime(query.Get("to"))
 		if err != nil {
 			c.errorHandler(w, r, &ParsingError{Param: "to", Err: err}, nil)

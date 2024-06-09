@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type AuthData struct {
-
 	Email string `json:"email"`
 
 	Password string `json:"password"`
@@ -24,7 +20,7 @@ type AuthData struct {
 // AssertAuthDataRequired checks if the required fields are not zero-ed
 func AssertAuthDataRequired(obj AuthData) error {
 	elements := map[string]interface{}{
-		"email": obj.Email,
+		"email":    obj.Email,
 		"password": obj.Password,
 	}
 	for name, el := range elements {

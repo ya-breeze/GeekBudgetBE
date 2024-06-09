@@ -11,15 +11,11 @@
 
 package goserver
 
-
 import (
 	"time"
 )
 
-
-
 type Aggregation struct {
-
 	From time.Time `json:"from"`
 
 	To time.Time `json:"to"`
@@ -34,11 +30,11 @@ type Aggregation struct {
 // AssertAggregationRequired checks if the required fields are not zero-ed
 func AssertAggregationRequired(obj Aggregation) error {
 	elements := map[string]interface{}{
-		"from": obj.From,
-		"to": obj.To,
+		"from":        obj.From,
+		"to":          obj.To,
 		"granularity": obj.Granularity,
-		"intervals": obj.Intervals,
-		"currencies": obj.Currencies,
+		"intervals":   obj.Intervals,
+		"currencies":  obj.Currencies,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

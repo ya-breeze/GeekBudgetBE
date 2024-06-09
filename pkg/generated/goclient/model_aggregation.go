@@ -12,10 +12,10 @@ Contact: ilya.korolev@outlook.com
 package goclient
 
 import (
-	"encoding/json"
-	"time"
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // checks if the Aggregation type satisfies the MappedNullable interface at compile time
@@ -23,11 +23,11 @@ var _ MappedNullable = &Aggregation{}
 
 // Aggregation struct for Aggregation
 type Aggregation struct {
-	From time.Time `json:"from"`
-	To time.Time `json:"to"`
-	Granularity string `json:"granularity"`
-	Intervals []time.Time `json:"intervals"`
-	Currencies []CurrencyAggregation `json:"currencies"`
+	From        time.Time             `json:"from"`
+	To          time.Time             `json:"to"`
+	Granularity string                `json:"granularity"`
+	Intervals   []time.Time           `json:"intervals"`
+	Currencies  []CurrencyAggregation `json:"currencies"`
 }
 
 type _Aggregation Aggregation
@@ -175,7 +175,7 @@ func (o *Aggregation) SetCurrencies(v []CurrencyAggregation) {
 }
 
 func (o Aggregation) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -209,10 +209,10 @@ func (o *Aggregation) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -268,5 +268,3 @@ func (v *NullableAggregation) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -19,7 +19,7 @@ import (
 
 // AuthAPIController binds http requests to an api service and writes the service results to the http response
 type AuthAPIController struct {
-	service AuthAPIServicer
+	service      AuthAPIServicer
 	errorHandler ErrorHandler
 }
 

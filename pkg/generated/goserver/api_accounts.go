@@ -21,7 +21,7 @@ import (
 
 // AccountsAPIController binds http requests to an api service and writes the service results to the http response
 type AccountsAPIController struct {
-	service AccountsAPIServicer
+	service      AccountsAPIServicer
 	errorHandler ErrorHandler
 }
 

@@ -13,8 +13,8 @@ package goserver
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 // BankImportersAPIService is a service that implements the logic for the BankImportersAPIServicer

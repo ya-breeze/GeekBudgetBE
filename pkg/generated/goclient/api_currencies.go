@@ -20,13 +20,12 @@ import (
 	"strings"
 )
 
-
 // CurrenciesAPIService CurrenciesAPI service
 type CurrenciesAPIService service
 
 type ApiCreateCurrencyRequest struct {
-	ctx context.Context
-	ApiService *CurrenciesAPIService
+	ctx          context.Context
+	ApiService   *CurrenciesAPIService
 	currencyNoID *CurrencyNoID
 }
 
@@ -42,24 +41,25 @@ func (r ApiCreateCurrencyRequest) Execute() (*Currency, *http.Response, error) {
 /*
 CreateCurrency create new currency
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateCurrencyRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateCurrencyRequest
 */
 func (a *CurrenciesAPIService) CreateCurrency(ctx context.Context) ApiCreateCurrencyRequest {
 	return ApiCreateCurrencyRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Currency
+//
+//	@return Currency
 func (a *CurrenciesAPIService) CreateCurrencyExecute(r ApiCreateCurrencyRequest) (*Currency, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Currency
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Currency
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "CurrenciesAPIService.CreateCurrency")
@@ -133,9 +133,9 @@ func (a *CurrenciesAPIService) CreateCurrencyExecute(r ApiCreateCurrencyRequest)
 }
 
 type ApiDeleteCurrencyRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *CurrenciesAPIService
-	id string
+	id         string
 }
 
 func (r ApiDeleteCurrencyRequest) Execute() (*http.Response, error) {
@@ -145,24 +145,24 @@ func (r ApiDeleteCurrencyRequest) Execute() (*http.Response, error) {
 /*
 DeleteCurrency delete currency
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the currency
- @return ApiDeleteCurrencyRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the currency
+	@return ApiDeleteCurrencyRequest
 */
 func (a *CurrenciesAPIService) DeleteCurrency(ctx context.Context, id string) ApiDeleteCurrencyRequest {
 	return ApiDeleteCurrencyRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *CurrenciesAPIService) DeleteCurrencyExecute(r ApiDeleteCurrencyRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "CurrenciesAPIService.DeleteCurrency")
@@ -223,7 +223,7 @@ func (a *CurrenciesAPIService) DeleteCurrencyExecute(r ApiDeleteCurrencyRequest)
 }
 
 type ApiGetCurrenciesRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *CurrenciesAPIService
 }
 
@@ -234,24 +234,25 @@ func (r ApiGetCurrenciesRequest) Execute() ([]Currency, *http.Response, error) {
 /*
 GetCurrencies get all currencies
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetCurrenciesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetCurrenciesRequest
 */
 func (a *CurrenciesAPIService) GetCurrencies(ctx context.Context) ApiGetCurrenciesRequest {
 	return ApiGetCurrenciesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []Currency
+//
+//	@return []Currency
 func (a *CurrenciesAPIService) GetCurrenciesExecute(r ApiGetCurrenciesRequest) ([]Currency, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []Currency
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []Currency
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "CurrenciesAPIService.GetCurrencies")
@@ -320,9 +321,9 @@ func (a *CurrenciesAPIService) GetCurrenciesExecute(r ApiGetCurrenciesRequest) (
 }
 
 type ApiUpdateCurrencyRequest struct {
-	ctx context.Context
-	ApiService *CurrenciesAPIService
-	id string
+	ctx          context.Context
+	ApiService   *CurrenciesAPIService
+	id           string
 	currencyNoID *CurrencyNoID
 }
 
@@ -338,26 +339,27 @@ func (r ApiUpdateCurrencyRequest) Execute() (*Currency, *http.Response, error) {
 /*
 UpdateCurrency update currency
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the currency
- @return ApiUpdateCurrencyRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the currency
+	@return ApiUpdateCurrencyRequest
 */
 func (a *CurrenciesAPIService) UpdateCurrency(ctx context.Context, id string) ApiUpdateCurrencyRequest {
 	return ApiUpdateCurrencyRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return Currency
+//
+//	@return Currency
 func (a *CurrenciesAPIService) UpdateCurrencyExecute(r ApiUpdateCurrencyRequest) (*Currency, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Currency
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Currency
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "CurrenciesAPIService.UpdateCurrency")

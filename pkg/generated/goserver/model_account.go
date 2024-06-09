@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type Account struct {
-
 	Id string `json:"id"`
 
 	Name string `json:"name"`
@@ -28,7 +24,7 @@ type Account struct {
 // AssertAccountRequired checks if the required fields are not zero-ed
 func AssertAccountRequired(obj Account) error {
 	elements := map[string]interface{}{
-		"id": obj.Id,
+		"id":   obj.Id,
 		"name": obj.Name,
 		"type": obj.Type,
 	}

@@ -13,8 +13,8 @@ package goserver
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 	"time"
 )
 

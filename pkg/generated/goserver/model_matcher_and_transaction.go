@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type MatcherAndTransaction struct {
-
 	MatcherID string `json:"matcherID"`
 
 	Transaction TransactionNoId `json:"transaction"`
@@ -24,7 +20,7 @@ type MatcherAndTransaction struct {
 // AssertMatcherAndTransactionRequired checks if the required fields are not zero-ed
 func AssertMatcherAndTransactionRequired(obj MatcherAndTransaction) error {
 	elements := map[string]interface{}{
-		"matcherID": obj.MatcherID,
+		"matcherID":   obj.MatcherID,
 		"transaction": obj.Transaction,
 	}
 	for name, el := range elements {

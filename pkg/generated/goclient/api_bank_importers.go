@@ -20,13 +20,12 @@ import (
 	"strings"
 )
 
-
 // BankImportersAPIService BankImportersAPI service
 type BankImportersAPIService service
 
 type ApiCreateBankImporterRequest struct {
-	ctx context.Context
-	ApiService *BankImportersAPIService
+	ctx              context.Context
+	ApiService       *BankImportersAPIService
 	bankImporterNoID *BankImporterNoID
 }
 
@@ -42,24 +41,25 @@ func (r ApiCreateBankImporterRequest) Execute() (*BankImporter, *http.Response, 
 /*
 CreateBankImporter create new bank importer
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateBankImporterRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateBankImporterRequest
 */
 func (a *BankImportersAPIService) CreateBankImporter(ctx context.Context) ApiCreateBankImporterRequest {
 	return ApiCreateBankImporterRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return BankImporter
+//
+//	@return BankImporter
 func (a *BankImportersAPIService) CreateBankImporterExecute(r ApiCreateBankImporterRequest) (*BankImporter, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *BankImporter
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *BankImporter
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BankImportersAPIService.CreateBankImporter")
@@ -133,9 +133,9 @@ func (a *BankImportersAPIService) CreateBankImporterExecute(r ApiCreateBankImpor
 }
 
 type ApiDeleteBankImporterRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BankImportersAPIService
-	id string
+	id         string
 }
 
 func (r ApiDeleteBankImporterRequest) Execute() (*http.Response, error) {
@@ -145,24 +145,24 @@ func (r ApiDeleteBankImporterRequest) Execute() (*http.Response, error) {
 /*
 DeleteBankImporter delete bank importer
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the bankimporter
- @return ApiDeleteBankImporterRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the bankimporter
+	@return ApiDeleteBankImporterRequest
 */
 func (a *BankImportersAPIService) DeleteBankImporter(ctx context.Context, id string) ApiDeleteBankImporterRequest {
 	return ApiDeleteBankImporterRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *BankImportersAPIService) DeleteBankImporterExecute(r ApiDeleteBankImporterRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BankImportersAPIService.DeleteBankImporter")
@@ -223,7 +223,7 @@ func (a *BankImportersAPIService) DeleteBankImporterExecute(r ApiDeleteBankImpor
 }
 
 type ApiGetBankImportersRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BankImportersAPIService
 }
 
@@ -234,24 +234,25 @@ func (r ApiGetBankImportersRequest) Execute() ([]BankImporter, *http.Response, e
 /*
 GetBankImporters get all bank importers
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetBankImportersRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetBankImportersRequest
 */
 func (a *BankImportersAPIService) GetBankImporters(ctx context.Context) ApiGetBankImportersRequest {
 	return ApiGetBankImportersRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []BankImporter
+//
+//	@return []BankImporter
 func (a *BankImportersAPIService) GetBankImportersExecute(r ApiGetBankImportersRequest) ([]BankImporter, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []BankImporter
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []BankImporter
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BankImportersAPIService.GetBankImporters")
@@ -320,9 +321,9 @@ func (a *BankImportersAPIService) GetBankImportersExecute(r ApiGetBankImportersR
 }
 
 type ApiUpdateBankImporterRequest struct {
-	ctx context.Context
-	ApiService *BankImportersAPIService
-	id string
+	ctx              context.Context
+	ApiService       *BankImportersAPIService
+	id               string
 	bankImporterNoID *BankImporterNoID
 }
 
@@ -338,26 +339,27 @@ func (r ApiUpdateBankImporterRequest) Execute() (*BankImporter, *http.Response, 
 /*
 UpdateBankImporter update bank importer
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the bank importer
- @return ApiUpdateBankImporterRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the bank importer
+	@return ApiUpdateBankImporterRequest
 */
 func (a *BankImportersAPIService) UpdateBankImporter(ctx context.Context, id string) ApiUpdateBankImporterRequest {
 	return ApiUpdateBankImporterRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return BankImporter
+//
+//	@return BankImporter
 func (a *BankImportersAPIService) UpdateBankImporterExecute(r ApiUpdateBankImporterRequest) (*BankImporter, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *BankImporter
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *BankImporter
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BankImportersAPIService.UpdateBankImporter")

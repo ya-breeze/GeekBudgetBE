@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type BankImporter struct {
-
 	Id string `json:"id"`
 }
 

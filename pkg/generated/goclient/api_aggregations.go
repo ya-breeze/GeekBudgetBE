@@ -20,15 +20,14 @@ import (
 	"time"
 )
 
-
 // AggregationsAPIService AggregationsAPI service
 type AggregationsAPIService service
 
 type ApiGetBalancesRequest struct {
-	ctx context.Context
-	ApiService *AggregationsAPIService
-	from *time.Time
-	to *time.Time
+	ctx              context.Context
+	ApiService       *AggregationsAPIService
+	from             *time.Time
+	to               *time.Time
 	outputCurrencyID *string
 }
 
@@ -57,24 +56,25 @@ func (r ApiGetBalancesRequest) Execute() (*Aggregation, *http.Response, error) {
 /*
 GetBalances get balance for filtered transactions
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetBalancesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetBalancesRequest
 */
 func (a *AggregationsAPIService) GetBalances(ctx context.Context) ApiGetBalancesRequest {
 	return ApiGetBalancesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Aggregation
+//
+//	@return Aggregation
 func (a *AggregationsAPIService) GetBalancesExecute(r ApiGetBalancesRequest) (*Aggregation, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Aggregation
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Aggregation
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AggregationsAPIService.GetBalances")
@@ -152,10 +152,10 @@ func (a *AggregationsAPIService) GetBalancesExecute(r ApiGetBalancesRequest) (*A
 }
 
 type ApiGetExpensesRequest struct {
-	ctx context.Context
-	ApiService *AggregationsAPIService
-	from *time.Time
-	to *time.Time
+	ctx              context.Context
+	ApiService       *AggregationsAPIService
+	from             *time.Time
+	to               *time.Time
 	outputCurrencyID *string
 }
 
@@ -184,24 +184,25 @@ func (r ApiGetExpensesRequest) Execute() (*Aggregation, *http.Response, error) {
 /*
 GetExpenses get expenses for filtered transactions
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetExpensesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetExpensesRequest
 */
 func (a *AggregationsAPIService) GetExpenses(ctx context.Context) ApiGetExpensesRequest {
 	return ApiGetExpensesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Aggregation
+//
+//	@return Aggregation
 func (a *AggregationsAPIService) GetExpensesExecute(r ApiGetExpensesRequest) (*Aggregation, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Aggregation
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Aggregation
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AggregationsAPIService.GetExpenses")
@@ -279,10 +280,10 @@ func (a *AggregationsAPIService) GetExpensesExecute(r ApiGetExpensesRequest) (*A
 }
 
 type ApiGetIncomesRequest struct {
-	ctx context.Context
-	ApiService *AggregationsAPIService
-	from *time.Time
-	to *time.Time
+	ctx              context.Context
+	ApiService       *AggregationsAPIService
+	from             *time.Time
+	to               *time.Time
 	outputCurrencyID *string
 }
 
@@ -311,24 +312,25 @@ func (r ApiGetIncomesRequest) Execute() (*Aggregation, *http.Response, error) {
 /*
 GetIncomes get incomes for filtered transactions
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetIncomesRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetIncomesRequest
 */
 func (a *AggregationsAPIService) GetIncomes(ctx context.Context) ApiGetIncomesRequest {
 	return ApiGetIncomesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Aggregation
+//
+//	@return Aggregation
 func (a *AggregationsAPIService) GetIncomesExecute(r ApiGetIncomesRequest) (*Aggregation, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Aggregation
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Aggregation
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AggregationsAPIService.GetIncomes")

@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type CheckMatcher200Response struct {
-
 	Result bool `json:"result,omitempty"`
 }
 

@@ -12,8 +12,8 @@ Contact: ilya.korolev@outlook.com
 package goclient
 
 import (
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -22,9 +22,9 @@ var _ MappedNullable = &Movement{}
 
 // Movement struct for Movement
 type Movement struct {
-	Amount float64 `json:"amount"`
-	CurrencyID string `json:"currencyID"`
-	AccountID string `json:"accountID"`
+	Amount      float64 `json:"amount"`
+	CurrencyID  string  `json:"currencyID"`
+	AccountID   string  `json:"accountID"`
 	Description *string `json:"description,omitempty"`
 }
 
@@ -155,7 +155,7 @@ func (o *Movement) SetDescription(v string) {
 }
 
 func (o Movement) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -188,10 +188,10 @@ func (o *Movement) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -247,5 +247,3 @@ func (v *NullableMovement) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

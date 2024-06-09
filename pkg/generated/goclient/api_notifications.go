@@ -20,14 +20,13 @@ import (
 	"strings"
 )
 
-
 // NotificationsAPIService NotificationsAPI service
 type NotificationsAPIService service
 
 type ApiDeleteNotificationRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *NotificationsAPIService
-	id string
+	id         string
 }
 
 func (r ApiDeleteNotificationRequest) Execute() (*http.Response, error) {
@@ -37,24 +36,24 @@ func (r ApiDeleteNotificationRequest) Execute() (*http.Response, error) {
 /*
 DeleteNotification delete notification
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiDeleteNotificationRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiDeleteNotificationRequest
 */
 func (a *NotificationsAPIService) DeleteNotification(ctx context.Context, id string) ApiDeleteNotificationRequest {
 	return ApiDeleteNotificationRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *NotificationsAPIService) DeleteNotificationExecute(r ApiDeleteNotificationRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NotificationsAPIService.DeleteNotification")
@@ -115,7 +114,7 @@ func (a *NotificationsAPIService) DeleteNotificationExecute(r ApiDeleteNotificat
 }
 
 type ApiGetNotificationsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *NotificationsAPIService
 }
 
@@ -126,24 +125,25 @@ func (r ApiGetNotificationsRequest) Execute() ([]Notification, *http.Response, e
 /*
 GetNotifications return all notifications
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetNotificationsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetNotificationsRequest
 */
 func (a *NotificationsAPIService) GetNotifications(ctx context.Context) ApiGetNotificationsRequest {
 	return ApiGetNotificationsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []Notification
+//
+//	@return []Notification
 func (a *NotificationsAPIService) GetNotificationsExecute(r ApiGetNotificationsRequest) ([]Notification, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []Notification
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []Notification
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NotificationsAPIService.GetNotifications")

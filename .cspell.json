@@ -5,7 +5,9 @@
         "devcontainers",
         "geekbudgetbe",
         "goclient",
+        "gofumpt",
         "gorm",
-        "goserver"
+        "goserver",
+        "Sprintf"
     ]
 }

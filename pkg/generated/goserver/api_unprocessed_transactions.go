@@ -21,7 +21,7 @@ import (
 
 // UnprocessedTransactionsAPIController binds http requests to an api service and writes the service results to the http response
 type UnprocessedTransactionsAPIController struct {
-	service UnprocessedTransactionsAPIServicer
+	service      UnprocessedTransactionsAPIServicer
 	errorHandler ErrorHandler
 }
 

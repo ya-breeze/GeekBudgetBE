@@ -20,13 +20,12 @@ import (
 	"strings"
 )
 
-
 // MatchersAPIService MatchersAPI service
 type MatchersAPIService service
 
 type ApiCheckMatcherRequest struct {
-	ctx context.Context
-	ApiService *MatchersAPIService
+	ctx                 context.Context
+	ApiService          *MatchersAPIService
 	checkMatcherRequest *CheckMatcherRequest
 }
 
@@ -42,24 +41,25 @@ func (r ApiCheckMatcherRequest) Execute() (*CheckMatcher200Response, *http.Respo
 /*
 CheckMatcher check if passed matcher matches given transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCheckMatcherRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCheckMatcherRequest
 */
 func (a *MatchersAPIService) CheckMatcher(ctx context.Context) ApiCheckMatcherRequest {
 	return ApiCheckMatcherRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return CheckMatcher200Response
+//
+//	@return CheckMatcher200Response
 func (a *MatchersAPIService) CheckMatcherExecute(r ApiCheckMatcherRequest) (*CheckMatcher200Response, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *CheckMatcher200Response
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *CheckMatcher200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MatchersAPIService.CheckMatcher")
@@ -133,8 +133,8 @@ func (a *MatchersAPIService) CheckMatcherExecute(r ApiCheckMatcherRequest) (*Che
 }
 
 type ApiCreateMatcherRequest struct {
-	ctx context.Context
-	ApiService *MatchersAPIService
+	ctx         context.Context
+	ApiService  *MatchersAPIService
 	matcherNoID *MatcherNoID
 }
 
@@ -150,24 +150,25 @@ func (r ApiCreateMatcherRequest) Execute() (*Matcher, *http.Response, error) {
 /*
 CreateMatcher create new matcher
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateMatcherRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateMatcherRequest
 */
 func (a *MatchersAPIService) CreateMatcher(ctx context.Context) ApiCreateMatcherRequest {
 	return ApiCreateMatcherRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Matcher
+//
+//	@return Matcher
 func (a *MatchersAPIService) CreateMatcherExecute(r ApiCreateMatcherRequest) (*Matcher, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Matcher
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Matcher
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MatchersAPIService.CreateMatcher")
@@ -241,9 +242,9 @@ func (a *MatchersAPIService) CreateMatcherExecute(r ApiCreateMatcherRequest) (*M
 }
 
 type ApiDeleteMatcherRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *MatchersAPIService
-	id string
+	id         string
 }
 
 func (r ApiDeleteMatcherRequest) Execute() (*http.Response, error) {
@@ -253,24 +254,24 @@ func (r ApiDeleteMatcherRequest) Execute() (*http.Response, error) {
 /*
 DeleteMatcher delete matcher
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the matcher
- @return ApiDeleteMatcherRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the matcher
+	@return ApiDeleteMatcherRequest
 */
 func (a *MatchersAPIService) DeleteMatcher(ctx context.Context, id string) ApiDeleteMatcherRequest {
 	return ApiDeleteMatcherRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *MatchersAPIService) DeleteMatcherExecute(r ApiDeleteMatcherRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MatchersAPIService.DeleteMatcher")
@@ -331,7 +332,7 @@ func (a *MatchersAPIService) DeleteMatcherExecute(r ApiDeleteMatcherRequest) (*h
 }
 
 type ApiGetMatchersRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *MatchersAPIService
 }
 
@@ -342,24 +343,25 @@ func (r ApiGetMatchersRequest) Execute() ([]Matcher, *http.Response, error) {
 /*
 GetMatchers get all matchers
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetMatchersRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetMatchersRequest
 */
 func (a *MatchersAPIService) GetMatchers(ctx context.Context) ApiGetMatchersRequest {
 	return ApiGetMatchersRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []Matcher
+//
+//	@return []Matcher
 func (a *MatchersAPIService) GetMatchersExecute(r ApiGetMatchersRequest) ([]Matcher, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []Matcher
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []Matcher
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MatchersAPIService.GetMatchers")
@@ -428,9 +430,9 @@ func (a *MatchersAPIService) GetMatchersExecute(r ApiGetMatchersRequest) ([]Matc
 }
 
 type ApiUpdateMatcherRequest struct {
-	ctx context.Context
-	ApiService *MatchersAPIService
-	id string
+	ctx         context.Context
+	ApiService  *MatchersAPIService
+	id          string
 	matcherNoID *MatcherNoID
 }
 
@@ -446,26 +448,27 @@ func (r ApiUpdateMatcherRequest) Execute() (*Matcher, *http.Response, error) {
 /*
 UpdateMatcher update matcher
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the matcher
- @return ApiUpdateMatcherRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the matcher
+	@return ApiUpdateMatcherRequest
 */
 func (a *MatchersAPIService) UpdateMatcher(ctx context.Context, id string) ApiUpdateMatcherRequest {
 	return ApiUpdateMatcherRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return Matcher
+//
+//	@return Matcher
 func (a *MatchersAPIService) UpdateMatcherExecute(r ApiUpdateMatcherRequest) (*Matcher, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Matcher
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Matcher
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MatchersAPIService.UpdateMatcher")

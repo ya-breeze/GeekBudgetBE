@@ -11,15 +11,11 @@
 
 package goserver
 
-
 import (
 	"time"
 )
 
-
-
 type Notification struct {
-
 	Id string `json:"id"`
 
 	Date time.Time `json:"date"`
@@ -36,10 +32,10 @@ type Notification struct {
 // AssertNotificationRequired checks if the required fields are not zero-ed
 func AssertNotificationRequired(obj Notification) error {
 	elements := map[string]interface{}{
-		"id": obj.Id,
-		"date": obj.Date,
-		"type": obj.Type,
-		"title": obj.Title,
+		"id":          obj.Id,
+		"date":        obj.Date,
+		"type":        obj.Type,
+		"title":       obj.Title,
 		"description": obj.Description,
 	}
 	for name, el := range elements {

@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type Movement struct {
-
 	Amount float64 `json:"amount"`
 
 	CurrencyID string `json:"currencyID"`
@@ -28,9 +24,9 @@ type Movement struct {
 // AssertMovementRequired checks if the required fields are not zero-ed
 func AssertMovementRequired(obj Movement) error {
 	elements := map[string]interface{}{
-		"amount": obj.Amount,
+		"amount":     obj.Amount,
 		"currencyID": obj.CurrencyID,
-		"accountID": obj.AccountID,
+		"accountID":  obj.AccountID,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

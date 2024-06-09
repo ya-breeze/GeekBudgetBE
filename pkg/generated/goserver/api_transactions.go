@@ -21,7 +21,7 @@ import (
 
 // TransactionsAPIController binds http requests to an api service and writes the service results to the http response
 type TransactionsAPIController struct {
-	service TransactionsAPIServicer
+	service      TransactionsAPIServicer
 	errorHandler ErrorHandler
 }
 

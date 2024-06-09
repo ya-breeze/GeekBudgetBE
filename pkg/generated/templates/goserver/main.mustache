@@ -1,20 +1,18 @@
 {{>partial_header}}
-package main
+package {{packageName}}
 
 import (
-	"log"
+	"fmt"
 	"net/http"
-
-	{{packageName}} "{{gitHost}}/{{gitUserId}}/{{gitRepoId}}/{{sourceFolder}}"
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 )
 
-func main() {
-	log.Printf("Server started")
+func Serve(cfg *config.Config) error {
 {{#apiInfo}}{{#apis}}
-	{{classname}}Service := {{packageName}}.New{{classname}}Service()
-	{{classname}}Controller := {{packageName}}.New{{classname}}Controller({{classname}}Service)
+	{{classname}}Service := New{{classname}}Service()
+	{{classname}}Controller := New{{classname}}Controller({{classname}}Service)
 {{/apis}}{{/apiInfo}}
-	router := {{packageName}}.NewRouter({{#apiInfo}}{{#apis}}{{classname}}Controller{{^-last}}, {{/-last}}{{/apis}}{{/apiInfo}})
+	router := NewRouter({{#apiInfo}}{{#apis}}{{classname}}Controller{{^-last}}, {{/-last}}{{/apis}}{{/apiInfo}})
 
-	log.Fatal(http.ListenAndServe(":{{serverPort}}", router))
+	return http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), router)
 }

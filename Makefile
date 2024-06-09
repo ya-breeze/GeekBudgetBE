@@ -7,7 +7,7 @@ build:
 
 .PHONY: run
 run:
-	@go run cmd/main.go
+	@go run cmd/main.go server
 
 .PHONY: replace-templates
 replace-templates:
@@ -45,7 +45,7 @@ generate:
 		-g go-server \
 		-t /local/pkg/generated/templates/goserver \
 		-o /local/pkg/generated/goserver \
-		--additional-properties=packageName=goserver,featureCORS=true,hideGenerationTimestamp=true,outputAsLibrary=true
+		--additional-properties=packageName=goserver,featureCORS=true,hideGenerationTimestamp=true
 	@rm -rf \
 		pkg/generated/goserver/api \
 		pkg/generated/goserver/.openapi-generator-ignore \
@@ -53,6 +53,8 @@ generate:
 		pkg/generated/goserver/go.*
 	@mv -f pkg/generated/goserver/go/* pkg/generated/goserver
 	@rm -rf pkg/generated/goserver/go
+	@goimports -l -w ./pkg/generated/
+	@gofumpt -l -w ./pkg/generated/
 	@echo "✅ Generation complete"
 
 .PHONY: validate
@@ -62,3 +64,5 @@ validate:
 
 .PHONY: lint
 lint: validate
+	@golangci-lint run
+	@echo "✅ Lint complete"

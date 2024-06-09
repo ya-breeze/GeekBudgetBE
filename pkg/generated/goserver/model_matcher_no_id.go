@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type MatcherNoId struct {
-
 	Name string `json:"name"`
 
 	OutputDescription string `json:"outputDescription,omitempty"`

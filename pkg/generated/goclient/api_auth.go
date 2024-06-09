@@ -19,14 +19,13 @@ import (
 	"net/url"
 )
 
-
 // AuthAPIService AuthAPI service
 type AuthAPIService service
 
 type ApiAuthorizeRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *AuthAPIService
-	authData *AuthData
+	authData   *AuthData
 }
 
 func (r ApiAuthorizeRequest) AuthData(authData AuthData) ApiAuthorizeRequest {
@@ -41,24 +40,25 @@ func (r ApiAuthorizeRequest) Execute() (*Authorize200Response, *http.Response, e
 /*
 Authorize validate user/password and return token
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiAuthorizeRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiAuthorizeRequest
 */
 func (a *AuthAPIService) Authorize(ctx context.Context) ApiAuthorizeRequest {
 	return ApiAuthorizeRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Authorize200Response
+//
+//	@return Authorize200Response
 func (a *AuthAPIService) AuthorizeExecute(r ApiAuthorizeRequest) (*Authorize200Response, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Authorize200Response
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Authorize200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AuthAPIService.Authorize")

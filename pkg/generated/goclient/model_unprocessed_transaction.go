@@ -12,8 +12,8 @@ Contact: ilya.korolev@outlook.com
 package goclient
 
 import (
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -22,9 +22,9 @@ var _ MappedNullable = &UnprocessedTransaction{}
 
 // UnprocessedTransaction struct for UnprocessedTransaction
 type UnprocessedTransaction struct {
-	Transaction Transaction `json:"transaction"`
-	Matched []MatcherAndTransaction `json:"matched"`
-	Duplicates []Transaction `json:"duplicates"`
+	Transaction Transaction             `json:"transaction"`
+	Matched     []MatcherAndTransaction `json:"matched"`
+	Duplicates  []Transaction           `json:"duplicates"`
 }
 
 type _UnprocessedTransaction UnprocessedTransaction
@@ -122,7 +122,7 @@ func (o *UnprocessedTransaction) SetDuplicates(v []Transaction) {
 }
 
 func (o UnprocessedTransaction) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -152,10 +152,10 @@ func (o *UnprocessedTransaction) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -211,5 +211,3 @@ func (v *NullableUnprocessedTransaction) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

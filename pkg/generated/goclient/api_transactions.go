@@ -20,13 +20,12 @@ import (
 	"strings"
 )
 
-
 // TransactionsAPIService TransactionsAPI service
 type TransactionsAPIService service
 
 type ApiCreateTransactionRequest struct {
-	ctx context.Context
-	ApiService *TransactionsAPIService
+	ctx             context.Context
+	ApiService      *TransactionsAPIService
 	transactionNoID *TransactionNoID
 }
 
@@ -42,24 +41,25 @@ func (r ApiCreateTransactionRequest) Execute() (*Transaction, *http.Response, er
 /*
 CreateTransaction create new transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateTransactionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateTransactionRequest
 */
 func (a *TransactionsAPIService) CreateTransaction(ctx context.Context) ApiCreateTransactionRequest {
 	return ApiCreateTransactionRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Transaction
+//
+//	@return Transaction
 func (a *TransactionsAPIService) CreateTransactionExecute(r ApiCreateTransactionRequest) (*Transaction, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Transaction
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Transaction
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.CreateTransaction")
@@ -133,9 +133,9 @@ func (a *TransactionsAPIService) CreateTransactionExecute(r ApiCreateTransaction
 }
 
 type ApiDeleteTransactionRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	id string
+	id         string
 }
 
 func (r ApiDeleteTransactionRequest) Execute() (*http.Response, error) {
@@ -145,24 +145,24 @@ func (r ApiDeleteTransactionRequest) Execute() (*http.Response, error) {
 /*
 DeleteTransaction delete transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiDeleteTransactionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiDeleteTransactionRequest
 */
 func (a *TransactionsAPIService) DeleteTransaction(ctx context.Context, id string) ApiDeleteTransactionRequest {
 	return ApiDeleteTransactionRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *TransactionsAPIService) DeleteTransactionExecute(r ApiDeleteTransactionRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.DeleteTransaction")
@@ -223,9 +223,9 @@ func (a *TransactionsAPIService) DeleteTransactionExecute(r ApiDeleteTransaction
 }
 
 type ApiGetTransactionRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	id string
+	id         string
 }
 
 func (r ApiGetTransactionRequest) Execute() (*Transaction, *http.Response, error) {
@@ -235,26 +235,27 @@ func (r ApiGetTransactionRequest) Execute() (*Transaction, *http.Response, error
 /*
 GetTransaction get transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiGetTransactionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiGetTransactionRequest
 */
 func (a *TransactionsAPIService) GetTransaction(ctx context.Context, id string) ApiGetTransactionRequest {
 	return ApiGetTransactionRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return Transaction
+//
+//	@return Transaction
 func (a *TransactionsAPIService) GetTransactionExecute(r ApiGetTransactionRequest) (*Transaction, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Transaction
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Transaction
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.GetTransaction")
@@ -324,11 +325,11 @@ func (a *TransactionsAPIService) GetTransactionExecute(r ApiGetTransactionReques
 }
 
 type ApiGetTransactionsRequest struct {
-	ctx context.Context
-	ApiService *TransactionsAPIService
+	ctx         context.Context
+	ApiService  *TransactionsAPIService
 	description *string
-	amountFrom *float64
-	amountTo *float64
+	amountFrom  *float64
+	amountTo    *float64
 }
 
 // Filter by description
@@ -356,24 +357,25 @@ func (r ApiGetTransactionsRequest) Execute() ([]Transaction, *http.Response, err
 /*
 GetTransactions get all transactions which matches given filters
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetTransactionsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetTransactionsRequest
 */
 func (a *TransactionsAPIService) GetTransactions(ctx context.Context) ApiGetTransactionsRequest {
 	return ApiGetTransactionsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []Transaction
+//
+//	@return []Transaction
 func (a *TransactionsAPIService) GetTransactionsExecute(r ApiGetTransactionsRequest) ([]Transaction, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []Transaction
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []Transaction
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.GetTransactions")
@@ -451,9 +453,9 @@ func (a *TransactionsAPIService) GetTransactionsExecute(r ApiGetTransactionsRequ
 }
 
 type ApiUpdateTransactionRequest struct {
-	ctx context.Context
-	ApiService *TransactionsAPIService
-	id string
+	ctx             context.Context
+	ApiService      *TransactionsAPIService
+	id              string
 	transactionNoID *TransactionNoID
 }
 
@@ -469,26 +471,27 @@ func (r ApiUpdateTransactionRequest) Execute() (*Transaction, *http.Response, er
 /*
 UpdateTransaction update transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiUpdateTransactionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiUpdateTransactionRequest
 */
 func (a *TransactionsAPIService) UpdateTransaction(ctx context.Context, id string) ApiUpdateTransactionRequest {
 	return ApiUpdateTransactionRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return Transaction
+//
+//	@return Transaction
 func (a *TransactionsAPIService) UpdateTransactionExecute(r ApiUpdateTransactionRequest) (*Transaction, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Transaction
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Transaction
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.UpdateTransaction")

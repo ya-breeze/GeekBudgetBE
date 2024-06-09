@@ -12,8 +12,8 @@ Contact: ilya.korolev@outlook.com
 package goclient
 
 import (
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -22,16 +22,16 @@ var _ MappedNullable = &Matcher{}
 
 // Matcher struct for Matcher
 type Matcher struct {
-	Id string `json:"id"`
-	Name string `json:"name"`
-	OutputDescription *string `json:"outputDescription,omitempty"`
-	Amount *float64 `json:"amount,omitempty"`
-	CurrencyRegExp *string `json:"currencyRegExp,omitempty"`
-	PartnerNameRegExp *string `json:"partnerNameRegExp,omitempty"`
-	PartnerAccountNumber *string `json:"partnerAccountNumber,omitempty"`
-	DescriptionRegExp *string `json:"descriptionRegExp,omitempty"`
-	ExtraRegExp *string `json:"extraRegExp,omitempty"`
-	OutputMovements []Movement `json:"outputMovements,omitempty"`
+	Id                   string     `json:"id"`
+	Name                 string     `json:"name"`
+	OutputDescription    *string    `json:"outputDescription,omitempty"`
+	Amount               *float64   `json:"amount,omitempty"`
+	CurrencyRegExp       *string    `json:"currencyRegExp,omitempty"`
+	PartnerNameRegExp    *string    `json:"partnerNameRegExp,omitempty"`
+	PartnerAccountNumber *string    `json:"partnerAccountNumber,omitempty"`
+	DescriptionRegExp    *string    `json:"descriptionRegExp,omitempty"`
+	ExtraRegExp          *string    `json:"extraRegExp,omitempty"`
+	OutputMovements      []Movement `json:"outputMovements,omitempty"`
 }
 
 type _Matcher Matcher
@@ -360,7 +360,7 @@ func (o *Matcher) SetOutputMovements(v []Movement) {
 }
 
 func (o Matcher) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -412,10 +412,10 @@ func (o *Matcher) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -471,5 +471,3 @@ func (v *NullableMatcher) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

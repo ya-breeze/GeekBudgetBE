@@ -8,23 +8,17 @@ import (
 )
 
 type Config struct {
-	Verbose bool
-	Port    int
-	Users   string
-}
-
-func DefaultConfig() *Config {
-	return &Config{
-		Port: 8080,
-	}
+	Verbose bool   `mapstructure:"verbose" default:"false"`
+	Port    int    `mapstructure:"port" default:"8080"`
+	Users   string `mapstructure:"users" default:""`
 }
 
 func InitiateConfig(cfgFile string) (*Config, error) {
-	cfg := DefaultConfig()
+	cfg := Config{}
 
+	setDefaultsFromStruct(&cfg)
 	viper.SetEnvPrefix("GB")
 	viper.AutomaticEnv()
-	setDefaultsFromStruct(cfg)
 
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
@@ -34,11 +28,14 @@ func InitiateConfig(cfgFile string) (*Config, error) {
 	}
 
 	// Unmarshal the config into the Config struct
-	if err := viper.Unmarshal(cfg); err != nil {
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
+	if cfg.Verbose {
+		fmt.Printf("Config: %+v\n", cfg)
+	}
 
-	return cfg, nil
+	return &cfg, nil
 }
 
 func setDefaultsFromStruct(s interface{}) {
@@ -46,8 +43,6 @@ func setDefaultsFromStruct(s interface{}) {
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
 		defaultValue := field.Tag.Get("default")
-		if defaultValue != "" {
-			viper.SetDefault(field.Name, defaultValue)
-		}
+		viper.SetDefault(field.Name, defaultValue)
 	}
 }

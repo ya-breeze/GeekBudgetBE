@@ -11,15 +11,11 @@
 
 package goserver
 
-
 import (
 	"time"
 )
 
-
-
 type User struct {
-
 	Email string `json:"email"`
 
 	StartDate time.Time `json:"startDate"`
@@ -30,9 +26,9 @@ type User struct {
 // AssertUserRequired checks if the required fields are not zero-ed
 func AssertUserRequired(obj User) error {
 	elements := map[string]interface{}{
-		"email": obj.Email,
+		"email":     obj.Email,
 		"startDate": obj.StartDate,
-		"id": obj.Id,
+		"id":        obj.Id,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

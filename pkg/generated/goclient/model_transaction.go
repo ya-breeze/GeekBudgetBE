@@ -12,10 +12,10 @@ Contact: ilya.korolev@outlook.com
 package goclient
 
 import (
-	"encoding/json"
-	"time"
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // checks if the Transaction type satisfies the MappedNullable interface at compile time
@@ -23,13 +23,13 @@ var _ MappedNullable = &Transaction{}
 
 // Transaction struct for Transaction
 type Transaction struct {
-	Id string `json:"id"`
-	Date time.Time `json:"date"`
-	Description *string `json:"description,omitempty"`
-	Place *string `json:"place,omitempty"`
-	Tags []string `json:"tags,omitempty"`
-	PartnerName *string `json:"partnerName,omitempty"`
-	PartnerAccount *string `json:"partnerAccount,omitempty"`
+	Id             string    `json:"id"`
+	Date           time.Time `json:"date"`
+	Description    *string   `json:"description,omitempty"`
+	Place          *string   `json:"place,omitempty"`
+	Tags           []string  `json:"tags,omitempty"`
+	PartnerName    *string   `json:"partnerName,omitempty"`
+	PartnerAccount *string   `json:"partnerAccount,omitempty"`
 	// Internal bank's ID to be able to match later if necessary
 	PartnerInternalID *string `json:"partnerInternalID,omitempty"`
 	// Stores extra data about transaction. For example could hold \"variable symbol\" to distinguish payment for the same account, but with different meaning
@@ -37,8 +37,8 @@ type Transaction struct {
 	// Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis
 	UnprocessedSources *string `json:"unprocessedSources,omitempty"`
 	// IDs of unprocessed transaction - to match later
-	ExternalIDs *string `json:"externalIDs,omitempty"`
-	Movements []Movement `json:"movements"`
+	ExternalIDs *string    `json:"externalIDs,omitempty"`
+	Movements   []Movement `json:"movements"`
 }
 
 type _Transaction Transaction
@@ -424,7 +424,7 @@ func (o *Transaction) SetMovements(v []Movement) {
 }
 
 func (o Transaction) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -481,10 +481,10 @@ func (o *Transaction) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &allProperties)
 
 	if err != nil {
-		return err;
+		return err
 	}
 
-	for _, requiredProperty := range(requiredProperties) {
+	for _, requiredProperty := range requiredProperties {
 		if _, exists := allProperties[requiredProperty]; !exists {
 			return fmt.Errorf("no value given for required property %v", requiredProperty)
 		}
@@ -540,5 +540,3 @@ func (v *NullableTransaction) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

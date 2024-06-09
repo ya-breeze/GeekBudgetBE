@@ -11,15 +11,11 @@
 
 package goserver
 
-
 import (
 	"time"
 )
 
-
-
 type TransactionNoId struct {
-
 	Date time.Time `json:"date"`
 
 	Description string `json:"description,omitempty"`
@@ -50,7 +46,7 @@ type TransactionNoId struct {
 // AssertTransactionNoIdRequired checks if the required fields are not zero-ed
 func AssertTransactionNoIdRequired(obj TransactionNoId) error {
 	elements := map[string]interface{}{
-		"date": obj.Date,
+		"date":      obj.Date,
 		"movements": obj.Movements,
 	}
 	for name, el := range elements {

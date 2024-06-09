@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type UnprocessedTransaction struct {
-
 	Transaction Transaction `json:"transaction"`
 
 	Matched []MatcherAndTransaction `json:"matched"`
@@ -27,8 +23,8 @@ type UnprocessedTransaction struct {
 func AssertUnprocessedTransactionRequired(obj UnprocessedTransaction) error {
 	elements := map[string]interface{}{
 		"transaction": obj.Transaction,
-		"matched": obj.Matched,
-		"duplicates": obj.Duplicates,
+		"matched":     obj.Matched,
+		"duplicates":  obj.Duplicates,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

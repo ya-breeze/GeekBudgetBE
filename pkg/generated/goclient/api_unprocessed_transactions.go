@@ -20,14 +20,13 @@ import (
 	"strings"
 )
 
-
 // UnprocessedTransactionsAPIService UnprocessedTransactionsAPI service
 type UnprocessedTransactionsAPIService service
 
 type ApiConvertUnprocessedTransactionRequest struct {
-	ctx context.Context
-	ApiService *UnprocessedTransactionsAPIService
-	id string
+	ctx             context.Context
+	ApiService      *UnprocessedTransactionsAPIService
+	id              string
 	transactionNoID *TransactionNoID
 }
 
@@ -43,26 +42,27 @@ func (r ApiConvertUnprocessedTransactionRequest) Execute() (*Transaction, *http.
 /*
 ConvertUnprocessedTransaction convert unprocessed transactions into normal transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiConvertUnprocessedTransactionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiConvertUnprocessedTransactionRequest
 */
 func (a *UnprocessedTransactionsAPIService) ConvertUnprocessedTransaction(ctx context.Context, id string) ApiConvertUnprocessedTransactionRequest {
 	return ApiConvertUnprocessedTransactionRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return Transaction
+//
+//	@return Transaction
 func (a *UnprocessedTransactionsAPIService) ConvertUnprocessedTransactionExecute(r ApiConvertUnprocessedTransactionRequest) (*Transaction, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Transaction
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Transaction
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UnprocessedTransactionsAPIService.ConvertUnprocessedTransaction")
@@ -137,9 +137,9 @@ func (a *UnprocessedTransactionsAPIService) ConvertUnprocessedTransactionExecute
 }
 
 type ApiDeleteUnprocessedTransactionRequest struct {
-	ctx context.Context
-	ApiService *UnprocessedTransactionsAPIService
-	id string
+	ctx         context.Context
+	ApiService  *UnprocessedTransactionsAPIService
+	id          string
 	duplicateOf *string
 }
 
@@ -156,24 +156,24 @@ func (r ApiDeleteUnprocessedTransactionRequest) Execute() (*http.Response, error
 /*
 DeleteUnprocessedTransaction delete unprocessed transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id
- @return ApiDeleteUnprocessedTransactionRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiDeleteUnprocessedTransactionRequest
 */
 func (a *UnprocessedTransactionsAPIService) DeleteUnprocessedTransaction(ctx context.Context, id string) ApiDeleteUnprocessedTransactionRequest {
 	return ApiDeleteUnprocessedTransactionRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *UnprocessedTransactionsAPIService) DeleteUnprocessedTransactionExecute(r ApiDeleteUnprocessedTransactionRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UnprocessedTransactionsAPIService.DeleteUnprocessedTransaction")
@@ -237,7 +237,7 @@ func (a *UnprocessedTransactionsAPIService) DeleteUnprocessedTransactionExecute(
 }
 
 type ApiGetUnprocessedTransactionsRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *UnprocessedTransactionsAPIService
 }
 
@@ -248,24 +248,25 @@ func (r ApiGetUnprocessedTransactionsRequest) Execute() ([]UnprocessedTransactio
 /*
 GetUnprocessedTransactions get all unprocessed transactions
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetUnprocessedTransactionsRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetUnprocessedTransactionsRequest
 */
 func (a *UnprocessedTransactionsAPIService) GetUnprocessedTransactions(ctx context.Context) ApiGetUnprocessedTransactionsRequest {
 	return ApiGetUnprocessedTransactionsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return []UnprocessedTransaction
+//
+//	@return []UnprocessedTransaction
 func (a *UnprocessedTransactionsAPIService) GetUnprocessedTransactionsExecute(r ApiGetUnprocessedTransactionsRequest) ([]UnprocessedTransaction, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []UnprocessedTransaction
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []UnprocessedTransaction
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UnprocessedTransactionsAPIService.GetUnprocessedTransactions")

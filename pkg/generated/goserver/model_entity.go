@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type Entity struct {
-
 	Id string `json:"id"`
 }
 

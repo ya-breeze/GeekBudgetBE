@@ -29,7 +29,10 @@ func NewUserAdd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var username string
 			fmt.Print("Enter username: ")
-			fmt.Scanln(&username)
+			_, err := fmt.Scanln(&username)
+			if err != nil {
+				return fmt.Errorf("Error reading username: %w", err)
+			}
 
 			fmt.Print("Enter password: ")
 			password, err := gopass.GetPasswd()

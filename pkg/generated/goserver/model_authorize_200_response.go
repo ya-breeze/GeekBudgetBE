@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type Authorize200Response struct {
-
 	Token string `json:"token"`
 }
 

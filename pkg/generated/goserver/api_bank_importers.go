@@ -21,7 +21,7 @@ import (
 
 // BankImportersAPIController binds http requests to an api service and writes the service results to the http response
 type BankImportersAPIController struct {
-	service BankImportersAPIServicer
+	service      BankImportersAPIServicer
 	errorHandler ErrorHandler
 }
 

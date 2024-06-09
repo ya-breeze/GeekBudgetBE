@@ -20,7 +20,7 @@ import (
 
 // NotificationsAPIController binds http requests to an api service and writes the service results to the http response
 type NotificationsAPIController struct {
-	service NotificationsAPIServicer
+	service      NotificationsAPIServicer
 	errorHandler ErrorHandler
 }
 

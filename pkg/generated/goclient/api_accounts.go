@@ -21,13 +21,12 @@ import (
 	"time"
 )
 
-
 // AccountsAPIService AccountsAPI service
 type AccountsAPIService service
 
 type ApiCreateAccountRequest struct {
-	ctx context.Context
-	ApiService *AccountsAPIService
+	ctx         context.Context
+	ApiService  *AccountsAPIService
 	accountNoID *AccountNoID
 }
 
@@ -43,24 +42,25 @@ func (r ApiCreateAccountRequest) Execute() (*Account, *http.Response, error) {
 /*
 CreateAccount create new account
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateAccountRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateAccountRequest
 */
 func (a *AccountsAPIService) CreateAccount(ctx context.Context) ApiCreateAccountRequest {
 	return ApiCreateAccountRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return Account
+//
+//	@return Account
 func (a *AccountsAPIService) CreateAccountExecute(r ApiCreateAccountRequest) (*Account, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Account
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Account
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountsAPIService.CreateAccount")
@@ -134,9 +134,9 @@ func (a *AccountsAPIService) CreateAccountExecute(r ApiCreateAccountRequest) (*A
 }
 
 type ApiDeleteAccountRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *AccountsAPIService
-	id string
+	id         string
 }
 
 func (r ApiDeleteAccountRequest) Execute() (*http.Response, error) {
@@ -146,24 +146,24 @@ func (r ApiDeleteAccountRequest) Execute() (*http.Response, error) {
 /*
 DeleteAccount delete account
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the account
- @return ApiDeleteAccountRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the account
+	@return ApiDeleteAccountRequest
 */
 func (a *AccountsAPIService) DeleteAccount(ctx context.Context, id string) ApiDeleteAccountRequest {
 	return ApiDeleteAccountRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
 func (a *AccountsAPIService) DeleteAccountExecute(r ApiDeleteAccountRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
+		localVarHTTPMethod = http.MethodDelete
+		localVarPostBody   interface{}
+		formFiles          []formFile
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountsAPIService.DeleteAccount")
@@ -224,9 +224,9 @@ func (a *AccountsAPIService) DeleteAccountExecute(r ApiDeleteAccountRequest) (*h
 }
 
 type ApiGetAccountHistoryRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *AccountsAPIService
-	accountId string
+	accountId  string
 }
 
 func (r ApiGetAccountHistoryRequest) Execute() ([]time.Time, *http.Response, error) {
@@ -236,26 +236,27 @@ func (r ApiGetAccountHistoryRequest) Execute() ([]time.Time, *http.Response, err
 /*
 GetAccountHistory return list of dates when this account was used in some transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param accountId ID of account
- @return ApiGetAccountHistoryRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param accountId ID of account
+	@return ApiGetAccountHistoryRequest
 */
 func (a *AccountsAPIService) GetAccountHistory(ctx context.Context, accountId string) ApiGetAccountHistoryRequest {
 	return ApiGetAccountHistoryRequest{
 		ApiService: a,
-		ctx: ctx,
-		accountId: accountId,
+		ctx:        ctx,
+		accountId:  accountId,
 	}
 }
 
 // Execute executes the request
-//  @return []time.Time
+//
+//	@return []time.Time
 func (a *AccountsAPIService) GetAccountHistoryExecute(r ApiGetAccountHistoryRequest) ([]time.Time, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  []time.Time
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []time.Time
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountsAPIService.GetAccountHistory")
@@ -325,9 +326,9 @@ func (a *AccountsAPIService) GetAccountHistoryExecute(r ApiGetAccountHistoryRequ
 }
 
 type ApiUpdateAccountRequest struct {
-	ctx context.Context
-	ApiService *AccountsAPIService
-	id string
+	ctx         context.Context
+	ApiService  *AccountsAPIService
+	id          string
 	accountNoID *AccountNoID
 }
 
@@ -343,26 +344,27 @@ func (r ApiUpdateAccountRequest) Execute() (*Account, *http.Response, error) {
 /*
 UpdateAccount update account
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param id ID of the account
- @return ApiUpdateAccountRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id ID of the account
+	@return ApiUpdateAccountRequest
 */
 func (a *AccountsAPIService) UpdateAccount(ctx context.Context, id string) ApiUpdateAccountRequest {
 	return ApiUpdateAccountRequest{
 		ApiService: a,
-		ctx: ctx,
-		id: id,
+		ctx:        ctx,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return Account
+//
+//	@return Account
 func (a *AccountsAPIService) UpdateAccountExecute(r ApiUpdateAccountRequest) (*Account, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *Account
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *Account
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountsAPIService.UpdateAccount")

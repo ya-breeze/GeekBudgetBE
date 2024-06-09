@@ -11,11 +11,7 @@
 
 package goserver
 
-
-
-
 type AccountAggregation struct {
-
 	AccountID string `json:"accountID"`
 
 	Amounts []float64 `json:"amounts"`
@@ -25,7 +21,7 @@ type AccountAggregation struct {
 func AssertAccountAggregationRequired(obj AccountAggregation) error {
 	elements := map[string]interface{}{
 		"accountID": obj.AccountID,
-		"amounts": obj.Amounts,
+		"amounts":   obj.Amounts,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {
