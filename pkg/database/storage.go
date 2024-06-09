@@ -1,7 +1,7 @@
 package database
 
 import (
-	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -11,11 +11,13 @@ import (
 	"gorm.io/gorm"
 )
 
-var ErrStorageError = errors.New("storage error")
+const ErrStorageError = "storage error: %w"
 
 type Storage interface {
 	Open() error
 	Close() error
+
+	CreateUser(username, password string) error
 
 	CreateAccount(userId string, account *goserver.AccountNoId) (goserver.Account, error)
 	GetAccounts(userId string) ([]goserver.Account, error)
@@ -51,7 +53,7 @@ func (s *storage) Close() error {
 func (s *storage) GetAccounts(userId string) ([]goserver.Account, error) {
 	result, err := s.db.Model(&models.Account{}).Where("user_id = ?", userId).Rows()
 	if err != nil {
-		return nil, ErrStorageError
+		return nil, fmt.Errorf(ErrStorageError, err)
 	}
 	defer result.Close()
 
@@ -59,7 +61,7 @@ func (s *storage) GetAccounts(userId string) ([]goserver.Account, error) {
 	for result.Next() {
 		var acc models.Account
 		if err := s.db.ScanRows(result, &acc); err != nil {
-			return nil, ErrStorageError
+			return nil, fmt.Errorf(ErrStorageError, err)
 		}
 
 		accounts = append(accounts, acc.FromDb())
@@ -75,8 +77,21 @@ func (s *storage) CreateAccount(userId string, account *goserver.AccountNoId) (g
 		AccountNoId: *account,
 	}
 	if err := s.db.Create(&acc).Error; err != nil {
-		return goserver.Account{}, ErrStorageError
+		return goserver.Account{}, fmt.Errorf(ErrStorageError, err)
 	}
 
 	return acc.FromDb(), nil
+}
+
+func (s *storage) CreateUser(username, hashedPassword string) error {
+	user := models.User{
+		ID:             uuid.New(),
+		Email:          username,
+		HashedPassword: hashedPassword,
+	}
+	if err := s.db.Create(&user).Error; err != nil {
+		return fmt.Errorf(ErrStorageError, err)
+	}
+
+	return nil
 }

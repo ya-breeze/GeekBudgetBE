@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -16,6 +17,21 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	}
 
 	logger.Info(fmt.Sprintf("Starting GeekBudget at port %d...", cfg.Port))
+
+	if cfg.Users != "" {
+		users := strings.Split(cfg.Users, ",")
+		for _, user := range users {
+			tokens := strings.Split(user, ":")
+			if len(tokens) != 2 {
+				return fmt.Errorf("Invalid user format: %s", user)
+			}
+
+			if err := storage.CreateUser(tokens[0], tokens[1]); err != nil {
+				return fmt.Errorf("Failed to create user: %w", err)
+			}
+		}
+	}
+
 	return goserver.Serve(cfg)
 
 	// userId := "123e4567-e89b-12d3-a456-426614174000"

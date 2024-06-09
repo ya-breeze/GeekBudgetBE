@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/go:1-1.22-bookworm
 
 RUN apt-get update && apt-get install \
-    bash-completion
+    bash-completion \
+    sqlite3
 
 ENV USERNAME=vscode
 
