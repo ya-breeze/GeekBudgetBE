@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log/slog"
+	"context"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -10,20 +11,28 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	cfg := &config.Config{}
+	var cfgFile string
 
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:   "geekbudget",
 		Short: "GeekBudget is a personal finance manager",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			cfg, err := config.InitiateConfig(cfgFile)
+			if err != nil {
+				fmt.Printf("ERROR: %s", err)
+				os.Exit(1)
+			}
+			cmd.SetContext(context.WithValue(cmd.Context(), commands.ConfigKey, cfg))
+		},
 	}
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
 	rootCmd.AddCommand(
 		commands.CmdUser(),
-		commands.CmdServer(logger, cfg),
+		commands.CmdServer(),
 	)
 	if err := rootCmd.Execute(); err != nil {
-		logger.Error("ERROR:", "error", err)
+		fmt.Printf("ERROR: %s", err)
 		os.Exit(1)
 	}
-	return
 }
