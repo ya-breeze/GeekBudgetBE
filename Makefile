@@ -9,16 +9,28 @@ build:
 run:
 	@go run cmd/main.go
 
+.PHONY: replace-templates
+replace-templates:
+	@rm -rf pkg/generated/templates/goclient pkg/generated/templates/goserver
+	@mkdir -p pkg/generated/templates/goclient pkg/generated/templates/goserver
+	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
+		openapitools/openapi-generator-cli author template -g go \
+		-o /local/pkg/generated/templates/goclient
+	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
+		openapitools/openapi-generator-cli author template -g go-server \
+		-o /local/pkg/generated/templates/goserver
+
 .PHONY: generate
 generate:
-	@rm -rf pkg/generated
-	@mkdir -p pkg/generated
+	@rm -rf pkg/generated/goclient pkg/generated/goserver
+	@mkdir -p pkg/generated/goclient pkg/generated/goserver
 	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
 		openapitools/openapi-generator-cli generate \
 		-i /local/api/openapi.yaml \
 		-g go \
+		-t /local/pkg/generated/templates/goclient \
 		-o /local/pkg/generated/goclient \
-		--additional-properties=packageName=goclient
+		--additional-properties=packageName=goclient,withGoMod=false
 	@rm -rf \
 		pkg/generated/goclient/api \
 		pkg/generated/goclient/.gitignore \
@@ -31,8 +43,9 @@ generate:
 		openapitools/openapi-generator-cli generate \
 		-i /local/api/openapi.yaml \
 		-g go-server \
+		-t /local/pkg/generated/templates/goserver \
 		-o /local/pkg/generated/goserver \
-		--additional-properties=packageName=goserver
+		--additional-properties=packageName=goserver,featureCORS=true,hideGenerationTimestamp=true,outputAsLibrary=true
 	@rm -rf \
 		pkg/generated/goserver/api \
 		pkg/generated/goserver/.openapi-generator-ignore \
