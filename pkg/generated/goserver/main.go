@@ -12,13 +12,22 @@
 package goserver
 
 import (
+	"context"
 	"fmt"
+	"net"
 	"net/http"
+	"time"
+	"log/slog"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 )
 
-func Serve(cfg *config.Config) error {
+func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Addr, chan int, error) {
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
+	if err != nil {
+		return nil, nil, fmt.Errorf("Failed to listen: %w", err)
+	}		
+	logger.Info(fmt.Sprintf("Listening at port %d...", listener.Addr().(*net.TCPAddr).Port))
 
 	AccountsAPIService := NewAccountsAPIService()
 	AccountsAPIController := NewAccountsAPIController(AccountsAPIService)
@@ -52,5 +61,23 @@ func Serve(cfg *config.Config) error {
 
 	router := NewRouter(AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), router)
+	server := &http.Server{
+		Handler: router,
+	}
+
+	go func() {
+		server.Serve(listener)
+	}()
+
+	finishChan := make(chan int, 1)
+	go func() {
+		<-ctx.Done()
+		logger.Info("Shutting down server...")
+		timeout, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		server.Shutdown(timeout)
+		finishChan <- 1
+		logger.Info("Server stopped")
+	}()
+
+	return listener.Addr(), finishChan, nil
 }

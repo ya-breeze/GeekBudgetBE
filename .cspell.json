@@ -1,13 +1,17 @@
 {
     "version": "0.2",
     "allowCompoundWords": true,
+    "minWordLength": 2,
     "words": [
+        "ctx",
         "devcontainers",
         "geekbudgetbe",
         "goclient",
         "gofumpt",
+        "gomega",
         "gorm",
         "goserver",
+        "onsi",
         "Sprintf"
     ]
 }

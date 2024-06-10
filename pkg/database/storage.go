@@ -17,7 +17,9 @@ type Storage interface {
 	Open() error
 	Close() error
 
+	GetUser(username string) (*models.User, error)
 	CreateUser(username, password string) error
+	PutUser(user *models.User) error
 
 	CreateAccount(userId string, account *goserver.AccountNoId) (goserver.Account, error)
 	GetAccounts(userId string) ([]goserver.Account, error)
@@ -85,11 +87,31 @@ func (s *storage) CreateAccount(userId string, account *goserver.AccountNoId) (g
 
 func (s *storage) CreateUser(username, hashedPassword string) error {
 	user := models.User{
-		ID:             uuid.New(),
-		Email:          username,
+		Login:          username,
 		HashedPassword: hashedPassword,
 	}
 	if err := s.db.Create(&user).Error; err != nil {
+		return fmt.Errorf(ErrStorageError, err)
+	}
+
+	return nil
+}
+
+func (s *storage) GetUser(username string) (*models.User, error) {
+	var user models.User
+	if err := s.db.Where("login = ?", username).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf(ErrStorageError, err)
+	}
+
+	return &user, nil
+}
+
+func (s *storage) PutUser(user *models.User) error {
+	if err := s.db.Save(user).Error; err != nil {
 		return fmt.Errorf(ErrStorageError, err)
 	}
 
