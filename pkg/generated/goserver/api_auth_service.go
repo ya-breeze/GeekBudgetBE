@@ -13,8 +13,6 @@ package goserver
 
 import (
 	"context"
-	"errors"
-	"net/http"
 )
 
 // AuthAPIService is a service that implements the logic for the AuthAPIServicer
@@ -30,14 +28,8 @@ func NewAuthAPIService() *AuthAPIService {
 
 // Authorize - validate user/password and return token
 func (s *AuthAPIService) Authorize(ctx context.Context, authData AuthData) (ImplResponse, error) {
-	// TODO - update Authorize with the required logic for this service method.
-	// Add api_auth_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, Authorize200Response{}) or use other options such as http.Ok ...
-	// return Response(200, Authorize200Response{}), nil
+	return Response(200, Authorize200Response{Token: "stub"}), nil
 
 	// TODO: Uncomment the next line to return response Response(401, {}) or use other options such as http.Ok ...
 	// return Response(401, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("Authorize method not implemented")
 }

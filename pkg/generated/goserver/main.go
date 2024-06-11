@@ -14,10 +14,10 @@ package goserver
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"time"
-	"log/slog"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 )
@@ -26,7 +26,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to listen: %w", err)
-	}		
+	}
 	logger.Info(fmt.Sprintf("Listening at port %d...", listener.Addr().(*net.TCPAddr).Port))
 
 	AccountsAPIService := NewAccountsAPIService()

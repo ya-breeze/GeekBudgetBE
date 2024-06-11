@@ -65,4 +65,10 @@ validate:
 .PHONY: lint
 lint: validate
 	@golangci-lint run
+	@gofumpt -l -d .
 	@echo "✅ Lint complete"
+
+.PHONY: test
+test:
+	@ginkgo -r
+	@echo "✅ Tests complete"
