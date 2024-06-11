@@ -17,19 +17,31 @@ import (
 	"net/http"
 )
 
+// AccountsAPIService is an interface that defines the logic for the AccountsAPIServicer
+type AccountsAPIService interface {
+	// CreateAccount - create new account
+	CreateAccount(ctx context.Context, accountNoId AccountNoId) (ImplResponse, error)
+	// DeleteAccount - delete account
+	DeleteAccount(ctx context.Context, id string) (ImplResponse, error)
+	// GetAccountHistory - return list of dates when this account was used in some transaction
+	GetAccountHistory(ctx context.Context, accountId string) (ImplResponse, error)
+	// UpdateAccount - update account
+	UpdateAccount(ctx context.Context, id string, accountNoId AccountNoId) (ImplResponse, error)
+}
+
 // AccountsAPIService is a service that implements the logic for the AccountsAPIServicer
 // This service should implement the business logic for every endpoint for the AccountsAPI API.
 // Include any external packages or services that will be required by this service.
-type AccountsAPIService struct {
+type AccountsAPIServiceImpl struct {
 }
 
 // NewAccountsAPIService creates a default api service
-func NewAccountsAPIService() *AccountsAPIService {
-	return &AccountsAPIService{}
+func NewAccountsAPIService() AccountsAPIService {
+	return &AccountsAPIServiceImpl{}
 }
 
 // CreateAccount - create new account
-func (s *AccountsAPIService) CreateAccount(ctx context.Context, accountNoId AccountNoId) (ImplResponse, error) {
+func (s *AccountsAPIServiceImpl) CreateAccount(ctx context.Context, accountNoId AccountNoId) (ImplResponse, error) {
 	// TODO - update CreateAccount with the required logic for this service method.
 	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -40,7 +52,7 @@ func (s *AccountsAPIService) CreateAccount(ctx context.Context, accountNoId Acco
 }
 
 // DeleteAccount - delete account
-func (s *AccountsAPIService) DeleteAccount(ctx context.Context, id string) (ImplResponse, error) {
+func (s *AccountsAPIServiceImpl) DeleteAccount(ctx context.Context, id string) (ImplResponse, error) {
 	// TODO - update DeleteAccount with the required logic for this service method.
 	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -51,7 +63,7 @@ func (s *AccountsAPIService) DeleteAccount(ctx context.Context, id string) (Impl
 }
 
 // GetAccountHistory - return list of dates when this account was used in some transaction
-func (s *AccountsAPIService) GetAccountHistory(ctx context.Context, accountId string) (ImplResponse, error) {
+func (s *AccountsAPIServiceImpl) GetAccountHistory(ctx context.Context, accountId string) (ImplResponse, error) {
 	// TODO - update GetAccountHistory with the required logic for this service method.
 	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -62,7 +74,7 @@ func (s *AccountsAPIService) GetAccountHistory(ctx context.Context, accountId st
 }
 
 // UpdateAccount - update account
-func (s *AccountsAPIService) UpdateAccount(ctx context.Context, id string, accountNoId AccountNoId) (ImplResponse, error) {
+func (s *AccountsAPIServiceImpl) UpdateAccount(ctx context.Context, id string, accountNoId AccountNoId) (ImplResponse, error) {
 	// TODO - update UpdateAccount with the required logic for this service method.
 	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

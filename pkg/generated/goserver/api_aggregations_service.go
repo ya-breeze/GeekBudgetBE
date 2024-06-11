@@ -18,19 +18,29 @@ import (
 	"time"
 )
 
+// AggregationsAPIService is an interface that defines the logic for the AggregationsAPIServicer
+type AggregationsAPIService interface {
+	// GetBalances - get balance for filtered transactions
+	GetBalances(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error)
+	// GetExpenses - get expenses for filtered transactions
+	GetExpenses(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error)
+	// GetIncomes - get incomes for filtered transactions
+	GetIncomes(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error)
+}
+
 // AggregationsAPIService is a service that implements the logic for the AggregationsAPIServicer
 // This service should implement the business logic for every endpoint for the AggregationsAPI API.
 // Include any external packages or services that will be required by this service.
-type AggregationsAPIService struct {
+type AggregationsAPIServiceImpl struct {
 }
 
 // NewAggregationsAPIService creates a default api service
-func NewAggregationsAPIService() *AggregationsAPIService {
-	return &AggregationsAPIService{}
+func NewAggregationsAPIService() AggregationsAPIService {
+	return &AggregationsAPIServiceImpl{}
 }
 
 // GetBalances - get balance for filtered transactions
-func (s *AggregationsAPIService) GetBalances(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error) {
+func (s *AggregationsAPIServiceImpl) GetBalances(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error) {
 	// TODO - update GetBalances with the required logic for this service method.
 	// Add api_aggregations_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -41,7 +51,7 @@ func (s *AggregationsAPIService) GetBalances(ctx context.Context, from time.Time
 }
 
 // GetExpenses - get expenses for filtered transactions
-func (s *AggregationsAPIService) GetExpenses(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error) {
+func (s *AggregationsAPIServiceImpl) GetExpenses(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error) {
 	// TODO - update GetExpenses with the required logic for this service method.
 	// Add api_aggregations_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -52,7 +62,7 @@ func (s *AggregationsAPIService) GetExpenses(ctx context.Context, from time.Time
 }
 
 // GetIncomes - get incomes for filtered transactions
-func (s *AggregationsAPIService) GetIncomes(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error) {
+func (s *AggregationsAPIServiceImpl) GetIncomes(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string) (ImplResponse, error) {
 	// TODO - update GetIncomes with the required logic for this service method.
 	// Add api_aggregations_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

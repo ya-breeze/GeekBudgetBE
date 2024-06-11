@@ -17,19 +17,27 @@ import (
 	"net/http"
 )
 
+// NotificationsAPIService is an interface that defines the logic for the NotificationsAPIServicer
+type NotificationsAPIService interface {
+	// DeleteNotification - delete notification
+	DeleteNotification(ctx context.Context, id string) (ImplResponse, error)
+	// GetNotifications - return all notifications
+	GetNotifications(ctx context.Context) (ImplResponse, error)
+}
+
 // NotificationsAPIService is a service that implements the logic for the NotificationsAPIServicer
 // This service should implement the business logic for every endpoint for the NotificationsAPI API.
 // Include any external packages or services that will be required by this service.
-type NotificationsAPIService struct {
+type NotificationsAPIServiceImpl struct {
 }
 
 // NewNotificationsAPIService creates a default api service
-func NewNotificationsAPIService() *NotificationsAPIService {
-	return &NotificationsAPIService{}
+func NewNotificationsAPIService() NotificationsAPIService {
+	return &NotificationsAPIServiceImpl{}
 }
 
 // DeleteNotification - delete notification
-func (s *NotificationsAPIService) DeleteNotification(ctx context.Context, id string) (ImplResponse, error) {
+func (s *NotificationsAPIServiceImpl) DeleteNotification(ctx context.Context, id string) (ImplResponse, error) {
 	// TODO - update DeleteNotification with the required logic for this service method.
 	// Add api_notifications_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -40,7 +48,7 @@ func (s *NotificationsAPIService) DeleteNotification(ctx context.Context, id str
 }
 
 // GetNotifications - return all notifications
-func (s *NotificationsAPIService) GetNotifications(ctx context.Context) (ImplResponse, error) {
+func (s *NotificationsAPIServiceImpl) GetNotifications(ctx context.Context) (ImplResponse, error) {
 	// TODO - update GetNotifications with the required logic for this service method.
 	// Add api_notifications_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

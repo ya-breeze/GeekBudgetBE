@@ -12,7 +12,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
-	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server"
 )
 
 const (
@@ -21,7 +21,8 @@ const (
 )
 
 var _ = Describe("GB", func() {
-	ctx, cancel := context.WithCancel(context.Background())
+	var ctx context.Context
+	var cancel context.CancelFunc
 	var logger *slog.Logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	var cfg *config.Config
 	var addr net.Addr
@@ -29,6 +30,7 @@ var _ = Describe("GB", func() {
 	var client *goclient.APIClient
 
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		hashed, err := auth.HashPassword([]byte(Pass1))
 		if err != nil {
 			panic("Error hashing password")
@@ -39,7 +41,7 @@ var _ = Describe("GB", func() {
 			Users: User1 + ":" + base64.StdEncoding.EncodeToString(hashed),
 		}
 
-		addr, finishCham, err = goserver.Serve(ctx, logger, cfg)
+		addr, finishCham, err = server.Serve(ctx, logger, cfg)
 		Expect(err).To(BeNil())
 
 		clientCfg := goclient.NewConfiguration()
@@ -47,7 +49,12 @@ var _ = Describe("GB", func() {
 		client = goclient.NewAPIClient(clientCfg)
 	})
 
-	It("client can authenticate", func() {
+	AfterEach(func() {
+		cancel()
+		<-finishCham
+	})
+
+	It("authenticates client with valid credentials", func() {
 		req := client.AuthAPI.Authorize(ctx).AuthData(goclient.AuthData{
 			Email:    User1,
 			Password: Pass1,
@@ -60,8 +67,15 @@ var _ = Describe("GB", func() {
 		Expect(resp.Token).ToNot(BeEmpty())
 	})
 
-	AfterEach(func() {
-		cancel()
-		<-finishCham
+	It("does not authenticate client with invalid credentials", func() {
+		req := client.AuthAPI.Authorize(ctx).AuthData(goclient.AuthData{
+			Email:    User1,
+			Password: "wrongpassword",
+		})
+		resp, httpResp, err := req.Execute()
+		Expect(err).ToNot(BeNil())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(401))
+		Expect(resp).To(BeNil())
 	})
 })

@@ -5,6 +5,8 @@
     "words": [
         "ctx",
         "devcontainers",
+        "Errorf",
+        "fmt",
         "geekbudgetbe",
         "goclient",
         "gofumpt",
@@ -12,6 +14,7 @@
         "gorm",
         "goserver",
         "onsi",
-        "Sprintf"
+        "Sprintf",
+        "struct"
     ]
 }

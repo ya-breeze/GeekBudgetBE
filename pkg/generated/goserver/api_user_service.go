@@ -17,19 +17,25 @@ import (
 	"net/http"
 )
 
+// UserAPIService is an interface that defines the logic for the UserAPIServicer
+type UserAPIService interface {
+	// GetUser - return user object
+	GetUser(ctx context.Context) (ImplResponse, error)
+}
+
 // UserAPIService is a service that implements the logic for the UserAPIServicer
 // This service should implement the business logic for every endpoint for the UserAPI API.
 // Include any external packages or services that will be required by this service.
-type UserAPIService struct {
+type UserAPIServiceImpl struct {
 }
 
 // NewUserAPIService creates a default api service
-func NewUserAPIService() *UserAPIService {
-	return &UserAPIService{}
+func NewUserAPIService() UserAPIService {
+	return &UserAPIServiceImpl{}
 }
 
 // GetUser - return user object
-func (s *UserAPIService) GetUser(ctx context.Context) (ImplResponse, error) {
+func (s *UserAPIServiceImpl) GetUser(ctx context.Context) (ImplResponse, error) {
 	// TODO - update GetUser with the required logic for this service method.
 	// Add api_user_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

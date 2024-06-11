@@ -17,19 +17,31 @@ import (
 	"net/http"
 )
 
+// CurrenciesAPIService is an interface that defines the logic for the CurrenciesAPIServicer
+type CurrenciesAPIService interface {
+	// CreateCurrency - create new currency
+	CreateCurrency(ctx context.Context, currencyNoId CurrencyNoId) (ImplResponse, error)
+	// DeleteCurrency - delete currency
+	DeleteCurrency(ctx context.Context, id string) (ImplResponse, error)
+	// GetCurrencies - get all currencies
+	GetCurrencies(ctx context.Context) (ImplResponse, error)
+	// UpdateCurrency - update currency
+	UpdateCurrency(ctx context.Context, id string, currencyNoId CurrencyNoId) (ImplResponse, error)
+}
+
 // CurrenciesAPIService is a service that implements the logic for the CurrenciesAPIServicer
 // This service should implement the business logic for every endpoint for the CurrenciesAPI API.
 // Include any external packages or services that will be required by this service.
-type CurrenciesAPIService struct {
+type CurrenciesAPIServiceImpl struct {
 }
 
 // NewCurrenciesAPIService creates a default api service
-func NewCurrenciesAPIService() *CurrenciesAPIService {
-	return &CurrenciesAPIService{}
+func NewCurrenciesAPIService() CurrenciesAPIService {
+	return &CurrenciesAPIServiceImpl{}
 }
 
 // CreateCurrency - create new currency
-func (s *CurrenciesAPIService) CreateCurrency(ctx context.Context, currencyNoId CurrencyNoId) (ImplResponse, error) {
+func (s *CurrenciesAPIServiceImpl) CreateCurrency(ctx context.Context, currencyNoId CurrencyNoId) (ImplResponse, error) {
 	// TODO - update CreateCurrency with the required logic for this service method.
 	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -40,7 +52,7 @@ func (s *CurrenciesAPIService) CreateCurrency(ctx context.Context, currencyNoId 
 }
 
 // DeleteCurrency - delete currency
-func (s *CurrenciesAPIService) DeleteCurrency(ctx context.Context, id string) (ImplResponse, error) {
+func (s *CurrenciesAPIServiceImpl) DeleteCurrency(ctx context.Context, id string) (ImplResponse, error) {
 	// TODO - update DeleteCurrency with the required logic for this service method.
 	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -51,7 +63,7 @@ func (s *CurrenciesAPIService) DeleteCurrency(ctx context.Context, id string) (I
 }
 
 // GetCurrencies - get all currencies
-func (s *CurrenciesAPIService) GetCurrencies(ctx context.Context) (ImplResponse, error) {
+func (s *CurrenciesAPIServiceImpl) GetCurrencies(ctx context.Context) (ImplResponse, error) {
 	// TODO - update GetCurrencies with the required logic for this service method.
 	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -62,7 +74,7 @@ func (s *CurrenciesAPIService) GetCurrencies(ctx context.Context) (ImplResponse,
 }
 
 // UpdateCurrency - update currency
-func (s *CurrenciesAPIService) UpdateCurrency(ctx context.Context, id string, currencyNoId CurrencyNoId) (ImplResponse, error) {
+func (s *CurrenciesAPIServiceImpl) UpdateCurrency(ctx context.Context, id string, currencyNoId CurrencyNoId) (ImplResponse, error) {
 	// TODO - update UpdateCurrency with the required logic for this service method.
 	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

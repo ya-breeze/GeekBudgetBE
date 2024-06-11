@@ -8,22 +8,34 @@ import (
 	"{{import}}"{{/imports}}
 )
 
+// {{classname}}Service is an interface that defines the logic for the {{classname}}Servicer
+type {{classname}}Service interface { {{#operations}}
+{{#operation}}
+// {{nickname}} - {{summary}}
+{{#isDeprecated}}
+// Deprecated
+{{/isDeprecated}}
+	{{nickname}}(ctx context.Context{{#allParams}}, {{paramName}} {{#isNullable}}*{{/isNullable}}{{dataType}}{{/allParams}}) (ImplResponse, error)
+{{/operation}}
+{{/operations}}
+}
+
 // {{classname}}Service is a service that implements the logic for the {{classname}}Servicer
 // This service should implement the business logic for every endpoint for the {{classname}} API.
 // Include any external packages or services that will be required by this service.
-type {{classname}}Service struct {
+type {{classname}}ServiceImpl struct {
 }
 
 // New{{classname}}Service creates a default api service
-func New{{classname}}Service() *{{classname}}Service {
-	return &{{classname}}Service{}
+func New{{classname}}Service() {{classname}}Service {
+	return &{{classname}}ServiceImpl{}
 }{{#operations}}{{#operation}}
 
 // {{nickname}} - {{summary}}
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func (s *{{classname}}Service) {{nickname}}(ctx context.Context{{#allParams}}, {{paramName}} {{#isNullable}}*{{/isNullable}}{{dataType}}{{/allParams}}) (ImplResponse, error) {
+func (s *{{classname}}ServiceImpl) {{nickname}}(ctx context.Context{{#allParams}}, {{paramName}} {{#isNullable}}*{{/isNullable}}{{dataType}}{{/allParams}}) (ImplResponse, error) {
 	// TODO - update {{nickname}} with the required logic for this service method.
 	// Add {{classFilename}}_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -15,44 +16,9 @@ import (
 )
 
 func Server(logger *slog.Logger, cfg *config.Config) error {
-	storage := database.NewStorage(logger, cfg)
-	if err := storage.Open(); err != nil {
-		return fmt.Errorf("Failed to open storage: %w", err)
-	}
-
-	logger.Info("Starting GeekBudget server...")
-
-	if cfg.Users != "" {
-		logger.Info("Creating users...")
-		users := strings.Split(cfg.Users, ",")
-		for _, user := range users {
-			tokens := strings.Split(user, ":")
-			if len(tokens) != 2 {
-				return fmt.Errorf("Invalid user format: %s", user)
-			}
-
-			user, err := storage.GetUser(tokens[0])
-			if err != nil {
-				return fmt.Errorf("Failed to reading user from DB: %w", err)
-			}
-			if user != nil {
-				logger.Info(fmt.Sprintf("Updating password for user %q", tokens[0]))
-				user.HashedPassword = tokens[1]
-				if err := storage.PutUser(user); err != nil {
-					return fmt.Errorf("Failed to update user: %w", err)
-				}
-			} else {
-				logger.Info(fmt.Sprintf("Creating user %q", tokens[0]))
-				if err := storage.CreateUser(tokens[0], tokens[1]); err != nil {
-					return fmt.Errorf("Failed to create user: %w", err)
-				}
-			}
-		}
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, finishCham, err := goserver.Serve(ctx, logger, cfg)
+	_, finishCham, err := Serve(ctx, logger, cfg)
 	if err != nil {
 		return fmt.Errorf("Failed to serve: %w", err)
 	}
@@ -93,4 +59,49 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// logger.Info("GeekBudget stopped")
 
 	// return nil
+}
+
+func createControllers(logger *slog.Logger, _ *config.Config, db database.Storage) goserver.CustomControllers {
+	return goserver.CustomControllers{
+		AuthAPIService: NewAuthAPIService(logger, db),
+	}
+}
+
+func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (addr net.Addr, finishCham chan int, err error) {
+	storage := database.NewStorage(logger, cfg)
+	if err := storage.Open(); err != nil {
+		return nil, nil, fmt.Errorf("Failed to open storage: %w", err)
+	}
+
+	logger.Info("Starting GeekBudget server...")
+
+	if cfg.Users != "" {
+		logger.Info("Creating users...")
+		users := strings.Split(cfg.Users, ",")
+		for _, user := range users {
+			tokens := strings.Split(user, ":")
+			if len(tokens) != 2 {
+				return nil, nil, fmt.Errorf("Invalid user format: %s", user)
+			}
+
+			user, err := storage.GetUser(tokens[0])
+			if err != nil {
+				return nil, nil, fmt.Errorf("Failed to reading user from DB: %w", err)
+			}
+			if user != nil {
+				logger.Info(fmt.Sprintf("Updating password for user %q", tokens[0]))
+				user.HashedPassword = tokens[1]
+				if err := storage.PutUser(user); err != nil {
+					return nil, nil, fmt.Errorf("Failed to update user: %w", err)
+				}
+			} else {
+				logger.Info(fmt.Sprintf("Creating user %q", tokens[0]))
+				if err := storage.CreateUser(tokens[0], tokens[1]); err != nil {
+					return nil, nil, fmt.Errorf("Failed to create user: %w", err)
+				}
+			}
+		}
+	}
+
+	return goserver.Serve(ctx, logger, cfg, createControllers(logger, cfg, storage))
 }

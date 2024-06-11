@@ -17,19 +17,31 @@ import (
 	"net/http"
 )
 
+// BankImportersAPIService is an interface that defines the logic for the BankImportersAPIServicer
+type BankImportersAPIService interface {
+	// CreateBankImporter - create new bank importer
+	CreateBankImporter(ctx context.Context, bankImporterNoId BankImporterNoId) (ImplResponse, error)
+	// DeleteBankImporter - delete bank importer
+	DeleteBankImporter(ctx context.Context, id string) (ImplResponse, error)
+	// GetBankImporters - get all bank importers
+	GetBankImporters(ctx context.Context) (ImplResponse, error)
+	// UpdateBankImporter - update bank importer
+	UpdateBankImporter(ctx context.Context, id string, bankImporterNoId BankImporterNoId) (ImplResponse, error)
+}
+
 // BankImportersAPIService is a service that implements the logic for the BankImportersAPIServicer
 // This service should implement the business logic for every endpoint for the BankImportersAPI API.
 // Include any external packages or services that will be required by this service.
-type BankImportersAPIService struct {
+type BankImportersAPIServiceImpl struct {
 }
 
 // NewBankImportersAPIService creates a default api service
-func NewBankImportersAPIService() *BankImportersAPIService {
-	return &BankImportersAPIService{}
+func NewBankImportersAPIService() BankImportersAPIService {
+	return &BankImportersAPIServiceImpl{}
 }
 
 // CreateBankImporter - create new bank importer
-func (s *BankImportersAPIService) CreateBankImporter(ctx context.Context, bankImporterNoId BankImporterNoId) (ImplResponse, error) {
+func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, bankImporterNoId BankImporterNoId) (ImplResponse, error) {
 	// TODO - update CreateBankImporter with the required logic for this service method.
 	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -40,7 +52,7 @@ func (s *BankImportersAPIService) CreateBankImporter(ctx context.Context, bankIm
 }
 
 // DeleteBankImporter - delete bank importer
-func (s *BankImportersAPIService) DeleteBankImporter(ctx context.Context, id string) (ImplResponse, error) {
+func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id string) (ImplResponse, error) {
 	// TODO - update DeleteBankImporter with the required logic for this service method.
 	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -51,7 +63,7 @@ func (s *BankImportersAPIService) DeleteBankImporter(ctx context.Context, id str
 }
 
 // GetBankImporters - get all bank importers
-func (s *BankImportersAPIService) GetBankImporters(ctx context.Context) (ImplResponse, error) {
+func (s *BankImportersAPIServiceImpl) GetBankImporters(ctx context.Context) (ImplResponse, error) {
 	// TODO - update GetBankImporters with the required logic for this service method.
 	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -62,7 +74,7 @@ func (s *BankImportersAPIService) GetBankImporters(ctx context.Context) (ImplRes
 }
 
 // UpdateBankImporter - update bank importer
-func (s *BankImportersAPIService) UpdateBankImporter(ctx context.Context, id string, bankImporterNoId BankImporterNoId) (ImplResponse, error) {
+func (s *BankImportersAPIServiceImpl) UpdateBankImporter(ctx context.Context, id string, bankImporterNoId BankImporterNoId) (ImplResponse, error) {
 	// TODO - update UpdateBankImporter with the required logic for this service method.
 	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

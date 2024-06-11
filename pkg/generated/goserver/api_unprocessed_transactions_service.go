@@ -17,19 +17,29 @@ import (
 	"net/http"
 )
 
+// UnprocessedTransactionsAPIService is an interface that defines the logic for the UnprocessedTransactionsAPIServicer
+type UnprocessedTransactionsAPIService interface {
+	// ConvertUnprocessedTransaction - convert unprocessed transactions into normal transaction
+	ConvertUnprocessedTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error)
+	// DeleteUnprocessedTransaction - delete unprocessed transaction
+	DeleteUnprocessedTransaction(ctx context.Context, id string, duplicateOf string) (ImplResponse, error)
+	// GetUnprocessedTransactions - get all unprocessed transactions
+	GetUnprocessedTransactions(ctx context.Context) (ImplResponse, error)
+}
+
 // UnprocessedTransactionsAPIService is a service that implements the logic for the UnprocessedTransactionsAPIServicer
 // This service should implement the business logic for every endpoint for the UnprocessedTransactionsAPI API.
 // Include any external packages or services that will be required by this service.
-type UnprocessedTransactionsAPIService struct {
+type UnprocessedTransactionsAPIServiceImpl struct {
 }
 
 // NewUnprocessedTransactionsAPIService creates a default api service
-func NewUnprocessedTransactionsAPIService() *UnprocessedTransactionsAPIService {
-	return &UnprocessedTransactionsAPIService{}
+func NewUnprocessedTransactionsAPIService() UnprocessedTransactionsAPIService {
+	return &UnprocessedTransactionsAPIServiceImpl{}
 }
 
 // ConvertUnprocessedTransaction - convert unprocessed transactions into normal transaction
-func (s *UnprocessedTransactionsAPIService) ConvertUnprocessedTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error) {
+func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error) {
 	// TODO - update ConvertUnprocessedTransaction with the required logic for this service method.
 	// Add api_unprocessed_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -40,7 +50,7 @@ func (s *UnprocessedTransactionsAPIService) ConvertUnprocessedTransaction(ctx co
 }
 
 // DeleteUnprocessedTransaction - delete unprocessed transaction
-func (s *UnprocessedTransactionsAPIService) DeleteUnprocessedTransaction(ctx context.Context, id string, duplicateOf string) (ImplResponse, error) {
+func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(ctx context.Context, id string, duplicateOf string) (ImplResponse, error) {
 	// TODO - update DeleteUnprocessedTransaction with the required logic for this service method.
 	// Add api_unprocessed_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -51,7 +61,7 @@ func (s *UnprocessedTransactionsAPIService) DeleteUnprocessedTransaction(ctx con
 }
 
 // GetUnprocessedTransactions - get all unprocessed transactions
-func (s *UnprocessedTransactionsAPIService) GetUnprocessedTransactions(ctx context.Context) (ImplResponse, error) {
+func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(ctx context.Context) (ImplResponse, error) {
 	// TODO - update GetUnprocessedTransactions with the required logic for this service method.
 	// Add api_unprocessed_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
