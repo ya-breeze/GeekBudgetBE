@@ -55,7 +55,7 @@ Other parameters are passed through a pointer to a apiGetUserRequest struct via 
 
 ### Authorization
 
-[bearerAuth](../README.md#bearerAuth)
+[BearerAuth](../README.md#BearerAuth)
 
 ### HTTP request headers
 

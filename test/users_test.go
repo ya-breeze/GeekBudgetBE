@@ -78,4 +78,22 @@ var _ = Describe("GB", func() {
 		Expect(httpResp.StatusCode).To(Equal(401))
 		Expect(resp).To(BeNil())
 	})
+
+	It("returns known user object", func() {
+		req := client.AuthAPI.Authorize(ctx).AuthData(goclient.AuthData{
+			Email:    User1,
+			Password: Pass1,
+		})
+		resp, _, err := req.Execute()
+		Expect(err).ToNot(HaveOccurred())
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, resp.Token)
+
+		reqUser := client.UserAPI.GetUser(ctx)
+		user, httpResp, err := reqUser.Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+		Expect(user).ToNot(BeNil())
+		Expect(user.Email).To(Equal(User1))
+	})
 })

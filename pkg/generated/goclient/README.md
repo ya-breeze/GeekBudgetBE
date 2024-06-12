@@ -143,7 +143,7 @@ Class | Method | HTTP request | Description
 
 
 Authentication schemes defined for the API:
-### bearerAuth
+### BearerAuth
 
 - **Type**: HTTP Bearer token authentication
 

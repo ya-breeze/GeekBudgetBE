@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
+
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 )
 
@@ -35,7 +37,8 @@ type CustomControllers struct {
 	UserAPIService                    UserAPIService
 }
 
-func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config, controllers CustomControllers) (net.Addr, chan int, error) {
+func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
+	controllers CustomControllers, middlewares ...mux.MiddlewareFunc) (net.Addr, chan int, error) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to listen: %w", err)
@@ -103,6 +106,8 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config, control
 	UserAPIController := NewUserAPIController(UserAPIService)
 
 	router := NewRouter(AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+
+	router.Use(middlewares...)
 
 	server := &http.Server{
 		Handler: router,

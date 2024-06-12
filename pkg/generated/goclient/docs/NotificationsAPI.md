@@ -63,7 +63,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearerAuth](../README.md#bearerAuth)
+[BearerAuth](../README.md#BearerAuth)
 
 ### HTTP request headers
 
@@ -122,7 +122,7 @@ Other parameters are passed through a pointer to a apiGetNotificationsRequest st
 
 ### Authorization
 
-[bearerAuth](../README.md#bearerAuth)
+[BearerAuth](../README.md#BearerAuth)
 
 ### HTTP request headers
 

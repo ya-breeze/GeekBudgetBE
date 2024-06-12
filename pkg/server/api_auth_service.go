@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"log/slog"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
@@ -24,7 +25,7 @@ func NewAuthAPIService(logger *slog.Logger, db database.Storage) goserver.AuthAP
 
 func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData) (goserver.ImplResponse, error) {
 	user, err := s.db.GetUser(authData.Email)
-	if err != nil {
+	if err != nil && !errors.Is(err, database.ErrNotFound) {
 		return goserver.Response(500, nil), nil // TODO internal error
 	}
 	if user == nil {

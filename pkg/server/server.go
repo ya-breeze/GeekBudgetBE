@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -65,6 +66,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 func createControllers(logger *slog.Logger, _ *config.Config, db database.Storage) goserver.CustomControllers {
 	return goserver.CustomControllers{
 		AuthAPIService: NewAuthAPIService(logger, db),
+		UserAPIService: NewUserAPIService(logger, db),
 	}
 }
 
@@ -104,5 +106,12 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 		}
 	}
 
-	return goserver.Serve(ctx, logger, cfg, createControllers(logger, cfg, storage))
+	return goserver.Serve(ctx, logger, cfg, createControllers(logger, cfg, storage),
+		createMiddlewares(logger, cfg, storage)...)
+}
+
+func createMiddlewares(logger *slog.Logger, cfg *config.Config, db database.Storage) []mux.MiddlewareFunc {
+	return []mux.MiddlewareFunc{
+		AuthMiddleware(logger, cfg, db),
+	}
 }
