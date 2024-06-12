@@ -1,4 +1,4 @@
-package test
+package test_test
 
 import (
 	"context"
@@ -23,11 +23,11 @@ const (
 var _ = Describe("GB", func() {
 	var ctx context.Context
 	var cancel context.CancelFunc
-	var logger *slog.Logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	var cfg *config.Config
 	var addr net.Addr
 	var finishCham chan int
 	var client *goclient.APIClient
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	BeforeEach(func() {
 		ctx, cancel = context.WithCancel(context.Background())
@@ -42,7 +42,7 @@ var _ = Describe("GB", func() {
 		}
 
 		addr, finishCham, err = server.Serve(ctx, logger, cfg)
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 
 		clientCfg := goclient.NewConfiguration()
 		clientCfg.Servers[0].URL = "http://" + addr.String()
@@ -60,7 +60,7 @@ var _ = Describe("GB", func() {
 			Password: Pass1,
 		})
 		resp, httpResp, err := req.Execute()
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(httpResp).ToNot(BeNil())
 		Expect(httpResp.StatusCode).To(Equal(200))
 		Expect(resp).ToNot(BeNil())
@@ -73,7 +73,7 @@ var _ = Describe("GB", func() {
 			Password: "wrongpassword",
 		})
 		resp, httpResp, err := req.Execute()
-		Expect(err).ToNot(BeNil())
+		Expect(err).To(HaveOccurred())
 		Expect(httpResp).ToNot(BeNil())
 		Expect(httpResp.StatusCode).To(Equal(401))
 		Expect(resp).To(BeNil())

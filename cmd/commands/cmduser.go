@@ -1,3 +1,4 @@
+//nolint:forbidigo // it's okay to use fmt in this file
 package commands
 
 import (
@@ -13,7 +14,7 @@ func CmdUser() *cobra.Command {
 	res := &cobra.Command{
 		Use:   "user",
 		Short: "Control users",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 		},
 	}
 
@@ -26,23 +27,23 @@ func NewUserAdd() *cobra.Command {
 	res := &cobra.Command{
 		Use:   "add",
 		Short: "Add a new user",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			var username string
 			fmt.Print("Enter username: ")
 			_, err := fmt.Scanln(&username)
 			if err != nil {
-				return fmt.Errorf("Error reading username: %w", err)
+				return fmt.Errorf("error reading username: %w", err)
 			}
 
 			fmt.Print("Enter password: ")
 			password, err := gopass.GetPasswd()
 			if err != nil {
-				return fmt.Errorf("Error reading password: %w", err)
+				return fmt.Errorf("error reading password: %w", err)
 			}
 
 			hashed, err := auth.HashPassword(password)
 			if err != nil {
-				return fmt.Errorf("Error hashing password: %w", err)
+				return fmt.Errorf("error hashing password: %w", err)
 			}
 			fmt.Printf("Use '%s:%s' to add a user\n", username, base64.StdEncoding.EncodeToString(hashed))
 

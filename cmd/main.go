@@ -1,3 +1,4 @@
+//nolint:forbidigo // it's okay to use fmt in this file
 package main
 
 import (
@@ -16,7 +17,7 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use:   "geekbudget",
 		Short: "GeekBudget is a personal finance manager",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 			cfg, err := config.InitiateConfig(cfgFile)
 			if err != nil {
 				fmt.Printf("ERROR: %s", err)

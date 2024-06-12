@@ -18,7 +18,7 @@ func CmdServer() *cobra.Command {
 	res := &cobra.Command{
 		Use:   "server",
 		Short: "Start HTTP server",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 			cfg, ok := cmd.Context().Value(ConfigKey).(*config.Config)
 			if !ok {

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -11,7 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const ErrStorageError = "storage error: %w"
+const StorageError = "storage error: %w"
+
+var ErrNotFound = errors.New("not found")
 
 type Storage interface {
 	Open() error
@@ -21,8 +24,8 @@ type Storage interface {
 	CreateUser(username, password string) error
 	PutUser(user *models.User) error
 
-	CreateAccount(userId string, account *goserver.AccountNoId) (goserver.Account, error)
-	GetAccounts(userId string) ([]goserver.Account, error)
+	CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error)
+	GetAccounts(userID string) ([]goserver.Account, error)
 }
 
 type storage struct {
@@ -30,8 +33,8 @@ type storage struct {
 	db  *gorm.DB
 }
 
-func NewStorage(logger *slog.Logger, cfg *config.Config) Storage {
-	return &storage{log: logger}
+func NewStorage(logger *slog.Logger, _ *config.Config) Storage {
+	return &storage{log: logger, db: nil}
 }
 
 func (s *storage) Open() error {
@@ -52,10 +55,10 @@ func (s *storage) Close() error {
 	return nil
 }
 
-func (s *storage) GetAccounts(userId string) ([]goserver.Account, error) {
-	result, err := s.db.Model(&models.Account{}).Where("user_id = ?", userId).Rows()
+func (s *storage) GetAccounts(userID string) ([]goserver.Account, error) {
+	result, err := s.db.Model(&models.Account{}).Where("user_id = ?", userID).Rows()
 	if err != nil {
-		return nil, fmt.Errorf(ErrStorageError, err)
+		return nil, fmt.Errorf(StorageError, err)
 	}
 	defer result.Close()
 
@@ -63,26 +66,26 @@ func (s *storage) GetAccounts(userId string) ([]goserver.Account, error) {
 	for result.Next() {
 		var acc models.Account
 		if err := s.db.ScanRows(result, &acc); err != nil {
-			return nil, fmt.Errorf(ErrStorageError, err)
+			return nil, fmt.Errorf(StorageError, err)
 		}
 
-		accounts = append(accounts, acc.FromDb())
+		accounts = append(accounts, acc.FromDB())
 	}
 
 	return accounts, nil
 }
 
-func (s *storage) CreateAccount(userId string, account *goserver.AccountNoId) (goserver.Account, error) {
+func (s *storage) CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error) {
 	acc := models.Account{
 		ID:          uuid.New(),
-		UserId:      userId,
+		UserID:      userID,
 		AccountNoId: *account,
 	}
 	if err := s.db.Create(&acc).Error; err != nil {
-		return goserver.Account{}, fmt.Errorf(ErrStorageError, err)
+		return goserver.Account{}, fmt.Errorf(StorageError, err)
 	}
 
-	return acc.FromDb(), nil
+	return acc.FromDB(), nil
 }
 
 func (s *storage) CreateUser(username, hashedPassword string) error {
@@ -91,7 +94,7 @@ func (s *storage) CreateUser(username, hashedPassword string) error {
 		HashedPassword: hashedPassword,
 	}
 	if err := s.db.Create(&user).Error; err != nil {
-		return fmt.Errorf(ErrStorageError, err)
+		return fmt.Errorf(StorageError, err)
 	}
 
 	return nil
@@ -100,11 +103,11 @@ func (s *storage) CreateUser(username, hashedPassword string) error {
 func (s *storage) GetUser(username string) (*models.User, error) {
 	var user models.User
 	if err := s.db.Where("login = ?", username).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
 		}
 
-		return nil, fmt.Errorf(ErrStorageError, err)
+		return nil, fmt.Errorf(StorageError, err)
 	}
 
 	return &user, nil
@@ -112,7 +115,7 @@ func (s *storage) GetUser(username string) (*models.User, error) {
 
 func (s *storage) PutUser(user *models.User) error {
 	if err := s.db.Save(user).Error; err != nil {
-		return fmt.Errorf(ErrStorageError, err)
+		return fmt.Errorf(StorageError, err)
 	}
 
 	return nil

@@ -1,3 +1,4 @@
+//nolint:forbidigo // it's okay to use fmt in this file
 package config
 
 import (

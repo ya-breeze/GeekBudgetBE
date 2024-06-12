@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -20,7 +21,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	defer cancel()
 	_, finishCham, err := Serve(ctx, logger, cfg)
 	if err != nil {
-		return fmt.Errorf("Failed to serve: %w", err)
+		return fmt.Errorf("failed to serve: %w", err)
 	}
 
 	// Wait for an interrupt signal
@@ -67,10 +68,10 @@ func createControllers(logger *slog.Logger, _ *config.Config, db database.Storag
 	}
 }
 
-func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (addr net.Addr, finishCham chan int, err error) {
+func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Addr, chan int, error) {
 	storage := database.NewStorage(logger, cfg)
 	if err := storage.Open(); err != nil {
-		return nil, nil, fmt.Errorf("Failed to open storage: %w", err)
+		return nil, nil, fmt.Errorf("failed to open storage: %w", err)
 	}
 
 	logger.Info("Starting GeekBudget server...")
@@ -81,23 +82,23 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (addr n
 		for _, user := range users {
 			tokens := strings.Split(user, ":")
 			if len(tokens) != 2 {
-				return nil, nil, fmt.Errorf("Invalid user format: %s", user)
+				return nil, nil, fmt.Errorf("invalid user format: %s", user)
 			}
 
 			user, err := storage.GetUser(tokens[0])
-			if err != nil {
-				return nil, nil, fmt.Errorf("Failed to reading user from DB: %w", err)
+			if err != nil && !errors.Is(err, database.ErrNotFound) {
+				return nil, nil, fmt.Errorf("failed to reading user from DB: %w", err)
 			}
 			if user != nil {
 				logger.Info(fmt.Sprintf("Updating password for user %q", tokens[0]))
 				user.HashedPassword = tokens[1]
 				if err := storage.PutUser(user); err != nil {
-					return nil, nil, fmt.Errorf("Failed to update user: %w", err)
+					return nil, nil, fmt.Errorf("failed to update user: %w", err)
 				}
 			} else {
 				logger.Info(fmt.Sprintf("Creating user %q", tokens[0]))
 				if err := storage.CreateUser(tokens[0], tokens[1]); err != nil {
-					return nil, nil, fmt.Errorf("Failed to create user: %w", err)
+					return nil, nil, fmt.Errorf("failed to create user: %w", err)
 				}
 			}
 		}

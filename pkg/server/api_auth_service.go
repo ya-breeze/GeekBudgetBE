@@ -22,7 +22,7 @@ func NewAuthAPIService(logger *slog.Logger, db database.Storage) goserver.AuthAP
 	}
 }
 
-func (s *AuthAPIService) Authorize(ctx context.Context, authData goserver.AuthData) (goserver.ImplResponse, error) {
+func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData) (goserver.ImplResponse, error) {
 	user, err := s.db.GetUser(authData.Email)
 	if err != nil {
 		return goserver.Response(500, nil), nil // TODO internal error
