@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/gorilla/mux"
+	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -63,14 +64,19 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// return nil
 }
 
-func createControllers(logger *slog.Logger, _ *config.Config, db database.Storage) goserver.CustomControllers {
+func createControllers(logger *slog.Logger, cfg *config.Config, db database.Storage) goserver.CustomControllers {
 	return goserver.CustomControllers{
-		AuthAPIService: NewAuthAPIService(logger, db),
+		AuthAPIService: NewAuthAPIService(logger, db, cfg.JWTSecret),
 		UserAPIService: NewUserAPIService(logger, db),
 	}
 }
 
 func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Addr, chan int, error) {
+	if cfg.JWTSecret == "" {
+		logger.Warn("JWT secret is not set. Creating random secret...")
+		cfg.JWTSecret = auth.GenerateRandomString(32)
+	}
+
 	storage := database.NewStorage(logger, cfg)
 	if err := storage.Open(); err != nil {
 		return nil, nil, fmt.Errorf("failed to open storage: %w", err)

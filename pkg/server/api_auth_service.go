@@ -12,14 +12,16 @@ import (
 )
 
 type AuthAPIService struct {
-	logger *slog.Logger
-	db     database.Storage
+	logger    *slog.Logger
+	db        database.Storage
+	jwtSecret string
 }
 
-func NewAuthAPIService(logger *slog.Logger, db database.Storage) goserver.AuthAPIService {
+func NewAuthAPIService(logger *slog.Logger, db database.Storage, jwtSecret string) goserver.AuthAPIService {
 	return &AuthAPIService{
-		logger: logger,
-		db:     db,
+		logger:    logger,
+		db:        db,
+		jwtSecret: jwtSecret,
 	}
 }
 
@@ -40,5 +42,9 @@ func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData
 		return goserver.Response(401, nil), nil
 	}
 
-	return goserver.Response(200, goserver.Authorize200Response{Token: "token"}), nil
+	token, err := auth.CreateJWT(user.Login, s.jwtSecret)
+	if err != nil {
+		return goserver.Response(500, nil), nil // TODO internal error
+	}
+	return goserver.Response(200, goserver.Authorize200Response{Token: token}), nil
 }
