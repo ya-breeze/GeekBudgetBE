@@ -5,6 +5,7 @@
     "words": [
         "ctx",
         "devcontainers",
+        "Env",
         "Errorf",
         "fmt",
         "forbidigo",

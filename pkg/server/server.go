@@ -93,27 +93,38 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 				return nil, nil, fmt.Errorf("invalid user format: %s", user)
 			}
 
-			user, err := storage.GetUser(tokens[0])
-			if err != nil && !errors.Is(err, database.ErrNotFound) {
-				return nil, nil, fmt.Errorf("failed to reading user from DB: %w", err)
+			if err := upsertUser(storage, tokens[0], tokens[1], logger); err != nil {
+				return nil, nil, fmt.Errorf("failed to update user %q: %w", tokens[0], err)
 			}
-			if user != nil {
-				logger.Info(fmt.Sprintf("Updating password for user %q", tokens[0]))
-				user.HashedPassword = tokens[1]
-				if err := storage.PutUser(user); err != nil {
-					return nil, nil, fmt.Errorf("failed to update user: %w", err)
-				}
-			} else {
-				logger.Info(fmt.Sprintf("Creating user %q", tokens[0]))
-				if err := storage.CreateUser(tokens[0], tokens[1]); err != nil {
-					return nil, nil, fmt.Errorf("failed to create user: %w", err)
-				}
-			}
+
 		}
+	} else {
+		logger.Info("No users defined in configuration")
 	}
 
 	return goserver.Serve(ctx, logger, cfg, createControllers(logger, cfg, storage),
 		createMiddlewares(logger, cfg, storage)...)
+}
+
+func upsertUser(storage database.Storage, username, hashedPassword string, logger *slog.Logger) error {
+	user, err := storage.GetUser(username)
+	if err != nil && !errors.Is(err, database.ErrNotFound) {
+		return fmt.Errorf("failed to reading user from DB: %w", err)
+	}
+	if user != nil {
+		logger.Info(fmt.Sprintf("Updating password for user %q", username))
+		user.HashedPassword = hashedPassword
+		if err := storage.PutUser(user); err != nil {
+			return fmt.Errorf("failed to update user: %w", err)
+		}
+	} else {
+		logger.Info(fmt.Sprintf("Creating user %q", username))
+		if err := storage.CreateUser(username, hashedPassword); err != nil {
+			return fmt.Errorf("failed to create user: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func createMiddlewares(logger *slog.Logger, cfg *config.Config, db database.Storage) []mux.MiddlewareFunc {
