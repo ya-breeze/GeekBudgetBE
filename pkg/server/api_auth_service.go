@@ -26,11 +26,18 @@ func NewAuthAPIService(logger *slog.Logger, db database.Storage, jwtSecret strin
 }
 
 func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData) (goserver.ImplResponse, error) {
-	user, err := s.db.GetUser(authData.Email)
+	userID, err := s.db.GetUserID(authData.Email)
 	if err != nil && !errors.Is(err, database.ErrNotFound) {
+		s.logger.Warn("failed to get user ID", "username", authData.Email)
+		return goserver.Response(500, nil), nil // TODO internal error
+	}
+	user, err := s.db.GetUser(userID)
+	if err != nil {
+		s.logger.Warn("failed to get user", "ID", userID)
 		return goserver.Response(500, nil), nil // TODO internal error
 	}
 	if user == nil {
+		s.logger.Warn("user not found", "ID", userID)
 		return goserver.Response(401, nil), nil
 	}
 
@@ -42,7 +49,7 @@ func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData
 		return goserver.Response(401, nil), nil
 	}
 
-	token, err := auth.CreateJWT(user.Login, s.jwtSecret)
+	token, err := auth.CreateJWT(userID, s.jwtSecret)
 	if err != nil {
 		return goserver.Response(500, nil), nil // TODO internal error
 	}

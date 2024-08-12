@@ -68,6 +68,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 	return goserver.CustomControllers{
 		AuthAPIService: NewAuthAPIService(logger, db, cfg.JWTSecret),
 		UserAPIService: NewUserAPIService(logger, db),
+		// AccountsAPIService: NewAccountsAPIService(logger, db),
 	}
 }
 
@@ -96,7 +97,6 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 			if err := upsertUser(storage, tokens[0], tokens[1], logger); err != nil {
 				return nil, nil, fmt.Errorf("failed to update user %q: %w", tokens[0], err)
 			}
-
 		}
 	} else {
 		logger.Info("No users defined in configuration")

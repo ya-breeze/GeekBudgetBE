@@ -23,12 +23,12 @@ func NewUserAPIService(logger *slog.Logger, db database.Storage) goserver.UserAP
 
 // GetUser - return user object
 func (s *UserAPIServiceImpl) GetUser(ctx context.Context) (goserver.ImplResponse, error) {
-	username, ok := ctx.Value(UsernameKey).(string)
+	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	user, err := s.db.GetUser(username)
+	user, err := s.db.GetUser(userID)
 	if err != nil && errors.Is(err, database.ErrNotFound) {
 		return goserver.Response(500, nil), nil
 	}

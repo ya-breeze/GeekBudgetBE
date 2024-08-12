@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
@@ -20,7 +21,8 @@ type Storage interface {
 	Open() error
 	Close() error
 
-	GetUser(username string) (*models.User, error)
+	GetUserID(username string) (string, error)
+	GetUser(userID string) (*models.User, error)
 	CreateUser(username, password string) error
 	PutUser(user *models.User) error
 
@@ -90,8 +92,10 @@ func (s *storage) CreateAccount(userID string, account *goserver.AccountNoId) (g
 
 func (s *storage) CreateUser(username, hashedPassword string) error {
 	user := models.User{
+		ID:             uuid.New(),
 		Login:          username,
 		HashedPassword: hashedPassword,
+		StartDate:      time.Now(),
 	}
 	if err := s.db.Create(&user).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
@@ -100,9 +104,9 @@ func (s *storage) CreateUser(username, hashedPassword string) error {
 	return nil
 }
 
-func (s *storage) GetUser(username string) (*models.User, error) {
+func (s *storage) GetUser(userID string) (*models.User, error) {
 	var user models.User
-	if err := s.db.Where("login = ?", username).First(&user).Error; err != nil {
+	if err := s.db.Where("id = ?", userID).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrNotFound
 		}
@@ -119,4 +123,17 @@ func (s *storage) PutUser(user *models.User) error {
 	}
 
 	return nil
+}
+
+func (s *storage) GetUserID(username string) (string, error) {
+	var user models.User
+	if err := s.db.Where("login = ?", username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", ErrNotFound
+		}
+
+		return "", fmt.Errorf(StorageError, err)
+	}
+
+	return user.ID.String(), nil
 }

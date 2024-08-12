@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"gorm.io/gorm"
 )
@@ -10,8 +11,9 @@ import (
 type User struct {
 	gorm.Model
 
-	Login          string `gorm:"type:string;primaryKey"`
+	ID             uuid.UUID `gorm:"type:uuid;primaryKey"`
 	StartDate      time.Time
+	Login          string
 	HashedPassword string
 }
 

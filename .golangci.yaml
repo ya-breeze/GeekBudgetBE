@@ -23,3 +23,9 @@ linters:
     - nilerr # false alarms
     - wrapcheck # later
     - nilnil # later
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment

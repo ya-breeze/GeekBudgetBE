@@ -2,7 +2,7 @@
 all: run
 
 .PHONY: build
-build:
+build: test
 	@go build -o bin/geekbudget cmd/main.go
 
 .PHONY: run

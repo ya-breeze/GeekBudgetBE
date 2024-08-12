@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	Verbose   bool   `mapstructure:"verbose" default:"false"`
-	Port      int    `mapstructure:"port" default:"8080"`
 	Users     string `mapstructure:"users" default:""`
 	JWTSecret string `mapstructure:"jwt_secret" default:""`
+	Verbose   bool   `mapstructure:"verbose" default:"false"`
+	Port      int    `mapstructure:"port" default:"8080"`
 }
 
 func InitiateConfig(cfgFile string) (*Config, error) {

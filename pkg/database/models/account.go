@@ -10,10 +10,10 @@ import (
 type Account struct {
 	gorm.Model
 
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
-	UserID string    `gorm:"index:idx_user_id"`
-
 	goserver.AccountNoId
+
+	UserID string    `gorm:"index:idx_user_id"`
+	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (a *Account) FromDB() goserver.Account {

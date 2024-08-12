@@ -33,12 +33,12 @@ func GenerateRandomString(length int) string {
 	return string(b)
 }
 
-func CreateJWT(username, secret string) (string, error) {
+func CreateJWT(userID, secret string) (string, error) {
 	signingKey := []byte(secret)
 
 	claims := &jwt.RegisteredClaims{
 		Issuer:    "geekbudget",
-		Subject:   username,
+		Subject:   userID,
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 	}
 

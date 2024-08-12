@@ -16,7 +16,7 @@ import (
 type contextKey string
 
 const (
-	UsernameKey contextKey = "username"
+	UserIDKey contextKey = "userID"
 )
 
 func AuthMiddleware(logger *slog.Logger, cfg *config.Config, db database.Storage) mux.MiddlewareFunc {
@@ -58,15 +58,15 @@ func AuthMiddleware(logger *slog.Logger, cfg *config.Config, db database.Storage
 			}
 
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				username, err := claims.GetSubject()
+				userID, err := claims.GetSubject()
 				if err != nil {
 					logger.With("err", err).Warn("Invalid subject")
 					http.Error(writer, "Invalid token", http.StatusUnauthorized)
 					return
 				}
-				logger.With("username", username).Info("Authorized user")
+				logger.With("userID", userID).Info("Authorized user")
 
-				req = req.WithContext(context.WithValue(req.Context(), UsernameKey, username))
+				req = req.WithContext(context.WithValue(req.Context(), UserIDKey, userID))
 				next.ServeHTTP(writer, req)
 				return
 			}
