@@ -28,6 +28,9 @@ type Storage interface {
 
 	CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error)
 	GetAccounts(userID string) ([]goserver.Account, error)
+	UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error)
+	DeleteAccount(userID string, id string) error
+	GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error)
 }
 
 type storage struct {
@@ -136,4 +139,50 @@ func (s *storage) GetUserID(username string) (string, error) {
 	}
 
 	return user.ID.String(), nil
+}
+
+func (s *storage) UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error) {
+	var acc models.Account
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&acc).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Account{}, ErrNotFound
+		}
+
+		return goserver.Account{}, fmt.Errorf(StorageError, err)
+	}
+
+	acc.AccountNoId = *account
+	if err := s.db.Save(&acc).Error; err != nil {
+		return goserver.Account{}, fmt.Errorf(StorageError, err)
+	}
+
+	return acc.FromDB(), nil
+}
+
+func (s *storage) DeleteAccount(userID string, id string) error {
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Account{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
+}
+
+func (s *storage) GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error) {
+	// result, err := s.db.Model(&models.Transaction{}).Where("user_id = ? AND account_id = ?", userID, accountID).Rows()
+	// if err != nil {
+	// 	return nil, fmt.Errorf(StorageError, err)
+	// }
+	// defer result.Close()
+
+	var transactions []goserver.Transaction
+	// for result.Next() {
+	// 	var tr models.Transaction
+	// 	if err := s.db.ScanRows(result, &tr); err != nil {
+	// 		return nil, fmt.Errorf(StorageError, err)
+	// 	}
+
+	// 	transactions = append(transactions, tr.FromDB())
+	// }
+
+	return transactions, nil
 }
