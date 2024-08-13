@@ -13,6 +13,7 @@ type Config struct {
 	JWTSecret string `mapstructure:"jwt_secret" default:""`
 	Verbose   bool   `mapstructure:"verbose" default:"false"`
 	Port      int    `mapstructure:"port" default:"8080"`
+	DBPath    string `mapstructure:"db_path" default:":memory:"`
 }
 
 func InitiateConfig(cfgFile string) (*Config, error) {

@@ -54,23 +54,6 @@ func (s *AccountsAPIServicerImpl) GetAccounts(
 	return goserver.Response(200, accounts), nil
 }
 
-// func (s *AccountsAPIServicerImpl) GetAccount(
-// 	ctx context.Context, accountID string,
-// ) (goserver.ImplResponse, error) {
-// 	userID, ok := ctx.Value(UserIDKey).(string)
-// 	if !ok {
-// 		return goserver.Response(500, nil), nil
-// 	}
-
-// 	account, err := s.db.GetAccount(userID, accountID)
-// 	if err != nil {
-// 		s.logger.With("error", err).Error("Failed to get account")
-// 		return goserver.Response(500, nil), nil
-// 	}
-
-// 	return goserver.Response(200, account), nil
-// }
-
 func (s *AccountsAPIServicerImpl) UpdateAccount(
 	ctx context.Context, accountID string, acc goserver.AccountNoId,
 ) (goserver.ImplResponse, error) {
