@@ -1,7 +1,26 @@
 {
     "version": "0.2",
     "allowCompoundWords": true,
+    "minWordLength": 2,
     "words": [
-        "devcontainers"
+        "ctx",
+        "devcontainers",
+        "Env",
+        "Errorf",
+        "fmt",
+        "forbidigo",
+        "geekbudgetbe",
+        "goclient",
+        "gofumpt",
+        "gomega",
+        "gorm",
+        "gosec",
+        "goserver",
+        "govet",
+        "JWT",
+        "nolint",
+        "onsi",
+        "Sprintf",
+        "struct"
     ]
 }
