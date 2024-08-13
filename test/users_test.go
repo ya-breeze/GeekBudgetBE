@@ -20,7 +20,7 @@ const (
 	Pass1 = "password1"
 )
 
-var _ = Describe("GB", func() {
+var _ = Describe("User API", func() {
 	var ctx context.Context
 	var cancel context.CancelFunc
 	var cfg *config.Config
@@ -55,16 +55,7 @@ var _ = Describe("GB", func() {
 	})
 
 	It("authenticates client with valid credentials", func() {
-		req := client.AuthAPI.Authorize(ctx).AuthData(goclient.AuthData{
-			Email:    User1,
-			Password: Pass1,
-		})
-		resp, httpResp, err := req.Execute()
-		Expect(err).ToNot(HaveOccurred())
-		Expect(httpResp).ToNot(BeNil())
-		Expect(httpResp.StatusCode).To(Equal(200))
-		Expect(resp).ToNot(BeNil())
-		Expect(resp.Token).ToNot(BeEmpty())
+		getAccessToken(client, ctx)
 	})
 
 	It("does not authenticate client with invalid credentials", func() {
@@ -80,16 +71,10 @@ var _ = Describe("GB", func() {
 	})
 
 	It("returns known user object", func() {
-		req := client.AuthAPI.Authorize(ctx).AuthData(goclient.AuthData{
-			Email:    User1,
-			Password: Pass1,
-		})
-		resp, _, err := req.Execute()
-		Expect(err).ToNot(HaveOccurred())
-		ctx = context.WithValue(ctx, goclient.ContextAccessToken, resp.Token)
+		accessToken := getAccessToken(client, ctx)
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
-		reqUser := client.UserAPI.GetUser(ctx)
-		user, httpResp, err := reqUser.Execute()
+		user, httpResp, err := client.UserAPI.GetUser(ctx).Execute()
 		Expect(err).ToNot(HaveOccurred())
 		Expect(httpResp).ToNot(BeNil())
 		Expect(httpResp.StatusCode).To(Equal(200))
@@ -97,3 +82,18 @@ var _ = Describe("GB", func() {
 		Expect(user.Email).To(Equal(User1))
 	})
 })
+
+func getAccessToken(client *goclient.APIClient, ctx context.Context) string {
+	req := client.AuthAPI.Authorize(ctx).AuthData(goclient.AuthData{
+		Email:    User1,
+		Password: Pass1,
+	})
+	resp, httpResp, err := req.Execute()
+	Expect(err).ToNot(HaveOccurred())
+	Expect(httpResp).ToNot(BeNil())
+	Expect(httpResp.StatusCode).To(Equal(200))
+	Expect(resp).ToNot(BeNil())
+	Expect(resp.Token).ToNot(BeEmpty())
+
+	return resp.Token
+}

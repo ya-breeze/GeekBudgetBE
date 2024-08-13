@@ -120,3 +120,20 @@ func (s *AccountsAPIServicerImpl) GetAccountHistory(
 
 	return goserver.Response(200, history), nil
 }
+
+func (s *AccountsAPIServicerImpl) GetAccount(
+	ctx context.Context, accountID string,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	account, err := s.db.GetAccount(userID, accountID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get account")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, account), nil
+}

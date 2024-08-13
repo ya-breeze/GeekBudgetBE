@@ -80,6 +80,20 @@ paths:
                 $ref: "#/components/schemas/AccountHistory"
 
   /v1/accounts:
+    get:
+      tags:
+        - accounts
+      summary: get all accounts
+      operationId: getAccounts
+      responses:
+        "200":
+          description: accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
     post:
       tags:
         - accounts
@@ -100,6 +114,27 @@ paths:
                 $ref: "#/components/schemas/Account"
 
   /v1/accounts/{id}:
+    get:
+      tags:
+        - accounts
+      summary: get account
+      operationId: getAccount
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the account"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
     put:
       tags:
         - accounts

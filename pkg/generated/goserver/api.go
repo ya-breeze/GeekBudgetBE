@@ -23,7 +23,9 @@ import (
 type AccountsAPIRouter interface {
 	CreateAccount(http.ResponseWriter, *http.Request)
 	DeleteAccount(http.ResponseWriter, *http.Request)
+	GetAccount(http.ResponseWriter, *http.Request)
 	GetAccountHistory(http.ResponseWriter, *http.Request)
+	GetAccounts(http.ResponseWriter, *http.Request)
 	UpdateAccount(http.ResponseWriter, *http.Request)
 }
 
@@ -116,7 +118,9 @@ type UserAPIRouter interface {
 type AccountsAPIServicer interface {
 	CreateAccount(context.Context, AccountNoId) (ImplResponse, error)
 	DeleteAccount(context.Context, string) (ImplResponse, error)
+	GetAccount(context.Context, string) (ImplResponse, error)
 	GetAccountHistory(context.Context, string) (ImplResponse, error)
+	GetAccounts(context.Context) (ImplResponse, error)
 	UpdateAccount(context.Context, string, AccountNoId) (ImplResponse, error)
 }
 

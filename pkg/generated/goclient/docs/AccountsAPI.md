@@ -6,7 +6,9 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**CreateAccount**](AccountsAPI.md#CreateAccount) | **Post** /v1/accounts | create new account
 [**DeleteAccount**](AccountsAPI.md#DeleteAccount) | **Delete** /v1/accounts/{id} | delete account
+[**GetAccount**](AccountsAPI.md#GetAccount) | **Get** /v1/accounts/{id} | get account
 [**GetAccountHistory**](AccountsAPI.md#GetAccountHistory) | **Get** /v1/accounts/{accountId}/history | return list of dates when this account was used in some transaction
+[**GetAccounts**](AccountsAPI.md#GetAccounts) | **Get** /v1/accounts | get all accounts
 [**UpdateAccount**](AccountsAPI.md#UpdateAccount) | **Put** /v1/accounts/{id} | update account
 
 
@@ -141,6 +143,74 @@ Name | Type | Description  | Notes
 [[Back to README]](../README.md)
 
 
+## GetAccount
+
+> Account GetAccount(ctx, id).Execute()
+
+get account
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the account
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.AccountsAPI.GetAccount(context.Background(), id).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `AccountsAPI.GetAccount``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetAccount`: Account
+	fmt.Fprintf(os.Stdout, "Response from `AccountsAPI.GetAccount`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** | ID of the account | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetAccountRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**Account**](Account.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
 ## GetAccountHistory
 
 > []time.Time GetAccountHistory(ctx, accountId).Execute()
@@ -194,6 +264,65 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**[]time.Time**](time.Time.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetAccounts
+
+> []Account GetAccounts(ctx).Execute()
+
+get all accounts
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.AccountsAPI.GetAccounts(context.Background()).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `AccountsAPI.GetAccounts``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetAccounts`: []Account
+	fmt.Fprintf(os.Stdout, "Response from `AccountsAPI.GetAccounts`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetAccountsRequest struct via the builder pattern
+
+
+### Return type
+
+[**[]Account**](Account.md)
 
 ### Authorization
 

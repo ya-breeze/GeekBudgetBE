@@ -28,6 +28,7 @@ type Storage interface {
 
 	CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error)
 	GetAccounts(userID string) ([]goserver.Account, error)
+	GetAccount(userID string, id string) (goserver.Account, error)
 	UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error)
 	DeleteAccount(userID string, id string) error
 	GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error)
@@ -67,7 +68,7 @@ func (s *storage) GetAccounts(userID string) ([]goserver.Account, error) {
 	}
 	defer result.Close()
 
-	var accounts []goserver.Account
+	accounts := make([]goserver.Account, 0)
 	for result.Next() {
 		var acc models.Account
 		if err := s.db.ScanRows(result, &acc); err != nil {
@@ -185,4 +186,17 @@ func (s *storage) GetAccountHistory(userID string, accountID string) ([]goserver
 	// }
 
 	return transactions, nil
+}
+
+func (s *storage) GetAccount(userID string, id string) (goserver.Account, error) {
+	var acc models.Account
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&acc).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Account{}, ErrNotFound
+		}
+
+		return goserver.Account{}, fmt.Errorf(StorageError, err)
+	}
+
+	return acc.FromDB(), nil
 }

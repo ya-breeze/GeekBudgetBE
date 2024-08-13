@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/devcontainers/go:1-1.22-bookworm
 
-RUN apt-get update && apt-get install \
+RUN apt-get update && apt-get install -y \
     bash-completion \
     sqlite3
 
