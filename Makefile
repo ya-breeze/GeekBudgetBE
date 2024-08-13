@@ -1,9 +1,12 @@
 .PHONY: all
-all: run
+all: build test lint
+	@echo "🎉 You are good to go!"
+
 
 .PHONY: build
 build: test
 	@go build -o bin/geekbudget cmd/main.go
+	@echo "✅ Build complete"
 
 .PHONY: run
 run:

@@ -17,6 +17,7 @@ const StorageError = "storage error: %w"
 
 var ErrNotFound = errors.New("not found")
 
+//nolint:interfacebloat
 type Storage interface {
 	Open() error
 	Close() error
