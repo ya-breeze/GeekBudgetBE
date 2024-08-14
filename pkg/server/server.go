@@ -37,38 +37,14 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	<-finishCham
 	return nil
 
-	// userId := "123e4567-e89b-12d3-a456-426614174000"
-
-	// acc := &goserver.AccountNoId{
-	// 	Name:        "Test Account",
-	// 	Type:        "CHECKING",
-	// 	Description: "Test Account Description",
-	// }
-
-	// account, err := storage.CreateAccount(userId, acc)
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to create account: %w", err)
-	// }
-
-	// logger.With("account", account).Info("Account created")
-
-	// accounts, err := storage.GetAccounts(userId)
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to get accounts: %w", err)
-	// }
-
-	// logger.With("accounts", accounts).Info(fmt.Sprintf("Accounts retrieved: %d", len(accounts)))
-
-	// logger.Info("GeekBudget stopped")
-
-	// return nil
 }
 
 func createControllers(logger *slog.Logger, cfg *config.Config, db database.Storage) goserver.CustomControllers {
 	return goserver.CustomControllers{
-		AuthAPIService:     NewAuthAPIService(logger, db, cfg.JWTSecret),
-		UserAPIService:     NewUserAPIService(logger, db),
-		AccountsAPIService: NewAccountsAPIService(logger, db),
+		AuthAPIService:       NewAuthAPIService(logger, db, cfg.JWTSecret),
+		UserAPIService:       NewUserAPIService(logger, db),
+		AccountsAPIService:   NewAccountsAPIService(logger, db),
+		CurrenciesAPIService: NewCurrenciesAPIServicer(logger, db),
 	}
 }
 

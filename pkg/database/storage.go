@@ -33,6 +33,12 @@ type Storage interface {
 	UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error)
 	DeleteAccount(userID string, id string) error
 	GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error)
+
+	CreateCurrency(userID string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
+	GetCurrencies(userID string) ([]goserver.Currency, error)
+	GetCurrency(userID string, id string) (goserver.Currency, error)
+	UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
+	DeleteCurrency(userID string, id string) error
 }
 
 type storage struct {
@@ -201,4 +207,76 @@ func (s *storage) GetAccount(userID string, id string) (goserver.Account, error)
 	}
 
 	return acc.FromDB(), nil
+}
+
+func (s *storage) CreateCurrency(userID string, currency *goserver.CurrencyNoId) (goserver.Currency, error) {
+	cur := models.Currency{
+		ID:           uuid.New(),
+		UserID:       userID,
+		CurrencyNoId: *currency,
+	}
+	if err := s.db.Create(&cur).Error; err != nil {
+		return goserver.Currency{}, fmt.Errorf(StorageError, err)
+	}
+
+	return cur.FromDB(), nil
+}
+
+func (s *storage) GetCurrencies(userID string) ([]goserver.Currency, error) {
+	result, err := s.db.Model(&models.Currency{}).Where("user_id = ?", userID).Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	currencies := make([]goserver.Currency, 0)
+	for result.Next() {
+		var cur models.Currency
+		if err := s.db.ScanRows(result, &cur); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		currencies = append(currencies, cur.FromDB())
+	}
+
+	return currencies, nil
+}
+
+func (s *storage) GetCurrency(userID string, id string) (goserver.Currency, error) {
+	var cur models.Currency
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&cur).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Currency{}, ErrNotFound
+		}
+
+		return goserver.Currency{}, fmt.Errorf(StorageError, err)
+	}
+
+	return cur.FromDB(), nil
+}
+
+func (s *storage) UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error) {
+	var cur models.Currency
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&cur).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Currency{}, ErrNotFound
+		}
+
+		return goserver.Currency{}, fmt.Errorf(StorageError, err)
+	}
+
+	cur.CurrencyNoId = *currency
+	if err := s.db.Save(&cur).Error; err != nil {
+		return goserver.Currency{}, fmt.Errorf(StorageError, err)
+	}
+
+	return cur.FromDB(), nil
+}
+
+func (s *storage) DeleteCurrency(userID string, id string) error {
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Currency{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
 }
