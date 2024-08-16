@@ -546,7 +546,7 @@ paths:
             type: "string"
             format: "date-time"
             example: "2020-01-01T00:00:00Z"
-        - name: outputCurrencyID
+        - name: outputCurrencyId
           in: query
           description: "Converts all transactions to this currency"
           schema:
@@ -580,7 +580,7 @@ paths:
           schema:
             type: "string"
             format: "date-time"
-        - name: outputCurrencyID
+        - name: outputCurrencyId
           in: query
           description: "Converts all transactions to this currency"
           schema:
@@ -612,7 +612,7 @@ paths:
           schema:
             type: "string"
             format: "date-time"
-        - name: outputCurrencyID
+        - name: outputCurrencyId
           in: query
           description: "Converts all transactions to this currency"
           schema:
@@ -915,7 +915,7 @@ components:
           type: string
         partnerAccount:
           type: string
-        partnerInternalID:
+        partnerInternalId:
           type: string
           description: Internal bank's ID to be able to match later if necessary
         extra:
@@ -928,7 +928,7 @@ components:
           description: >-
             Stores FULL unprocessed transactions which was source of this transaction.
             Could be used later for detailed analysis
-        externalIDs:
+        externalIds:
           type: string
           description: >-
             IDs of unprocessed transaction - to match later
@@ -951,16 +951,16 @@ components:
         amount:
           type: number
           format: double
-        currencyID:
+        currencyId:
           type: string
-        accountID:
+        accountId:
           type: string
         description:
           type: string
       required:
         - amount
-        - currencyID
-        - accountID
+        - currencyId
+        - accountId
 
     UnprocessedTransaction:
       type: object
@@ -983,12 +983,12 @@ components:
     MatcherAndTransaction:
       type: object
       properties:
-        matcherID:
+        matcherId:
           type: string
         transaction:
           $ref: "#/components/schemas/TransactionNoID"
       required:
-        - matcherID
+        - matcherId
         - transaction
 
     Aggregation:
@@ -1027,7 +1027,7 @@ components:
     CurrencyAggregation:
       type: object
       properties:
-        currencyID:
+        currencyId:
           type: string
           format: uuid
           example: "123e4567-e89b-12d3-a456-426614174000"
@@ -1036,13 +1036,13 @@ components:
           items:
             $ref: "#/components/schemas/AccountAggregation"
       required:
-        - currencyID
+        - currencyId
         - accounts
 
     AccountAggregation:
       type: object
       properties:
-        accountID:
+        accountId:
           type: string
           format: uuid
           example: "123e4567-e89b-12d3-a456-426614174000"
@@ -1052,7 +1052,7 @@ components:
             type: number
             format: double
       required:
-        - accountID
+        - accountId
         - amounts
 
     MatcherNoID:

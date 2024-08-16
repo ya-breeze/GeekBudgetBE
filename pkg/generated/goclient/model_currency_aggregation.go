@@ -22,7 +22,7 @@ var _ MappedNullable = &CurrencyAggregation{}
 
 // CurrencyAggregation struct for CurrencyAggregation
 type CurrencyAggregation struct {
-	CurrencyID string               `json:"currencyID"`
+	CurrencyId string               `json:"currencyId"`
 	Accounts   []AccountAggregation `json:"accounts"`
 }
 
@@ -32,9 +32,9 @@ type _CurrencyAggregation CurrencyAggregation
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCurrencyAggregation(currencyID string, accounts []AccountAggregation) *CurrencyAggregation {
+func NewCurrencyAggregation(currencyId string, accounts []AccountAggregation) *CurrencyAggregation {
 	this := CurrencyAggregation{}
-	this.CurrencyID = currencyID
+	this.CurrencyId = currencyId
 	this.Accounts = accounts
 	return &this
 }
@@ -47,28 +47,28 @@ func NewCurrencyAggregationWithDefaults() *CurrencyAggregation {
 	return &this
 }
 
-// GetCurrencyID returns the CurrencyID field value
-func (o *CurrencyAggregation) GetCurrencyID() string {
+// GetCurrencyId returns the CurrencyId field value
+func (o *CurrencyAggregation) GetCurrencyId() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.CurrencyID
+	return o.CurrencyId
 }
 
-// GetCurrencyIDOk returns a tuple with the CurrencyID field value
+// GetCurrencyIdOk returns a tuple with the CurrencyId field value
 // and a boolean to check if the value has been set.
-func (o *CurrencyAggregation) GetCurrencyIDOk() (*string, bool) {
+func (o *CurrencyAggregation) GetCurrencyIdOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.CurrencyID, true
+	return &o.CurrencyId, true
 }
 
-// SetCurrencyID sets field value
-func (o *CurrencyAggregation) SetCurrencyID(v string) {
-	o.CurrencyID = v
+// SetCurrencyId sets field value
+func (o *CurrencyAggregation) SetCurrencyId(v string) {
+	o.CurrencyId = v
 }
 
 // GetAccounts returns the Accounts field value
@@ -105,7 +105,7 @@ func (o CurrencyAggregation) MarshalJSON() ([]byte, error) {
 
 func (o CurrencyAggregation) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["currencyID"] = o.CurrencyID
+	toSerialize["currencyId"] = o.CurrencyId
 	toSerialize["accounts"] = o.Accounts
 	return toSerialize, nil
 }
@@ -115,7 +115,7 @@ func (o *CurrencyAggregation) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"currencyID",
+		"currencyId",
 		"accounts",
 	}
 

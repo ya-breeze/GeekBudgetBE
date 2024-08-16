@@ -31,13 +31,13 @@ type Transaction struct {
 	PartnerName    *string   `json:"partnerName,omitempty"`
 	PartnerAccount *string   `json:"partnerAccount,omitempty"`
 	// Internal bank's ID to be able to match later if necessary
-	PartnerInternalID *string `json:"partnerInternalID,omitempty"`
+	PartnerInternalId *string `json:"partnerInternalId,omitempty"`
 	// Stores extra data about transaction. For example could hold \"variable symbol\" to distinguish payment for the same account, but with different meaning
 	Extra *string `json:"extra,omitempty"`
 	// Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis
 	UnprocessedSources *string `json:"unprocessedSources,omitempty"`
 	// IDs of unprocessed transaction - to match later
-	ExternalIDs *string    `json:"externalIDs,omitempty"`
+	ExternalIds *string    `json:"externalIds,omitempty"`
 	Movements   []Movement `json:"movements"`
 }
 
@@ -271,36 +271,36 @@ func (o *Transaction) SetPartnerAccount(v string) {
 	o.PartnerAccount = &v
 }
 
-// GetPartnerInternalID returns the PartnerInternalID field value if set, zero value otherwise.
-func (o *Transaction) GetPartnerInternalID() string {
-	if o == nil || IsNil(o.PartnerInternalID) {
+// GetPartnerInternalId returns the PartnerInternalId field value if set, zero value otherwise.
+func (o *Transaction) GetPartnerInternalId() string {
+	if o == nil || IsNil(o.PartnerInternalId) {
 		var ret string
 		return ret
 	}
-	return *o.PartnerInternalID
+	return *o.PartnerInternalId
 }
 
-// GetPartnerInternalIDOk returns a tuple with the PartnerInternalID field value if set, nil otherwise
+// GetPartnerInternalIdOk returns a tuple with the PartnerInternalId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Transaction) GetPartnerInternalIDOk() (*string, bool) {
-	if o == nil || IsNil(o.PartnerInternalID) {
+func (o *Transaction) GetPartnerInternalIdOk() (*string, bool) {
+	if o == nil || IsNil(o.PartnerInternalId) {
 		return nil, false
 	}
-	return o.PartnerInternalID, true
+	return o.PartnerInternalId, true
 }
 
-// HasPartnerInternalID returns a boolean if a field has been set.
-func (o *Transaction) HasPartnerInternalID() bool {
-	if o != nil && !IsNil(o.PartnerInternalID) {
+// HasPartnerInternalId returns a boolean if a field has been set.
+func (o *Transaction) HasPartnerInternalId() bool {
+	if o != nil && !IsNil(o.PartnerInternalId) {
 		return true
 	}
 
 	return false
 }
 
-// SetPartnerInternalID gets a reference to the given string and assigns it to the PartnerInternalID field.
-func (o *Transaction) SetPartnerInternalID(v string) {
-	o.PartnerInternalID = &v
+// SetPartnerInternalId gets a reference to the given string and assigns it to the PartnerInternalId field.
+func (o *Transaction) SetPartnerInternalId(v string) {
+	o.PartnerInternalId = &v
 }
 
 // GetExtra returns the Extra field value if set, zero value otherwise.
@@ -367,36 +367,36 @@ func (o *Transaction) SetUnprocessedSources(v string) {
 	o.UnprocessedSources = &v
 }
 
-// GetExternalIDs returns the ExternalIDs field value if set, zero value otherwise.
-func (o *Transaction) GetExternalIDs() string {
-	if o == nil || IsNil(o.ExternalIDs) {
+// GetExternalIds returns the ExternalIds field value if set, zero value otherwise.
+func (o *Transaction) GetExternalIds() string {
+	if o == nil || IsNil(o.ExternalIds) {
 		var ret string
 		return ret
 	}
-	return *o.ExternalIDs
+	return *o.ExternalIds
 }
 
-// GetExternalIDsOk returns a tuple with the ExternalIDs field value if set, nil otherwise
+// GetExternalIdsOk returns a tuple with the ExternalIds field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Transaction) GetExternalIDsOk() (*string, bool) {
-	if o == nil || IsNil(o.ExternalIDs) {
+func (o *Transaction) GetExternalIdsOk() (*string, bool) {
+	if o == nil || IsNil(o.ExternalIds) {
 		return nil, false
 	}
-	return o.ExternalIDs, true
+	return o.ExternalIds, true
 }
 
-// HasExternalIDs returns a boolean if a field has been set.
-func (o *Transaction) HasExternalIDs() bool {
-	if o != nil && !IsNil(o.ExternalIDs) {
+// HasExternalIds returns a boolean if a field has been set.
+func (o *Transaction) HasExternalIds() bool {
+	if o != nil && !IsNil(o.ExternalIds) {
 		return true
 	}
 
 	return false
 }
 
-// SetExternalIDs gets a reference to the given string and assigns it to the ExternalIDs field.
-func (o *Transaction) SetExternalIDs(v string) {
-	o.ExternalIDs = &v
+// SetExternalIds gets a reference to the given string and assigns it to the ExternalIds field.
+func (o *Transaction) SetExternalIds(v string) {
+	o.ExternalIds = &v
 }
 
 // GetMovements returns the Movements field value
@@ -450,8 +450,8 @@ func (o Transaction) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.PartnerAccount) {
 		toSerialize["partnerAccount"] = o.PartnerAccount
 	}
-	if !IsNil(o.PartnerInternalID) {
-		toSerialize["partnerInternalID"] = o.PartnerInternalID
+	if !IsNil(o.PartnerInternalId) {
+		toSerialize["partnerInternalId"] = o.PartnerInternalId
 	}
 	if !IsNil(o.Extra) {
 		toSerialize["extra"] = o.Extra
@@ -459,8 +459,8 @@ func (o Transaction) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.UnprocessedSources) {
 		toSerialize["unprocessedSources"] = o.UnprocessedSources
 	}
-	if !IsNil(o.ExternalIDs) {
-		toSerialize["externalIDs"] = o.ExternalIDs
+	if !IsNil(o.ExternalIds) {
+		toSerialize["externalIds"] = o.ExternalIds
 	}
 	toSerialize["movements"] = o.Movements
 	return toSerialize, nil

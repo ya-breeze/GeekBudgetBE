@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**MatcherID** | **string** |  | 
+**MatcherId** | **string** |  | 
 **Transaction** | [**TransactionNoID**](TransactionNoID.md) |  | 
 
 ## Methods
 
 ### NewMatcherAndTransaction
 
-`func NewMatcherAndTransaction(matcherID string, transaction TransactionNoID, ) *MatcherAndTransaction`
+`func NewMatcherAndTransaction(matcherId string, transaction TransactionNoID, ) *MatcherAndTransaction`
 
 NewMatcherAndTransaction instantiates a new MatcherAndTransaction object
 This constructor will assign default values to properties that have it defined,
@@ -26,24 +26,24 @@ NewMatcherAndTransactionWithDefaults instantiates a new MatcherAndTransaction ob
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetMatcherID
+### GetMatcherId
 
-`func (o *MatcherAndTransaction) GetMatcherID() string`
+`func (o *MatcherAndTransaction) GetMatcherId() string`
 
-GetMatcherID returns the MatcherID field if non-nil, zero value otherwise.
+GetMatcherId returns the MatcherId field if non-nil, zero value otherwise.
 
-### GetMatcherIDOk
+### GetMatcherIdOk
 
-`func (o *MatcherAndTransaction) GetMatcherIDOk() (*string, bool)`
+`func (o *MatcherAndTransaction) GetMatcherIdOk() (*string, bool)`
 
-GetMatcherIDOk returns a tuple with the MatcherID field if it's non-nil, zero value otherwise
+GetMatcherIdOk returns a tuple with the MatcherId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetMatcherID
+### SetMatcherId
 
-`func (o *MatcherAndTransaction) SetMatcherID(v string)`
+`func (o *MatcherAndTransaction) SetMatcherId(v string)`
 
-SetMatcherID sets MatcherID field to given value.
+SetMatcherId sets MatcherId field to given value.
 
 
 ### GetTransaction

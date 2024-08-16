@@ -12,7 +12,7 @@
 package goserver
 
 type CurrencyAggregation struct {
-	CurrencyID string `json:"currencyID"`
+	CurrencyId string `json:"currencyId"`
 
 	Accounts []AccountAggregation `json:"accounts"`
 }
@@ -20,7 +20,7 @@ type CurrencyAggregation struct {
 // AssertCurrencyAggregationRequired checks if the required fields are not zero-ed
 func AssertCurrencyAggregationRequired(obj CurrencyAggregation) error {
 	elements := map[string]interface{}{
-		"currencyID": obj.CurrencyID,
+		"currencyId": obj.CurrencyId,
 		"accounts":   obj.Accounts,
 	}
 	for name, el := range elements {

@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 ## GetBalances
 
-> Aggregation GetBalances(ctx).From(from).To(to).OutputCurrencyID(outputCurrencyID).Execute()
+> Aggregation GetBalances(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
 
 get balance for filtered transactions
 
@@ -32,11 +32,11 @@ import (
 func main() {
 	from := time.Now() // time.Time | Uses transactions from this date (optional)
 	to := time.Now() // time.Time | Uses transactions to this date (optional)
-	outputCurrencyID := "123e4567-e89b-12d3-a456-426614174000" // string | Converts all transactions to this currency (optional)
+	outputCurrencyId := "123e4567-e89b-12d3-a456-426614174000" // string | Converts all transactions to this currency (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.AggregationsAPI.GetBalances(context.Background()).From(from).To(to).OutputCurrencyID(outputCurrencyID).Execute()
+	resp, r, err := apiClient.AggregationsAPI.GetBalances(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `AggregationsAPI.GetBalances``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -59,7 +59,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **from** | **time.Time** | Uses transactions from this date | 
  **to** | **time.Time** | Uses transactions to this date | 
- **outputCurrencyID** | **string** | Converts all transactions to this currency | 
+ **outputCurrencyId** | **string** | Converts all transactions to this currency | 
 
 ### Return type
 
@@ -81,7 +81,7 @@ Name | Type | Description  | Notes
 
 ## GetExpenses
 
-> Aggregation GetExpenses(ctx).From(from).To(to).OutputCurrencyID(outputCurrencyID).Execute()
+> Aggregation GetExpenses(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
 
 get expenses for filtered transactions
 
@@ -101,11 +101,11 @@ import (
 func main() {
 	from := time.Now() // time.Time | Uses transactions from this date (optional)
 	to := time.Now() // time.Time | Uses transactions to this date (optional)
-	outputCurrencyID := "outputCurrencyID_example" // string | Converts all transactions to this currency (optional)
+	outputCurrencyId := "outputCurrencyId_example" // string | Converts all transactions to this currency (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.AggregationsAPI.GetExpenses(context.Background()).From(from).To(to).OutputCurrencyID(outputCurrencyID).Execute()
+	resp, r, err := apiClient.AggregationsAPI.GetExpenses(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `AggregationsAPI.GetExpenses``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -128,7 +128,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **from** | **time.Time** | Uses transactions from this date | 
  **to** | **time.Time** | Uses transactions to this date | 
- **outputCurrencyID** | **string** | Converts all transactions to this currency | 
+ **outputCurrencyId** | **string** | Converts all transactions to this currency | 
 
 ### Return type
 
@@ -150,7 +150,7 @@ Name | Type | Description  | Notes
 
 ## GetIncomes
 
-> Aggregation GetIncomes(ctx).From(from).To(to).OutputCurrencyID(outputCurrencyID).Execute()
+> Aggregation GetIncomes(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
 
 get incomes for filtered transactions
 
@@ -170,11 +170,11 @@ import (
 func main() {
 	from := time.Now() // time.Time | Uses transactions from this date (optional)
 	to := time.Now() // time.Time | Uses transactions to this date (optional)
-	outputCurrencyID := "outputCurrencyID_example" // string | Converts all transactions to this currency (optional)
+	outputCurrencyId := "outputCurrencyId_example" // string | Converts all transactions to this currency (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.AggregationsAPI.GetIncomes(context.Background()).From(from).To(to).OutputCurrencyID(outputCurrencyID).Execute()
+	resp, r, err := apiClient.AggregationsAPI.GetIncomes(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `AggregationsAPI.GetIncomes``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -197,7 +197,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **from** | **time.Time** | Uses transactions from this date | 
  **to** | **time.Time** | Uses transactions to this date | 
- **outputCurrencyID** | **string** | Converts all transactions to this currency | 
+ **outputCurrencyId** | **string** | Converts all transactions to this currency | 
 
 ### Return type
 

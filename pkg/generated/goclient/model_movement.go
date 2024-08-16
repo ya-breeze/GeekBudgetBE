@@ -23,8 +23,8 @@ var _ MappedNullable = &Movement{}
 // Movement struct for Movement
 type Movement struct {
 	Amount      float64 `json:"amount"`
-	CurrencyID  string  `json:"currencyID"`
-	AccountID   string  `json:"accountID"`
+	CurrencyId  string  `json:"currencyId"`
+	AccountId   string  `json:"accountId"`
 	Description *string `json:"description,omitempty"`
 }
 
@@ -34,11 +34,11 @@ type _Movement Movement
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMovement(amount float64, currencyID string, accountID string) *Movement {
+func NewMovement(amount float64, currencyId string, accountId string) *Movement {
 	this := Movement{}
 	this.Amount = amount
-	this.CurrencyID = currencyID
-	this.AccountID = accountID
+	this.CurrencyId = currencyId
+	this.AccountId = accountId
 	return &this
 }
 
@@ -74,52 +74,52 @@ func (o *Movement) SetAmount(v float64) {
 	o.Amount = v
 }
 
-// GetCurrencyID returns the CurrencyID field value
-func (o *Movement) GetCurrencyID() string {
+// GetCurrencyId returns the CurrencyId field value
+func (o *Movement) GetCurrencyId() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.CurrencyID
+	return o.CurrencyId
 }
 
-// GetCurrencyIDOk returns a tuple with the CurrencyID field value
+// GetCurrencyIdOk returns a tuple with the CurrencyId field value
 // and a boolean to check if the value has been set.
-func (o *Movement) GetCurrencyIDOk() (*string, bool) {
+func (o *Movement) GetCurrencyIdOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.CurrencyID, true
+	return &o.CurrencyId, true
 }
 
-// SetCurrencyID sets field value
-func (o *Movement) SetCurrencyID(v string) {
-	o.CurrencyID = v
+// SetCurrencyId sets field value
+func (o *Movement) SetCurrencyId(v string) {
+	o.CurrencyId = v
 }
 
-// GetAccountID returns the AccountID field value
-func (o *Movement) GetAccountID() string {
+// GetAccountId returns the AccountId field value
+func (o *Movement) GetAccountId() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.AccountID
+	return o.AccountId
 }
 
-// GetAccountIDOk returns a tuple with the AccountID field value
+// GetAccountIdOk returns a tuple with the AccountId field value
 // and a boolean to check if the value has been set.
-func (o *Movement) GetAccountIDOk() (*string, bool) {
+func (o *Movement) GetAccountIdOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.AccountID, true
+	return &o.AccountId, true
 }
 
-// SetAccountID sets field value
-func (o *Movement) SetAccountID(v string) {
-	o.AccountID = v
+// SetAccountId sets field value
+func (o *Movement) SetAccountId(v string) {
+	o.AccountId = v
 }
 
 // GetDescription returns the Description field value if set, zero value otherwise.
@@ -165,8 +165,8 @@ func (o Movement) MarshalJSON() ([]byte, error) {
 func (o Movement) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["amount"] = o.Amount
-	toSerialize["currencyID"] = o.CurrencyID
-	toSerialize["accountID"] = o.AccountID
+	toSerialize["currencyId"] = o.CurrencyId
+	toSerialize["accountId"] = o.AccountId
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
@@ -179,8 +179,8 @@ func (o *Movement) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"amount",
-		"currencyID",
-		"accountID",
+		"currencyId",
+		"accountId",
 	}
 
 	allProperties := make(map[string]interface{})

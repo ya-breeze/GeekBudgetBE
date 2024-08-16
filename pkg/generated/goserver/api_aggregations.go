@@ -97,14 +97,14 @@ func (c *AggregationsAPIController) GetBalances(w http.ResponseWriter, r *http.R
 		toParam = param
 	} else {
 	}
-	var outputCurrencyIDParam string
-	if query.Has("outputCurrencyID") {
-		param := query.Get("outputCurrencyID")
+	var outputCurrencyIdParam string
+	if query.Has("outputCurrencyId") {
+		param := query.Get("outputCurrencyId")
 
-		outputCurrencyIDParam = param
+		outputCurrencyIdParam = param
 	} else {
 	}
-	result, err := c.service.GetBalances(r.Context(), fromParam, toParam, outputCurrencyIDParam)
+	result, err := c.service.GetBalances(r.Context(), fromParam, toParam, outputCurrencyIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -143,14 +143,14 @@ func (c *AggregationsAPIController) GetExpenses(w http.ResponseWriter, r *http.R
 		toParam = param
 	} else {
 	}
-	var outputCurrencyIDParam string
-	if query.Has("outputCurrencyID") {
-		param := query.Get("outputCurrencyID")
+	var outputCurrencyIdParam string
+	if query.Has("outputCurrencyId") {
+		param := query.Get("outputCurrencyId")
 
-		outputCurrencyIDParam = param
+		outputCurrencyIdParam = param
 	} else {
 	}
-	result, err := c.service.GetExpenses(r.Context(), fromParam, toParam, outputCurrencyIDParam)
+	result, err := c.service.GetExpenses(r.Context(), fromParam, toParam, outputCurrencyIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -189,14 +189,14 @@ func (c *AggregationsAPIController) GetIncomes(w http.ResponseWriter, r *http.Re
 		toParam = param
 	} else {
 	}
-	var outputCurrencyIDParam string
-	if query.Has("outputCurrencyID") {
-		param := query.Get("outputCurrencyID")
+	var outputCurrencyIdParam string
+	if query.Has("outputCurrencyId") {
+		param := query.Get("outputCurrencyId")
 
-		outputCurrencyIDParam = param
+		outputCurrencyIdParam = param
 	} else {
 	}
-	result, err := c.service.GetIncomes(r.Context(), fromParam, toParam, outputCurrencyIDParam)
+	result, err := c.service.GetIncomes(r.Context(), fromParam, toParam, outputCurrencyIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

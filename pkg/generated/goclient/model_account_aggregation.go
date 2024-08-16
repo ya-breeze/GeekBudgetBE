@@ -22,7 +22,7 @@ var _ MappedNullable = &AccountAggregation{}
 
 // AccountAggregation struct for AccountAggregation
 type AccountAggregation struct {
-	AccountID string    `json:"accountID"`
+	AccountId string    `json:"accountId"`
 	Amounts   []float64 `json:"amounts"`
 }
 
@@ -32,9 +32,9 @@ type _AccountAggregation AccountAggregation
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewAccountAggregation(accountID string, amounts []float64) *AccountAggregation {
+func NewAccountAggregation(accountId string, amounts []float64) *AccountAggregation {
 	this := AccountAggregation{}
-	this.AccountID = accountID
+	this.AccountId = accountId
 	this.Amounts = amounts
 	return &this
 }
@@ -47,28 +47,28 @@ func NewAccountAggregationWithDefaults() *AccountAggregation {
 	return &this
 }
 
-// GetAccountID returns the AccountID field value
-func (o *AccountAggregation) GetAccountID() string {
+// GetAccountId returns the AccountId field value
+func (o *AccountAggregation) GetAccountId() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.AccountID
+	return o.AccountId
 }
 
-// GetAccountIDOk returns a tuple with the AccountID field value
+// GetAccountIdOk returns a tuple with the AccountId field value
 // and a boolean to check if the value has been set.
-func (o *AccountAggregation) GetAccountIDOk() (*string, bool) {
+func (o *AccountAggregation) GetAccountIdOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.AccountID, true
+	return &o.AccountId, true
 }
 
-// SetAccountID sets field value
-func (o *AccountAggregation) SetAccountID(v string) {
-	o.AccountID = v
+// SetAccountId sets field value
+func (o *AccountAggregation) SetAccountId(v string) {
+	o.AccountId = v
 }
 
 // GetAmounts returns the Amounts field value
@@ -105,7 +105,7 @@ func (o AccountAggregation) MarshalJSON() ([]byte, error) {
 
 func (o AccountAggregation) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["accountID"] = o.AccountID
+	toSerialize["accountId"] = o.AccountId
 	toSerialize["amounts"] = o.Amounts
 	return toSerialize, nil
 }
@@ -115,7 +115,7 @@ func (o *AccountAggregation) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"accountID",
+		"accountId",
 		"amounts",
 	}
 

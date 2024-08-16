@@ -5,15 +5,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Amount** | **float64** |  | 
-**CurrencyID** | **string** |  | 
-**AccountID** | **string** |  | 
+**CurrencyId** | **string** |  | 
+**AccountId** | **string** |  | 
 **Description** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
 ### NewMovement
 
-`func NewMovement(amount float64, currencyID string, accountID string, ) *Movement`
+`func NewMovement(amount float64, currencyId string, accountId string, ) *Movement`
 
 NewMovement instantiates a new Movement object
 This constructor will assign default values to properties that have it defined,
@@ -48,44 +48,44 @@ and a boolean to check if the value has been set.
 SetAmount sets Amount field to given value.
 
 
-### GetCurrencyID
+### GetCurrencyId
 
-`func (o *Movement) GetCurrencyID() string`
+`func (o *Movement) GetCurrencyId() string`
 
-GetCurrencyID returns the CurrencyID field if non-nil, zero value otherwise.
+GetCurrencyId returns the CurrencyId field if non-nil, zero value otherwise.
 
-### GetCurrencyIDOk
+### GetCurrencyIdOk
 
-`func (o *Movement) GetCurrencyIDOk() (*string, bool)`
+`func (o *Movement) GetCurrencyIdOk() (*string, bool)`
 
-GetCurrencyIDOk returns a tuple with the CurrencyID field if it's non-nil, zero value otherwise
+GetCurrencyIdOk returns a tuple with the CurrencyId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetCurrencyID
+### SetCurrencyId
 
-`func (o *Movement) SetCurrencyID(v string)`
+`func (o *Movement) SetCurrencyId(v string)`
 
-SetCurrencyID sets CurrencyID field to given value.
+SetCurrencyId sets CurrencyId field to given value.
 
 
-### GetAccountID
+### GetAccountId
 
-`func (o *Movement) GetAccountID() string`
+`func (o *Movement) GetAccountId() string`
 
-GetAccountID returns the AccountID field if non-nil, zero value otherwise.
+GetAccountId returns the AccountId field if non-nil, zero value otherwise.
 
-### GetAccountIDOk
+### GetAccountIdOk
 
-`func (o *Movement) GetAccountIDOk() (*string, bool)`
+`func (o *Movement) GetAccountIdOk() (*string, bool)`
 
-GetAccountIDOk returns a tuple with the AccountID field if it's non-nil, zero value otherwise
+GetAccountIdOk returns a tuple with the AccountId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAccountID
+### SetAccountId
 
-`func (o *Movement) SetAccountID(v string)`
+`func (o *Movement) SetAccountId(v string)`
 
-SetAccountID sets AccountID field to given value.
+SetAccountId sets AccountId field to given value.
 
 
 ### GetDescription

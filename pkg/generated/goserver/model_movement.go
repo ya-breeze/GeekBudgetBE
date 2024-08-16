@@ -14,9 +14,9 @@ package goserver
 type Movement struct {
 	Amount float64 `json:"amount"`
 
-	CurrencyID string `json:"currencyID"`
+	CurrencyId string `json:"currencyId"`
 
-	AccountID string `json:"accountID"`
+	AccountId string `json:"accountId"`
 
 	Description string `json:"description,omitempty"`
 }
@@ -25,8 +25,8 @@ type Movement struct {
 func AssertMovementRequired(obj Movement) error {
 	elements := map[string]interface{}{
 		"amount":     obj.Amount,
-		"currencyID": obj.CurrencyID,
-		"accountID":  obj.AccountID,
+		"currencyId": obj.CurrencyId,
+		"accountId":  obj.AccountId,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

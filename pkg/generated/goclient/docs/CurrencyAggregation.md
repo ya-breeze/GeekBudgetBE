@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**CurrencyID** | **string** |  | 
+**CurrencyId** | **string** |  | 
 **Accounts** | [**[]AccountAggregation**](AccountAggregation.md) |  | 
 
 ## Methods
 
 ### NewCurrencyAggregation
 
-`func NewCurrencyAggregation(currencyID string, accounts []AccountAggregation, ) *CurrencyAggregation`
+`func NewCurrencyAggregation(currencyId string, accounts []AccountAggregation, ) *CurrencyAggregation`
 
 NewCurrencyAggregation instantiates a new CurrencyAggregation object
 This constructor will assign default values to properties that have it defined,
@@ -26,24 +26,24 @@ NewCurrencyAggregationWithDefaults instantiates a new CurrencyAggregation object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetCurrencyID
+### GetCurrencyId
 
-`func (o *CurrencyAggregation) GetCurrencyID() string`
+`func (o *CurrencyAggregation) GetCurrencyId() string`
 
-GetCurrencyID returns the CurrencyID field if non-nil, zero value otherwise.
+GetCurrencyId returns the CurrencyId field if non-nil, zero value otherwise.
 
-### GetCurrencyIDOk
+### GetCurrencyIdOk
 
-`func (o *CurrencyAggregation) GetCurrencyIDOk() (*string, bool)`
+`func (o *CurrencyAggregation) GetCurrencyIdOk() (*string, bool)`
 
-GetCurrencyIDOk returns a tuple with the CurrencyID field if it's non-nil, zero value otherwise
+GetCurrencyIdOk returns a tuple with the CurrencyId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetCurrencyID
+### SetCurrencyId
 
-`func (o *CurrencyAggregation) SetCurrencyID(v string)`
+`func (o *CurrencyAggregation) SetCurrencyId(v string)`
 
-SetCurrencyID sets CurrencyID field to given value.
+SetCurrencyId sets CurrencyId field to given value.
 
 
 ### GetAccounts

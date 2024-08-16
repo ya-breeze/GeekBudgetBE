@@ -31,7 +31,7 @@ import (
 
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | 
-	transactionNoID := *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyID_example", "AccountID_example")}) // TransactionNoID | 
+	transactionNoID := *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyId_example", "AccountId_example")}) // TransactionNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

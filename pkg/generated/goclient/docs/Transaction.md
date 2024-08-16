@@ -11,10 +11,10 @@ Name | Type | Description | Notes
 **Tags** | Pointer to **[]string** |  | [optional] 
 **PartnerName** | Pointer to **string** |  | [optional] 
 **PartnerAccount** | Pointer to **string** |  | [optional] 
-**PartnerInternalID** | Pointer to **string** | Internal bank&#39;s ID to be able to match later if necessary | [optional] 
+**PartnerInternalId** | Pointer to **string** | Internal bank&#39;s ID to be able to match later if necessary | [optional] 
 **Extra** | Pointer to **string** | Stores extra data about transaction. For example could hold \&quot;variable symbol\&quot; to distinguish payment for the same account, but with different meaning | [optional] 
 **UnprocessedSources** | Pointer to **string** | Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis | [optional] 
-**ExternalIDs** | Pointer to **string** | IDs of unprocessed transaction - to match later | [optional] 
+**ExternalIds** | Pointer to **string** | IDs of unprocessed transaction - to match later | [optional] 
 **Movements** | [**[]Movement**](Movement.md) |  | 
 
 ## Methods
@@ -201,30 +201,30 @@ SetPartnerAccount sets PartnerAccount field to given value.
 
 HasPartnerAccount returns a boolean if a field has been set.
 
-### GetPartnerInternalID
+### GetPartnerInternalId
 
-`func (o *Transaction) GetPartnerInternalID() string`
+`func (o *Transaction) GetPartnerInternalId() string`
 
-GetPartnerInternalID returns the PartnerInternalID field if non-nil, zero value otherwise.
+GetPartnerInternalId returns the PartnerInternalId field if non-nil, zero value otherwise.
 
-### GetPartnerInternalIDOk
+### GetPartnerInternalIdOk
 
-`func (o *Transaction) GetPartnerInternalIDOk() (*string, bool)`
+`func (o *Transaction) GetPartnerInternalIdOk() (*string, bool)`
 
-GetPartnerInternalIDOk returns a tuple with the PartnerInternalID field if it's non-nil, zero value otherwise
+GetPartnerInternalIdOk returns a tuple with the PartnerInternalId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetPartnerInternalID
+### SetPartnerInternalId
 
-`func (o *Transaction) SetPartnerInternalID(v string)`
+`func (o *Transaction) SetPartnerInternalId(v string)`
 
-SetPartnerInternalID sets PartnerInternalID field to given value.
+SetPartnerInternalId sets PartnerInternalId field to given value.
 
-### HasPartnerInternalID
+### HasPartnerInternalId
 
-`func (o *Transaction) HasPartnerInternalID() bool`
+`func (o *Transaction) HasPartnerInternalId() bool`
 
-HasPartnerInternalID returns a boolean if a field has been set.
+HasPartnerInternalId returns a boolean if a field has been set.
 
 ### GetExtra
 
@@ -276,30 +276,30 @@ SetUnprocessedSources sets UnprocessedSources field to given value.
 
 HasUnprocessedSources returns a boolean if a field has been set.
 
-### GetExternalIDs
+### GetExternalIds
 
-`func (o *Transaction) GetExternalIDs() string`
+`func (o *Transaction) GetExternalIds() string`
 
-GetExternalIDs returns the ExternalIDs field if non-nil, zero value otherwise.
+GetExternalIds returns the ExternalIds field if non-nil, zero value otherwise.
 
-### GetExternalIDsOk
+### GetExternalIdsOk
 
-`func (o *Transaction) GetExternalIDsOk() (*string, bool)`
+`func (o *Transaction) GetExternalIdsOk() (*string, bool)`
 
-GetExternalIDsOk returns a tuple with the ExternalIDs field if it's non-nil, zero value otherwise
+GetExternalIdsOk returns a tuple with the ExternalIds field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetExternalIDs
+### SetExternalIds
 
-`func (o *Transaction) SetExternalIDs(v string)`
+`func (o *Transaction) SetExternalIds(v string)`
 
-SetExternalIDs sets ExternalIDs field to given value.
+SetExternalIds sets ExternalIds field to given value.
 
-### HasExternalIDs
+### HasExternalIds
 
-`func (o *Transaction) HasExternalIDs() bool`
+`func (o *Transaction) HasExternalIds() bool`
 
-HasExternalIDs returns a boolean if a field has been set.
+HasExternalIds returns a boolean if a field has been set.
 
 ### GetMovements
 

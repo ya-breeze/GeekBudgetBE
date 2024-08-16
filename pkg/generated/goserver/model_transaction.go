@@ -31,7 +31,7 @@ type Transaction struct {
 	PartnerAccount string `json:"partnerAccount,omitempty"`
 
 	// Internal bank's ID to be able to match later if necessary
-	PartnerInternalID string `json:"partnerInternalID,omitempty"`
+	PartnerInternalId string `json:"partnerInternalId,omitempty"`
 
 	// Stores extra data about transaction. For example could hold \"variable symbol\" to distinguish payment for the same account, but with different meaning
 	Extra string `json:"extra,omitempty"`
@@ -40,7 +40,7 @@ type Transaction struct {
 	UnprocessedSources string `json:"unprocessedSources,omitempty"`
 
 	// IDs of unprocessed transaction - to match later
-	ExternalIDs string `json:"externalIDs,omitempty"`
+	ExternalIds string `json:"externalIds,omitempty"`
 
 	Movements []Movement `json:"movements"`
 }

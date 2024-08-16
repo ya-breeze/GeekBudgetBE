@@ -28,7 +28,7 @@ type ApiGetBalancesRequest struct {
 	ApiService       *AggregationsAPIService
 	from             *time.Time
 	to               *time.Time
-	outputCurrencyID *string
+	outputCurrencyId *string
 }
 
 // Uses transactions from this date
@@ -44,8 +44,8 @@ func (r ApiGetBalancesRequest) To(to time.Time) ApiGetBalancesRequest {
 }
 
 // Converts all transactions to this currency
-func (r ApiGetBalancesRequest) OutputCurrencyID(outputCurrencyID string) ApiGetBalancesRequest {
-	r.outputCurrencyID = &outputCurrencyID
+func (r ApiGetBalancesRequest) OutputCurrencyId(outputCurrencyId string) ApiGetBalancesRequest {
+	r.outputCurrencyId = &outputCurrencyId
 	return r
 }
 
@@ -94,8 +94,8 @@ func (a *AggregationsAPIService) GetBalancesExecute(r ApiGetBalancesRequest) (*A
 	if r.to != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "to", r.to, "")
 	}
-	if r.outputCurrencyID != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyID", r.outputCurrencyID, "")
+	if r.outputCurrencyId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -156,7 +156,7 @@ type ApiGetExpensesRequest struct {
 	ApiService       *AggregationsAPIService
 	from             *time.Time
 	to               *time.Time
-	outputCurrencyID *string
+	outputCurrencyId *string
 }
 
 // Uses transactions from this date
@@ -172,8 +172,8 @@ func (r ApiGetExpensesRequest) To(to time.Time) ApiGetExpensesRequest {
 }
 
 // Converts all transactions to this currency
-func (r ApiGetExpensesRequest) OutputCurrencyID(outputCurrencyID string) ApiGetExpensesRequest {
-	r.outputCurrencyID = &outputCurrencyID
+func (r ApiGetExpensesRequest) OutputCurrencyId(outputCurrencyId string) ApiGetExpensesRequest {
+	r.outputCurrencyId = &outputCurrencyId
 	return r
 }
 
@@ -222,8 +222,8 @@ func (a *AggregationsAPIService) GetExpensesExecute(r ApiGetExpensesRequest) (*A
 	if r.to != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "to", r.to, "")
 	}
-	if r.outputCurrencyID != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyID", r.outputCurrencyID, "")
+	if r.outputCurrencyId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -284,7 +284,7 @@ type ApiGetIncomesRequest struct {
 	ApiService       *AggregationsAPIService
 	from             *time.Time
 	to               *time.Time
-	outputCurrencyID *string
+	outputCurrencyId *string
 }
 
 // Uses transactions from this date
@@ -300,8 +300,8 @@ func (r ApiGetIncomesRequest) To(to time.Time) ApiGetIncomesRequest {
 }
 
 // Converts all transactions to this currency
-func (r ApiGetIncomesRequest) OutputCurrencyID(outputCurrencyID string) ApiGetIncomesRequest {
-	r.outputCurrencyID = &outputCurrencyID
+func (r ApiGetIncomesRequest) OutputCurrencyId(outputCurrencyId string) ApiGetIncomesRequest {
+	r.outputCurrencyId = &outputCurrencyId
 	return r
 }
 
@@ -350,8 +350,8 @@ func (a *AggregationsAPIService) GetIncomesExecute(r ApiGetIncomesRequest) (*Agg
 	if r.to != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "to", r.to, "")
 	}
-	if r.outputCurrencyID != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyID", r.outputCurrencyID, "")
+	if r.outputCurrencyId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

@@ -22,7 +22,7 @@ var _ MappedNullable = &MatcherAndTransaction{}
 
 // MatcherAndTransaction struct for MatcherAndTransaction
 type MatcherAndTransaction struct {
-	MatcherID   string          `json:"matcherID"`
+	MatcherId   string          `json:"matcherId"`
 	Transaction TransactionNoID `json:"transaction"`
 }
 
@@ -32,9 +32,9 @@ type _MatcherAndTransaction MatcherAndTransaction
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMatcherAndTransaction(matcherID string, transaction TransactionNoID) *MatcherAndTransaction {
+func NewMatcherAndTransaction(matcherId string, transaction TransactionNoID) *MatcherAndTransaction {
 	this := MatcherAndTransaction{}
-	this.MatcherID = matcherID
+	this.MatcherId = matcherId
 	this.Transaction = transaction
 	return &this
 }
@@ -47,28 +47,28 @@ func NewMatcherAndTransactionWithDefaults() *MatcherAndTransaction {
 	return &this
 }
 
-// GetMatcherID returns the MatcherID field value
-func (o *MatcherAndTransaction) GetMatcherID() string {
+// GetMatcherId returns the MatcherId field value
+func (o *MatcherAndTransaction) GetMatcherId() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.MatcherID
+	return o.MatcherId
 }
 
-// GetMatcherIDOk returns a tuple with the MatcherID field value
+// GetMatcherIdOk returns a tuple with the MatcherId field value
 // and a boolean to check if the value has been set.
-func (o *MatcherAndTransaction) GetMatcherIDOk() (*string, bool) {
+func (o *MatcherAndTransaction) GetMatcherIdOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.MatcherID, true
+	return &o.MatcherId, true
 }
 
-// SetMatcherID sets field value
-func (o *MatcherAndTransaction) SetMatcherID(v string) {
-	o.MatcherID = v
+// SetMatcherId sets field value
+func (o *MatcherAndTransaction) SetMatcherId(v string) {
+	o.MatcherId = v
 }
 
 // GetTransaction returns the Transaction field value
@@ -105,7 +105,7 @@ func (o MatcherAndTransaction) MarshalJSON() ([]byte, error) {
 
 func (o MatcherAndTransaction) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["matcherID"] = o.MatcherID
+	toSerialize["matcherId"] = o.MatcherId
 	toSerialize["transaction"] = o.Transaction
 	return toSerialize, nil
 }
@@ -115,7 +115,7 @@ func (o *MatcherAndTransaction) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"matcherID",
+		"matcherId",
 		"transaction",
 	}
 
