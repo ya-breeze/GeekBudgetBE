@@ -26,7 +26,8 @@ replace-templates:
 
 .PHONY: generate
 generate:
-	@rm -rf pkg/generated/goclient pkg/generated/goserver
+	# Golang client and server
+	@rm -rf pkg/generated/goclient pkg/generated/goserver pkg/generated/angular
 	@mkdir -p pkg/generated/goclient pkg/generated/goserver
 	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
 		openapitools/openapi-generator-cli generate \
@@ -59,6 +60,15 @@ generate:
 	@rm -rf pkg/generated/goserver/go
 	@goimports -l -w ./pkg/generated/
 	@gofumpt -l -w ./pkg/generated/
+
+	# Angular client
+	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
+		openapitools/openapi-generator-cli generate \
+		-i /local/api/openapi.yaml \
+		-g typescript-angular \
+		-o /local/pkg/generated/angular \
+		--additional-properties=apiModulePrefix=geekbudgetclient
+
 	@echo "✅ Generation complete"
 
 .PHONY: validate
