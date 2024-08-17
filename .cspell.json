@@ -4,6 +4,7 @@
     "minWordLength": 2,
     "words": [
         "ctx",
+        "CZK",
         "devcontainers",
         "Env",
         "Errorf",
@@ -21,6 +22,7 @@
         "nolint",
         "onsi",
         "Sprintf",
-        "struct"
+        "struct",
+        "USD"
     ]
 }
