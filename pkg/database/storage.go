@@ -48,18 +48,18 @@ type Storage interface {
 }
 
 type storage struct {
-	log    *slog.Logger
-	dbPath string
-	db     *gorm.DB
+	log *slog.Logger
+	cfg *config.Config
+	db  *gorm.DB
 }
 
 func NewStorage(logger *slog.Logger, cfg *config.Config) Storage {
-	return &storage{log: logger, db: nil, dbPath: cfg.DBPath}
+	return &storage{log: logger, db: nil, cfg: cfg}
 }
 
 func (s *storage) Open() error {
 	var err error
-	s.db, err = openSqlite(s.dbPath)
+	s.db, err = openSqlite(s.log, s.cfg.DBPath, s.cfg.Verbose)
 	if err != nil {
 		panic("failed to connect database")
 	}

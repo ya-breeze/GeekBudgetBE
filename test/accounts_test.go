@@ -3,9 +3,7 @@ package test_test
 import (
 	"context"
 	"encoding/base64"
-	"log/slog"
 	"net"
-	"os"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,6 +11,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
+	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
 var _ = Describe("Accounts API", func() {
@@ -23,7 +22,7 @@ var _ = Describe("Accounts API", func() {
 	var finishCham chan int
 	var client *goclient.APIClient
 	var accessToken string
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := test.CreateTestLogger()
 
 	BeforeEach(func() {
 		ctx, cancel = context.WithCancel(context.Background())

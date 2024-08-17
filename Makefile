@@ -10,7 +10,8 @@ build: test
 
 .PHONY: run
 run:
-	@go run cmd/main.go server
+	@GB_USERS=test:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
+	go run cmd/main.go server
 
 .PHONY: replace-templates
 replace-templates:
