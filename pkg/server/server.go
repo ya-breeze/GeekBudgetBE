@@ -51,6 +51,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 		MatchersAPIService:                NewMatchersAPIServiceImpl(logger, db),
 		BankImportersAPIService:           NewBankImportersAPIServiceImpl(logger, db),
 		AggregationsAPIService:            NewAggregationsAPIServiceImpl(logger, db),
+		NotificationsAPIService:           NewNotificationsAPIServiceImpl(logger, db),
 	}
 }
 
