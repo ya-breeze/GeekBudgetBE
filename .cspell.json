@@ -24,6 +24,7 @@
         "onsi",
         "Sprintf",
         "struct",
-        "USD"
+        "USD",
+        "vcs"
     ]
 }

@@ -38,7 +38,7 @@ type CustomControllers struct {
 }
 
 func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
-	controllers CustomControllers, middlewares ...mux.MiddlewareFunc) (net.Addr, chan int, error) {
+	controllers CustomControllers, extraRouters []Router, middlewares ...mux.MiddlewareFunc) (net.Addr, chan int, error) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to listen: %w", err)
@@ -105,7 +105,8 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	UserAPIController := NewUserAPIController(UserAPIService)
 
-	router := NewRouter(AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+	router := NewRouter(routers...)
 
 	router.Use(middlewares...)
 

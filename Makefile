@@ -4,14 +4,14 @@ all: build test lint
 
 
 .PHONY: build
-build: test
-	@go build -o bin/geekbudget cmd/main.go
+build:
+	@cd cmd && go build -o ../bin/geekbudget
 	@echo "✅ Build complete"
 
 .PHONY: run
-run:
+run: build
 	@GB_USERS=test:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
-	go run cmd/main.go server
+	./bin/geekbudget server
 
 .PHONY: replace-templates
 replace-templates:

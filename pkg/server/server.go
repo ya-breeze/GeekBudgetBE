@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strings"
 	"syscall"
 
@@ -49,6 +51,19 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 }
 
 func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Addr, chan int, error) {
+	commit := func() string {
+		if info, ok := debug.ReadBuildInfo(); ok {
+			for _, setting := range info.Settings {
+				if setting.Key == "vcs.revision" {
+					return setting.Value
+				}
+			}
+		}
+
+		return ""
+	}()
+	logger.Info("Built from git commit: " + commit)
+
 	if cfg.JWTSecret == "" {
 		logger.Warn("JWT secret is not set. Creating random secret...")
 		cfg.JWTSecret = auth.GenerateRandomString(32)
@@ -78,8 +93,10 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 		logger.Info("No users defined in configuration")
 	}
 
-	return goserver.Serve(ctx, logger, cfg, createControllers(logger, cfg, storage),
-		createMiddlewares(logger, cfg, storage)...)
+	return goserver.Serve(ctx, logger, cfg,
+		createControllers(logger, cfg, storage),
+		[]goserver.Router{NewRootRouter(commit)},
+		createMiddlewares(logger, cfg)...)
 }
 
 func upsertUser(storage database.Storage, username, hashedPassword string, logger *slog.Logger) error {
@@ -103,8 +120,31 @@ func upsertUser(storage database.Storage, username, hashedPassword string, logge
 	return nil
 }
 
-func createMiddlewares(logger *slog.Logger, cfg *config.Config, db database.Storage) []mux.MiddlewareFunc {
+func createMiddlewares(logger *slog.Logger, cfg *config.Config) []mux.MiddlewareFunc {
 	return []mux.MiddlewareFunc{
-		AuthMiddleware(logger, cfg, db),
+		AuthMiddleware(logger, cfg),
+	}
+}
+
+type RootRouter struct {
+	commit string
+}
+
+func NewRootRouter(commit string) *RootRouter {
+	return &RootRouter{commit: commit}
+}
+
+func (r *RootRouter) Routes() goserver.Routes {
+	return goserver.Routes{
+		"RootPath": goserver.Route{
+			Method:  "GET",
+			Pattern: "/",
+			HandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintln(w, "GeekBudget API v0.0.1")
+				fmt.Fprintln(w, "Git commit: "+r.commit)
+			},
+		},
 	}
 }
