@@ -48,6 +48,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 		CurrenciesAPIService:              NewCurrenciesAPIServicer(logger, db),
 		TransactionsAPIService:            NewTransactionsAPIService(logger, db),
 		UnprocessedTransactionsAPIService: NewUnprocessedTransactionsAPIServiceImpl(logger, db),
+		MatchersAPIService:                NewMatchersAPIServiceImpl(logger, db),
 	}
 }
 
