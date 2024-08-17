@@ -37,7 +37,7 @@ type Transaction struct {
 	// Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis
 	UnprocessedSources *string `json:"unprocessedSources,omitempty"`
 	// IDs of unprocessed transaction - to match later
-	ExternalIds *string    `json:"externalIds,omitempty"`
+	ExternalIds []string   `json:"externalIds,omitempty"`
 	Movements   []Movement `json:"movements"`
 }
 
@@ -368,17 +368,17 @@ func (o *Transaction) SetUnprocessedSources(v string) {
 }
 
 // GetExternalIds returns the ExternalIds field value if set, zero value otherwise.
-func (o *Transaction) GetExternalIds() string {
+func (o *Transaction) GetExternalIds() []string {
 	if o == nil || IsNil(o.ExternalIds) {
-		var ret string
+		var ret []string
 		return ret
 	}
-	return *o.ExternalIds
+	return o.ExternalIds
 }
 
 // GetExternalIdsOk returns a tuple with the ExternalIds field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Transaction) GetExternalIdsOk() (*string, bool) {
+func (o *Transaction) GetExternalIdsOk() ([]string, bool) {
 	if o == nil || IsNil(o.ExternalIds) {
 		return nil, false
 	}
@@ -394,9 +394,9 @@ func (o *Transaction) HasExternalIds() bool {
 	return false
 }
 
-// SetExternalIds gets a reference to the given string and assigns it to the ExternalIds field.
-func (o *Transaction) SetExternalIds(v string) {
-	o.ExternalIds = &v
+// SetExternalIds gets a reference to the given []string and assigns it to the ExternalIds field.
+func (o *Transaction) SetExternalIds(v []string) {
+	o.ExternalIds = v
 }
 
 // GetMovements returns the Movements field value

@@ -39,6 +39,12 @@ type Storage interface {
 	GetCurrency(userID string, id string) (goserver.Currency, error)
 	UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
 	DeleteCurrency(userID string, id string) error
+
+	GetTransactions(userID string) ([]goserver.Transaction, error)
+	CreateTransaction(userID string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
+	UpdateTransaction(userID string, id string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
+	DeleteTransaction(userID string, id string) error
+	GetTransaction(userID string, id string) (goserver.Transaction, error)
 }
 
 type storage struct {
@@ -279,4 +285,82 @@ func (s *storage) DeleteCurrency(userID string, id string) error {
 	}
 
 	return nil
+}
+
+func (s *storage) GetTransactions(userID string) ([]goserver.Transaction, error) {
+	result, err := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID).Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	transactions := make([]goserver.Transaction, 0)
+	for result.Next() {
+		var tr models.Transaction
+		if err := s.db.ScanRows(result, &tr); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		transactions = append(transactions, tr.FromDB())
+	}
+
+	return transactions, nil
+}
+
+func (s *storage) CreateTransaction(userID string, input *goserver.TransactionNoId,
+) (goserver.Transaction, error) {
+	t := models.TransactionToDB(input, userID)
+	t.ID = uuid.New()
+	if err := s.db.Create(t).Error; err != nil {
+		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
+	s.log.Info("Transaction created", "id", t.ID)
+
+	return t.FromDB(), nil
+}
+
+func (s *storage) UpdateTransaction(userID string, id string, input *goserver.TransactionNoId,
+) (goserver.Transaction, error) {
+	idUUID, err := uuid.Parse(id)
+	if err != nil {
+		return goserver.Transaction{}, fmt.Errorf(StorageError+"; id is not UUID", err)
+	}
+
+	var t *models.Transaction
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Transaction{}, ErrNotFound
+		}
+
+		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
+
+	t = models.TransactionToDB(input, userID)
+	t.ID = idUUID
+	if err := s.db.Save(&t).Error; err != nil {
+		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
+
+	return t.FromDB(), nil
+}
+
+func (s *storage) DeleteTransaction(userID string, id string) error {
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
+}
+
+func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction, error) {
+	var transaction models.Transaction
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&transaction).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Transaction{}, ErrNotFound
+		}
+
+		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
+
+	return transaction.FromDB(), nil
 }

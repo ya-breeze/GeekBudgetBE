@@ -36,13 +36,14 @@ func (s *CurrenciesAPIServicerImpl) GetCurrencies(ctx context.Context) (goserver
 }
 
 func (s *CurrenciesAPIServicerImpl) CreateCurrency(
-	ctx context.Context, currencyNoId goserver.CurrencyNoId) (goserver.ImplResponse, error) {
+	ctx context.Context, currencyNoID goserver.CurrencyNoId,
+) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	currency, err := s.db.CreateCurrency(userID, &currencyNoId)
+	currency, err := s.db.CreateCurrency(userID, &currencyNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create currency")
 		return goserver.Response(500, nil), nil
@@ -52,7 +53,8 @@ func (s *CurrenciesAPIServicerImpl) CreateCurrency(
 }
 
 func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
-	ctx context.Context, currencyID string, currencyNoID goserver.CurrencyNoId) (goserver.ImplResponse, error) {
+	ctx context.Context, currencyID string, currencyNoID goserver.CurrencyNoId,
+) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
@@ -68,7 +70,8 @@ func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
 }
 
 func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
-	ctx context.Context, currencyID string) (goserver.ImplResponse, error) {
+	ctx context.Context, currencyID string,
+) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
@@ -84,7 +87,8 @@ func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
 }
 
 func (s *CurrenciesAPIServicerImpl) GetCurrency(
-	ctx context.Context, currencyID string) (goserver.ImplResponse, error) {
+	ctx context.Context, currencyID string,
+) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil

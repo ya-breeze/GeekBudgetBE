@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 **PartnerInternalId** | Pointer to **string** | Internal bank&#39;s ID to be able to match later if necessary | [optional] 
 **Extra** | Pointer to **string** | Stores extra data about transaction. For example could hold \&quot;variable symbol\&quot; to distinguish payment for the same account, but with different meaning | [optional] 
 **UnprocessedSources** | Pointer to **string** | Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis | [optional] 
-**ExternalIds** | Pointer to **string** | IDs of unprocessed transaction - to match later | [optional] 
+**ExternalIds** | Pointer to **[]string** | IDs of unprocessed transaction - to match later | [optional] 
 **Movements** | [**[]Movement**](Movement.md) |  | 
 
 ## Methods
@@ -257,20 +257,20 @@ HasUnprocessedSources returns a boolean if a field has been set.
 
 ### GetExternalIds
 
-`func (o *TransactionNoID) GetExternalIds() string`
+`func (o *TransactionNoID) GetExternalIds() []string`
 
 GetExternalIds returns the ExternalIds field if non-nil, zero value otherwise.
 
 ### GetExternalIdsOk
 
-`func (o *TransactionNoID) GetExternalIdsOk() (*string, bool)`
+`func (o *TransactionNoID) GetExternalIdsOk() (*[]string, bool)`
 
 GetExternalIdsOk returns a tuple with the ExternalIds field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetExternalIds
 
-`func (o *TransactionNoID) SetExternalIds(v string)`
+`func (o *TransactionNoID) SetExternalIds(v []string)`
 
 SetExternalIds sets ExternalIds field to given value.
 

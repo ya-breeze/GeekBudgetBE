@@ -929,7 +929,9 @@ components:
             Stores FULL unprocessed transactions which was source of this transaction.
             Could be used later for detailed analysis
         externalIds:
-          type: string
+          type: array
+          items:
+            type: string
           description: >-
             IDs of unprocessed transaction - to match later
         movements:

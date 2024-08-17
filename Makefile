@@ -73,5 +73,5 @@ lint: validate
 
 .PHONY: test
 test:
-	@ginkgo -r
+	@ginkgo -r -v
 	@echo "✅ Tests complete"

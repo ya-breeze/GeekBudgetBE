@@ -40,7 +40,7 @@ type Transaction struct {
 	UnprocessedSources string `json:"unprocessedSources,omitempty"`
 
 	// IDs of unprocessed transaction - to match later
-	ExternalIds string `json:"externalIds,omitempty"`
+	ExternalIds []string `json:"externalIds,omitempty"`
 
 	Movements []Movement `json:"movements"`
 }
