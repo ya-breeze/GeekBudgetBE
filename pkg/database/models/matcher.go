@@ -19,7 +19,7 @@ type Matcher struct {
 	ExtraRegExp          string
 	OutputMovements      []goserver.Movement `gorm:"serializer:json"`
 
-	UserID string    `gorm:"index:idx_user_id"`
+	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 

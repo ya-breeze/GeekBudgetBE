@@ -61,9 +61,11 @@ func (s *storage) Open() error {
 	var err error
 	s.db, err = openSqlite(s.log, s.cfg.DBPath, s.cfg.Verbose)
 	if err != nil {
+		s.log.Error("failed to connect database", "error", err)
 		panic("failed to connect database")
 	}
 	if err := migrate(s.db); err != nil {
+		s.log.Error("failed to migrate database", "error", err)
 		panic("failed to migrate database")
 	}
 

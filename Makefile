@@ -67,7 +67,7 @@ generate:
 		-i /local/api/openapi.yaml \
 		-g typescript-angular \
 		-o /local/pkg/generated/angular \
-		--additional-properties=apiModulePrefix=geekbudgetclient
+		--additional-properties=apiModulePrefix=GeekbudgetClient,configurationPrefix=GeekbudgetClient
 
 	@echo "✅ Generation complete"
 

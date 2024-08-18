@@ -17,7 +17,7 @@ type Notification struct {
 	Title       string
 	Description string
 
-	UserID string    `gorm:"index:idx_user_id"`
+	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 

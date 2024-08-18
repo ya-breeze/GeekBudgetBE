@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
@@ -110,8 +111,12 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 
 	router.Use(middlewares...)
 
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+
 	server := &http.Server{
-		Handler: router,
+		Handler: handlers.CORS(originsOk, headersOk, methodsOk)(router),
 	}
 
 	go func() {
