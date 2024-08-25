@@ -112,14 +112,99 @@ func upsertUser(storage database.Storage, username, hashedPassword string, logge
 	if user != nil {
 		logger.Info(fmt.Sprintf("Updating password for user %q", username))
 		user.HashedPassword = hashedPassword
-		if err := storage.PutUser(user); err != nil {
+		if err = storage.PutUser(user); err != nil {
 			return fmt.Errorf("failed to update user: %w", err)
 		}
 	} else {
 		logger.Info(fmt.Sprintf("Creating user %q", username))
-		if err := storage.CreateUser(username, hashedPassword); err != nil {
+		if user, err = storage.CreateUser(username, hashedPassword); err != nil {
 			return fmt.Errorf("failed to create user: %w", err)
 		}
+	}
+
+	err = prefillNewUser(storage, user.ID.String())
+	if err != nil {
+		return fmt.Errorf("failed to prefill new user: %w", err)
+	}
+
+	return nil
+}
+
+//nolint:funlen // This function is long because it creates many default items
+func prefillNewUser(storage database.Storage, userID string) error {
+	// Create default accounts
+	account := &goserver.AccountNoId{
+		Name:        "Cash",
+		Description: "Cash account",
+		Type:        "asset",
+	}
+	if _, err := storage.CreateAccount(userID, account); err != nil {
+		return fmt.Errorf("failed to create cash account: %w", err)
+	}
+
+	account = &goserver.AccountNoId{
+		Name:        "Bank",
+		Description: "Bank account",
+		Type:        "asset",
+	}
+	if _, err := storage.CreateAccount(userID, account); err != nil {
+		return fmt.Errorf("failed to create bank account: %w", err)
+	}
+
+	account = &goserver.AccountNoId{
+		Name:        "Salary",
+		Description: "Salary account",
+		Type:        "income",
+	}
+	if _, err := storage.CreateAccount(userID, account); err != nil {
+		return fmt.Errorf("failed to create income account: %w", err)
+	}
+
+	account = &goserver.AccountNoId{
+		Name: "🥩 Food",
+		Type: "expense",
+	}
+	if _, err := storage.CreateAccount(userID, account); err != nil {
+		return fmt.Errorf("failed to create food account: %w", err)
+	}
+
+	account = &goserver.AccountNoId{
+		Name:        "Transport",
+		Description: "Transport expenses account",
+		Type:        "expense",
+	}
+	if _, err := storage.CreateAccount(userID, account); err != nil {
+		return fmt.Errorf("failed to create transport account: %w", err)
+	}
+
+	account = &goserver.AccountNoId{
+		Name: "🏠 Rent",
+		Type: "expense",
+	}
+	if _, err := storage.CreateAccount(userID, account); err != nil {
+		return fmt.Errorf("failed to create rent account: %w", err)
+	}
+
+	// Create default currencies
+	currency := &goserver.CurrencyNoId{
+		Name: "USD",
+	}
+	if _, err := storage.CreateCurrency(userID, currency); err != nil {
+		return fmt.Errorf("failed to create USD currency: %w", err)
+	}
+
+	currency = &goserver.CurrencyNoId{
+		Name: "EUR",
+	}
+	if _, err := storage.CreateCurrency(userID, currency); err != nil {
+		return fmt.Errorf("failed to create EUR currency: %w", err)
+	}
+
+	currency = &goserver.CurrencyNoId{
+		Name: "CZK",
+	}
+	if _, err := storage.CreateCurrency(userID, currency); err != nil {
+		return fmt.Errorf("failed to create CZK currency: %w", err)
 	}
 
 	return nil

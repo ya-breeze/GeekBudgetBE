@@ -24,7 +24,7 @@ type Storage interface {
 
 	GetUserID(username string) (string, error)
 	GetUser(userID string) (*models.User, error)
-	CreateUser(username, password string) error
+	CreateUser(username, password string) (*models.User, error)
 	PutUser(user *models.User) error
 
 	CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error)
@@ -110,7 +110,7 @@ func (s *storage) CreateAccount(userID string, account *goserver.AccountNoId) (g
 	return acc.FromDB(), nil
 }
 
-func (s *storage) CreateUser(username, hashedPassword string) error {
+func (s *storage) CreateUser(username, hashedPassword string) (*models.User, error) {
 	user := models.User{
 		ID:             uuid.New(),
 		Login:          username,
@@ -118,10 +118,10 @@ func (s *storage) CreateUser(username, hashedPassword string) error {
 		StartDate:      time.Now(),
 	}
 	if err := s.db.Create(&user).Error; err != nil {
-		return fmt.Errorf(StorageError, err)
+		return nil, fmt.Errorf(StorageError, err)
 	}
 
-	return nil
+	return &user, nil
 }
 
 func (s *storage) GetUser(userID string) (*models.User, error) {
