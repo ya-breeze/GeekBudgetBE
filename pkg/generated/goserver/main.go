@@ -113,7 +113,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
 
 	server := &http.Server{
 		Handler: handlers.CORS(originsOk, headersOk, methodsOk)(router),
