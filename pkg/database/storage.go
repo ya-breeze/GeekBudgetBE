@@ -45,6 +45,12 @@ type Storage interface {
 	UpdateTransaction(userID string, id string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
+
+	GetBankImporters(userID string) ([]goserver.BankImporter, error)
+	CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
+	UpdateBankImporter(userID string, id string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
+	DeleteBankImporter(userID string, id string) error
+	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
 }
 
 type storage struct {
@@ -373,4 +379,82 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	}
 
 	return transaction.FromDB(), nil
+}
+
+func (s *storage) GetBankImporters(userID string) ([]goserver.BankImporter, error) {
+	result, err := s.db.Model(&models.BankImporter{}).Where("user_id = ?", userID).Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	importers := make([]goserver.BankImporter, 0)
+	for result.Next() {
+		var imp models.BankImporter
+		if err := s.db.ScanRows(result, &imp); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		importers = append(importers, imp.FromDB())
+	}
+
+	return importers, nil
+}
+
+func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId,
+) (goserver.BankImporter, error) {
+	data := models.BankImporterToDB(bankImporter, userID)
+	data.ID = uuid.New()
+	if err := s.db.Create(data).Error; err != nil {
+		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
+	}
+	s.log.Info("BankImporter created", "id", data.ID)
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) UpdateBankImporter(userID string, id string, bankImporter *goserver.BankImporterNoId,
+) (goserver.BankImporter, error) {
+	idUUID, err := uuid.Parse(id)
+	if err != nil {
+		return goserver.BankImporter{}, fmt.Errorf(StorageError+"; id is not UUID", err)
+	}
+
+	var data *models.BankImporter
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.BankImporter{}, ErrNotFound
+		}
+
+		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
+	}
+
+	data = models.BankImporterToDB(bankImporter, userID)
+	data.ID = idUUID
+	if err := s.db.Save(&data).Error; err != nil {
+		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
+	}
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) DeleteBankImporter(userID string, id string) error {
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.BankImporter{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
+}
+
+func (s *storage) GetBankImporter(userID string, id string) (goserver.BankImporter, error) {
+	var data models.BankImporter
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.BankImporter{}, ErrNotFound
+		}
+
+		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
+	}
+
+	return data.FromDB(), nil
 }

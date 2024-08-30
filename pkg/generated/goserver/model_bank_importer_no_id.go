@@ -12,11 +12,25 @@
 package goserver
 
 type BankImporterNoId struct {
-	Id string `json:"id,omitempty"`
+	Name string `json:"name"`
+
+	Description string `json:"description,omitempty"`
+
+	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
+	Extra string `json:"extra,omitempty"`
 }
 
 // AssertBankImporterNoIdRequired checks if the required fields are not zero-ed
 func AssertBankImporterNoIdRequired(obj BankImporterNoId) error {
+	elements := map[string]interface{}{
+		"name": obj.Name,
+	}
+	for name, el := range elements {
+		if isZero := IsZeroValue(el); isZero {
+			return &RequiredError{Field: name}
+		}
+	}
+
 	return nil
 }
 

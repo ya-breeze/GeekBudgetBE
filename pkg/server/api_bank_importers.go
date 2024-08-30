@@ -18,20 +18,67 @@ func NewBankImportersAPIServiceImpl(logger *slog.Logger, db database.Storage,
 	return &BankImportersAPIServiceImpl{logger: logger, db: db}
 }
 
-func (s *BankImportersAPIServiceImpl) CreateBankImporter(context.Context, goserver.BankImporterNoId,
+func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, input goserver.BankImporterNoId,
 ) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	res, err := s.db.CreateBankImporter(userID, &input)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to create BankImporter")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, res), nil
+
 }
 
-func (s *BankImportersAPIServiceImpl) DeleteBankImporter(context.Context, string) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
-}
-
-func (s *BankImportersAPIServiceImpl) GetBankImporters(context.Context) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
-}
-
-func (s *BankImportersAPIServiceImpl) UpdateBankImporter(context.Context, string, goserver.BankImporterNoId,
+func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	err := s.db.DeleteBankImporter(userID, id)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to delete BankImporter")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, nil), nil
+}
+
+func (s *BankImportersAPIServiceImpl) GetBankImporters(ctx context.Context) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	bankImporters, err := s.db.GetBankImporters(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get bank importers")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, bankImporters), nil
+}
+
+func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
+	ctx context.Context, id string, input goserver.BankImporterNoId,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	res, err := s.db.UpdateBankImporter(userID, id, &input)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to update BankImporter")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, res), nil
 }

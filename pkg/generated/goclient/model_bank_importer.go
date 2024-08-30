@@ -22,7 +22,11 @@ var _ MappedNullable = &BankImporter{}
 
 // BankImporter struct for BankImporter
 type BankImporter struct {
-	Id string `json:"id"`
+	Id          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
+	Extra *string `json:"extra,omitempty"`
 }
 
 type _BankImporter BankImporter
@@ -31,9 +35,10 @@ type _BankImporter BankImporter
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewBankImporter(id string) *BankImporter {
+func NewBankImporter(id string, name string) *BankImporter {
 	this := BankImporter{}
 	this.Id = id
+	this.Name = name
 	return &this
 }
 
@@ -69,6 +74,94 @@ func (o *BankImporter) SetId(v string) {
 	o.Id = v
 }
 
+// GetName returns the Name field value
+func (o *BankImporter) GetName() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.Name
+}
+
+// GetNameOk returns a tuple with the Name field value
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetNameOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Name, true
+}
+
+// SetName sets field value
+func (o *BankImporter) SetName(v string) {
+	o.Name = v
+}
+
+// GetDescription returns the Description field value if set, zero value otherwise.
+func (o *BankImporter) GetDescription() string {
+	if o == nil || IsNil(o.Description) {
+		var ret string
+		return ret
+	}
+	return *o.Description
+}
+
+// GetDescriptionOk returns a tuple with the Description field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetDescriptionOk() (*string, bool) {
+	if o == nil || IsNil(o.Description) {
+		return nil, false
+	}
+	return o.Description, true
+}
+
+// HasDescription returns a boolean if a field has been set.
+func (o *BankImporter) HasDescription() bool {
+	if o != nil && !IsNil(o.Description) {
+		return true
+	}
+
+	return false
+}
+
+// SetDescription gets a reference to the given string and assigns it to the Description field.
+func (o *BankImporter) SetDescription(v string) {
+	o.Description = &v
+}
+
+// GetExtra returns the Extra field value if set, zero value otherwise.
+func (o *BankImporter) GetExtra() string {
+	if o == nil || IsNil(o.Extra) {
+		var ret string
+		return ret
+	}
+	return *o.Extra
+}
+
+// GetExtraOk returns a tuple with the Extra field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetExtraOk() (*string, bool) {
+	if o == nil || IsNil(o.Extra) {
+		return nil, false
+	}
+	return o.Extra, true
+}
+
+// HasExtra returns a boolean if a field has been set.
+func (o *BankImporter) HasExtra() bool {
+	if o != nil && !IsNil(o.Extra) {
+		return true
+	}
+
+	return false
+}
+
+// SetExtra gets a reference to the given string and assigns it to the Extra field.
+func (o *BankImporter) SetExtra(v string) {
+	o.Extra = &v
+}
+
 func (o BankImporter) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -80,6 +173,13 @@ func (o BankImporter) MarshalJSON() ([]byte, error) {
 func (o BankImporter) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["id"] = o.Id
+	toSerialize["name"] = o.Name
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Extra) {
+		toSerialize["extra"] = o.Extra
+	}
 	return toSerialize, nil
 }
 
@@ -89,6 +189,7 @@ func (o *BankImporter) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"id",
+		"name",
 	}
 
 	allProperties := make(map[string]interface{})

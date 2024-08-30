@@ -901,8 +901,18 @@ components:
     BankImporterNoID:
       type: object
       properties:
-        id:
+        name:
           type: string
+        description:
+          type: string
+        extra:
+          type: string
+          description: >-
+            Stores extra data about bank importer. For example could hold "bank account number"
+            to be able to distinguish between different bank accounts, or it could hold token
+            for bank API
+      required:
+        - name
     BankImporter:
       type: object
       allOf:

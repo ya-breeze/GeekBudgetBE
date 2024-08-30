@@ -12,7 +12,9 @@ Contact: ilya.korolev@outlook.com
 package goclient
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 )
 
 // checks if the BankImporterNoID type satisfies the MappedNullable interface at compile time
@@ -20,15 +22,21 @@ var _ MappedNullable = &BankImporterNoID{}
 
 // BankImporterNoID struct for BankImporterNoID
 type BankImporterNoID struct {
-	Id *string `json:"id,omitempty"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
+	Extra *string `json:"extra,omitempty"`
 }
+
+type _BankImporterNoID BankImporterNoID
 
 // NewBankImporterNoID instantiates a new BankImporterNoID object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewBankImporterNoID() *BankImporterNoID {
+func NewBankImporterNoID(name string) *BankImporterNoID {
 	this := BankImporterNoID{}
+	this.Name = name
 	return &this
 }
 
@@ -40,36 +48,92 @@ func NewBankImporterNoIDWithDefaults() *BankImporterNoID {
 	return &this
 }
 
-// GetId returns the Id field value if set, zero value otherwise.
-func (o *BankImporterNoID) GetId() string {
-	if o == nil || IsNil(o.Id) {
+// GetName returns the Name field value
+func (o *BankImporterNoID) GetName() string {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.Id
+
+	return o.Name
 }
 
-// GetIdOk returns a tuple with the Id field value if set, nil otherwise
+// GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
-func (o *BankImporterNoID) GetIdOk() (*string, bool) {
-	if o == nil || IsNil(o.Id) {
+func (o *BankImporterNoID) GetNameOk() (*string, bool) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Id, true
+	return &o.Name, true
 }
 
-// HasId returns a boolean if a field has been set.
-func (o *BankImporterNoID) HasId() bool {
-	if o != nil && !IsNil(o.Id) {
+// SetName sets field value
+func (o *BankImporterNoID) SetName(v string) {
+	o.Name = v
+}
+
+// GetDescription returns the Description field value if set, zero value otherwise.
+func (o *BankImporterNoID) GetDescription() string {
+	if o == nil || IsNil(o.Description) {
+		var ret string
+		return ret
+	}
+	return *o.Description
+}
+
+// GetDescriptionOk returns a tuple with the Description field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporterNoID) GetDescriptionOk() (*string, bool) {
+	if o == nil || IsNil(o.Description) {
+		return nil, false
+	}
+	return o.Description, true
+}
+
+// HasDescription returns a boolean if a field has been set.
+func (o *BankImporterNoID) HasDescription() bool {
+	if o != nil && !IsNil(o.Description) {
 		return true
 	}
 
 	return false
 }
 
-// SetId gets a reference to the given string and assigns it to the Id field.
-func (o *BankImporterNoID) SetId(v string) {
-	o.Id = &v
+// SetDescription gets a reference to the given string and assigns it to the Description field.
+func (o *BankImporterNoID) SetDescription(v string) {
+	o.Description = &v
+}
+
+// GetExtra returns the Extra field value if set, zero value otherwise.
+func (o *BankImporterNoID) GetExtra() string {
+	if o == nil || IsNil(o.Extra) {
+		var ret string
+		return ret
+	}
+	return *o.Extra
+}
+
+// GetExtraOk returns a tuple with the Extra field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporterNoID) GetExtraOk() (*string, bool) {
+	if o == nil || IsNil(o.Extra) {
+		return nil, false
+	}
+	return o.Extra, true
+}
+
+// HasExtra returns a boolean if a field has been set.
+func (o *BankImporterNoID) HasExtra() bool {
+	if o != nil && !IsNil(o.Extra) {
+		return true
+	}
+
+	return false
+}
+
+// SetExtra gets a reference to the given string and assigns it to the Extra field.
+func (o *BankImporterNoID) SetExtra(v string) {
+	o.Extra = &v
 }
 
 func (o BankImporterNoID) MarshalJSON() ([]byte, error) {
@@ -82,10 +146,51 @@ func (o BankImporterNoID) MarshalJSON() ([]byte, error) {
 
 func (o BankImporterNoID) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+	toSerialize["name"] = o.Name
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Extra) {
+		toSerialize["extra"] = o.Extra
 	}
 	return toSerialize, nil
+}
+
+func (o *BankImporterNoID) UnmarshalJSON(data []byte) (err error) {
+	// This validates that all required properties are included in the JSON object
+	// by unmarshalling the object into a generic map with string keys and checking
+	// that every required field exists as a key in the generic map.
+	requiredProperties := []string{
+		"name",
+	}
+
+	allProperties := make(map[string]interface{})
+
+	err = json.Unmarshal(data, &allProperties)
+
+	if err != nil {
+		return err
+	}
+
+	for _, requiredProperty := range requiredProperties {
+		if _, exists := allProperties[requiredProperty]; !exists {
+			return fmt.Errorf("no value given for required property %v", requiredProperty)
+		}
+	}
+
+	varBankImporterNoID := _BankImporterNoID{}
+
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&varBankImporterNoID)
+
+	if err != nil {
+		return err
+	}
+
+	*o = BankImporterNoID(varBankImporterNoID)
+
+	return err
 }
 
 type NullableBankImporterNoID struct {

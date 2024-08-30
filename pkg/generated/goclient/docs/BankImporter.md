@@ -5,12 +5,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | **string** |  | 
+**Name** | **string** |  | 
+**Description** | Pointer to **string** |  | [optional] 
+**Extra** | Pointer to **string** | Stores extra data about bank importer. For example could hold \&quot;bank account number\&quot; to be able to distinguish between different bank accounts, or it could hold token for bank API | [optional] 
 
 ## Methods
 
 ### NewBankImporter
 
-`func NewBankImporter(id string, ) *BankImporter`
+`func NewBankImporter(id string, name string, ) *BankImporter`
 
 NewBankImporter instantiates a new BankImporter object
 This constructor will assign default values to properties that have it defined,
@@ -44,6 +47,76 @@ and a boolean to check if the value has been set.
 
 SetId sets Id field to given value.
 
+
+### GetName
+
+`func (o *BankImporter) GetName() string`
+
+GetName returns the Name field if non-nil, zero value otherwise.
+
+### GetNameOk
+
+`func (o *BankImporter) GetNameOk() (*string, bool)`
+
+GetNameOk returns a tuple with the Name field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetName
+
+`func (o *BankImporter) SetName(v string)`
+
+SetName sets Name field to given value.
+
+
+### GetDescription
+
+`func (o *BankImporter) GetDescription() string`
+
+GetDescription returns the Description field if non-nil, zero value otherwise.
+
+### GetDescriptionOk
+
+`func (o *BankImporter) GetDescriptionOk() (*string, bool)`
+
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDescription
+
+`func (o *BankImporter) SetDescription(v string)`
+
+SetDescription sets Description field to given value.
+
+### HasDescription
+
+`func (o *BankImporter) HasDescription() bool`
+
+HasDescription returns a boolean if a field has been set.
+
+### GetExtra
+
+`func (o *BankImporter) GetExtra() string`
+
+GetExtra returns the Extra field if non-nil, zero value otherwise.
+
+### GetExtraOk
+
+`func (o *BankImporter) GetExtraOk() (*string, bool)`
+
+GetExtraOk returns a tuple with the Extra field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetExtra
+
+`func (o *BankImporter) SetExtra(v string)`
+
+SetExtra sets Extra field to given value.
+
+### HasExtra
+
+`func (o *BankImporter) HasExtra() bool`
+
+HasExtra returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
