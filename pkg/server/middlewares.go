@@ -75,7 +75,7 @@ func checkToken(
 		userID, err := claims.GetSubject()
 		if err != nil {
 			logger.With("err", err).Warn("Invalid subject")
-			http.Error(writer, "Invalid token", http.StatusUnauthorized)
+			http.Error(writer, "Invalid subject", http.StatusUnauthorized)
 			return
 		}
 		logger.With("userID", userID).Info("Authorized user")

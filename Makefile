@@ -11,6 +11,7 @@ build:
 .PHONY: run
 run: build
 	@GB_USERS=test:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
+	GB_PREFILL=true \
 	./bin/geekbudget server
 
 .PHONY: replace-templates
