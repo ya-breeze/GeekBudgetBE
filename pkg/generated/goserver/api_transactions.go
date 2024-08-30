@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -185,7 +186,29 @@ func (c *TransactionsAPIController) GetTransactions(w http.ResponseWriter, r *ht
 		amountToParam = param
 	} else {
 	}
-	result, err := c.service.GetTransactions(r.Context(), descriptionParam, amountFromParam, amountToParam)
+	var dateFromParam time.Time
+	if query.Has("dateFrom") {
+		param, err := parseTime(query.Get("dateFrom"))
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "dateFrom", Err: err}, nil)
+			return
+		}
+
+		dateFromParam = param
+	} else {
+	}
+	var dateToParam time.Time
+	if query.Has("dateTo") {
+		param, err := parseTime(query.Get("dateTo"))
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "dateTo", Err: err}, nil)
+			return
+		}
+
+		dateToParam = param
+	} else {
+	}
+	result, err := c.service.GetTransactions(r.Context(), descriptionParam, amountFromParam, amountToParam, dateFromParam, dateToParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

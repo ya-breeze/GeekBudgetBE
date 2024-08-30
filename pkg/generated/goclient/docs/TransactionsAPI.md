@@ -213,7 +213,7 @@ Name | Type | Description  | Notes
 
 ## GetTransactions
 
-> []Transaction GetTransactions(ctx).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).Execute()
+> []Transaction GetTransactions(ctx).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).DateFrom(dateFrom).DateTo(dateTo).Execute()
 
 get all transactions which matches given filters
 
@@ -226,6 +226,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+    "time"
 	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
@@ -233,10 +234,12 @@ func main() {
 	description := "description_example" // string | Filter by description (optional)
 	amountFrom := float64(1.2) // float64 | Don't return transactions with amount less than this (optional)
 	amountTo := float64(1.2) // float64 | Don't return transactions with amount more than this (optional)
+	dateFrom := time.Now() // time.Time | Don't return transactions with date before this (optional)
+	dateTo := time.Now() // time.Time | Don't return transactions with date after this (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.TransactionsAPI.GetTransactions(context.Background()).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).Execute()
+	resp, r, err := apiClient.TransactionsAPI.GetTransactions(context.Background()).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).DateFrom(dateFrom).DateTo(dateTo).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `TransactionsAPI.GetTransactions``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -260,6 +263,8 @@ Name | Type | Description  | Notes
  **description** | **string** | Filter by description | 
  **amountFrom** | **float64** | Don&#39;t return transactions with amount less than this | 
  **amountTo** | **float64** | Don&#39;t return transactions with amount more than this | 
+ **dateFrom** | **time.Time** | Don&#39;t return transactions with date before this | 
+ **dateTo** | **time.Time** | Don&#39;t return transactions with date after this | 
 
 ### Return type
 

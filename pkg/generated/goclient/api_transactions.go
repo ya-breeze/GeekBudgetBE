@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // TransactionsAPIService TransactionsAPI service
@@ -330,6 +331,8 @@ type ApiGetTransactionsRequest struct {
 	description *string
 	amountFrom  *float64
 	amountTo    *float64
+	dateFrom    *time.Time
+	dateTo      *time.Time
 }
 
 // Filter by description
@@ -347,6 +350,18 @@ func (r ApiGetTransactionsRequest) AmountFrom(amountFrom float64) ApiGetTransact
 // Don&#39;t return transactions with amount more than this
 func (r ApiGetTransactionsRequest) AmountTo(amountTo float64) ApiGetTransactionsRequest {
 	r.amountTo = &amountTo
+	return r
+}
+
+// Don&#39;t return transactions with date before this
+func (r ApiGetTransactionsRequest) DateFrom(dateFrom time.Time) ApiGetTransactionsRequest {
+	r.dateFrom = &dateFrom
+	return r
+}
+
+// Don&#39;t return transactions with date after this
+func (r ApiGetTransactionsRequest) DateTo(dateTo time.Time) ApiGetTransactionsRequest {
+	r.dateTo = &dateTo
 	return r
 }
 
@@ -397,6 +412,12 @@ func (a *TransactionsAPIService) GetTransactionsExecute(r ApiGetTransactionsRequ
 	}
 	if r.amountTo != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "amountTo", r.amountTo, "")
+	}
+	if r.dateFrom != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "dateFrom", r.dateFrom, "")
+	}
+	if r.dateTo != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "dateTo", r.dateTo, "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

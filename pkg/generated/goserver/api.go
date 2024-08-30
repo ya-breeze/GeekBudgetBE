@@ -193,7 +193,7 @@ type TransactionsAPIServicer interface {
 	CreateTransaction(context.Context, TransactionNoId) (ImplResponse, error)
 	DeleteTransaction(context.Context, string) (ImplResponse, error)
 	GetTransaction(context.Context, string) (ImplResponse, error)
-	GetTransactions(context.Context, string, float64, float64) (ImplResponse, error)
+	GetTransactions(context.Context, string, float64, float64, time.Time, time.Time) (ImplResponse, error)
 	UpdateTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)
 }
 

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -18,14 +19,17 @@ func NewTransactionsAPIService(logger *slog.Logger, db database.Storage) goserve
 }
 
 func (s *TransactionsAPIServiceImpl) GetTransactions(
-	ctx context.Context, descriptionParam string, amountFromParam, amountToParam float64,
+	ctx context.Context,
+	descriptionParam string,
+	amountFromParam, amountToParam float64,
+	dateFrom, dateTo time.Time,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID)
+	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return goserver.Response(500, nil), nil

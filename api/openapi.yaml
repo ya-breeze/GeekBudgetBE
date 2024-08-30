@@ -364,6 +364,18 @@ paths:
           schema:
             type: "number"
             format: "double"
+        - name: dateFrom
+          in: "query"
+          description: "Don't return transactions with date before this"
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: dateTo
+          in: "query"
+          description: "Don't return transactions with date after this"
+          schema:
+            type: "string"
+            format: "date-time"
       responses:
         "200":
           description: transactions

@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 )
 
 // TransactionsAPIService is an interface that defines the logic for the TransactionsAPIServicer
@@ -26,7 +27,7 @@ type TransactionsAPIService interface {
 	// GetTransaction - get transaction
 	GetTransaction(ctx context.Context, id string) (ImplResponse, error)
 	// GetTransactions - get all transactions which matches given filters
-	GetTransactions(ctx context.Context, description string, amountFrom float64, amountTo float64) (ImplResponse, error)
+	GetTransactions(ctx context.Context, description string, amountFrom float64, amountTo float64, dateFrom time.Time, dateTo time.Time) (ImplResponse, error)
 	// UpdateTransaction - update transaction
 	UpdateTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error)
 }
@@ -76,7 +77,7 @@ func (s *TransactionsAPIServiceImpl) GetTransaction(ctx context.Context, id stri
 }
 
 // GetTransactions - get all transactions which matches given filters
-func (s *TransactionsAPIServiceImpl) GetTransactions(ctx context.Context, description string, amountFrom float64, amountTo float64) (ImplResponse, error) {
+func (s *TransactionsAPIServiceImpl) GetTransactions(ctx context.Context, description string, amountFrom float64, amountTo float64, dateFrom time.Time, dateTo time.Time) (ImplResponse, error) {
 	// TODO - update GetTransactions with the required logic for this service method.
 	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

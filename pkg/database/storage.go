@@ -40,7 +40,7 @@ type Storage interface {
 	UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
 	DeleteCurrency(userID string, id string) error
 
-	GetTransactions(userID string) ([]goserver.Transaction, error)
+	GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
 	CreateTransaction(userID string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
 	UpdateTransaction(userID string, id string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
@@ -289,8 +289,16 @@ func (s *storage) DeleteCurrency(userID string, id string) error {
 	return nil
 }
 
-func (s *storage) GetTransactions(userID string) ([]goserver.Transaction, error) {
-	result, err := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID).Rows()
+func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error) {
+	req := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID)
+	if !dateFrom.IsZero() {
+		req = req.Where("date >= ?", dateFrom)
+	}
+	if !dateTo.IsZero() {
+		req = req.Where("date < ?", dateTo)
+	}
+
+	result, err := req.Rows()
 	if err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
