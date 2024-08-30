@@ -7,6 +7,9 @@ Name | Type | Description | Notes
 **Name** | **string** |  | 
 **Description** | Pointer to **string** |  | [optional] 
 **Extra** | Pointer to **string** | Stores extra data about bank importer. For example could hold \&quot;bank account number\&quot; to be able to distinguish between different bank accounts, or it could hold token for bank API | [optional] 
+**Type** | Pointer to **string** | Type of bank importer. It&#39;s used to distinguish between different banks. For example, FIO bank or KB bank. | [optional] 
+**LastSuccessfulImport** | Pointer to **time.Time** | Date of last successful import. | [optional] 
+**LastImports** | Pointer to [**[]BankImporterNoIDLastImportsInner**](BankImporterNoIDLastImportsInner.md) |  | [optional] 
 
 ## Methods
 
@@ -96,6 +99,81 @@ SetExtra sets Extra field to given value.
 `func (o *BankImporterNoID) HasExtra() bool`
 
 HasExtra returns a boolean if a field has been set.
+
+### GetType
+
+`func (o *BankImporterNoID) GetType() string`
+
+GetType returns the Type field if non-nil, zero value otherwise.
+
+### GetTypeOk
+
+`func (o *BankImporterNoID) GetTypeOk() (*string, bool)`
+
+GetTypeOk returns a tuple with the Type field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetType
+
+`func (o *BankImporterNoID) SetType(v string)`
+
+SetType sets Type field to given value.
+
+### HasType
+
+`func (o *BankImporterNoID) HasType() bool`
+
+HasType returns a boolean if a field has been set.
+
+### GetLastSuccessfulImport
+
+`func (o *BankImporterNoID) GetLastSuccessfulImport() time.Time`
+
+GetLastSuccessfulImport returns the LastSuccessfulImport field if non-nil, zero value otherwise.
+
+### GetLastSuccessfulImportOk
+
+`func (o *BankImporterNoID) GetLastSuccessfulImportOk() (*time.Time, bool)`
+
+GetLastSuccessfulImportOk returns a tuple with the LastSuccessfulImport field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLastSuccessfulImport
+
+`func (o *BankImporterNoID) SetLastSuccessfulImport(v time.Time)`
+
+SetLastSuccessfulImport sets LastSuccessfulImport field to given value.
+
+### HasLastSuccessfulImport
+
+`func (o *BankImporterNoID) HasLastSuccessfulImport() bool`
+
+HasLastSuccessfulImport returns a boolean if a field has been set.
+
+### GetLastImports
+
+`func (o *BankImporterNoID) GetLastImports() []BankImporterNoIDLastImportsInner`
+
+GetLastImports returns the LastImports field if non-nil, zero value otherwise.
+
+### GetLastImportsOk
+
+`func (o *BankImporterNoID) GetLastImportsOk() (*[]BankImporterNoIDLastImportsInner, bool)`
+
+GetLastImportsOk returns a tuple with the LastImports field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLastImports
+
+`func (o *BankImporterNoID) SetLastImports(v []BankImporterNoIDLastImportsInner)`
+
+SetLastImports sets LastImports field to given value.
+
+### HasLastImports
+
+`func (o *BankImporterNoID) HasLastImports() bool`
+
+HasLastImports returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

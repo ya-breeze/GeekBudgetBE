@@ -90,6 +90,7 @@ Class | Method | HTTP request | Description
 *AuthAPI* | [**Authorize**](docs/AuthAPI.md#authorize) | **Post** /v1/authorize | validate user/password and return token
 *BankImportersAPI* | [**CreateBankImporter**](docs/BankImportersAPI.md#createbankimporter) | **Post** /v1/bankImporters | create new bank importer
 *BankImportersAPI* | [**DeleteBankImporter**](docs/BankImportersAPI.md#deletebankimporter) | **Delete** /v1/bankImporters/{id} | delete bank importer
+*BankImportersAPI* | [**FetchBankImporter**](docs/BankImportersAPI.md#fetchbankimporter) | **Post** /v1/bankImporters/{id}/fetch | fetch new transactions from bank
 *BankImportersAPI* | [**GetBankImporters**](docs/BankImportersAPI.md#getbankimporters) | **Get** /v1/bankImporters | get all bank importers
 *BankImportersAPI* | [**UpdateBankImporter**](docs/BankImportersAPI.md#updatebankimporter) | **Put** /v1/bankImporters/{id} | update bank importer
 *CurrenciesAPI* | [**CreateCurrency**](docs/CurrenciesAPI.md#createcurrency) | **Post** /v1/currencies | create new currency
@@ -124,6 +125,7 @@ Class | Method | HTTP request | Description
  - [Authorize200Response](docs/Authorize200Response.md)
  - [BankImporter](docs/BankImporter.md)
  - [BankImporterNoID](docs/BankImporterNoID.md)
+ - [BankImporterNoIDLastImportsInner](docs/BankImporterNoIDLastImportsInner.md)
  - [CheckMatcher200Response](docs/CheckMatcher200Response.md)
  - [CheckMatcherRequest](docs/CheckMatcherRequest.md)
  - [Currency](docs/Currency.md)

@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // checks if the BankImporter type satisfies the MappedNullable interface at compile time
@@ -27,6 +28,11 @@ type BankImporter struct {
 	Description *string `json:"description,omitempty"`
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra *string `json:"extra,omitempty"`
+	// Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
+	Type *string `json:"type,omitempty"`
+	// Date of last successful import.
+	LastSuccessfulImport *time.Time                         `json:"lastSuccessfulImport,omitempty"`
+	LastImports          []BankImporterNoIDLastImportsInner `json:"lastImports,omitempty"`
 }
 
 type _BankImporter BankImporter
@@ -162,6 +168,102 @@ func (o *BankImporter) SetExtra(v string) {
 	o.Extra = &v
 }
 
+// GetType returns the Type field value if set, zero value otherwise.
+func (o *BankImporter) GetType() string {
+	if o == nil || IsNil(o.Type) {
+		var ret string
+		return ret
+	}
+	return *o.Type
+}
+
+// GetTypeOk returns a tuple with the Type field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetTypeOk() (*string, bool) {
+	if o == nil || IsNil(o.Type) {
+		return nil, false
+	}
+	return o.Type, true
+}
+
+// HasType returns a boolean if a field has been set.
+func (o *BankImporter) HasType() bool {
+	if o != nil && !IsNil(o.Type) {
+		return true
+	}
+
+	return false
+}
+
+// SetType gets a reference to the given string and assigns it to the Type field.
+func (o *BankImporter) SetType(v string) {
+	o.Type = &v
+}
+
+// GetLastSuccessfulImport returns the LastSuccessfulImport field value if set, zero value otherwise.
+func (o *BankImporter) GetLastSuccessfulImport() time.Time {
+	if o == nil || IsNil(o.LastSuccessfulImport) {
+		var ret time.Time
+		return ret
+	}
+	return *o.LastSuccessfulImport
+}
+
+// GetLastSuccessfulImportOk returns a tuple with the LastSuccessfulImport field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetLastSuccessfulImportOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.LastSuccessfulImport) {
+		return nil, false
+	}
+	return o.LastSuccessfulImport, true
+}
+
+// HasLastSuccessfulImport returns a boolean if a field has been set.
+func (o *BankImporter) HasLastSuccessfulImport() bool {
+	if o != nil && !IsNil(o.LastSuccessfulImport) {
+		return true
+	}
+
+	return false
+}
+
+// SetLastSuccessfulImport gets a reference to the given time.Time and assigns it to the LastSuccessfulImport field.
+func (o *BankImporter) SetLastSuccessfulImport(v time.Time) {
+	o.LastSuccessfulImport = &v
+}
+
+// GetLastImports returns the LastImports field value if set, zero value otherwise.
+func (o *BankImporter) GetLastImports() []BankImporterNoIDLastImportsInner {
+	if o == nil || IsNil(o.LastImports) {
+		var ret []BankImporterNoIDLastImportsInner
+		return ret
+	}
+	return o.LastImports
+}
+
+// GetLastImportsOk returns a tuple with the LastImports field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetLastImportsOk() ([]BankImporterNoIDLastImportsInner, bool) {
+	if o == nil || IsNil(o.LastImports) {
+		return nil, false
+	}
+	return o.LastImports, true
+}
+
+// HasLastImports returns a boolean if a field has been set.
+func (o *BankImporter) HasLastImports() bool {
+	if o != nil && !IsNil(o.LastImports) {
+		return true
+	}
+
+	return false
+}
+
+// SetLastImports gets a reference to the given []BankImporterNoIDLastImportsInner and assigns it to the LastImports field.
+func (o *BankImporter) SetLastImports(v []BankImporterNoIDLastImportsInner) {
+	o.LastImports = v
+}
+
 func (o BankImporter) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -179,6 +281,15 @@ func (o BankImporter) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Extra) {
 		toSerialize["extra"] = o.Extra
+	}
+	if !IsNil(o.Type) {
+		toSerialize["type"] = o.Type
+	}
+	if !IsNil(o.LastSuccessfulImport) {
+		toSerialize["lastSuccessfulImport"] = o.LastSuccessfulImport
+	}
+	if !IsNil(o.LastImports) {
+		toSerialize["lastImports"] = o.LastImports
 	}
 	return toSerialize, nil
 }

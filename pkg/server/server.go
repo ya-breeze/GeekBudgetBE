@@ -91,7 +91,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 				return nil, nil, fmt.Errorf("invalid user format: %s", user)
 			}
 
-			if err := upsertUser(storage, tokens[0], tokens[1], logger); err != nil {
+			if err := upsertUser(storage, tokens[0], tokens[1], logger, cfg.Prefill); err != nil {
 				return nil, nil, fmt.Errorf("failed to update user %q: %w", tokens[0], err)
 			}
 		}
@@ -105,7 +105,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 		createMiddlewares(logger, cfg)...)
 }
 
-func upsertUser(storage database.Storage, username, hashedPassword string, logger *slog.Logger) error {
+func upsertUser(storage database.Storage, username, hashedPassword string, logger *slog.Logger, prefill bool) error {
 	user, err := storage.GetUser(username)
 	if err != nil && !errors.Is(err, database.ErrNotFound) {
 		return fmt.Errorf("failed to reading user from DB: %w", err)
@@ -123,15 +123,17 @@ func upsertUser(storage database.Storage, username, hashedPassword string, logge
 		}
 	}
 
-	err = prefillNewUser(storage, user.ID.String())
-	if err != nil {
-		return fmt.Errorf("failed to prefill new user: %w", err)
+	if prefill {
+		err = prefillNewUser(storage, user.ID.String())
+		if err != nil {
+			return fmt.Errorf("failed to prefill new user: %w", err)
+		}
 	}
 
 	return nil
 }
 
-//nolint:funlen // This function is long because it creates many default items
+//nolint:funlen,cyclop,maintidx // This function is not complex, it just creates many default items
 func prefillNewUser(storage database.Storage, userID string) error {
 	// Create default accounts
 	account := &goserver.AccountNoId{
@@ -358,6 +360,25 @@ func prefillNewUser(storage database.Storage, userID string) error {
 	}
 	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
 		return fmt.Errorf("failed to create rent transaction: %w", err)
+	}
+
+	// Bank importers
+	bankImporter := &goserver.BankImporterNoId{
+		Name:        "FIO Bank CZK",
+		Description: "Fio banka a.s. (CZK)",
+		Extra:       "token",
+	}
+	if _, err := storage.CreateBankImporter(userID, bankImporter); err != nil {
+		return fmt.Errorf("failed to create bank importer: %w", err)
+	}
+
+	bankImporter = &goserver.BankImporterNoId{
+		Name:        "FIO Bank USD",
+		Description: "Fio banka a.s. (USD)",
+		Extra:       "token",
+	}
+	if _, err := storage.CreateBankImporter(userID, bankImporter); err != nil {
+		return fmt.Errorf("failed to create bank importer: %w", err)
 	}
 
 	return nil

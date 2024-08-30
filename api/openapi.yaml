@@ -339,6 +339,26 @@ paths:
       responses:
         "200":
           description: no body
+  /v1/bankImporters/{id}/fetch:
+    post:
+      tags:
+        - bank importers
+      summary: fetch new transactions from bank
+      operationId: fetchBankImporter
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the bank importer"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+        "429":
+          description: too many requests
 
   /v1/transactions:
     get:
@@ -911,6 +931,30 @@ components:
             Stores extra data about bank importer. For example could hold "bank account number"
             to be able to distinguish between different bank accounts, or it could hold token
             for bank API
+        type:
+          type: string
+          description: >-
+            Type of bank importer. It's used to distinguish between different banks. For example,
+            FIO bank or KB bank.
+        lastSuccessfulImport:
+          type: string
+          format: date-time
+          description: >-
+            Date of last successful import.
+        lastImports:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date-time
+                description: >-
+                  Date of import
+              status:
+                type: string
+                description: >-
+                  Status of import
       required:
         - name
     BankImporter:

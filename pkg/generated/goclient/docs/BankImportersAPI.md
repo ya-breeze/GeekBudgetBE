@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**CreateBankImporter**](BankImportersAPI.md#CreateBankImporter) | **Post** /v1/bankImporters | create new bank importer
 [**DeleteBankImporter**](BankImportersAPI.md#DeleteBankImporter) | **Delete** /v1/bankImporters/{id} | delete bank importer
+[**FetchBankImporter**](BankImportersAPI.md#FetchBankImporter) | **Post** /v1/bankImporters/{id}/fetch | fetch new transactions from bank
 [**GetBankImporters**](BankImportersAPI.md#GetBankImporters) | **Get** /v1/bankImporters | get all bank importers
 [**UpdateBankImporter**](BankImportersAPI.md#UpdateBankImporter) | **Put** /v1/bankImporters/{id} | update bank importer
 
@@ -117,6 +118,72 @@ Name | Type | Description  | Notes
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiDeleteBankImporterRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## FetchBankImporter
+
+> FetchBankImporter(ctx, id).Execute()
+
+fetch new transactions from bank
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the bank importer
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	r, err := apiClient.BankImportersAPI.FetchBankImporter(context.Background(), id).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.FetchBankImporter``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** | ID of the bank importer | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiFetchBankImporterRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes

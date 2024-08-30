@@ -62,6 +62,11 @@ func (c *BankImportersAPIController) Routes() Routes {
 			"/v1/bankImporters/{id}",
 			c.DeleteBankImporter,
 		},
+		"FetchBankImporter": Route{
+			strings.ToUpper("Post"),
+			"/v1/bankImporters/{id}/fetch",
+			c.FetchBankImporter,
+		},
 		"GetBankImporters": Route{
 			strings.ToUpper("Get"),
 			"/v1/bankImporters",
@@ -111,6 +116,24 @@ func (c *BankImportersAPIController) DeleteBankImporter(w http.ResponseWriter, r
 		return
 	}
 	result, err := c.service.DeleteBankImporter(r.Context(), idParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// FetchBankImporter - fetch new transactions from bank
+func (c *BankImportersAPIController) FetchBankImporter(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.FetchBankImporter(r.Context(), idParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

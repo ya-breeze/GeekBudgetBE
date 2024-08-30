@@ -23,6 +23,8 @@ type BankImportersAPIService interface {
 	CreateBankImporter(ctx context.Context, bankImporterNoId BankImporterNoId) (ImplResponse, error)
 	// DeleteBankImporter - delete bank importer
 	DeleteBankImporter(ctx context.Context, id string) (ImplResponse, error)
+	// FetchBankImporter - fetch new transactions from bank
+	FetchBankImporter(ctx context.Context, id string) (ImplResponse, error)
 	// GetBankImporters - get all bank importers
 	GetBankImporters(ctx context.Context) (ImplResponse, error)
 	// UpdateBankImporter - update bank importer
@@ -60,6 +62,20 @@ func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id
 	// return Response(200, nil),nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("DeleteBankImporter method not implemented")
+}
+
+// FetchBankImporter - fetch new transactions from bank
+func (s *BankImportersAPIServiceImpl) FetchBankImporter(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update FetchBankImporter with the required logic for this service method.
+	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
+	// return Response(200, nil),nil
+
+	// TODO: Uncomment the next line to return response Response(429, {}) or use other options such as http.Ok ...
+	// return Response(429, nil),nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("FetchBankImporter method not implemented")
 }
 
 // GetBankImporters - get all bank importers

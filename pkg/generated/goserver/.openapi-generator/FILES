@@ -36,6 +36,7 @@ go/model_auth_data.go
 go/model_authorize_200_response.go
 go/model_bank_importer.go
 go/model_bank_importer_no_id.go
+go/model_bank_importer_no_id_last_imports_inner.go
 go/model_check_matcher_200_response.go
 go/model_check_matcher_request.go
 go/model_currency.go

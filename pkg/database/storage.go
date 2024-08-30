@@ -335,6 +335,7 @@ func (s *storage) CreateTransaction(userID string, input *goserver.TransactionNo
 	return t.FromDB(), nil
 }
 
+//nolint:dupl // it's okay to have similar code for now
 func (s *storage) UpdateTransaction(userID string, id string, input *goserver.TransactionNoId,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)
@@ -413,6 +414,7 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 	return data.FromDB(), nil
 }
 
+//nolint:dupl // it's okay to have similar code for now
 func (s *storage) UpdateBankImporter(userID string, id string, bankImporter *goserver.BankImporterNoId,
 ) (goserver.BankImporter, error) {
 	idUUID, err := uuid.Parse(id)

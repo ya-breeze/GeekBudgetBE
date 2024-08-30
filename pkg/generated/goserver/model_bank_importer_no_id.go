@@ -11,6 +11,10 @@
 
 package goserver
 
+import (
+	"time"
+)
+
 type BankImporterNoId struct {
 	Name string `json:"name"`
 
@@ -18,6 +22,14 @@ type BankImporterNoId struct {
 
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra string `json:"extra,omitempty"`
+
+	// Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
+	Type string `json:"type,omitempty"`
+
+	// Date of last successful import.
+	LastSuccessfulImport time.Time `json:"lastSuccessfulImport,omitempty"`
+
+	LastImports []BankImporterNoIdLastImportsInner `json:"lastImports,omitempty"`
 }
 
 // AssertBankImporterNoIdRequired checks if the required fields are not zero-ed
@@ -31,10 +43,20 @@ func AssertBankImporterNoIdRequired(obj BankImporterNoId) error {
 		}
 	}
 
+	for _, el := range obj.LastImports {
+		if err := AssertBankImporterNoIdLastImportsInnerRequired(el); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 // AssertBankImporterNoIdConstraints checks if the values respects the defined constraints
 func AssertBankImporterNoIdConstraints(obj BankImporterNoId) error {
+	for _, el := range obj.LastImports {
+		if err := AssertBankImporterNoIdLastImportsInnerConstraints(el); err != nil {
+			return err
+		}
+	}
 	return nil
 }

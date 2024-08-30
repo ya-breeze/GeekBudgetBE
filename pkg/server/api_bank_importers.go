@@ -32,7 +32,6 @@ func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, in
 	}
 
 	return goserver.Response(200, res), nil
-
 }
 
 func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id string,
@@ -81,4 +80,22 @@ func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 	}
 
 	return goserver.Response(200, res), nil
+}
+
+func (s *BankImportersAPIServiceImpl) FetchBankImporter(
+	ctx context.Context, id string,
+) (goserver.ImplResponse, error) {
+	_, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	// err := s.db.FetchBankImporter(userID, id)
+	// if err != nil {
+	// s.logger.With("error", err).Error("Failed to fetch for bank importer")
+	// return goserver.Response(500, nil), nil
+	// }
+
+	// return goserver.Response(200, nil), nil
+	return goserver.Response(500, "not implemented yet"), nil
 }

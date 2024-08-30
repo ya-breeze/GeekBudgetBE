@@ -26,6 +26,7 @@ docs/AuthData.md
 docs/Authorize200Response.md
 docs/BankImporter.md
 docs/BankImporterNoID.md
+docs/BankImporterNoIDLastImportsInner.md
 docs/BankImportersAPI.md
 docs/CheckMatcher200Response.md
 docs/CheckMatcherRequest.md
@@ -57,6 +58,7 @@ model_auth_data.go
 model_authorize_200_response.go
 model_bank_importer.go
 model_bank_importer_no_id.go
+model_bank_importer_no_id_last_imports_inner.go
 model_check_matcher_200_response.go
 model_check_matcher_request.go
 model_currency.go

@@ -51,6 +51,7 @@ type AuthAPIRouter interface {
 type BankImportersAPIRouter interface {
 	CreateBankImporter(http.ResponseWriter, *http.Request)
 	DeleteBankImporter(http.ResponseWriter, *http.Request)
+	FetchBankImporter(http.ResponseWriter, *http.Request)
 	GetBankImporters(http.ResponseWriter, *http.Request)
 	UpdateBankImporter(http.ResponseWriter, *http.Request)
 }
@@ -149,6 +150,7 @@ type AuthAPIServicer interface {
 type BankImportersAPIServicer interface {
 	CreateBankImporter(context.Context, BankImporterNoId) (ImplResponse, error)
 	DeleteBankImporter(context.Context, string) (ImplResponse, error)
+	FetchBankImporter(context.Context, string) (ImplResponse, error)
 	GetBankImporters(context.Context) (ImplResponse, error)
 	UpdateBankImporter(context.Context, string, BankImporterNoId) (ImplResponse, error)
 }
