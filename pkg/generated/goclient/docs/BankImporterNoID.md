@@ -6,6 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** |  | 
 **Description** | Pointer to **string** |  | [optional] 
+**AccountId** | **string** | ID of account which is used to store transactions from this bank importer | 
 **Extra** | Pointer to **string** | Stores extra data about bank importer. For example could hold \&quot;bank account number\&quot; to be able to distinguish between different bank accounts, or it could hold token for bank API | [optional] 
 **Type** | Pointer to **string** | Type of bank importer. It&#39;s used to distinguish between different banks. For example, FIO bank or KB bank. | [optional] 
 **LastSuccessfulImport** | Pointer to **time.Time** | Date of last successful import. | [optional] 
@@ -15,7 +16,7 @@ Name | Type | Description | Notes
 
 ### NewBankImporterNoID
 
-`func NewBankImporterNoID(name string, ) *BankImporterNoID`
+`func NewBankImporterNoID(name string, accountId string, ) *BankImporterNoID`
 
 NewBankImporterNoID instantiates a new BankImporterNoID object
 This constructor will assign default values to properties that have it defined,
@@ -74,6 +75,26 @@ SetDescription sets Description field to given value.
 `func (o *BankImporterNoID) HasDescription() bool`
 
 HasDescription returns a boolean if a field has been set.
+
+### GetAccountId
+
+`func (o *BankImporterNoID) GetAccountId() string`
+
+GetAccountId returns the AccountId field if non-nil, zero value otherwise.
+
+### GetAccountIdOk
+
+`func (o *BankImporterNoID) GetAccountIdOk() (*string, bool)`
+
+GetAccountIdOk returns a tuple with the AccountId field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAccountId
+
+`func (o *BankImporterNoID) SetAccountId(v string)`
+
+SetAccountId sets AccountId field to given value.
+
 
 ### GetExtra
 

@@ -22,6 +22,9 @@ type BankImporter struct {
 
 	Description string `json:"description,omitempty"`
 
+	// ID of account which is used to store transactions from this bank importer
+	AccountId string `json:"accountId"`
+
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra string `json:"extra,omitempty"`
 
@@ -37,8 +40,9 @@ type BankImporter struct {
 // AssertBankImporterRequired checks if the required fields are not zero-ed
 func AssertBankImporterRequired(obj BankImporter) error {
 	elements := map[string]interface{}{
-		"id":   obj.Id,
-		"name": obj.Name,
+		"id":        obj.Id,
+		"name":      obj.Name,
+		"accountId": obj.AccountId,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

@@ -31,7 +31,7 @@ import (
 )
 
 func main() {
-	bankImporterNoID := *openapiclient.NewBankImporterNoID("Name_example") // BankImporterNoID | 
+	bankImporterNoID := *openapiclient.NewBankImporterNoID("Name_example", "AccountId_example") // BankImporterNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -287,7 +287,7 @@ import (
 
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the bank importer
-	bankImporterNoID := *openapiclient.NewBankImporterNoID("Name_example") // BankImporterNoID | 
+	bankImporterNoID := *openapiclient.NewBankImporterNoID("Name_example", "AccountId_example") // BankImporterNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

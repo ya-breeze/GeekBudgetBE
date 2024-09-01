@@ -26,6 +26,8 @@ type BankImporter struct {
 	Id          string  `json:"id"`
 	Name        string  `json:"name"`
 	Description *string `json:"description,omitempty"`
+	// ID of account which is used to store transactions from this bank importer
+	AccountId string `json:"accountId"`
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra *string `json:"extra,omitempty"`
 	// Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
@@ -41,10 +43,11 @@ type _BankImporter BankImporter
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewBankImporter(id string, name string) *BankImporter {
+func NewBankImporter(id string, name string, accountId string) *BankImporter {
 	this := BankImporter{}
 	this.Id = id
 	this.Name = name
+	this.AccountId = accountId
 	return &this
 }
 
@@ -134,6 +137,30 @@ func (o *BankImporter) HasDescription() bool {
 // SetDescription gets a reference to the given string and assigns it to the Description field.
 func (o *BankImporter) SetDescription(v string) {
 	o.Description = &v
+}
+
+// GetAccountId returns the AccountId field value
+func (o *BankImporter) GetAccountId() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.AccountId
+}
+
+// GetAccountIdOk returns a tuple with the AccountId field value
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetAccountIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.AccountId, true
+}
+
+// SetAccountId sets field value
+func (o *BankImporter) SetAccountId(v string) {
+	o.AccountId = v
 }
 
 // GetExtra returns the Extra field value if set, zero value otherwise.
@@ -279,6 +306,7 @@ func (o BankImporter) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
+	toSerialize["accountId"] = o.AccountId
 	if !IsNil(o.Extra) {
 		toSerialize["extra"] = o.Extra
 	}
@@ -301,6 +329,7 @@ func (o *BankImporter) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"id",
 		"name",
+		"accountId",
 	}
 
 	allProperties := make(map[string]interface{})

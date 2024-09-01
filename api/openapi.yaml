@@ -944,6 +944,11 @@ components:
           type: string
         description:
           type: string
+        accountId:
+          type: string
+          format: uuid
+          description: >-
+            ID of account which is used to store transactions from this bank importer
         extra:
           type: string
           description: >-
@@ -976,6 +981,7 @@ components:
                   Status of import
       required:
         - name
+        - accountId
     BankImporter:
       type: object
       allOf:
