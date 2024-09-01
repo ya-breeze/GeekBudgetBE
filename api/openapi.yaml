@@ -849,6 +849,23 @@ components:
       allOf:
         - $ref: "#/components/schemas/Entity"
 
+    BankAccountInfo:
+      type: object
+      properties:
+        accountId:
+          type: string
+          example: "12345"
+        bankId:
+          type: string
+          example: "12345"
+        openingBalance:
+          type: number
+          format: double
+          example: 1000.0
+        closingBalance:
+          type: number
+          format: double
+          example: 1000.0
     AccountNoID:
       type: object
       properties:
@@ -861,6 +878,8 @@ components:
             - expense
             - income
             - asset
+        bankInfo:
+          $ref: "#/components/schemas/BankAccountInfo"
       required:
         - name
         - type

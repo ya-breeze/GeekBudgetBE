@@ -19,6 +19,8 @@ type Account struct {
 	Description string `json:"description,omitempty"`
 
 	Type string `json:"type"`
+
+	BankInfo BankAccountInfo `json:"bankInfo,omitempty"`
 }
 
 // AssertAccountRequired checks if the required fields are not zero-ed
@@ -34,10 +36,16 @@ func AssertAccountRequired(obj Account) error {
 		}
 	}
 
+	if err := AssertBankAccountInfoRequired(obj.BankInfo); err != nil {
+		return err
+	}
 	return nil
 }
 
 // AssertAccountConstraints checks if the values respects the defined constraints
 func AssertAccountConstraints(obj Account) error {
+	if err := AssertBankAccountInfoConstraints(obj.BankInfo); err != nil {
+		return err
+	}
 	return nil
 }

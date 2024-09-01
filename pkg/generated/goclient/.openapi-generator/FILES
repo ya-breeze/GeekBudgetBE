@@ -24,6 +24,7 @@ docs/AggregationsAPI.md
 docs/AuthAPI.md
 docs/AuthData.md
 docs/Authorize200Response.md
+docs/BankAccountInfo.md
 docs/BankImporter.md
 docs/BankImporterNoID.md
 docs/BankImporterNoIDLastImportsInner.md
@@ -56,6 +57,7 @@ model_account_no_id.go
 model_aggregation.go
 model_auth_data.go
 model_authorize_200_response.go
+model_bank_account_info.go
 model_bank_importer.go
 model_bank_importer_no_id.go
 model_bank_importer_no_id_last_imports_inner.go

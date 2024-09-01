@@ -22,10 +22,11 @@ var _ MappedNullable = &Account{}
 
 // Account struct for Account
 type Account struct {
-	Id          string  `json:"id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description,omitempty"`
-	Type        string  `json:"type"`
+	Id          string           `json:"id"`
+	Name        string           `json:"name"`
+	Description *string          `json:"description,omitempty"`
+	Type        string           `json:"type"`
+	BankInfo    *BankAccountInfo `json:"bankInfo,omitempty"`
 }
 
 type _Account Account
@@ -154,6 +155,38 @@ func (o *Account) SetType(v string) {
 	o.Type = v
 }
 
+// GetBankInfo returns the BankInfo field value if set, zero value otherwise.
+func (o *Account) GetBankInfo() BankAccountInfo {
+	if o == nil || IsNil(o.BankInfo) {
+		var ret BankAccountInfo
+		return ret
+	}
+	return *o.BankInfo
+}
+
+// GetBankInfoOk returns a tuple with the BankInfo field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Account) GetBankInfoOk() (*BankAccountInfo, bool) {
+	if o == nil || IsNil(o.BankInfo) {
+		return nil, false
+	}
+	return o.BankInfo, true
+}
+
+// HasBankInfo returns a boolean if a field has been set.
+func (o *Account) HasBankInfo() bool {
+	if o != nil && !IsNil(o.BankInfo) {
+		return true
+	}
+
+	return false
+}
+
+// SetBankInfo gets a reference to the given BankAccountInfo and assigns it to the BankInfo field.
+func (o *Account) SetBankInfo(v BankAccountInfo) {
+	o.BankInfo = &v
+}
+
 func (o Account) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -170,6 +203,9 @@ func (o Account) ToMap() (map[string]interface{}, error) {
 		toSerialize["description"] = o.Description
 	}
 	toSerialize["type"] = o.Type
+	if !IsNil(o.BankInfo) {
+		toSerialize["bankInfo"] = o.BankInfo
+	}
 	return toSerialize, nil
 }
 

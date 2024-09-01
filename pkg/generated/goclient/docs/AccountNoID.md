@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **Name** | **string** |  | 
 **Description** | Pointer to **string** |  | [optional] 
 **Type** | **string** |  | 
+**BankInfo** | Pointer to [**BankAccountInfo**](BankAccountInfo.md) |  | [optional] 
 
 ## Methods
 
@@ -91,6 +92,31 @@ and a boolean to check if the value has been set.
 
 SetType sets Type field to given value.
 
+
+### GetBankInfo
+
+`func (o *AccountNoID) GetBankInfo() BankAccountInfo`
+
+GetBankInfo returns the BankInfo field if non-nil, zero value otherwise.
+
+### GetBankInfoOk
+
+`func (o *AccountNoID) GetBankInfoOk() (*BankAccountInfo, bool)`
+
+GetBankInfoOk returns a tuple with the BankInfo field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetBankInfo
+
+`func (o *AccountNoID) SetBankInfo(v BankAccountInfo)`
+
+SetBankInfo sets BankInfo field to given value.
+
+### HasBankInfo
+
+`func (o *AccountNoID) HasBankInfo() bool`
+
+HasBankInfo returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -123,6 +123,7 @@ Class | Method | HTTP request | Description
  - [Aggregation](docs/Aggregation.md)
  - [AuthData](docs/AuthData.md)
  - [Authorize200Response](docs/Authorize200Response.md)
+ - [BankAccountInfo](docs/BankAccountInfo.md)
  - [BankImporter](docs/BankImporter.md)
  - [BankImporterNoID](docs/BankImporterNoID.md)
  - [BankImporterNoIDLastImportsInner](docs/BankImporterNoIDLastImportsInner.md)

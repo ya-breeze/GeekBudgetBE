@@ -18,7 +18,8 @@
 				"ms-vscode.makefile-tools",
 				"42Crunch.vscode-openapi",
 				"redhat.vscode-yaml",
-				"qwtel.sqlite-viewer"
+				"qwtel.sqlite-viewer",
+				"streetsidesoftware.code-spell-checker-czech"
 			],
 			"settings": {
 				"go.formatTool": "gofumpt",
