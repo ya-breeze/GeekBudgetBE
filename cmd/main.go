@@ -31,6 +31,7 @@ func main() {
 	rootCmd.AddCommand(
 		commands.CmdUser(),
 		commands.CmdServer(),
+		commands.CmdFio(),
 	)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Printf("ERROR: %s", err)
