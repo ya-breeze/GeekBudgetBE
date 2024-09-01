@@ -24,3 +24,5 @@ bin/geekbudget
 bin/geekbudget
 bin/geekbudget
 pkg/generated/angular/
+token
+transactions.json
