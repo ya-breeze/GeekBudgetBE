@@ -32,7 +32,11 @@ type BankImporterNoId struct {
 	// Date of last successful import.
 	LastSuccessfulImport time.Time `json:"lastSuccessfulImport,omitempty"`
 
+	// List of last imports. It could be shown to user to explain what was imported recently
 	LastImports []BankImporterNoIdLastImportsInner `json:"lastImports,omitempty"`
+
+	// List of mappings which are used to enrich transactions with additional tags
+	Mappings []BankImporterNoIdMappingsInner `json:"mappings,omitempty"`
 }
 
 // AssertBankImporterNoIdRequired checks if the required fields are not zero-ed
@@ -52,6 +56,11 @@ func AssertBankImporterNoIdRequired(obj BankImporterNoId) error {
 			return err
 		}
 	}
+	for _, el := range obj.Mappings {
+		if err := AssertBankImporterNoIdMappingsInnerRequired(el); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -59,6 +68,11 @@ func AssertBankImporterNoIdRequired(obj BankImporterNoId) error {
 func AssertBankImporterNoIdConstraints(obj BankImporterNoId) error {
 	for _, el := range obj.LastImports {
 		if err := AssertBankImporterNoIdLastImportsInnerConstraints(el); err != nil {
+			return err
+		}
+	}
+	for _, el := range obj.Mappings {
+		if err := AssertBankImporterNoIdMappingsInnerConstraints(el); err != nil {
 			return err
 		}
 	}

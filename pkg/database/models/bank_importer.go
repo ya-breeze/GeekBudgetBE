@@ -18,6 +18,7 @@ type BankImporter struct {
 	Type                 string
 	LastSuccessfulImport time.Time
 	LastImports          []goserver.BankImporterNoIdLastImportsInner `gorm:"serializer:json"`
+	Mappings             []goserver.BankImporterNoIdMappingsInner    `gorm:"serializer:json"`
 
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
@@ -33,6 +34,7 @@ func (t *BankImporter) FromDB() goserver.BankImporter {
 		Type:                 t.Type,
 		LastSuccessfulImport: t.LastSuccessfulImport,
 		LastImports:          t.LastImports,
+		Mappings:             t.Mappings,
 	}
 }
 
@@ -46,5 +48,6 @@ func BankImporterToDB(m *goserver.BankImporterNoId, userID string) *BankImporter
 		Type:                 m.Type,
 		LastSuccessfulImport: m.LastSuccessfulImport,
 		LastImports:          m.LastImports,
+		Mappings:             m.Mappings,
 	}
 }

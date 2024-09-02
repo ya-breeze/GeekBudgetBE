@@ -127,6 +127,7 @@ Class | Method | HTTP request | Description
  - [BankImporter](docs/BankImporter.md)
  - [BankImporterNoID](docs/BankImporterNoID.md)
  - [BankImporterNoIDLastImportsInner](docs/BankImporterNoIDLastImportsInner.md)
+ - [BankImporterNoIDMappingsInner](docs/BankImporterNoIDMappingsInner.md)
  - [CheckMatcher200Response](docs/CheckMatcher200Response.md)
  - [CheckMatcherRequest](docs/CheckMatcherRequest.md)
  - [Currency](docs/Currency.md)

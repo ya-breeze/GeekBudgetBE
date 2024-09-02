@@ -147,11 +147,11 @@ func prefillNewUser(storage database.Storage, userID string) error {
 	}
 
 	account = &goserver.AccountNoId{
-		Name:        "Bank",
-		Description: "Bank account",
+		Name:        "FIO bank",
+		Description: "FIO bank account",
 		Type:        "asset",
 	}
-	accBank, err := storage.CreateAccount(userID, account)
+	accFio, err := storage.CreateAccount(userID, account)
 	if err != nil {
 		return fmt.Errorf("failed to create bank account: %w", err)
 	}
@@ -252,7 +252,7 @@ func prefillNewUser(storage database.Storage, userID string) error {
 		Tags:        []string{"initial_account_state"},
 		Movements: []goserver.Movement{
 			{
-				AccountId:  accBank.Id,
+				AccountId:  accFio.Id,
 				Amount:     10000,
 				CurrencyId: curCZK.Id,
 			},
@@ -272,7 +272,7 @@ func prefillNewUser(storage database.Storage, userID string) error {
 				CurrencyId: curCZK.Id,
 			},
 			{
-				AccountId:  accBank.Id,
+				AccountId:  accFio.Id,
 				Amount:     10000,
 				CurrencyId: curCZK.Id,
 			},
@@ -352,7 +352,7 @@ func prefillNewUser(storage database.Storage, userID string) error {
 				CurrencyId: curCZK.Id,
 			},
 			{
-				AccountId:  accBank.Id,
+				AccountId:  accFio.Id,
 				Amount:     -5000,
 				CurrencyId: curCZK.Id,
 			},
@@ -367,6 +367,20 @@ func prefillNewUser(storage database.Storage, userID string) error {
 		Name:        "FIO Bank CZK",
 		Description: "Fio banka a.s. (CZK)",
 		Extra:       "token",
+		AccountId:   accFio.Id,
+		Type:        "fio",
+		Mappings: []goserver.BankImporterNoIdMappingsInner{
+			{
+				FieldToMatch: "user",
+				ValueToMatch: "Korolev, Ilya",
+				TagToSet:     "ilya",
+			},
+			{
+				FieldToMatch: "user",
+				ValueToMatch: "Koroleva, Anzhela",
+				TagToSet:     "angela",
+			},
+		},
 	}
 	if _, err := storage.CreateBankImporter(userID, bankImporter); err != nil {
 		return fmt.Errorf("failed to create bank importer: %w", err)

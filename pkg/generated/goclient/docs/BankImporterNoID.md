@@ -10,7 +10,8 @@ Name | Type | Description | Notes
 **Extra** | Pointer to **string** | Stores extra data about bank importer. For example could hold \&quot;bank account number\&quot; to be able to distinguish between different bank accounts, or it could hold token for bank API | [optional] 
 **Type** | Pointer to **string** | Type of bank importer. It&#39;s used to distinguish between different banks. For example, FIO bank or KB bank. | [optional] 
 **LastSuccessfulImport** | Pointer to **time.Time** | Date of last successful import. | [optional] 
-**LastImports** | Pointer to [**[]BankImporterNoIDLastImportsInner**](BankImporterNoIDLastImportsInner.md) |  | [optional] 
+**LastImports** | Pointer to [**[]BankImporterNoIDLastImportsInner**](BankImporterNoIDLastImportsInner.md) | List of last imports. It could be shown to user to explain what was imported recently | [optional] 
+**Mappings** | Pointer to [**[]BankImporterNoIDMappingsInner**](BankImporterNoIDMappingsInner.md) | List of mappings which are used to enrich transactions with additional tags | [optional] 
 
 ## Methods
 
@@ -195,6 +196,31 @@ SetLastImports sets LastImports field to given value.
 `func (o *BankImporterNoID) HasLastImports() bool`
 
 HasLastImports returns a boolean if a field has been set.
+
+### GetMappings
+
+`func (o *BankImporterNoID) GetMappings() []BankImporterNoIDMappingsInner`
+
+GetMappings returns the Mappings field if non-nil, zero value otherwise.
+
+### GetMappingsOk
+
+`func (o *BankImporterNoID) GetMappingsOk() (*[]BankImporterNoIDMappingsInner, bool)`
+
+GetMappingsOk returns a tuple with the Mappings field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMappings
+
+`func (o *BankImporterNoID) SetMappings(v []BankImporterNoIDMappingsInner)`
+
+SetMappings sets Mappings field to given value.
+
+### HasMappings
+
+`func (o *BankImporterNoID) HasMappings() bool`
+
+HasMappings returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

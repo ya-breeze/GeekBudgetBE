@@ -95,6 +95,7 @@ func fetch() *cobra.Command {
 
 func parse() *cobra.Command {
 	var jsonFile string
+	var bankImporter goserver.BankImporterNoId
 	res := &cobra.Command{
 		Use:   "parse",
 		Short: "Parse FIO transactions from JSON",
@@ -136,7 +137,7 @@ func parse() *cobra.Command {
 			fmt.Printf("Read %d transaction(s)\n:", len(transactions.AccountStatement.TransactionList.Transaction))
 			for _, t := range transactions.AccountStatement.TransactionList.Transaction {
 				fmt.Printf("%d - %q\n", t.ID.Value, t.Comment.Value)
-				tr, err := fc.ConvertFioToTransaction(t)
+				tr, err := fc.ConvertFioToTransaction(bankImporter, t)
 				if err != nil {
 					return fmt.Errorf("can't convert FIO transaction: %w", err)
 				}
@@ -221,7 +222,8 @@ func NewFioConverter(account goserver.Account) (*FioConverter, error) {
 }
 
 //nolint:funlen,cyclop // to be refactored
-func (fc *FioConverter) ConvertFioToTransaction(fio FioTransaction) (goserver.TransactionNoId, error) {
+func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporterNoId, fio FioTransaction,
+) (goserver.TransactionNoId, error) {
 	var res goserver.TransactionNoId
 	tokens := fc.r.FindAllStringSubmatch(fio.Comment.Value, -1)
 	if tokens == nil {
@@ -288,10 +290,11 @@ func (fc *FioConverter) ConvertFioToTransaction(fio FioTransaction) (goserver.Tr
 	}
 	res.PartnerName = fio.PartnerName.Value
 
-	if fio.User.Value == "Korolev, Ilya" {
-		res.Tags = append(res.Tags, "ilya")
-	} else if fio.User.Value == "Koroleva, Anzhela" {
-		res.Tags = append(res.Tags, "angela")
+	// Iterate mappings
+	for _, m := range bi.Mappings {
+		if m.FieldToMatch == "user" && m.ValueToMatch == fio.User.Value {
+			res.Tags = append(res.Tags, m.TagToSet)
+		}
 	}
 
 	b, err := json.Marshal(fio)
@@ -320,5 +323,6 @@ func compress(s string) (string, error) {
 }
 
 func printTransactionNoID(t goserver.TransactionNoId) {
+	t.UnprocessedSources = "<replaced>"
 	fmt.Printf("TransactionNoId: %+v\n", t)
 }

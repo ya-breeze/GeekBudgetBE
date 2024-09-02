@@ -33,8 +33,11 @@ type BankImporter struct {
 	// Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
 	Type *string `json:"type,omitempty"`
 	// Date of last successful import.
-	LastSuccessfulImport *time.Time                         `json:"lastSuccessfulImport,omitempty"`
-	LastImports          []BankImporterNoIDLastImportsInner `json:"lastImports,omitempty"`
+	LastSuccessfulImport *time.Time `json:"lastSuccessfulImport,omitempty"`
+	// List of last imports. It could be shown to user to explain what was imported recently
+	LastImports []BankImporterNoIDLastImportsInner `json:"lastImports,omitempty"`
+	// List of mappings which are used to enrich transactions with additional tags
+	Mappings []BankImporterNoIDMappingsInner `json:"mappings,omitempty"`
 }
 
 type _BankImporter BankImporter
@@ -291,6 +294,38 @@ func (o *BankImporter) SetLastImports(v []BankImporterNoIDLastImportsInner) {
 	o.LastImports = v
 }
 
+// GetMappings returns the Mappings field value if set, zero value otherwise.
+func (o *BankImporter) GetMappings() []BankImporterNoIDMappingsInner {
+	if o == nil || IsNil(o.Mappings) {
+		var ret []BankImporterNoIDMappingsInner
+		return ret
+	}
+	return o.Mappings
+}
+
+// GetMappingsOk returns a tuple with the Mappings field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetMappingsOk() ([]BankImporterNoIDMappingsInner, bool) {
+	if o == nil || IsNil(o.Mappings) {
+		return nil, false
+	}
+	return o.Mappings, true
+}
+
+// HasMappings returns a boolean if a field has been set.
+func (o *BankImporter) HasMappings() bool {
+	if o != nil && !IsNil(o.Mappings) {
+		return true
+	}
+
+	return false
+}
+
+// SetMappings gets a reference to the given []BankImporterNoIDMappingsInner and assigns it to the Mappings field.
+func (o *BankImporter) SetMappings(v []BankImporterNoIDMappingsInner) {
+	o.Mappings = v
+}
+
 func (o BankImporter) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -318,6 +353,9 @@ func (o BankImporter) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.LastImports) {
 		toSerialize["lastImports"] = o.LastImports
+	}
+	if !IsNil(o.Mappings) {
+		toSerialize["mappings"] = o.Mappings
 	}
 	return toSerialize, nil
 }
