@@ -17,6 +17,18 @@ type CurrencyAggregation struct {
 	Accounts []AccountAggregation `json:"accounts"`
 }
 
+type CurrencyAggregationInterface interface {
+	GetCurrencyId() string
+	GetAccounts() []AccountAggregation
+}
+
+func (c *CurrencyAggregation) GetCurrencyId() string {
+	return c.CurrencyId
+}
+func (c *CurrencyAggregation) GetAccounts() []AccountAggregation {
+	return c.Accounts
+}
+
 // AssertCurrencyAggregationRequired checks if the required fields are not zero-ed
 func AssertCurrencyAggregationRequired(obj CurrencyAggregation) error {
 	elements := map[string]interface{}{

@@ -17,6 +17,18 @@ type AuthData struct {
 	Password string `json:"password"`
 }
 
+type AuthDataInterface interface {
+	GetEmail() string
+	GetPassword() string
+}
+
+func (c *AuthData) GetEmail() string {
+	return c.Email
+}
+func (c *AuthData) GetPassword() string {
+	return c.Password
+}
+
 // AssertAuthDataRequired checks if the required fields are not zero-ed
 func AssertAuthDataRequired(obj AuthData) error {
 	elements := map[string]interface{}{

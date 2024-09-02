@@ -31,6 +31,46 @@ type MatcherNoId struct {
 	OutputMovements []Movement `json:"outputMovements,omitempty"`
 }
 
+type MatcherNoIdInterface interface {
+	GetName() string
+	GetOutputDescription() string
+	GetAmount() float64
+	GetCurrencyRegExp() string
+	GetPartnerNameRegExp() string
+	GetPartnerAccountNumber() string
+	GetDescriptionRegExp() string
+	GetExtraRegExp() string
+	GetOutputMovements() []Movement
+}
+
+func (c *MatcherNoId) GetName() string {
+	return c.Name
+}
+func (c *MatcherNoId) GetOutputDescription() string {
+	return c.OutputDescription
+}
+func (c *MatcherNoId) GetAmount() float64 {
+	return c.Amount
+}
+func (c *MatcherNoId) GetCurrencyRegExp() string {
+	return c.CurrencyRegExp
+}
+func (c *MatcherNoId) GetPartnerNameRegExp() string {
+	return c.PartnerNameRegExp
+}
+func (c *MatcherNoId) GetPartnerAccountNumber() string {
+	return c.PartnerAccountNumber
+}
+func (c *MatcherNoId) GetDescriptionRegExp() string {
+	return c.DescriptionRegExp
+}
+func (c *MatcherNoId) GetExtraRegExp() string {
+	return c.ExtraRegExp
+}
+func (c *MatcherNoId) GetOutputMovements() []Movement {
+	return c.OutputMovements
+}
+
 // AssertMatcherNoIdRequired checks if the required fields are not zero-ed
 func AssertMatcherNoIdRequired(obj MatcherNoId) error {
 	elements := map[string]interface{}{

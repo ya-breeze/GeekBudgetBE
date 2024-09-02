@@ -27,6 +27,30 @@ type Aggregation struct {
 	Currencies []CurrencyAggregation `json:"currencies"`
 }
 
+type AggregationInterface interface {
+	GetFrom() time.Time
+	GetTo() time.Time
+	GetGranularity() string
+	GetIntervals() []time.Time
+	GetCurrencies() []CurrencyAggregation
+}
+
+func (c *Aggregation) GetFrom() time.Time {
+	return c.From
+}
+func (c *Aggregation) GetTo() time.Time {
+	return c.To
+}
+func (c *Aggregation) GetGranularity() string {
+	return c.Granularity
+}
+func (c *Aggregation) GetIntervals() []time.Time {
+	return c.Intervals
+}
+func (c *Aggregation) GetCurrencies() []CurrencyAggregation {
+	return c.Currencies
+}
+
 // AssertAggregationRequired checks if the required fields are not zero-ed
 func AssertAggregationRequired(obj Aggregation) error {
 	elements := map[string]interface{}{

@@ -24,6 +24,18 @@ type BankImporterNoIdLastImportsInner struct {
 	Status string `json:"status,omitempty"`
 }
 
+type BankImporterNoIdLastImportsInnerInterface interface {
+	GetDate() time.Time
+	GetStatus() string
+}
+
+func (c *BankImporterNoIdLastImportsInner) GetDate() time.Time {
+	return c.Date
+}
+func (c *BankImporterNoIdLastImportsInner) GetStatus() string {
+	return c.Status
+}
+
 // AssertBankImporterNoIdLastImportsInnerRequired checks if the required fields are not zero-ed
 func AssertBankImporterNoIdLastImportsInnerRequired(obj BankImporterNoIdLastImportsInner) error {
 	return nil

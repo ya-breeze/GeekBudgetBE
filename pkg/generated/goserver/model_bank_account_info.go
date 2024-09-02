@@ -21,6 +21,26 @@ type BankAccountInfo struct {
 	ClosingBalance float64 `json:"closingBalance,omitempty"`
 }
 
+type BankAccountInfoInterface interface {
+	GetAccountId() string
+	GetBankId() string
+	GetOpeningBalance() float64
+	GetClosingBalance() float64
+}
+
+func (c *BankAccountInfo) GetAccountId() string {
+	return c.AccountId
+}
+func (c *BankAccountInfo) GetBankId() string {
+	return c.BankId
+}
+func (c *BankAccountInfo) GetOpeningBalance() float64 {
+	return c.OpeningBalance
+}
+func (c *BankAccountInfo) GetClosingBalance() float64 {
+	return c.ClosingBalance
+}
+
 // AssertBankAccountInfoRequired checks if the required fields are not zero-ed
 func AssertBankAccountInfoRequired(obj BankAccountInfo) error {
 	return nil

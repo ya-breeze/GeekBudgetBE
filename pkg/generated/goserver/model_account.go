@@ -23,6 +23,30 @@ type Account struct {
 	BankInfo BankAccountInfo `json:"bankInfo,omitempty"`
 }
 
+type AccountInterface interface {
+	GetId() string
+	GetName() string
+	GetDescription() string
+	GetType() string
+	GetBankInfo() BankAccountInfo
+}
+
+func (c *Account) GetId() string {
+	return c.Id
+}
+func (c *Account) GetName() string {
+	return c.Name
+}
+func (c *Account) GetDescription() string {
+	return c.Description
+}
+func (c *Account) GetType() string {
+	return c.Type
+}
+func (c *Account) GetBankInfo() BankAccountInfo {
+	return c.BankInfo
+}
+
 // AssertAccountRequired checks if the required fields are not zero-ed
 func AssertAccountRequired(obj Account) error {
 	elements := map[string]interface{}{

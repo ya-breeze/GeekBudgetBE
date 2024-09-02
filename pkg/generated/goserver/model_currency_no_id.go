@@ -17,6 +17,18 @@ type CurrencyNoId struct {
 	Description string `json:"description,omitempty"`
 }
 
+type CurrencyNoIdInterface interface {
+	GetName() string
+	GetDescription() string
+}
+
+func (c *CurrencyNoId) GetName() string {
+	return c.Name
+}
+func (c *CurrencyNoId) GetDescription() string {
+	return c.Description
+}
+
 // AssertCurrencyNoIdRequired checks if the required fields are not zero-ed
 func AssertCurrencyNoIdRequired(obj CurrencyNoId) error {
 	elements := map[string]interface{}{

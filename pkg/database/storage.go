@@ -48,7 +48,7 @@ type Storage interface {
 
 	GetBankImporters(userID string) ([]goserver.BankImporter, error)
 	CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
-	UpdateBankImporter(userID string, id string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
+	UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface) (goserver.BankImporter, error)
 	DeleteBankImporter(userID string, id string) error
 	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
 }
@@ -415,7 +415,7 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 }
 
 //nolint:dupl // it's okay to have similar code for now
-func (s *storage) UpdateBankImporter(userID string, id string, bankImporter *goserver.BankImporterNoId,
+func (s *storage) UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
 ) (goserver.BankImporter, error) {
 	idUUID, err := uuid.Parse(id)
 	if err != nil {

@@ -1,17 +1,19 @@
-package bank_importers
+package bankimporters
 
 import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 )
 
-func FetchFioTransactions(ctx context.Context, token string) ([]byte, error) {
+func FetchFioTransactions(logger *slog.Logger, ctx context.Context, token string) ([]byte, error) {
 	// Prepare today and 90 days ago
 	today := time.Now().Format("2006-01-02")
 	ago90 := time.Now().AddDate(0, 0, -90).Format("2006-01-02")
+	logger.With("today", today).With("ago90", ago90).Info("Fetching transactions")
 
 	// fetch from URL 2024-09-01
 	url := fmt.Sprintf("https://fioapi.fio.cz/v1/rest/periods/%s/%s/%s/transactions.json", token, ago90, today)

@@ -17,6 +17,18 @@ type AccountAggregation struct {
 	Amounts []float64 `json:"amounts"`
 }
 
+type AccountAggregationInterface interface {
+	GetAccountId() string
+	GetAmounts() []float64
+}
+
+func (c *AccountAggregation) GetAccountId() string {
+	return c.AccountId
+}
+func (c *AccountAggregation) GetAmounts() []float64 {
+	return c.Amounts
+}
+
 // AssertAccountAggregationRequired checks if the required fields are not zero-ed
 func AssertAccountAggregationRequired(obj AccountAggregation) error {
 	elements := map[string]interface{}{

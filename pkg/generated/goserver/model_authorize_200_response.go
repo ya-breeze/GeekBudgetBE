@@ -15,6 +15,14 @@ type Authorize200Response struct {
 	Token string `json:"token"`
 }
 
+type Authorize200ResponseInterface interface {
+	GetToken() string
+}
+
+func (c *Authorize200Response) GetToken() string {
+	return c.Token
+}
+
 // AssertAuthorize200ResponseRequired checks if the required fields are not zero-ed
 func AssertAuthorize200ResponseRequired(obj Authorize200Response) error {
 	elements := map[string]interface{}{

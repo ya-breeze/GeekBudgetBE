@@ -21,6 +21,26 @@ type Movement struct {
 	Description string `json:"description,omitempty"`
 }
 
+type MovementInterface interface {
+	GetAmount() float64
+	GetCurrencyId() string
+	GetAccountId() string
+	GetDescription() string
+}
+
+func (c *Movement) GetAmount() float64 {
+	return c.Amount
+}
+func (c *Movement) GetCurrencyId() string {
+	return c.CurrencyId
+}
+func (c *Movement) GetAccountId() string {
+	return c.AccountId
+}
+func (c *Movement) GetDescription() string {
+	return c.Description
+}
+
 // AssertMovementRequired checks if the required fields are not zero-ed
 func AssertMovementRequired(obj Movement) error {
 	elements := map[string]interface{}{

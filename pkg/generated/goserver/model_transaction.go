@@ -45,6 +45,58 @@ type Transaction struct {
 	Movements []Movement `json:"movements"`
 }
 
+type TransactionInterface interface {
+	GetId() string
+	GetDate() time.Time
+	GetDescription() string
+	GetPlace() string
+	GetTags() []string
+	GetPartnerName() string
+	GetPartnerAccount() string
+	GetPartnerInternalId() string
+	GetExtra() string
+	GetUnprocessedSources() string
+	GetExternalIds() []string
+	GetMovements() []Movement
+}
+
+func (c *Transaction) GetId() string {
+	return c.Id
+}
+func (c *Transaction) GetDate() time.Time {
+	return c.Date
+}
+func (c *Transaction) GetDescription() string {
+	return c.Description
+}
+func (c *Transaction) GetPlace() string {
+	return c.Place
+}
+func (c *Transaction) GetTags() []string {
+	return c.Tags
+}
+func (c *Transaction) GetPartnerName() string {
+	return c.PartnerName
+}
+func (c *Transaction) GetPartnerAccount() string {
+	return c.PartnerAccount
+}
+func (c *Transaction) GetPartnerInternalId() string {
+	return c.PartnerInternalId
+}
+func (c *Transaction) GetExtra() string {
+	return c.Extra
+}
+func (c *Transaction) GetUnprocessedSources() string {
+	return c.UnprocessedSources
+}
+func (c *Transaction) GetExternalIds() []string {
+	return c.ExternalIds
+}
+func (c *Transaction) GetMovements() []Movement {
+	return c.Movements
+}
+
 // AssertTransactionRequired checks if the required fields are not zero-ed
 func AssertTransactionRequired(obj Transaction) error {
 	elements := map[string]interface{}{

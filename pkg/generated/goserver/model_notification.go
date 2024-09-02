@@ -29,6 +29,34 @@ type Notification struct {
 	Description string `json:"description"`
 }
 
+type NotificationInterface interface {
+	GetId() string
+	GetDate() time.Time
+	GetType() string
+	GetUrl() string
+	GetTitle() string
+	GetDescription() string
+}
+
+func (c *Notification) GetId() string {
+	return c.Id
+}
+func (c *Notification) GetDate() time.Time {
+	return c.Date
+}
+func (c *Notification) GetType() string {
+	return c.Type
+}
+func (c *Notification) GetUrl() string {
+	return c.Url
+}
+func (c *Notification) GetTitle() string {
+	return c.Title
+}
+func (c *Notification) GetDescription() string {
+	return c.Description
+}
+
 // AssertNotificationRequired checks if the required fields are not zero-ed
 func AssertNotificationRequired(obj Notification) error {
 	elements := map[string]interface{}{

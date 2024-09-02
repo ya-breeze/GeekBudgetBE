@@ -1,4 +1,4 @@
-package bank_importers
+package bankimporters
 
 import (
 	"context"

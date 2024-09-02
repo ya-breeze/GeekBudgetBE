@@ -17,6 +17,18 @@ type CheckMatcherRequest struct {
 	Transaction TransactionNoId `json:"transaction"`
 }
 
+type CheckMatcherRequestInterface interface {
+	GetMatcher() MatcherNoId
+	GetTransaction() TransactionNoId
+}
+
+func (c *CheckMatcherRequest) GetMatcher() MatcherNoId {
+	return c.Matcher
+}
+func (c *CheckMatcherRequest) GetTransaction() TransactionNoId {
+	return c.Transaction
+}
+
 // AssertCheckMatcherRequestRequired checks if the required fields are not zero-ed
 func AssertCheckMatcherRequestRequired(obj CheckMatcherRequest) error {
 	elements := map[string]interface{}{

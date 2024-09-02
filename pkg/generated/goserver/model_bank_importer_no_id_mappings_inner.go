@@ -23,6 +23,22 @@ type BankImporterNoIdMappingsInner struct {
 	TagToSet string `json:"tagToSet,omitempty"`
 }
 
+type BankImporterNoIdMappingsInnerInterface interface {
+	GetFieldToMatch() string
+	GetValueToMatch() string
+	GetTagToSet() string
+}
+
+func (c *BankImporterNoIdMappingsInner) GetFieldToMatch() string {
+	return c.FieldToMatch
+}
+func (c *BankImporterNoIdMappingsInner) GetValueToMatch() string {
+	return c.ValueToMatch
+}
+func (c *BankImporterNoIdMappingsInner) GetTagToSet() string {
+	return c.TagToSet
+}
+
 // AssertBankImporterNoIdMappingsInnerRequired checks if the required fields are not zero-ed
 func AssertBankImporterNoIdMappingsInnerRequired(obj BankImporterNoIdMappingsInner) error {
 	return nil

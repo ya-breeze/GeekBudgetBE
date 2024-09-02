@@ -1,4 +1,4 @@
-package bank_importers
+package bankimporters
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strconv"
 	"time"
@@ -14,12 +15,13 @@ import (
 )
 
 type FioConverter struct {
-	bankImporter goserver.BankImporterNoId
+	logger       *slog.Logger
+	bankImporter goserver.BankImporter
 	r            *regexp.Regexp
 	location     *time.Location
 }
 
-func NewFioConverter(bankImporter goserver.BankImporterNoId) (*FioConverter, error) {
+func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter) (*FioConverter, error) {
 	// Example:
 	// 0: 0 - "Nákup: IKEA ZLICIN RESTAURA,  Skandinavska 15a, Praha 13, 155 00, CZE, dne 31.8.2024, částka  383.00 CZK"
 	// 0: 1 - "Nákup"
@@ -35,12 +37,17 @@ func NewFioConverter(bankImporter goserver.BankImporterNoId) (*FioConverter, err
 		return nil, fmt.Errorf("can't load location: %w", err)
 	}
 
-	return &FioConverter{bankImporter: bankImporter, r: r, location: loc}, nil
+	return &FioConverter{
+		logger:       logger,
+		bankImporter: bankImporter,
+		r:            r,
+		location:     loc,
+	}, nil
 }
 
 func (fc *FioConverter) Import(ctx context.Context) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	// Fetch transactions from FIO
-	body, err := FetchFioTransactions(ctx, fc.bankImporter.Extra)
+	body, err := FetchFioTransactions(fc.logger, ctx, fc.bankImporter.Extra)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't fetch FIO transactions: %w", err)
 	}
@@ -68,7 +75,7 @@ func (fc *FioConverter) ParseTransactions(data []byte) (*goserver.BankAccountInf
 }
 
 //nolint:funlen,cyclop // to be refactored
-func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporterNoId, fio FioTransaction,
+func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio FioTransaction,
 ) (goserver.TransactionNoId, error) {
 	var res goserver.TransactionNoId
 	tokens := fc.r.FindAllStringSubmatch(fio.Comment.Value, -1)

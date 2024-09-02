@@ -4,11 +4,12 @@ package commands
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/ya-breeze/geekbudgetbe/pkg/bank_importers"
+	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
@@ -51,7 +52,9 @@ func fetch() *cobra.Command {
 				}
 			}
 
-			fmt.Println(bank_importers.FetchFioTransactions(cmd.Context(), token))
+			fmt.Println(bankimporters.FetchFioTransactions(
+				slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+				cmd.Context(), token))
 
 			return nil
 		},
@@ -84,9 +87,11 @@ func parse() *cobra.Command {
 				}
 			}
 
-			fc, err := bank_importers.NewFioConverter(goserver.BankImporterNoId{
-				AccountId: "<accountID>",
-			})
+			fc, err := bankimporters.NewFioConverter(
+				slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+				goserver.BankImporter{
+					AccountId: "<accountID>",
+				})
 			if err != nil {
 				return fmt.Errorf("can't create FioConverter: %w", err)
 			}

@@ -15,6 +15,14 @@ type CheckMatcher200Response struct {
 	Result bool `json:"result,omitempty"`
 }
 
+type CheckMatcher200ResponseInterface interface {
+	GetResult() bool
+}
+
+func (c *CheckMatcher200Response) GetResult() bool {
+	return c.Result
+}
+
 // AssertCheckMatcher200ResponseRequired checks if the required fields are not zero-ed
 func AssertCheckMatcher200ResponseRequired(obj CheckMatcher200Response) error {
 	return nil

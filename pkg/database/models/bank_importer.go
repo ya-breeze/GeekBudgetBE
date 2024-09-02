@@ -38,16 +38,15 @@ func (t *BankImporter) FromDB() goserver.BankImporter {
 	}
 }
 
-func BankImporterToDB(m *goserver.BankImporterNoId, userID string) *BankImporter {
+func BankImporterToDB(m goserver.BankImporterNoIdInterface, userID string) *BankImporter {
 	return &BankImporter{
 		UserID:               userID,
-		Name:                 m.Name,
-		Description:          m.Description,
-		AccountID:            m.AccountId,
-		Extra:                m.Extra,
-		Type:                 m.Type,
-		LastSuccessfulImport: m.LastSuccessfulImport,
-		LastImports:          m.LastImports,
-		Mappings:             m.Mappings,
+		Name:                 m.GetName(),
+		Description:          m.GetDescription(),
+		AccountID:            m.GetAccountId(),
+		Extra:                m.GetExtra(),
+		Type:                 m.GetType(),
+		LastSuccessfulImport: m.GetLastSuccessfulImport(),
+		LastImports:          m.GetLastImports(),
 	}
 }

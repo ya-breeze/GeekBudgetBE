@@ -15,6 +15,14 @@ type Entity struct {
 	Id string `json:"id"`
 }
 
+type EntityInterface interface {
+	GetId() string
+}
+
+func (c *Entity) GetId() string {
+	return c.Id
+}
+
 // AssertEntityRequired checks if the required fields are not zero-ed
 func AssertEntityRequired(obj Entity) error {
 	elements := map[string]interface{}{

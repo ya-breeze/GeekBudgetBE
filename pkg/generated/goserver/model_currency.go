@@ -19,6 +19,22 @@ type Currency struct {
 	Description string `json:"description,omitempty"`
 }
 
+type CurrencyInterface interface {
+	GetId() string
+	GetName() string
+	GetDescription() string
+}
+
+func (c *Currency) GetId() string {
+	return c.Id
+}
+func (c *Currency) GetName() string {
+	return c.Name
+}
+func (c *Currency) GetDescription() string {
+	return c.Description
+}
+
 // AssertCurrencyRequired checks if the required fields are not zero-ed
 func AssertCurrencyRequired(obj Currency) error {
 	elements := map[string]interface{}{

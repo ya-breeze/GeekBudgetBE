@@ -19,6 +19,22 @@ type UnprocessedTransaction struct {
 	Duplicates []Transaction `json:"duplicates"`
 }
 
+type UnprocessedTransactionInterface interface {
+	GetTransaction() Transaction
+	GetMatched() []MatcherAndTransaction
+	GetDuplicates() []Transaction
+}
+
+func (c *UnprocessedTransaction) GetTransaction() Transaction {
+	return c.Transaction
+}
+func (c *UnprocessedTransaction) GetMatched() []MatcherAndTransaction {
+	return c.Matched
+}
+func (c *UnprocessedTransaction) GetDuplicates() []Transaction {
+	return c.Duplicates
+}
+
 // AssertUnprocessedTransactionRequired checks if the required fields are not zero-ed
 func AssertUnprocessedTransactionRequired(obj UnprocessedTransaction) error {
 	elements := map[string]interface{}{

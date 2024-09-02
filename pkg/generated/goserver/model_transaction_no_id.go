@@ -43,6 +43,54 @@ type TransactionNoId struct {
 	Movements []Movement `json:"movements"`
 }
 
+type TransactionNoIdInterface interface {
+	GetDate() time.Time
+	GetDescription() string
+	GetPlace() string
+	GetTags() []string
+	GetPartnerName() string
+	GetPartnerAccount() string
+	GetPartnerInternalId() string
+	GetExtra() string
+	GetUnprocessedSources() string
+	GetExternalIds() []string
+	GetMovements() []Movement
+}
+
+func (c *TransactionNoId) GetDate() time.Time {
+	return c.Date
+}
+func (c *TransactionNoId) GetDescription() string {
+	return c.Description
+}
+func (c *TransactionNoId) GetPlace() string {
+	return c.Place
+}
+func (c *TransactionNoId) GetTags() []string {
+	return c.Tags
+}
+func (c *TransactionNoId) GetPartnerName() string {
+	return c.PartnerName
+}
+func (c *TransactionNoId) GetPartnerAccount() string {
+	return c.PartnerAccount
+}
+func (c *TransactionNoId) GetPartnerInternalId() string {
+	return c.PartnerInternalId
+}
+func (c *TransactionNoId) GetExtra() string {
+	return c.Extra
+}
+func (c *TransactionNoId) GetUnprocessedSources() string {
+	return c.UnprocessedSources
+}
+func (c *TransactionNoId) GetExternalIds() []string {
+	return c.ExternalIds
+}
+func (c *TransactionNoId) GetMovements() []Movement {
+	return c.Movements
+}
+
 // AssertTransactionNoIdRequired checks if the required fields are not zero-ed
 func AssertTransactionNoIdRequired(obj TransactionNoId) error {
 	elements := map[string]interface{}{

@@ -23,6 +23,22 @@ type User struct {
 	Id string `json:"id"`
 }
 
+type UserInterface interface {
+	GetEmail() string
+	GetStartDate() time.Time
+	GetId() string
+}
+
+func (c *User) GetEmail() string {
+	return c.Email
+}
+func (c *User) GetStartDate() time.Time {
+	return c.StartDate
+}
+func (c *User) GetId() string {
+	return c.Id
+}
+
 // AssertUserRequired checks if the required fields are not zero-ed
 func AssertUserRequired(obj User) error {
 	elements := map[string]interface{}{

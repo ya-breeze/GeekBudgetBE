@@ -41,6 +41,46 @@ type BankImporter struct {
 	Mappings []BankImporterNoIdMappingsInner `json:"mappings,omitempty"`
 }
 
+type BankImporterInterface interface {
+	GetId() string
+	GetName() string
+	GetDescription() string
+	GetAccountId() string
+	GetExtra() string
+	GetType() string
+	GetLastSuccessfulImport() time.Time
+	GetLastImports() []BankImporterNoIdLastImportsInner
+	GetMappings() []BankImporterNoIdMappingsInner
+}
+
+func (c *BankImporter) GetId() string {
+	return c.Id
+}
+func (c *BankImporter) GetName() string {
+	return c.Name
+}
+func (c *BankImporter) GetDescription() string {
+	return c.Description
+}
+func (c *BankImporter) GetAccountId() string {
+	return c.AccountId
+}
+func (c *BankImporter) GetExtra() string {
+	return c.Extra
+}
+func (c *BankImporter) GetType() string {
+	return c.Type
+}
+func (c *BankImporter) GetLastSuccessfulImport() time.Time {
+	return c.LastSuccessfulImport
+}
+func (c *BankImporter) GetLastImports() []BankImporterNoIdLastImportsInner {
+	return c.LastImports
+}
+func (c *BankImporter) GetMappings() []BankImporterNoIdMappingsInner {
+	return c.Mappings
+}
+
 // AssertBankImporterRequired checks if the required fields are not zero-ed
 func AssertBankImporterRequired(obj BankImporter) error {
 	elements := map[string]interface{}{
