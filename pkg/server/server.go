@@ -121,12 +121,12 @@ func upsertUser(storage database.Storage, username, hashedPassword string, logge
 		if user, err = storage.CreateUser(username, hashedPassword); err != nil {
 			return fmt.Errorf("failed to create user: %w", err)
 		}
-	}
 
-	if prefill {
-		err = prefillNewUser(storage, user.ID.String())
-		if err != nil {
-			return fmt.Errorf("failed to prefill new user: %w", err)
+		if prefill {
+			err = prefillNewUser(storage, user.ID.String())
+			if err != nil {
+				return fmt.Errorf("failed to prefill new user: %w", err)
+			}
 		}
 	}
 
