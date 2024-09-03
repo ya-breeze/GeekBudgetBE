@@ -91,6 +91,13 @@ func parse() *cobra.Command {
 				slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 				goserver.BankImporter{
 					AccountId: "<accountID>",
+				}, []goserver.Currency{
+					{
+						Name: "CZK",
+					},
+					{
+						Name: "EUR",
+					},
 				})
 			if err != nil {
 				return fmt.Errorf("can't create FioConverter: %w", err)

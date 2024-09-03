@@ -6,10 +6,21 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 )
 
 func FetchFioTransactions(logger *slog.Logger, ctx context.Context, token string) ([]byte, error) {
+	if true {
+		// read from file for testing
+		data, err := os.ReadFile("transactions.json")
+		if err != nil {
+			return nil, fmt.Errorf("can't read file: %w", err)
+		}
+
+		return data, nil
+	}
+
 	// Prepare today and 90 days ago
 	today := time.Now().Format("2006-01-02")
 	ago90 := time.Now().AddDate(0, 0, -90).Format("2006-01-02")

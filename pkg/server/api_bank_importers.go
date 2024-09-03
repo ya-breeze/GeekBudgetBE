@@ -124,7 +124,12 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(ctx context.Context, 
 		return nil, nil, fmt.Errorf("can't fetch bank importer: %w", err)
 	}
 
-	bi, err := bankimporters.NewFioConverter(s.logger, biData)
+	currencies, err := s.db.GetCurrencies(userID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("can't fetch currencies: %w", err)
+	}
+
+	bi, err := bankimporters.NewFioConverter(s.logger, biData, currencies)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't create FioConverter: %w", err)
 	}

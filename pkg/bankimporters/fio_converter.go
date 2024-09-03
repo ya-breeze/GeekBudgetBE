@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"slices"
 	"strconv"
 	"time"
 
@@ -19,9 +20,11 @@ type FioConverter struct {
 	bankImporter goserver.BankImporter
 	r            *regexp.Regexp
 	location     *time.Location
+	currencies   []goserver.Currency
 }
 
-func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter) (*FioConverter, error) {
+func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter, currencies []goserver.Currency,
+) (*FioConverter, error) {
 	// Example:
 	// 0: 0 - "Nákup: IKEA ZLICIN RESTAURA,  Skandinavska 15a, Praha 13, 155 00, CZE, dne 31.8.2024, částka  383.00 CZK"
 	// 0: 1 - "Nákup"
@@ -42,6 +45,7 @@ func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter) (*
 		bankImporter: bankImporter,
 		r:            r,
 		location:     loc,
+		currencies:   currencies,
 	}, nil
 }
 
@@ -78,6 +82,16 @@ func (fc *FioConverter) ParseTransactions(data []byte) (*goserver.BankAccountInf
 func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio FioTransaction,
 ) (goserver.TransactionNoId, error) {
 	var res goserver.TransactionNoId
+
+	currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
+		return c.Name == fio.Currency.Value
+	})
+	if currencyIdx == -1 {
+		// TODO Add currency with given name
+		return res, fmt.Errorf("can't find currency %q", fio.Currency.Value)
+	}
+	strCurrencyID := fc.currencies[currencyIdx].Id
+
 	tokens := fc.r.FindAllStringSubmatch(fio.Comment.Value, -1)
 	if tokens == nil {
 		t, err := time.ParseInLocation("2006-01-02-0700", fio.Date.Value, fc.location)
@@ -96,12 +110,12 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 			Movements: []goserver.Movement{
 				{
 					Amount:     -fio.Amount.Value,
-					CurrencyId: fio.Currency.Value,
+					CurrencyId: strCurrencyID,
 				},
 				{
 					AccountId:  fc.bankImporter.AccountId,
 					Amount:     fio.Amount.Value,
-					CurrencyId: fio.Currency.Value,
+					CurrencyId: strCurrencyID,
 				},
 			},
 		}
@@ -117,6 +131,21 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 			return res, fmt.Errorf("can't parse amount %q: %w", tokens[0][5], err)
 		}
 
+		var strPaidCurrencyID string
+		paidCurrency := tokens[0][6]
+		if paidCurrency != fio.Currency.Value {
+			paidCurrencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
+				return c.Name == paidCurrency
+			})
+			if paidCurrencyIdx == -1 {
+				// TODO Add currency with given name
+				return res, fmt.Errorf("can't find currency %q", paidCurrency)
+			}
+			strPaidCurrencyID = fc.currencies[paidCurrencyIdx].Id
+		} else {
+			strPaidCurrencyID = strCurrencyID
+		}
+
 		res = goserver.TransactionNoId{
 			Date:        t,
 			Place:       tokens[0][3],
@@ -124,12 +153,12 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 			Movements: []goserver.Movement{
 				{
 					Amount:     m,
-					CurrencyId: tokens[0][6],
+					CurrencyId: strPaidCurrencyID,
 				},
 				{
 					AccountId:  fc.bankImporter.AccountId,
 					Amount:     fio.Amount.Value,
-					CurrencyId: fio.Currency.Value,
+					CurrencyId: strCurrencyID,
 				},
 			},
 		}
