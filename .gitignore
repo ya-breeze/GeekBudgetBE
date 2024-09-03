@@ -26,3 +26,4 @@ bin/geekbudget
 pkg/generated/angular/
 token
 transactions.json
+geekbudget.db

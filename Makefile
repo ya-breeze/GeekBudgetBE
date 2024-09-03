@@ -1,3 +1,5 @@
+ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+
 .PHONY: all
 all: build test lint
 	@echo "🎉 You are good to go!"
@@ -12,6 +14,7 @@ build:
 run: build
 	@GB_USERS=test:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
 	GB_PREFILL=true \
+	GB_DBPATH=$(ROOT_DIR)geekbudget.db \
 	./bin/geekbudget server
 
 .PHONY: replace-templates

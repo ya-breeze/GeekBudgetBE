@@ -65,6 +65,7 @@ func NewStorage(logger *slog.Logger, cfg *config.Config) Storage {
 }
 
 func (s *storage) Open() error {
+	s.log.Info("Opening database", "path", s.cfg.DBPath)
 	var err error
 	s.db, err = openSqlite(s.log, s.cfg.DBPath, s.cfg.Verbose)
 	if err != nil {
