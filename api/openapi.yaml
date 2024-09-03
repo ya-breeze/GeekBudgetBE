@@ -981,9 +981,15 @@ components:
                 description: >-
                   Date of import
               status:
-                type: string
+                enum:
+                  - success
+                  - error
                 description: >-
                   Status of import
+              description:
+                type: string
+                description: >-
+                  Details of import
         mappings:
           description: >-
             List of mappings which are used to enrich transactions with additional tags

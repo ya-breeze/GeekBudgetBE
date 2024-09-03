@@ -25,6 +25,8 @@ type BankImporterNoIDLastImportsInner struct {
 	Date *time.Time `json:"date,omitempty"`
 	// Status of import
 	Status *string `json:"status,omitempty"`
+	// Details of import
+	Description *string `json:"description,omitempty"`
 }
 
 // NewBankImporterNoIDLastImportsInner instantiates a new BankImporterNoIDLastImportsInner object
@@ -108,6 +110,38 @@ func (o *BankImporterNoIDLastImportsInner) SetStatus(v string) {
 	o.Status = &v
 }
 
+// GetDescription returns the Description field value if set, zero value otherwise.
+func (o *BankImporterNoIDLastImportsInner) GetDescription() string {
+	if o == nil || IsNil(o.Description) {
+		var ret string
+		return ret
+	}
+	return *o.Description
+}
+
+// GetDescriptionOk returns a tuple with the Description field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporterNoIDLastImportsInner) GetDescriptionOk() (*string, bool) {
+	if o == nil || IsNil(o.Description) {
+		return nil, false
+	}
+	return o.Description, true
+}
+
+// HasDescription returns a boolean if a field has been set.
+func (o *BankImporterNoIDLastImportsInner) HasDescription() bool {
+	if o != nil && !IsNil(o.Description) {
+		return true
+	}
+
+	return false
+}
+
+// SetDescription gets a reference to the given string and assigns it to the Description field.
+func (o *BankImporterNoIDLastImportsInner) SetDescription(v string) {
+	o.Description = &v
+}
+
 func (o BankImporterNoIDLastImportsInner) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -123,6 +157,9 @@ func (o BankImporterNoIDLastImportsInner) ToMap() (map[string]interface{}, error
 	}
 	if !IsNil(o.Status) {
 		toSerialize["status"] = o.Status
+	}
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
 	}
 	return toSerialize, nil
 }
