@@ -183,14 +183,12 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 	if err != nil {
 		return res, fmt.Errorf("can't marshal FIO transaction: %w", err)
 	}
-	res.UnprocessedSources, err = compress(string(b))
-	if err != nil {
-		return res, fmt.Errorf("can't compress FIO transaction: %w", err)
-	}
+	res.UnprocessedSources = string(b)
 
 	return res, nil
 }
 
+//nolint:unused // to be used
 func compress(s string) (string, error) {
 	var b bytes.Buffer
 	gz := gzip.NewWriter(&b)
