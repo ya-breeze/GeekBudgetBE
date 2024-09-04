@@ -33,7 +33,7 @@ type BankImporterNoId struct {
 	LastSuccessfulImport time.Time `json:"lastSuccessfulImport,omitempty"`
 
 	// List of last imports. It could be shown to user to explain what was imported recently
-	LastImports []BankImporterNoIdLastImportsInner `json:"lastImports,omitempty"`
+	LastImports []ImportResult `json:"lastImports,omitempty"`
 
 	// List of mappings which are used to enrich transactions with additional tags
 	Mappings []BankImporterNoIdMappingsInner `json:"mappings,omitempty"`
@@ -46,7 +46,7 @@ type BankImporterNoIdInterface interface {
 	GetExtra() string
 	GetType() string
 	GetLastSuccessfulImport() time.Time
-	GetLastImports() []BankImporterNoIdLastImportsInner
+	GetLastImports() []ImportResult
 	GetMappings() []BankImporterNoIdMappingsInner
 }
 
@@ -68,7 +68,7 @@ func (c *BankImporterNoId) GetType() string {
 func (c *BankImporterNoId) GetLastSuccessfulImport() time.Time {
 	return c.LastSuccessfulImport
 }
-func (c *BankImporterNoId) GetLastImports() []BankImporterNoIdLastImportsInner {
+func (c *BankImporterNoId) GetLastImports() []ImportResult {
 	return c.LastImports
 }
 func (c *BankImporterNoId) GetMappings() []BankImporterNoIdMappingsInner {
@@ -88,7 +88,7 @@ func AssertBankImporterNoIdRequired(obj BankImporterNoId) error {
 	}
 
 	for _, el := range obj.LastImports {
-		if err := AssertBankImporterNoIdLastImportsInnerRequired(el); err != nil {
+		if err := AssertImportResultRequired(el); err != nil {
 			return err
 		}
 	}
@@ -103,7 +103,7 @@ func AssertBankImporterNoIdRequired(obj BankImporterNoId) error {
 // AssertBankImporterNoIdConstraints checks if the values respects the defined constraints
 func AssertBankImporterNoIdConstraints(obj BankImporterNoId) error {
 	for _, el := range obj.LastImports {
-		if err := AssertBankImporterNoIdLastImportsInnerConstraints(el); err != nil {
+		if err := AssertImportResultConstraints(el); err != nil {
 			return err
 		}
 	}

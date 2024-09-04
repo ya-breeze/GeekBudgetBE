@@ -69,8 +69,8 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(ctx context.Context, id 
 	// TODO - update FetchBankImporter with the required logic for this service method.
 	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
-	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
-	// return Response(200, nil),nil
+	// TODO: Uncomment the next line to return response Response(200, ImportResult{}) or use other options such as http.Ok ...
+	// return Response(200, ImportResult{}), nil
 
 	// TODO: Uncomment the next line to return response Response(429, {}) or use other options such as http.Ok ...
 	// return Response(429, nil),nil

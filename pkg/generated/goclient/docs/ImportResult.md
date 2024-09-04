@@ -1,4 +1,4 @@
-# BankImporterNoIDLastImportsInner
+# ImportResult
 
 ## Properties
 
@@ -10,95 +10,95 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewBankImporterNoIDLastImportsInner
+### NewImportResult
 
-`func NewBankImporterNoIDLastImportsInner() *BankImporterNoIDLastImportsInner`
+`func NewImportResult() *ImportResult`
 
-NewBankImporterNoIDLastImportsInner instantiates a new BankImporterNoIDLastImportsInner object
+NewImportResult instantiates a new ImportResult object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewBankImporterNoIDLastImportsInnerWithDefaults
+### NewImportResultWithDefaults
 
-`func NewBankImporterNoIDLastImportsInnerWithDefaults() *BankImporterNoIDLastImportsInner`
+`func NewImportResultWithDefaults() *ImportResult`
 
-NewBankImporterNoIDLastImportsInnerWithDefaults instantiates a new BankImporterNoIDLastImportsInner object
+NewImportResultWithDefaults instantiates a new ImportResult object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetDate
 
-`func (o *BankImporterNoIDLastImportsInner) GetDate() time.Time`
+`func (o *ImportResult) GetDate() time.Time`
 
 GetDate returns the Date field if non-nil, zero value otherwise.
 
 ### GetDateOk
 
-`func (o *BankImporterNoIDLastImportsInner) GetDateOk() (*time.Time, bool)`
+`func (o *ImportResult) GetDateOk() (*time.Time, bool)`
 
 GetDateOk returns a tuple with the Date field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetDate
 
-`func (o *BankImporterNoIDLastImportsInner) SetDate(v time.Time)`
+`func (o *ImportResult) SetDate(v time.Time)`
 
 SetDate sets Date field to given value.
 
 ### HasDate
 
-`func (o *BankImporterNoIDLastImportsInner) HasDate() bool`
+`func (o *ImportResult) HasDate() bool`
 
 HasDate returns a boolean if a field has been set.
 
 ### GetStatus
 
-`func (o *BankImporterNoIDLastImportsInner) GetStatus() string`
+`func (o *ImportResult) GetStatus() string`
 
 GetStatus returns the Status field if non-nil, zero value otherwise.
 
 ### GetStatusOk
 
-`func (o *BankImporterNoIDLastImportsInner) GetStatusOk() (*string, bool)`
+`func (o *ImportResult) GetStatusOk() (*string, bool)`
 
 GetStatusOk returns a tuple with the Status field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetStatus
 
-`func (o *BankImporterNoIDLastImportsInner) SetStatus(v string)`
+`func (o *ImportResult) SetStatus(v string)`
 
 SetStatus sets Status field to given value.
 
 ### HasStatus
 
-`func (o *BankImporterNoIDLastImportsInner) HasStatus() bool`
+`func (o *ImportResult) HasStatus() bool`
 
 HasStatus returns a boolean if a field has been set.
 
 ### GetDescription
 
-`func (o *BankImporterNoIDLastImportsInner) GetDescription() string`
+`func (o *ImportResult) GetDescription() string`
 
 GetDescription returns the Description field if non-nil, zero value otherwise.
 
 ### GetDescriptionOk
 
-`func (o *BankImporterNoIDLastImportsInner) GetDescriptionOk() (*string, bool)`
+`func (o *ImportResult) GetDescriptionOk() (*string, bool)`
 
 GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetDescription
 
-`func (o *BankImporterNoIDLastImportsInner) SetDescription(v string)`
+`func (o *ImportResult) SetDescription(v string)`
 
 SetDescription sets Description field to given value.
 
 ### HasDescription
 
-`func (o *BankImporterNoIDLastImportsInner) HasDescription() bool`
+`func (o *ImportResult) HasDescription() bool`
 
 HasDescription returns a boolean if a field has been set.
 

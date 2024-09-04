@@ -106,13 +106,13 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 	}
 
 	// update last import fields
-	err = s.updateLastImportFields(userID, id, info, cnt)
+	lastImport, err := s.updateLastImportFields(userID, id, info, len(transactions), cnt)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to update last import fields")
 		return goserver.Response(500, nil), nil
 	}
 
-	return goserver.Response(200, nil), nil
+	return goserver.Response(200, lastImport), nil
 }
 
 func (s *BankImportersAPIServiceImpl) fetchFioTransactions(ctx context.Context, userID, id string,
@@ -145,27 +145,29 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(ctx context.Context, 
 }
 
 func (s *BankImportersAPIServiceImpl) updateLastImportFields(
-	userID string, id string, info *goserver.BankAccountInfo, cnt int,
-) error {
+	userID string, id string, info *goserver.BankAccountInfo, totalTransactionsCnt int, newTransactionsCnt int,
+) (*goserver.ImportResult, error) {
 	biData, err := s.db.GetBankImporter(userID, id)
 	if err != nil {
-		return fmt.Errorf("can't fetch bank importer: %w", err)
+		return nil, fmt.Errorf("can't fetch bank importer: %w", err)
+	}
+	lastImport := goserver.ImportResult{
+		Date:   biData.LastSuccessfulImport,
+		Status: "success",
+		Description: fmt.Sprintf("Fetched %d transactions. Imported %d new transactions. Balance: %v",
+			totalTransactionsCnt, newTransactionsCnt, info.ClosingBalance),
 	}
 	biData.LastSuccessfulImport = time.Now()
-	biData.LastImports = append(biData.LastImports, goserver.BankImporterNoIdLastImportsInner{
-		Date:        biData.LastSuccessfulImport,
-		Status:      "success",
-		Description: fmt.Sprintf("Imported %d transactions. Balance: %v", cnt, info.ClosingBalance),
-	})
+	biData.LastImports = append(biData.LastImports, lastImport)
 	if len(biData.LastImports) > 10 {
 		biData.LastImports = biData.LastImports[1:]
 	}
 	_, err = s.db.UpdateBankImporter(userID, id, &biData)
 	if err != nil {
-		return fmt.Errorf("can't update BankImporter: %w", err)
+		return nil, fmt.Errorf("can't update BankImporter: %w", err)
 	}
 
-	return nil
+	return &lastImport, nil
 }
 
 func (s *BankImportersAPIServiceImpl) saveImportedTransactions(

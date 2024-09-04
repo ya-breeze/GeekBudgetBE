@@ -144,7 +144,7 @@ Name | Type | Description  | Notes
 
 ## FetchBankImporter
 
-> FetchBankImporter(ctx, id).Execute()
+> ImportResult FetchBankImporter(ctx, id).Execute()
 
 fetch new transactions from bank
 
@@ -165,11 +165,13 @@ func main() {
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	r, err := apiClient.BankImportersAPI.FetchBankImporter(context.Background(), id).Execute()
+	resp, r, err := apiClient.BankImportersAPI.FetchBankImporter(context.Background(), id).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.FetchBankImporter``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
+	// response from `FetchBankImporter`: ImportResult
+	fmt.Fprintf(os.Stdout, "Response from `BankImportersAPI.FetchBankImporter`: %v\n", resp)
 }
 ```
 
@@ -192,7 +194,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
- (empty response body)
+[**ImportResult**](ImportResult.md)
 
 ### Authorization
 
@@ -201,7 +203,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
 [[Back to Model list]](../README.md#documentation-for-models)

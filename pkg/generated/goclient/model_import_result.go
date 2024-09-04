@@ -16,11 +16,11 @@ import (
 	"time"
 )
 
-// checks if the BankImporterNoIDLastImportsInner type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &BankImporterNoIDLastImportsInner{}
+// checks if the ImportResult type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &ImportResult{}
 
-// BankImporterNoIDLastImportsInner struct for BankImporterNoIDLastImportsInner
-type BankImporterNoIDLastImportsInner struct {
+// ImportResult struct for ImportResult
+type ImportResult struct {
 	// Date of import
 	Date *time.Time `json:"date,omitempty"`
 	// Status of import
@@ -29,25 +29,25 @@ type BankImporterNoIDLastImportsInner struct {
 	Description *string `json:"description,omitempty"`
 }
 
-// NewBankImporterNoIDLastImportsInner instantiates a new BankImporterNoIDLastImportsInner object
+// NewImportResult instantiates a new ImportResult object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewBankImporterNoIDLastImportsInner() *BankImporterNoIDLastImportsInner {
-	this := BankImporterNoIDLastImportsInner{}
+func NewImportResult() *ImportResult {
+	this := ImportResult{}
 	return &this
 }
 
-// NewBankImporterNoIDLastImportsInnerWithDefaults instantiates a new BankImporterNoIDLastImportsInner object
+// NewImportResultWithDefaults instantiates a new ImportResult object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewBankImporterNoIDLastImportsInnerWithDefaults() *BankImporterNoIDLastImportsInner {
-	this := BankImporterNoIDLastImportsInner{}
+func NewImportResultWithDefaults() *ImportResult {
+	this := ImportResult{}
 	return &this
 }
 
 // GetDate returns the Date field value if set, zero value otherwise.
-func (o *BankImporterNoIDLastImportsInner) GetDate() time.Time {
+func (o *ImportResult) GetDate() time.Time {
 	if o == nil || IsNil(o.Date) {
 		var ret time.Time
 		return ret
@@ -57,7 +57,7 @@ func (o *BankImporterNoIDLastImportsInner) GetDate() time.Time {
 
 // GetDateOk returns a tuple with the Date field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BankImporterNoIDLastImportsInner) GetDateOk() (*time.Time, bool) {
+func (o *ImportResult) GetDateOk() (*time.Time, bool) {
 	if o == nil || IsNil(o.Date) {
 		return nil, false
 	}
@@ -65,7 +65,7 @@ func (o *BankImporterNoIDLastImportsInner) GetDateOk() (*time.Time, bool) {
 }
 
 // HasDate returns a boolean if a field has been set.
-func (o *BankImporterNoIDLastImportsInner) HasDate() bool {
+func (o *ImportResult) HasDate() bool {
 	if o != nil && !IsNil(o.Date) {
 		return true
 	}
@@ -74,12 +74,12 @@ func (o *BankImporterNoIDLastImportsInner) HasDate() bool {
 }
 
 // SetDate gets a reference to the given time.Time and assigns it to the Date field.
-func (o *BankImporterNoIDLastImportsInner) SetDate(v time.Time) {
+func (o *ImportResult) SetDate(v time.Time) {
 	o.Date = &v
 }
 
 // GetStatus returns the Status field value if set, zero value otherwise.
-func (o *BankImporterNoIDLastImportsInner) GetStatus() string {
+func (o *ImportResult) GetStatus() string {
 	if o == nil || IsNil(o.Status) {
 		var ret string
 		return ret
@@ -89,7 +89,7 @@ func (o *BankImporterNoIDLastImportsInner) GetStatus() string {
 
 // GetStatusOk returns a tuple with the Status field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BankImporterNoIDLastImportsInner) GetStatusOk() (*string, bool) {
+func (o *ImportResult) GetStatusOk() (*string, bool) {
 	if o == nil || IsNil(o.Status) {
 		return nil, false
 	}
@@ -97,7 +97,7 @@ func (o *BankImporterNoIDLastImportsInner) GetStatusOk() (*string, bool) {
 }
 
 // HasStatus returns a boolean if a field has been set.
-func (o *BankImporterNoIDLastImportsInner) HasStatus() bool {
+func (o *ImportResult) HasStatus() bool {
 	if o != nil && !IsNil(o.Status) {
 		return true
 	}
@@ -106,12 +106,12 @@ func (o *BankImporterNoIDLastImportsInner) HasStatus() bool {
 }
 
 // SetStatus gets a reference to the given string and assigns it to the Status field.
-func (o *BankImporterNoIDLastImportsInner) SetStatus(v string) {
+func (o *ImportResult) SetStatus(v string) {
 	o.Status = &v
 }
 
 // GetDescription returns the Description field value if set, zero value otherwise.
-func (o *BankImporterNoIDLastImportsInner) GetDescription() string {
+func (o *ImportResult) GetDescription() string {
 	if o == nil || IsNil(o.Description) {
 		var ret string
 		return ret
@@ -121,7 +121,7 @@ func (o *BankImporterNoIDLastImportsInner) GetDescription() string {
 
 // GetDescriptionOk returns a tuple with the Description field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BankImporterNoIDLastImportsInner) GetDescriptionOk() (*string, bool) {
+func (o *ImportResult) GetDescriptionOk() (*string, bool) {
 	if o == nil || IsNil(o.Description) {
 		return nil, false
 	}
@@ -129,7 +129,7 @@ func (o *BankImporterNoIDLastImportsInner) GetDescriptionOk() (*string, bool) {
 }
 
 // HasDescription returns a boolean if a field has been set.
-func (o *BankImporterNoIDLastImportsInner) HasDescription() bool {
+func (o *ImportResult) HasDescription() bool {
 	if o != nil && !IsNil(o.Description) {
 		return true
 	}
@@ -138,11 +138,11 @@ func (o *BankImporterNoIDLastImportsInner) HasDescription() bool {
 }
 
 // SetDescription gets a reference to the given string and assigns it to the Description field.
-func (o *BankImporterNoIDLastImportsInner) SetDescription(v string) {
+func (o *ImportResult) SetDescription(v string) {
 	o.Description = &v
 }
 
-func (o BankImporterNoIDLastImportsInner) MarshalJSON() ([]byte, error) {
+func (o ImportResult) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -150,7 +150,7 @@ func (o BankImporterNoIDLastImportsInner) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o BankImporterNoIDLastImportsInner) ToMap() (map[string]interface{}, error) {
+func (o ImportResult) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Date) {
 		toSerialize["date"] = o.Date
@@ -164,38 +164,38 @@ func (o BankImporterNoIDLastImportsInner) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableBankImporterNoIDLastImportsInner struct {
-	value *BankImporterNoIDLastImportsInner
+type NullableImportResult struct {
+	value *ImportResult
 	isSet bool
 }
 
-func (v NullableBankImporterNoIDLastImportsInner) Get() *BankImporterNoIDLastImportsInner {
+func (v NullableImportResult) Get() *ImportResult {
 	return v.value
 }
 
-func (v *NullableBankImporterNoIDLastImportsInner) Set(val *BankImporterNoIDLastImportsInner) {
+func (v *NullableImportResult) Set(val *ImportResult) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableBankImporterNoIDLastImportsInner) IsSet() bool {
+func (v NullableImportResult) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableBankImporterNoIDLastImportsInner) Unset() {
+func (v *NullableImportResult) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableBankImporterNoIDLastImportsInner(val *BankImporterNoIDLastImportsInner) *NullableBankImporterNoIDLastImportsInner {
-	return &NullableBankImporterNoIDLastImportsInner{value: val, isSet: true}
+func NewNullableImportResult(val *ImportResult) *NullableImportResult {
+	return &NullableImportResult{value: val, isSet: true}
 }
 
-func (v NullableBankImporterNoIDLastImportsInner) MarshalJSON() ([]byte, error) {
+func (v NullableImportResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableBankImporterNoIDLastImportsInner) UnmarshalJSON(src []byte) error {
+func (v *NullableImportResult) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

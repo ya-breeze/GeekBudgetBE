@@ -35,7 +35,7 @@ type BankImporter struct {
 	// Date of last successful import.
 	LastSuccessfulImport *time.Time `json:"lastSuccessfulImport,omitempty"`
 	// List of last imports. It could be shown to user to explain what was imported recently
-	LastImports []BankImporterNoIDLastImportsInner `json:"lastImports,omitempty"`
+	LastImports []ImportResult `json:"lastImports,omitempty"`
 	// List of mappings which are used to enrich transactions with additional tags
 	Mappings []BankImporterNoIDMappingsInner `json:"mappings,omitempty"`
 }
@@ -263,9 +263,9 @@ func (o *BankImporter) SetLastSuccessfulImport(v time.Time) {
 }
 
 // GetLastImports returns the LastImports field value if set, zero value otherwise.
-func (o *BankImporter) GetLastImports() []BankImporterNoIDLastImportsInner {
+func (o *BankImporter) GetLastImports() []ImportResult {
 	if o == nil || IsNil(o.LastImports) {
-		var ret []BankImporterNoIDLastImportsInner
+		var ret []ImportResult
 		return ret
 	}
 	return o.LastImports
@@ -273,7 +273,7 @@ func (o *BankImporter) GetLastImports() []BankImporterNoIDLastImportsInner {
 
 // GetLastImportsOk returns a tuple with the LastImports field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BankImporter) GetLastImportsOk() ([]BankImporterNoIDLastImportsInner, bool) {
+func (o *BankImporter) GetLastImportsOk() ([]ImportResult, bool) {
 	if o == nil || IsNil(o.LastImports) {
 		return nil, false
 	}
@@ -289,8 +289,8 @@ func (o *BankImporter) HasLastImports() bool {
 	return false
 }
 
-// SetLastImports gets a reference to the given []BankImporterNoIDLastImportsInner and assigns it to the LastImports field.
-func (o *BankImporter) SetLastImports(v []BankImporterNoIDLastImportsInner) {
+// SetLastImports gets a reference to the given []ImportResult and assigns it to the LastImports field.
+func (o *BankImporter) SetLastImports(v []ImportResult) {
 	o.LastImports = v
 }
 

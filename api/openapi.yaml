@@ -356,7 +356,11 @@ paths:
             example: "123e4567-e89b-12d3-a456-426614174000"
       responses:
         "200":
-          description: no body
+          description: status of the import
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
         "429":
           description: too many requests
 
@@ -937,6 +941,25 @@ components:
         format: date-time
         example: "2020-01-01T00:00:00Z"
 
+    ImportResult:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+          description: >-
+            Date of import
+        status:
+          enum:
+            - success
+            - error
+          description: >-
+            Status of import
+        description:
+          type: string
+          description: >-
+            Details of import
+
     BankImporterNoID:
       type: object
       properties:
@@ -973,23 +996,7 @@ components:
             List of last imports. It could be shown to user to explain what was imported recently
           type: array
           items:
-            type: object
-            properties:
-              date:
-                type: string
-                format: date-time
-                description: >-
-                  Date of import
-              status:
-                enum:
-                  - success
-                  - error
-                description: >-
-                  Status of import
-              description:
-                type: string
-                description: >-
-                  Details of import
+            $ref: "#/components/schemas/ImportResult"
         mappings:
           description: >-
             List of mappings which are used to enrich transactions with additional tags

@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 **Extra** | Pointer to **string** | Stores extra data about bank importer. For example could hold \&quot;bank account number\&quot; to be able to distinguish between different bank accounts, or it could hold token for bank API | [optional] 
 **Type** | Pointer to **string** | Type of bank importer. It&#39;s used to distinguish between different banks. For example, FIO bank or KB bank. | [optional] 
 **LastSuccessfulImport** | Pointer to **time.Time** | Date of last successful import. | [optional] 
-**LastImports** | Pointer to [**[]BankImporterNoIDLastImportsInner**](BankImporterNoIDLastImportsInner.md) | List of last imports. It could be shown to user to explain what was imported recently | [optional] 
+**LastImports** | Pointer to [**[]ImportResult**](ImportResult.md) | List of last imports. It could be shown to user to explain what was imported recently | [optional] 
 **Mappings** | Pointer to [**[]BankImporterNoIDMappingsInner**](BankImporterNoIDMappingsInner.md) | List of mappings which are used to enrich transactions with additional tags | [optional] 
 
 ## Methods
@@ -174,20 +174,20 @@ HasLastSuccessfulImport returns a boolean if a field has been set.
 
 ### GetLastImports
 
-`func (o *BankImporterNoID) GetLastImports() []BankImporterNoIDLastImportsInner`
+`func (o *BankImporterNoID) GetLastImports() []ImportResult`
 
 GetLastImports returns the LastImports field if non-nil, zero value otherwise.
 
 ### GetLastImportsOk
 
-`func (o *BankImporterNoID) GetLastImportsOk() (*[]BankImporterNoIDLastImportsInner, bool)`
+`func (o *BankImporterNoID) GetLastImportsOk() (*[]ImportResult, bool)`
 
 GetLastImportsOk returns a tuple with the LastImports field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetLastImports
 
-`func (o *BankImporterNoID) SetLastImports(v []BankImporterNoIDLastImportsInner)`
+`func (o *BankImporterNoID) SetLastImports(v []ImportResult)`
 
 SetLastImports sets LastImports field to given value.
 

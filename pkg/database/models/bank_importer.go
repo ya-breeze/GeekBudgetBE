@@ -17,8 +17,8 @@ type BankImporter struct {
 	Extra                string
 	Type                 string
 	LastSuccessfulImport time.Time
-	LastImports          []goserver.BankImporterNoIdLastImportsInner `gorm:"serializer:json"`
-	Mappings             []goserver.BankImporterNoIdMappingsInner    `gorm:"serializer:json"`
+	LastImports          []goserver.ImportResult                  `gorm:"serializer:json"`
+	Mappings             []goserver.BankImporterNoIdMappingsInner `gorm:"serializer:json"`
 
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`

@@ -228,7 +228,7 @@ type ApiFetchBankImporterRequest struct {
 	id         string
 }
 
-func (r ApiFetchBankImporterRequest) Execute() (*http.Response, error) {
+func (r ApiFetchBankImporterRequest) Execute() (*ImportResult, *http.Response, error) {
 	return r.ApiService.FetchBankImporterExecute(r)
 }
 
@@ -248,16 +248,19 @@ func (a *BankImportersAPIService) FetchBankImporter(ctx context.Context, id stri
 }
 
 // Execute executes the request
-func (a *BankImportersAPIService) FetchBankImporterExecute(r ApiFetchBankImporterRequest) (*http.Response, error) {
+//
+//	@return ImportResult
+func (a *BankImportersAPIService) FetchBankImporterExecute(r ApiFetchBankImporterRequest) (*ImportResult, *http.Response, error) {
 	var (
-		localVarHTTPMethod = http.MethodPost
-		localVarPostBody   interface{}
-		formFiles          []formFile
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ImportResult
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BankImportersAPIService.FetchBankImporter")
 	if err != nil {
-		return nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/v1/bankImporters/{id}/fetch"
@@ -277,7 +280,7 @@ func (a *BankImportersAPIService) FetchBankImporterExecute(r ApiFetchBankImporte
 	}
 
 	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{}
+	localVarHTTPHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
@@ -286,19 +289,19 @@ func (a *BankImportersAPIService) FetchBankImporterExecute(r ApiFetchBankImporte
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
-		return nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 	if err != nil || localVarHTTPResponse == nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
@@ -306,10 +309,19 @@ func (a *BankImportersAPIService) FetchBankImporterExecute(r ApiFetchBankImporte
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		return localVarHTTPResponse, newErr
+		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
-	return localVarHTTPResponse, nil
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
 type ApiGetBankImportersRequest struct {
