@@ -109,28 +109,21 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		Expect(*transactions[0].Matched[0].Transaction.Movements[0].AccountId).To(Equal(m.OutputAccountId))
 		Expect(*transactions[0].Matched[0].Transaction.Movements[1].AccountId).To(Equal(*t.Movements[1].AccountId))
 
-		// // Update transaction
-		// t.Description = utils.StrToRef("New description")
-		// updated, _, err := client.TransactionsAPI.UpdateTransaction(ctx, created.Id).TransactionNoID(t).Execute()
-		// Expect(err).ToNot(HaveOccurred())
-		// Expect(updated).ToNot(BeNil())
-		// Expect(updated.Id).To(Equal(created.Id))
-		// Expect(*updated.Description).To(Equal(*t.Description))
+		_, _, err = client.UnprocessedTransactionsAPI.
+			ConvertUnprocessedTransaction(ctx, transactions[0].Transaction.Id).
+			TransactionNoID(transactions[0].Matched[0].Transaction).
+			Execute()
+		Expect(err).ToNot(HaveOccurred())
 
-		// // Get transaction by ID
-		// transaction, _, err := client.TransactionsAPI.GetTransaction(ctx, created.Id).Execute()
-		// Expect(err).ToNot(HaveOccurred())
-		// Expect(transaction).ToNot(BeNil())
-		// Expect(transaction.Id).To(Equal(created.Id))
+		transactions, _, err = client.UnprocessedTransactionsAPI.GetUnprocessedTransactions(ctx).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(transactions).ToNot(BeNil())
+		Expect(transactions).To(BeEmpty())
 
-		// // Delete transaction
-		// _, err = client.TransactionsAPI.DeleteTransaction(ctx, created.Id).Execute()
-		// Expect(err).ToNot(HaveOccurred())
-
-		// // Get transactions
-		// transactions, _, err = client.TransactionsAPI.GetTransactions(ctx).Execute()
-		// Expect(err).ToNot(HaveOccurred())
-		// Expect(transactions).ToNot(BeNil())
-		// Expect(transactions).To(BeEmpty())
+		updated, _, err := client.TransactionsAPI.GetTransaction(ctx, created.Id).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(updated).ToNot(BeNil())
+		Expect(updated.Id).To(Equal(created.Id))
+		Expect(*updated.Description).To(Equal(m.OutputDescription))
 	})
 })

@@ -55,10 +55,23 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 
 func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	ctx context.Context,
-	transactionID string,
-	transaction goserver.TransactionNoId,
+	id string,
+	transactionNoID goserver.TransactionNoId,
 ) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", userID)
+
+	transaction, err := s.db.UpdateTransaction(userID, id, &transactionNoID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to convert unprocessed transaction")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, transaction), nil
+
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(
