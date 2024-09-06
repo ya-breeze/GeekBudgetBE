@@ -11,7 +11,7 @@ import (
 )
 
 func FetchFioTransactions(logger *slog.Logger, ctx context.Context, token string) ([]byte, error) {
-	if true {
+	if false {
 		// read from file for testing
 		data, err := os.ReadFile("transactions.json")
 		if err != nil {

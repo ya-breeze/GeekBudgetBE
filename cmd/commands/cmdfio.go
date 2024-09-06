@@ -28,7 +28,7 @@ func CmdFio() *cobra.Command {
 }
 
 func fetch() *cobra.Command {
-	var tokenFile string
+	var tokenFile, outputFile string
 	res := &cobra.Command{
 		Use:   "fetch",
 		Short: "Fetch transactions from FIO API",
@@ -52,14 +52,27 @@ func fetch() *cobra.Command {
 				}
 			}
 
-			fmt.Println(bankimporters.FetchFioTransactions(
+			res, err := bankimporters.FetchFioTransactions(
 				slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-				cmd.Context(), token))
+				cmd.Context(), token)
+			if err != nil {
+				return fmt.Errorf("can't fetch FIO transactions: %w", err)
+			}
+
+			if outputFile != "" {
+				err = os.WriteFile(outputFile, res, 0o600)
+				if err != nil {
+					return fmt.Errorf("can't write transactions to file %q: %w", outputFile, err)
+				}
+			} else {
+				fmt.Println(string(res))
+			}
 
 			return nil
 		},
 	}
 	res.Flags().StringVarP(&tokenFile, "token-file", "f", "", "File with FIO API token")
+	res.Flags().StringVarP(&outputFile, "output-file", "o", "", "Write transactions to file")
 
 	return res
 }
