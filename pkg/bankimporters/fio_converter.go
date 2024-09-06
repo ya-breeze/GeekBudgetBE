@@ -12,7 +12,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 type FioConverter struct {
@@ -33,7 +35,7 @@ func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cu
 	// 0: 4 - "31.8.2024"
 	// 0: 5 - "383.00"
 	// 0: 6 - "CZK"
-	r := regexp.MustCompile(`^(\p{L}+): ([^,]+),  (.+), dne ([\.\d]+), částka  ([\.\d]+) (\p{L}+)$`)
+	r := regexp.MustCompile(`^([\s\p{L}]+): ([^,]+,  )?(.+), dne ([\.\d]+), částka  ([\.\d]+) (\p{L}+)$`)
 
 	loc, err := time.LoadLocation("Europe/Prague")
 	if err != nil {
@@ -100,8 +102,13 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 		}
 
 		d := fio.Comment.Value
-		if d != fio.InfoForReceiver.Value {
+		if fio.InfoForReceiver.Value != "" && d != fio.InfoForReceiver.Value {
 			d = d + "; " + fio.InfoForReceiver.Value
+		}
+		if d == "" {
+			d = fio.Type.Value
+		} else {
+			d = fio.Type.Value + ": " + d
 		}
 
 		res = goserver.TransactionNoId{
@@ -177,6 +184,22 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 		if m.FieldToMatch == "user" && m.ValueToMatch == fio.User.Value {
 			res.Tags = append(res.Tags, m.TagToSet)
 		}
+	}
+
+	if tokens == nil {
+		orig, err := json.MarshalIndent(fio, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		result, err := json.MarshalIndent(res, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+		color.Red("Can't parse %q\n", fio.Comment.Value)
+		utils.PrintInTwoColumns(string(orig), string(result))
+		fmt.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+		fmt.Println()
 	}
 
 	b, err := json.Marshal(fio)

@@ -66,6 +66,7 @@ func fetch() *cobra.Command {
 
 func parse() *cobra.Command {
 	var jsonFile string
+	var hideTransactions *bool
 	res := &cobra.Command{
 		Use:   "parse",
 		Short: "Parse FIO transactions from JSON",
@@ -90,34 +91,35 @@ func parse() *cobra.Command {
 			fc, err := bankimporters.NewFioConverter(
 				slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 				goserver.BankImporter{
-					AccountId: "<accountID>",
+					AccountId: "__accountID__",
 				}, []goserver.Currency{
-					{
-						Name: "CZK",
-					},
-					{
-						Name: "EUR",
-					},
+					{Id: "__CZK_ID__", Name: "CZK"},
+					{Id: "__EUR_ID__", Name: "EUR"},
+					{Id: "__USD_ID__", Name: "USD"},
 				})
 			if err != nil {
 				return fmt.Errorf("can't create FioConverter: %w", err)
 			}
 
-			_, transactions, err := fc.ParseTransactions(data)
+			info, transactions, err := fc.ParseTransactions(data)
 			if err != nil {
 				return fmt.Errorf("can't parse FIO transactions: %w", err)
 			}
-			// fmt.Printf("Opening balance: %v\n", info.OpeningBalance)
-			// fmt.Printf("Closing balance: %v\n", info.ClosingBalance)
-			for _, t := range transactions {
-				printTransactionNoID(t)
-				fmt.Println()
+			fmt.Printf("Opening balance: %v\n", info.OpeningBalance)
+			fmt.Printf("Closing balance: %v\n", info.ClosingBalance)
+			fmt.Printf("Parsed transactions: %d\n", len(transactions))
+			if hideTransactions != nil && !*hideTransactions {
+				for _, t := range transactions {
+					printTransactionNoID(t)
+					fmt.Println()
+				}
 			}
 
 			return nil
 		},
 	}
 	res.Flags().StringVarP(&jsonFile, "json-file", "f", "", "File with FIO transactions in JSON")
+	hideTransactions = res.Flags().BoolP("hide-transactions", "q", false, "Don't print transactions")
 
 	return res
 }
