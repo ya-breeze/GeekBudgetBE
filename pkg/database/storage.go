@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,6 +53,15 @@ type Storage interface {
 	) (goserver.BankImporter, error)
 	DeleteBankImporter(userID string, id string) error
 	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
+
+	GetMatchers(userID string) ([]goserver.Matcher, error)
+	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
+	CreateMatcher(userID string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
+}
+
+type MatcherRuntime struct {
+	Matcher           *goserver.Matcher
+	DescriptionRegexp *regexp.Regexp
 }
 
 type storage struct {
@@ -459,4 +469,58 @@ func (s *storage) GetBankImporter(userID string, id string) (goserver.BankImport
 	}
 
 	return data.FromDB(), nil
+}
+
+func (s *storage) GetMatchers(userID string) ([]goserver.Matcher, error) {
+	result, err := s.db.Model(&models.Matcher{}).Where("user_id = ?", userID).Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	matchers := make([]goserver.Matcher, 0)
+	for result.Next() {
+		var m models.Matcher
+		if err := s.db.ScanRows(result, &m); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		matchers = append(matchers, m.FromDB())
+	}
+
+	return matchers, nil
+}
+
+func (s *storage) CreateMatcher(userID string, matcher *goserver.MatcherNoId) (goserver.Matcher, error) {
+	data := models.MatcherToDB(matcher, userID)
+	data.ID = uuid.New()
+	if err := s.db.Create(data).Error; err != nil {
+		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
+	}
+	s.log.Info("Matcher created", "id", data.ID)
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
+	matchers, err := s.GetMatchers(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]MatcherRuntime, 0, len(matchers))
+	for _, m := range matchers {
+		runtime := MatcherRuntime{Matcher: &m}
+		if m.DescriptionRegExp != "" {
+			r, err := regexp.Compile(m.DescriptionRegExp)
+			if err != nil {
+				return nil, fmt.Errorf("failed to compile regexp: %w", err)
+			}
+			runtime.DescriptionRegexp = r
+		}
+
+		res = append(res, runtime)
+	}
+
+	return res, nil
 }

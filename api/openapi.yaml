@@ -1091,7 +1091,8 @@ components:
       required:
         - amount
         - currencyId
-        - accountId
+        # accountId is not required to create unprocessed transactions via API
+        # - accountId
 
     UnprocessedTransaction:
       type: object
@@ -1191,11 +1192,13 @@ components:
       properties:
         name:
           type: string
+
         outputDescription:
           type: string
-        amount:
-          type: number
-          format: double
+        outputAccountId:
+          type: string
+          format: uuid
+
         currencyRegExp:
           type: string
         partnerNameRegExp:
@@ -1206,12 +1209,10 @@ components:
           type: string
         extraRegExp:
           type: string
-        outputMovements:
-          type: array
-          items:
-            $ref: "#/components/schemas/Movement"
       required:
         - name
+        - outputDescription
+        - outputAccountId
     Matcher:
       type: object
       allOf:

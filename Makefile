@@ -88,5 +88,9 @@ lint: validate
 
 .PHONY: test
 test:
-	@ginkgo -r -v
+	@ginkgo -r
 	@echo "✅ Tests complete"
+
+.PHONY: watch
+watch:
+	@ginkgo watch -r

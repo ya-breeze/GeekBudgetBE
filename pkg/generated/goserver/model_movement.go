@@ -16,7 +16,7 @@ type Movement struct {
 
 	CurrencyId string `json:"currencyId"`
 
-	AccountId string `json:"accountId"`
+	AccountId string `json:"accountId,omitempty"`
 
 	Description string `json:"description,omitempty"`
 }
@@ -46,7 +46,6 @@ func AssertMovementRequired(obj Movement) error {
 	elements := map[string]interface{}{
 		"amount":     obj.Amount,
 		"currencyId": obj.CurrencyId,
-		"accountId":  obj.AccountId,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

@@ -24,7 +24,7 @@ var _ MappedNullable = &Movement{}
 type Movement struct {
 	Amount      float64 `json:"amount"`
 	CurrencyId  string  `json:"currencyId"`
-	AccountId   string  `json:"accountId"`
+	AccountId   *string `json:"accountId,omitempty"`
 	Description *string `json:"description,omitempty"`
 }
 
@@ -34,11 +34,10 @@ type _Movement Movement
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMovement(amount float64, currencyId string, accountId string) *Movement {
+func NewMovement(amount float64, currencyId string) *Movement {
 	this := Movement{}
 	this.Amount = amount
 	this.CurrencyId = currencyId
-	this.AccountId = accountId
 	return &this
 }
 
@@ -98,28 +97,36 @@ func (o *Movement) SetCurrencyId(v string) {
 	o.CurrencyId = v
 }
 
-// GetAccountId returns the AccountId field value
+// GetAccountId returns the AccountId field value if set, zero value otherwise.
 func (o *Movement) GetAccountId() string {
-	if o == nil {
+	if o == nil || IsNil(o.AccountId) {
 		var ret string
 		return ret
 	}
-
-	return o.AccountId
+	return *o.AccountId
 }
 
-// GetAccountIdOk returns a tuple with the AccountId field value
+// GetAccountIdOk returns a tuple with the AccountId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *Movement) GetAccountIdOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.AccountId) {
 		return nil, false
 	}
-	return &o.AccountId, true
+	return o.AccountId, true
 }
 
-// SetAccountId sets field value
+// HasAccountId returns a boolean if a field has been set.
+func (o *Movement) HasAccountId() bool {
+	if o != nil && !IsNil(o.AccountId) {
+		return true
+	}
+
+	return false
+}
+
+// SetAccountId gets a reference to the given string and assigns it to the AccountId field.
 func (o *Movement) SetAccountId(v string) {
-	o.AccountId = v
+	o.AccountId = &v
 }
 
 // GetDescription returns the Description field value if set, zero value otherwise.
@@ -166,7 +173,9 @@ func (o Movement) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["amount"] = o.Amount
 	toSerialize["currencyId"] = o.CurrencyId
-	toSerialize["accountId"] = o.AccountId
+	if !IsNil(o.AccountId) {
+		toSerialize["accountId"] = o.AccountId
+	}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
@@ -180,7 +189,6 @@ func (o *Movement) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"amount",
 		"currencyId",
-		"accountId",
 	}
 
 	allProperties := make(map[string]interface{})

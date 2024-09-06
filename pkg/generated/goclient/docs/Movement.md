@@ -6,14 +6,14 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Amount** | **float64** |  | 
 **CurrencyId** | **string** |  | 
-**AccountId** | **string** |  | 
+**AccountId** | Pointer to **string** |  | [optional] 
 **Description** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
 ### NewMovement
 
-`func NewMovement(amount float64, currencyId string, accountId string, ) *Movement`
+`func NewMovement(amount float64, currencyId string, ) *Movement`
 
 NewMovement instantiates a new Movement object
 This constructor will assign default values to properties that have it defined,
@@ -87,6 +87,11 @@ and a boolean to check if the value has been set.
 
 SetAccountId sets AccountId field to given value.
 
+### HasAccountId
+
+`func (o *Movement) HasAccountId() bool`
+
+HasAccountId returns a boolean if a field has been set.
 
 ### GetDescription
 

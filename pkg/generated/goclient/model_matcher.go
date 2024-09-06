@@ -22,16 +22,15 @@ var _ MappedNullable = &Matcher{}
 
 // Matcher struct for Matcher
 type Matcher struct {
-	Id                   string     `json:"id"`
-	Name                 string     `json:"name"`
-	OutputDescription    *string    `json:"outputDescription,omitempty"`
-	Amount               *float64   `json:"amount,omitempty"`
-	CurrencyRegExp       *string    `json:"currencyRegExp,omitempty"`
-	PartnerNameRegExp    *string    `json:"partnerNameRegExp,omitempty"`
-	PartnerAccountNumber *string    `json:"partnerAccountNumber,omitempty"`
-	DescriptionRegExp    *string    `json:"descriptionRegExp,omitempty"`
-	ExtraRegExp          *string    `json:"extraRegExp,omitempty"`
-	OutputMovements      []Movement `json:"outputMovements,omitempty"`
+	Id                   string  `json:"id"`
+	Name                 string  `json:"name"`
+	OutputDescription    string  `json:"outputDescription"`
+	OutputAccountId      string  `json:"outputAccountId"`
+	CurrencyRegExp       *string `json:"currencyRegExp,omitempty"`
+	PartnerNameRegExp    *string `json:"partnerNameRegExp,omitempty"`
+	PartnerAccountNumber *string `json:"partnerAccountNumber,omitempty"`
+	DescriptionRegExp    *string `json:"descriptionRegExp,omitempty"`
+	ExtraRegExp          *string `json:"extraRegExp,omitempty"`
 }
 
 type _Matcher Matcher
@@ -40,10 +39,12 @@ type _Matcher Matcher
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMatcher(id string, name string) *Matcher {
+func NewMatcher(id string, name string, outputDescription string, outputAccountId string) *Matcher {
 	this := Matcher{}
 	this.Id = id
 	this.Name = name
+	this.OutputDescription = outputDescription
+	this.OutputAccountId = outputAccountId
 	return &this
 }
 
@@ -103,68 +104,52 @@ func (o *Matcher) SetName(v string) {
 	o.Name = v
 }
 
-// GetOutputDescription returns the OutputDescription field value if set, zero value otherwise.
+// GetOutputDescription returns the OutputDescription field value
 func (o *Matcher) GetOutputDescription() string {
-	if o == nil || IsNil(o.OutputDescription) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.OutputDescription
+
+	return o.OutputDescription
 }
 
-// GetOutputDescriptionOk returns a tuple with the OutputDescription field value if set, nil otherwise
+// GetOutputDescriptionOk returns a tuple with the OutputDescription field value
 // and a boolean to check if the value has been set.
 func (o *Matcher) GetOutputDescriptionOk() (*string, bool) {
-	if o == nil || IsNil(o.OutputDescription) {
+	if o == nil {
 		return nil, false
 	}
-	return o.OutputDescription, true
+	return &o.OutputDescription, true
 }
 
-// HasOutputDescription returns a boolean if a field has been set.
-func (o *Matcher) HasOutputDescription() bool {
-	if o != nil && !IsNil(o.OutputDescription) {
-		return true
-	}
-
-	return false
-}
-
-// SetOutputDescription gets a reference to the given string and assigns it to the OutputDescription field.
+// SetOutputDescription sets field value
 func (o *Matcher) SetOutputDescription(v string) {
-	o.OutputDescription = &v
+	o.OutputDescription = v
 }
 
-// GetAmount returns the Amount field value if set, zero value otherwise.
-func (o *Matcher) GetAmount() float64 {
-	if o == nil || IsNil(o.Amount) {
-		var ret float64
+// GetOutputAccountId returns the OutputAccountId field value
+func (o *Matcher) GetOutputAccountId() string {
+	if o == nil {
+		var ret string
 		return ret
 	}
-	return *o.Amount
+
+	return o.OutputAccountId
 }
 
-// GetAmountOk returns a tuple with the Amount field value if set, nil otherwise
+// GetOutputAccountIdOk returns a tuple with the OutputAccountId field value
 // and a boolean to check if the value has been set.
-func (o *Matcher) GetAmountOk() (*float64, bool) {
-	if o == nil || IsNil(o.Amount) {
+func (o *Matcher) GetOutputAccountIdOk() (*string, bool) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Amount, true
+	return &o.OutputAccountId, true
 }
 
-// HasAmount returns a boolean if a field has been set.
-func (o *Matcher) HasAmount() bool {
-	if o != nil && !IsNil(o.Amount) {
-		return true
-	}
-
-	return false
-}
-
-// SetAmount gets a reference to the given float64 and assigns it to the Amount field.
-func (o *Matcher) SetAmount(v float64) {
-	o.Amount = &v
+// SetOutputAccountId sets field value
+func (o *Matcher) SetOutputAccountId(v string) {
+	o.OutputAccountId = v
 }
 
 // GetCurrencyRegExp returns the CurrencyRegExp field value if set, zero value otherwise.
@@ -327,38 +312,6 @@ func (o *Matcher) SetExtraRegExp(v string) {
 	o.ExtraRegExp = &v
 }
 
-// GetOutputMovements returns the OutputMovements field value if set, zero value otherwise.
-func (o *Matcher) GetOutputMovements() []Movement {
-	if o == nil || IsNil(o.OutputMovements) {
-		var ret []Movement
-		return ret
-	}
-	return o.OutputMovements
-}
-
-// GetOutputMovementsOk returns a tuple with the OutputMovements field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *Matcher) GetOutputMovementsOk() ([]Movement, bool) {
-	if o == nil || IsNil(o.OutputMovements) {
-		return nil, false
-	}
-	return o.OutputMovements, true
-}
-
-// HasOutputMovements returns a boolean if a field has been set.
-func (o *Matcher) HasOutputMovements() bool {
-	if o != nil && !IsNil(o.OutputMovements) {
-		return true
-	}
-
-	return false
-}
-
-// SetOutputMovements gets a reference to the given []Movement and assigns it to the OutputMovements field.
-func (o *Matcher) SetOutputMovements(v []Movement) {
-	o.OutputMovements = v
-}
-
 func (o Matcher) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -371,12 +324,8 @@ func (o Matcher) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["id"] = o.Id
 	toSerialize["name"] = o.Name
-	if !IsNil(o.OutputDescription) {
-		toSerialize["outputDescription"] = o.OutputDescription
-	}
-	if !IsNil(o.Amount) {
-		toSerialize["amount"] = o.Amount
-	}
+	toSerialize["outputDescription"] = o.OutputDescription
+	toSerialize["outputAccountId"] = o.OutputAccountId
 	if !IsNil(o.CurrencyRegExp) {
 		toSerialize["currencyRegExp"] = o.CurrencyRegExp
 	}
@@ -392,9 +341,6 @@ func (o Matcher) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ExtraRegExp) {
 		toSerialize["extraRegExp"] = o.ExtraRegExp
 	}
-	if !IsNil(o.OutputMovements) {
-		toSerialize["outputMovements"] = o.OutputMovements
-	}
 	return toSerialize, nil
 }
 
@@ -405,6 +351,8 @@ func (o *Matcher) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"id",
 		"name",
+		"outputDescription",
+		"outputAccountId",
 	}
 
 	allProperties := make(map[string]interface{})

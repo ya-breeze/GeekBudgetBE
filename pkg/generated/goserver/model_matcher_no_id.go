@@ -14,9 +14,9 @@ package goserver
 type MatcherNoId struct {
 	Name string `json:"name"`
 
-	OutputDescription string `json:"outputDescription,omitempty"`
+	OutputDescription string `json:"outputDescription"`
 
-	Amount float64 `json:"amount,omitempty"`
+	OutputAccountId string `json:"outputAccountId"`
 
 	CurrencyRegExp string `json:"currencyRegExp,omitempty"`
 
@@ -27,20 +27,17 @@ type MatcherNoId struct {
 	DescriptionRegExp string `json:"descriptionRegExp,omitempty"`
 
 	ExtraRegExp string `json:"extraRegExp,omitempty"`
-
-	OutputMovements []Movement `json:"outputMovements,omitempty"`
 }
 
 type MatcherNoIdInterface interface {
 	GetName() string
 	GetOutputDescription() string
-	GetAmount() float64
+	GetOutputAccountId() string
 	GetCurrencyRegExp() string
 	GetPartnerNameRegExp() string
 	GetPartnerAccountNumber() string
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
-	GetOutputMovements() []Movement
 }
 
 func (c *MatcherNoId) GetName() string {
@@ -49,8 +46,8 @@ func (c *MatcherNoId) GetName() string {
 func (c *MatcherNoId) GetOutputDescription() string {
 	return c.OutputDescription
 }
-func (c *MatcherNoId) GetAmount() float64 {
-	return c.Amount
+func (c *MatcherNoId) GetOutputAccountId() string {
+	return c.OutputAccountId
 }
 func (c *MatcherNoId) GetCurrencyRegExp() string {
 	return c.CurrencyRegExp
@@ -67,14 +64,13 @@ func (c *MatcherNoId) GetDescriptionRegExp() string {
 func (c *MatcherNoId) GetExtraRegExp() string {
 	return c.ExtraRegExp
 }
-func (c *MatcherNoId) GetOutputMovements() []Movement {
-	return c.OutputMovements
-}
 
 // AssertMatcherNoIdRequired checks if the required fields are not zero-ed
 func AssertMatcherNoIdRequired(obj MatcherNoId) error {
 	elements := map[string]interface{}{
-		"name": obj.Name,
+		"name":              obj.Name,
+		"outputDescription": obj.OutputDescription,
+		"outputAccountId":   obj.OutputAccountId,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {
@@ -82,20 +78,10 @@ func AssertMatcherNoIdRequired(obj MatcherNoId) error {
 		}
 	}
 
-	for _, el := range obj.OutputMovements {
-		if err := AssertMovementRequired(el); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
 // AssertMatcherNoIdConstraints checks if the values respects the defined constraints
 func AssertMatcherNoIdConstraints(obj MatcherNoId) error {
-	for _, el := range obj.OutputMovements {
-		if err := AssertMovementConstraints(el); err != nil {
-			return err
-		}
-	}
 	return nil
 }

@@ -133,7 +133,7 @@ func upsertUser(storage database.Storage, username, hashedPassword string, logge
 	return nil
 }
 
-//nolint:funlen,cyclop // function is not complex, it just creates many default items
+//nolint:funlen,cyclop,maintidx // function is not complex, it just creates many default items
 func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger) error {
 	// Create default accounts
 	account := &goserver.AccountNoId{
@@ -168,14 +168,14 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	logger.Info(fmt.Sprintf("Created income account %q", accSalary.Id))
 
 	account = &goserver.AccountNoId{
-		Name: "🥩 Food",
+		Name: "🛒 Groceries",
 		Type: "expense",
 	}
-	accFood, err := storage.CreateAccount(userID, account)
+	accGroceries, err := storage.CreateAccount(userID, account)
 	if err != nil {
-		return fmt.Errorf("failed to create food account: %w", err)
+		return fmt.Errorf("failed to create groceries account: %w", err)
 	}
-	logger.Info(fmt.Sprintf("Created food account %q", accFood.Id))
+	logger.Info(fmt.Sprintf("Created groceries account %q", accGroceries.Id))
 
 	account = &goserver.AccountNoId{
 		Name:        "Transport",
@@ -397,6 +397,18 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 	if _, err := storage.CreateBankImporter(userID, bankImporter); err != nil {
 		return fmt.Errorf("failed to create bank importer: %w", err)
+	}
+
+	matcher := &goserver.MatcherNoId{
+		Name: "Groceries: Billa",
+
+		OutputDescription: "Matcher for Billa",
+		OutputAccountId:   accGroceries.Id,
+
+		DescriptionRegExp: `\bBilla\b`,
+	}
+	if _, err := storage.CreateMatcher(userID, matcher); err != nil {
+		return fmt.Errorf("failed to create matcher: %w", err)
 	}
 
 	return nil

@@ -69,12 +69,12 @@ var _ = Describe("Transactions API", func() {
 			ExternalIds: []string{"ext1", "ext2"},
 			Movements: []goclient.Movement{
 				{
-					AccountId:  "account1",
+					AccountId:  utils.StrToRef("account1"),
 					CurrencyId: "currency1",
 					Amount:     100,
 				},
 				{
-					AccountId:  "account2",
+					AccountId:  utils.StrToRef("account2"),
 					CurrencyId: "currency1",
 					Amount:     -100,
 				},

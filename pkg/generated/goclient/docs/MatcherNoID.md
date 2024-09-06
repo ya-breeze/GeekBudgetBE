@@ -5,20 +5,19 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** |  | 
-**OutputDescription** | Pointer to **string** |  | [optional] 
-**Amount** | Pointer to **float64** |  | [optional] 
+**OutputDescription** | **string** |  | 
+**OutputAccountId** | **string** |  | 
 **CurrencyRegExp** | Pointer to **string** |  | [optional] 
 **PartnerNameRegExp** | Pointer to **string** |  | [optional] 
 **PartnerAccountNumber** | Pointer to **string** |  | [optional] 
 **DescriptionRegExp** | Pointer to **string** |  | [optional] 
 **ExtraRegExp** | Pointer to **string** |  | [optional] 
-**OutputMovements** | Pointer to [**[]Movement**](Movement.md) |  | [optional] 
 
 ## Methods
 
 ### NewMatcherNoID
 
-`func NewMatcherNoID(name string, ) *MatcherNoID`
+`func NewMatcherNoID(name string, outputDescription string, outputAccountId string, ) *MatcherNoID`
 
 NewMatcherNoID instantiates a new MatcherNoID object
 This constructor will assign default values to properties that have it defined,
@@ -72,36 +71,26 @@ and a boolean to check if the value has been set.
 
 SetOutputDescription sets OutputDescription field to given value.
 
-### HasOutputDescription
 
-`func (o *MatcherNoID) HasOutputDescription() bool`
+### GetOutputAccountId
 
-HasOutputDescription returns a boolean if a field has been set.
+`func (o *MatcherNoID) GetOutputAccountId() string`
 
-### GetAmount
+GetOutputAccountId returns the OutputAccountId field if non-nil, zero value otherwise.
 
-`func (o *MatcherNoID) GetAmount() float64`
+### GetOutputAccountIdOk
 
-GetAmount returns the Amount field if non-nil, zero value otherwise.
+`func (o *MatcherNoID) GetOutputAccountIdOk() (*string, bool)`
 
-### GetAmountOk
-
-`func (o *MatcherNoID) GetAmountOk() (*float64, bool)`
-
-GetAmountOk returns a tuple with the Amount field if it's non-nil, zero value otherwise
+GetOutputAccountIdOk returns a tuple with the OutputAccountId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAmount
+### SetOutputAccountId
 
-`func (o *MatcherNoID) SetAmount(v float64)`
+`func (o *MatcherNoID) SetOutputAccountId(v string)`
 
-SetAmount sets Amount field to given value.
+SetOutputAccountId sets OutputAccountId field to given value.
 
-### HasAmount
-
-`func (o *MatcherNoID) HasAmount() bool`
-
-HasAmount returns a boolean if a field has been set.
 
 ### GetCurrencyRegExp
 
@@ -227,31 +216,6 @@ SetExtraRegExp sets ExtraRegExp field to given value.
 `func (o *MatcherNoID) HasExtraRegExp() bool`
 
 HasExtraRegExp returns a boolean if a field has been set.
-
-### GetOutputMovements
-
-`func (o *MatcherNoID) GetOutputMovements() []Movement`
-
-GetOutputMovements returns the OutputMovements field if non-nil, zero value otherwise.
-
-### GetOutputMovementsOk
-
-`func (o *MatcherNoID) GetOutputMovementsOk() (*[]Movement, bool)`
-
-GetOutputMovementsOk returns a tuple with the OutputMovements field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetOutputMovements
-
-`func (o *MatcherNoID) SetOutputMovements(v []Movement)`
-
-SetOutputMovements sets OutputMovements field to given value.
-
-### HasOutputMovements
-
-`func (o *MatcherNoID) HasOutputMovements() bool`
-
-HasOutputMovements returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

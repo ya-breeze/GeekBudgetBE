@@ -32,7 +32,7 @@ import (
 )
 
 func main() {
-	checkMatcherRequest := *openapiclient.NewCheckMatcherRequest(*openapiclient.NewMatcherNoID("Name_example"), *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyId_example", "AccountId_example")})) // CheckMatcherRequest | 
+	checkMatcherRequest := *openapiclient.NewCheckMatcherRequest(*openapiclient.NewMatcherNoID("Name_example", "OutputDescription_example", "OutputAccountId_example"), *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyId_example")})) // CheckMatcherRequest | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -96,7 +96,7 @@ import (
 )
 
 func main() {
-	matcherNoID := *openapiclient.NewMatcherNoID("Name_example") // MatcherNoID | 
+	matcherNoID := *openapiclient.NewMatcherNoID("Name_example", "OutputDescription_example", "OutputAccountId_example") // MatcherNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -286,7 +286,7 @@ import (
 
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the matcher
-	matcherNoID := *openapiclient.NewMatcherNoID("Name_example") // MatcherNoID | 
+	matcherNoID := *openapiclient.NewMatcherNoID("Name_example", "OutputDescription_example", "OutputAccountId_example") // MatcherNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

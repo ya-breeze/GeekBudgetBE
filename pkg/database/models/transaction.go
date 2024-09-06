@@ -51,6 +51,22 @@ func (t *Transaction) FromDB() goserver.Transaction {
 	}
 }
 
+func (t *Transaction) WithoutID() *goserver.TransactionNoId {
+	return &goserver.TransactionNoId{
+		Date:               t.Date,
+		Description:        t.Description,
+		Place:              t.Place,
+		Tags:               t.Tags,
+		PartnerName:        t.PartnerName,
+		PartnerAccount:     t.PartnerAccount,
+		PartnerInternalId:  t.PartnerInternalID,
+		Extra:              t.Extra,
+		UnprocessedSources: t.UnprocessedSources,
+		ExternalIds:        t.ExternalIDs,
+		Movements:          t.Movements,
+	}
+}
+
 func TransactionToDB(transaction *goserver.TransactionNoId, userID string) *Transaction {
 	return &Transaction{
 		Date:               transaction.Date,
@@ -65,5 +81,21 @@ func TransactionToDB(transaction *goserver.TransactionNoId, userID string) *Tran
 		ExternalIDs:        transaction.ExternalIds,
 		Movements:          transaction.Movements,
 		UserID:             userID,
+	}
+}
+
+func TransactionWithoutID(transaction *goserver.Transaction) *goserver.TransactionNoId {
+	return &goserver.TransactionNoId{
+		Date:               transaction.Date,
+		Description:        transaction.Description,
+		Place:              transaction.Place,
+		Tags:               transaction.Tags,
+		PartnerName:        transaction.PartnerName,
+		PartnerAccount:     transaction.PartnerAccount,
+		PartnerInternalId:  transaction.PartnerInternalId,
+		Extra:              transaction.Extra,
+		UnprocessedSources: transaction.UnprocessedSources,
+		ExternalIds:        transaction.ExternalIds,
+		Movements:          transaction.Movements,
 	}
 }

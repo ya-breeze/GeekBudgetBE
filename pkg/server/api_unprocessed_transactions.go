@@ -3,8 +3,10 @@ package server
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
@@ -21,7 +23,34 @@ func NewUnprocessedTransactionsAPIServiceImpl(logger *slog.Logger, db database.S
 func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 	ctx context.Context,
 ) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	matchers, err := s.db.GetMatchersRuntime(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get matchers")
+		return goserver.Response(500, nil), nil
+	}
+
+	transactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get transactions")
+		return goserver.Response(500, nil), nil
+	}
+	transactions = s.filterUnprocessedTransactions(transactions)
+
+	res := make([]goserver.UnprocessedTransaction, 0, len(transactions))
+	for _, t := range transactions {
+		res = append(res, goserver.UnprocessedTransaction{
+			Transaction: t,
+			Matched:     s.matchUnprocessedTransactions(matchers, t),
+			Duplicates:  nil,
+		})
+	}
+
+	return goserver.Response(200, res), nil
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
@@ -38,4 +67,47 @@ func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(
 	duplicateTransactionID string,
 ) (goserver.ImplResponse, error) {
 	return goserver.ImplResponse{}, nil
+}
+
+func (s *UnprocessedTransactionsAPIServiceImpl) filterUnprocessedTransactions(transactions []goserver.Transaction,
+) []goserver.Transaction {
+	res := make([]goserver.Transaction, 0, len(transactions))
+	for _, t := range transactions {
+		for _, m := range t.Movements {
+			if m.AccountId == "" {
+				res = append(res, t)
+				break
+			}
+		}
+	}
+	return res
+}
+
+func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
+	matchers []database.MatcherRuntime, transaction goserver.Transaction,
+) []goserver.MatcherAndTransaction {
+	s.logger.With("transaction", transaction.Id).Info("Matching transaction")
+	res := make([]goserver.MatcherAndTransaction, 0)
+
+	for _, matcher := range matchers {
+		if matcher.DescriptionRegexp != nil && !matcher.DescriptionRegexp.MatchString(transaction.Description) {
+			continue
+		}
+
+		outputTransaction := models.TransactionWithoutID(&transaction)
+		outputTransaction.Description = matcher.Matcher.OutputDescription
+		for i := range outputTransaction.Movements {
+			if outputTransaction.Movements[i].AccountId == "" {
+				outputTransaction.Movements[i].AccountId = matcher.Matcher.OutputAccountId
+			}
+		}
+
+		s.logger.With("matcher", matcher.Matcher.Id).Info("Matched transaction")
+		res = append(res, goserver.MatcherAndTransaction{
+			MatcherId:   matcher.Matcher.Id,
+			Transaction: *outputTransaction,
+		})
+	}
+
+	return res
 }
