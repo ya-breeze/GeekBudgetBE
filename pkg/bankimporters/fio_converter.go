@@ -195,11 +195,10 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+		color.Red("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 		color.Red("Can't parse %q\n", fio.Comment.Value)
 		utils.PrintInTwoColumns(string(orig), string(result))
-		fmt.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-		fmt.Println()
+		color.Red("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 	}
 
 	b, err := json.Marshal(fio)
