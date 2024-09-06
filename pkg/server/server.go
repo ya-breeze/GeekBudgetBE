@@ -402,10 +402,58 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	matcher := &goserver.MatcherNoId{
 		Name: "Groceries: Billa",
 
-		OutputDescription: "Matcher for Billa",
+		OutputDescription: "Groceries: Billa",
 		OutputAccountId:   accGroceries.Id,
 
-		DescriptionRegExp: `\bBilla\b`,
+		DescriptionRegExp: `(?i)\bBilla\b`,
+	}
+	if _, err := storage.CreateMatcher(userID, matcher); err != nil {
+		return fmt.Errorf("failed to create matcher: %w", err)
+	}
+
+	matcher = &goserver.MatcherNoId{
+		Name: "Groceries: Albert",
+
+		OutputDescription: "Groceries: Albert",
+		OutputAccountId:   accGroceries.Id,
+
+		DescriptionRegExp: `(?i)\bAlbert\b`,
+	}
+	if _, err := storage.CreateMatcher(userID, matcher); err != nil {
+		return fmt.Errorf("failed to create matcher: %w", err)
+	}
+
+	matcher = &goserver.MatcherNoId{
+		Name: "Groceries: Makro",
+
+		OutputDescription: "Groceries: Makro",
+		OutputAccountId:   accGroceries.Id,
+
+		DescriptionRegExp: `(?i)\bMakro 06\b`,
+	}
+	if _, err := storage.CreateMatcher(userID, matcher); err != nil {
+		return fmt.Errorf("failed to create matcher: %w", err)
+	}
+
+	matcher = &goserver.MatcherNoId{
+		Name: "Groceries: Globus",
+
+		OutputDescription: "Groceries: Globus",
+		OutputAccountId:   accGroceries.Id,
+
+		DescriptionRegExp: `(?i)\bGlobus\b`,
+	}
+	if _, err := storage.CreateMatcher(userID, matcher); err != nil {
+		return fmt.Errorf("failed to create matcher: %w", err)
+	}
+
+	matcher = &goserver.MatcherNoId{
+		Name: "Groceries: Kaufland",
+
+		OutputDescription: "Groceries: Kaufland",
+		OutputAccountId:   accGroceries.Id,
+
+		DescriptionRegExp: `(?i)\bKaufland\b`,
 	}
 	if _, err := storage.CreateMatcher(userID, matcher); err != nil {
 		return fmt.Errorf("failed to create matcher: %w", err)
