@@ -71,7 +71,6 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	}
 
 	return goserver.Response(200, transaction), nil
-
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(

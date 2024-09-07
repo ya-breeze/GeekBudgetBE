@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -154,9 +155,10 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 		}
 
 		res = goserver.TransactionNoId{
-			Date:        t,
-			Place:       tokens[0][3],
-			Description: fmt.Sprintf("%s: %s", tokens[0][1], tokens[0][2]),
+			Date:  t,
+			Place: tokens[0][3],
+			//nolint:staticcheck // comma and space are from regexp
+			Description: fmt.Sprintf("%s: %s", tokens[0][1], strings.Trim(tokens[0][2], ",  ")),
 			Movements: []goserver.Movement{
 				{
 					Amount:     m,
