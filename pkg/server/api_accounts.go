@@ -51,6 +51,11 @@ func (s *AccountsAPIServicerImpl) GetAccounts(
 		return goserver.Response(500, nil), nil
 	}
 
+	accounts = append(accounts, goserver.Account{
+		Id:   "",
+		Name: "Unknown account",
+	})
+
 	return goserver.Response(200, accounts), nil
 }
 

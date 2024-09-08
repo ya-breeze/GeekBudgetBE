@@ -32,6 +32,11 @@ func (s *CurrenciesAPIServicerImpl) GetCurrencies(ctx context.Context) (goserver
 		return goserver.Response(500, nil), nil
 	}
 
+	currencies = append(currencies, goserver.Currency{
+		Id:   "",
+		Name: "Unknown currency",
+	})
+
 	return goserver.Response(200, currencies), nil
 }
 
