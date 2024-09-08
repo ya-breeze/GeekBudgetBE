@@ -2,12 +2,15 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"sort"
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 type UnprocessedTransactionsAPIServiceImpl struct {
@@ -43,13 +46,21 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 
 	res := make([]goserver.UnprocessedTransaction, 0, len(transactions))
 	for _, t := range transactions {
+		m, err := s.matchUnprocessedTransactions(matchers, t)
+		if err != nil {
+			s.logger.With("error", err).Error("Failed to match unprocessed transaction")
+			return goserver.Response(500, nil), nil
+		}
+
 		res = append(res, goserver.UnprocessedTransaction{
 			Transaction: t,
-			Matched:     s.matchUnprocessedTransactions(matchers, t),
+			Matched:     m,
 			Duplicates:  nil,
 		})
 	}
-
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Transaction.Date.Before(res[j].Transaction.Date)
+	})
 	return goserver.Response(200, res), nil
 }
 
@@ -96,8 +107,13 @@ func (s *UnprocessedTransactionsAPIServiceImpl) filterUnprocessedTransactions(tr
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
-	matchers []database.MatcherRuntime, transaction goserver.Transaction,
-) []goserver.MatcherAndTransaction {
+	matchers []database.MatcherRuntime, transactionSrc goserver.Transaction,
+) ([]goserver.MatcherAndTransaction, error) {
+	var transaction goserver.Transaction
+	if err := utils.DeepCopy(&transactionSrc, &transaction); err != nil {
+		return nil, fmt.Errorf("can't copy transaction: %w", err)
+	}
+
 	s.logger.With("transaction", transaction.Id).Info("Matching transaction")
 	res := make([]goserver.MatcherAndTransaction, 0)
 
@@ -121,5 +137,5 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 		})
 	}
 
-	return res
+	return res, nil
 }

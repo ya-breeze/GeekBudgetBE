@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"strings"
 )
@@ -29,4 +31,19 @@ func PrintInTwoColumns(str1, str2 string) {
 		}
 		fmt.Printf("%-60s | %s\n", line1, line2)
 	}
+}
+
+// DeepCopy performs a deep copy of an object using gob encoding/decoding.
+func DeepCopy(src, dst interface{}) error {
+	var b bytes.Buffer
+	enc := gob.NewEncoder(&b)
+	dec := gob.NewDecoder(&b)
+
+	if err := enc.Encode(src); err != nil {
+		return err
+	}
+	if err := dec.Decode(dst); err != nil {
+		return err
+	}
+	return nil
 }
