@@ -57,6 +57,7 @@ type Storage interface {
 	GetMatchers(userID string) ([]goserver.Matcher, error)
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
 	CreateMatcher(userID string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
+	UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
 }
 
 type MatcherRuntime struct {
@@ -347,6 +348,7 @@ func (s *storage) CreateTransaction(userID string, input *goserver.TransactionNo
 	return t.FromDB(), nil
 }
 
+//nolint:dupl // TODO: refactor
 func (s *storage) UpdateTransaction(userID string, id string, input *goserver.TransactionNoId,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)
@@ -471,6 +473,7 @@ func (s *storage) GetBankImporter(userID string, id string) (goserver.BankImport
 	return data.FromDB(), nil
 }
 
+// #region Matchers
 func (s *storage) GetMatchers(userID string) ([]goserver.Matcher, error) {
 	result, err := s.db.Model(&models.Matcher{}).Where("user_id = ?", userID).Rows()
 	if err != nil {
@@ -524,3 +527,31 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 
 	return res, nil
 }
+
+//nolint:dupl // TODO: refactor
+func (s *storage) UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId,
+) (goserver.Matcher, error) {
+	idUUID, err := uuid.Parse(id)
+	if err != nil {
+		return goserver.Matcher{}, fmt.Errorf(StorageError+"; id is not UUID", err)
+	}
+
+	var data *models.Matcher
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Matcher{}, ErrNotFound
+		}
+
+		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
+	}
+
+	data = models.MatcherToDB(matcher, userID)
+	data.ID = idUUID
+	if err := s.db.Save(&data).Error; err != nil {
+		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
+	}
+
+	return data.FromDB(), nil
+}
+
+//#endregion Matchers

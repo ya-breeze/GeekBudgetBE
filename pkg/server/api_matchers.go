@@ -55,10 +55,21 @@ func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.M
 }
 
 func (s *MatchersAPIServiceImpl) DeleteMatcher(context.Context, string) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
+	return goserver.Response(500, nil), nil
 }
 
-func (s *MatchersAPIServiceImpl) UpdateMatcher(context.Context, string, goserver.MatcherNoId,
+func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	res, err := s.db.UpdateMatcher(userID, id, &m)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to update matcher")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, res), nil
 }
