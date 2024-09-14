@@ -201,7 +201,17 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 	accFio, err := storage.CreateAccount(userID, account)
 	if err != nil {
-		return fmt.Errorf("failed to create bank account: %w", err)
+		return fmt.Errorf("failed to create FIO bank account: %w", err)
+	}
+
+	account = &goserver.AccountNoId{
+		Name:        "Revolut",
+		Description: "Revolut bank account",
+		Type:        "asset",
+	}
+	accRevolut, err := storage.CreateAccount(userID, account)
+	if err != nil {
+		return fmt.Errorf("failed to create Revolut bank account: %w", err)
 	}
 
 	account = &goserver.AccountNoId{
@@ -214,6 +224,16 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		return fmt.Errorf("failed to create income account: %w", err)
 	}
 	logger.Info(fmt.Sprintf("Created income account %q", accSalary.Id))
+
+	account = &goserver.AccountNoId{
+		Name: "Bank fees",
+		Type: "expense",
+	}
+	accFees, err := storage.CreateAccount(userID, account)
+	if err != nil {
+		return fmt.Errorf("failed to create fees account: %w", err)
+	}
+	logger.Info(fmt.Sprintf("Created fees account %q", accFees.Id))
 
 	account = &goserver.AccountNoId{
 		Name: "🛒 Groceries",
@@ -414,9 +434,11 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 
 	bankImporter = &goserver.BankImporterNoId{
-		Name:        "FIO Bank USD",
-		Description: "Fio banka a.s. (USD)",
-		Extra:       "token",
+		Name:         "Revolut bank",
+		Description:  "Revolut bank",
+		AccountId:    accRevolut.Id,
+		FeeAccountId: accFees.Id,
+		Type:         "revolut",
 	}
 	if _, err := storage.CreateBankImporter(userID, bankImporter); err != nil {
 		return fmt.Errorf("failed to create bank importer: %w", err)

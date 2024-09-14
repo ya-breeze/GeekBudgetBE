@@ -841,6 +841,25 @@ paths:
         "400":
           description: bad request
 
+  # /v1/import:
+  #   post:
+  #     tags:
+  #       - import
+  #     summary: Upload and import full user's data
+  #     operationId: import
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               file:
+  #                 type: string
+  #                 format: binary
+  #     responses:
+  #       "200":
+  #         description: File uploaded successfully
+
 security:
   - BearerAuth: []
 
