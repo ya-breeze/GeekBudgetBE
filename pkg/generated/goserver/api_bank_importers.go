@@ -13,8 +13,6 @@ package goserver
 
 import (
 	"encoding/json"
-	"errors"
-	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -198,25 +196,42 @@ func (c *BankImportersAPIController) UpdateBankImporter(w http.ResponseWriter, r
 
 // UploadBankImporter - Upload new transactions from bank
 func (c *BankImportersAPIController) UploadBankImporter(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
 	params := mux.Vars(r)
+	query, err := parseQuery(r.URL.RawQuery)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
 	idParam := params["id"]
 	if idParam == "" {
 		c.errorHandler(w, r, &RequiredError{"id"}, nil)
 		return
 	}
-	formatParam := params["format"]
-	if formatParam == "" {
-		c.errorHandler(w, r, &RequiredError{"format"}, nil)
+	var formatParam string
+	if query.Has("format") {
+		param := query.Get("format")
+
+		formatParam = param
+	} else {
+		c.errorHandler(w, r, &RequiredError{Field: "format"}, nil)
 		return
 	}
-	bodyParam := &os.File{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&bodyParam); err != nil && !errors.Is(err, io.EOF) {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
+	var fileParam *os.File
+	{
+		param, err := ReadFormFileToTempFile(r, "file")
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "file", Err: err}, nil)
+			return
+		}
+
+		fileParam = param
 	}
-	result, err := c.service.UploadBankImporter(r.Context(), idParam, formatParam, bodyParam)
+
+	result, err := c.service.UploadBankImporter(r.Context(), idParam, formatParam, fileParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

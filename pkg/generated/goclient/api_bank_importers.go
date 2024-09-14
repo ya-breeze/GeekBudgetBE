@@ -540,12 +540,18 @@ type ApiUploadBankImporterRequest struct {
 	ctx        context.Context
 	ApiService *BankImportersAPIService
 	id         string
-	format     string
-	body       *os.File
+	format     *string
+	file       *os.File
 }
 
-func (r ApiUploadBankImporterRequest) Body(body *os.File) ApiUploadBankImporterRequest {
-	r.body = body
+// format of the data
+func (r ApiUploadBankImporterRequest) Format(format string) ApiUploadBankImporterRequest {
+	r.format = &format
+	return r
+}
+
+func (r ApiUploadBankImporterRequest) File(file *os.File) ApiUploadBankImporterRequest {
+	r.file = file
 	return r
 }
 
@@ -558,15 +564,13 @@ UploadBankImporter Upload new transactions from bank
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id ID of the bank importer
-	@param format format of the data
 	@return ApiUploadBankImporterRequest
 */
-func (a *BankImportersAPIService) UploadBankImporter(ctx context.Context, id string, format string) ApiUploadBankImporterRequest {
+func (a *BankImportersAPIService) UploadBankImporter(ctx context.Context, id string) ApiUploadBankImporterRequest {
 	return ApiUploadBankImporterRequest{
 		ApiService: a,
 		ctx:        ctx,
 		id:         id,
-		format:     format,
 	}
 }
 
@@ -588,14 +592,17 @@ func (a *BankImportersAPIService) UploadBankImporterExecute(r ApiUploadBankImpor
 
 	localVarPath := localBasePath + "/v1/bankImporters/{id}/upload"
 	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
-	localVarPath = strings.Replace(localVarPath, "{"+"format"+"}", url.PathEscape(parameterValueToString(r.format, "format")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
+	if r.format == nil {
+		return localVarReturnValue, nil, reportError("format is required and must be specified")
+	}
 
+	parameterAddToHeaderOrQuery(localVarQueryParams, "format", r.format, "")
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"plain/text"}
+	localVarHTTPContentTypes := []string{"multipart/form-data"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -611,8 +618,21 @@ func (a *BankImportersAPIService) UploadBankImporterExecute(r ApiUploadBankImpor
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	// body params
-	localVarPostBody = r.body
+	var fileLocalVarFormFileName string
+	var fileLocalVarFileName string
+	var fileLocalVarFileBytes []byte
+
+	fileLocalVarFormFileName = "file"
+	fileLocalVarFile := r.file
+
+	if fileLocalVarFile != nil {
+		fbs, _ := io.ReadAll(fileLocalVarFile)
+
+		fileLocalVarFileBytes = fbs
+		fileLocalVarFileName = fileLocalVarFile.Name()
+		fileLocalVarFile.Close()
+		formFiles = append(formFiles, formFile{fileBytes: fileLocalVarFileBytes, fileName: fileLocalVarFileName, formFileName: fileLocalVarFormFileName})
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

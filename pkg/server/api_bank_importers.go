@@ -249,7 +249,7 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
-	info, transactions, err := bi.ParseAndImport(ctx, "format", string(data))
+	info, transactions, err := bi.ParseAndImport(ctx, format, string(data))
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to parse and import Revolut data")
 		return goserver.Response(500, nil), nil

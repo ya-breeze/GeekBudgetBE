@@ -342,7 +342,7 @@ Name | Type | Description  | Notes
 
 ## UploadBankImporter
 
-> ImportResult UploadBankImporter(ctx, id, format).Body(body).Execute()
+> ImportResult UploadBankImporter(ctx, id).Format(format).File(file).Execute()
 
 Upload new transactions from bank
 
@@ -361,11 +361,11 @@ import (
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the bank importer
 	format := "format_example" // string | format of the data
-	body := os.NewFile(1234, "some_file") // *os.File |  (optional)
+	file := os.NewFile(1234, "some_file") // *os.File |  (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.BankImportersAPI.UploadBankImporter(context.Background(), id, format).Body(body).Execute()
+	resp, r, err := apiClient.BankImportersAPI.UploadBankImporter(context.Background(), id).Format(format).File(file).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.UploadBankImporter``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -382,7 +382,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
 **id** | **string** | ID of the bank importer | 
-**format** | **string** | format of the data | 
 
 ### Other Parameters
 
@@ -392,8 +391,8 @@ Other parameters are passed through a pointer to a apiUploadBankImporterRequest 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
-
- **body** | ***os.File** |  | 
+ **format** | **string** | format of the data | 
+ **file** | ***os.File** |  | 
 
 ### Return type
 
@@ -405,7 +404,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: plain/text
+- **Content-Type**: multipart/form-data
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
