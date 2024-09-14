@@ -20,10 +20,10 @@ var _ MappedNullable = &BankAccountInfo{}
 
 // BankAccountInfo struct for BankAccountInfo
 type BankAccountInfo struct {
-	AccountId      *string  `json:"accountId,omitempty"`
-	BankId         *string  `json:"bankId,omitempty"`
-	OpeningBalance *float64 `json:"openingBalance,omitempty"`
-	ClosingBalance *float64 `json:"closingBalance,omitempty"`
+	AccountId *string `json:"accountId,omitempty"`
+	BankId    *string `json:"bankId,omitempty"`
+	// List of balances for this account. It's an array since one account could hold multiple currencies, for example, cash account could hold EUR, USD and CZK. Or one bank account could hold multiple currencies.
+	Balances []BankAccountInfoBalancesInner `json:"balances,omitempty"`
 }
 
 // NewBankAccountInfo instantiates a new BankAccountInfo object
@@ -107,68 +107,36 @@ func (o *BankAccountInfo) SetBankId(v string) {
 	o.BankId = &v
 }
 
-// GetOpeningBalance returns the OpeningBalance field value if set, zero value otherwise.
-func (o *BankAccountInfo) GetOpeningBalance() float64 {
-	if o == nil || IsNil(o.OpeningBalance) {
-		var ret float64
+// GetBalances returns the Balances field value if set, zero value otherwise.
+func (o *BankAccountInfo) GetBalances() []BankAccountInfoBalancesInner {
+	if o == nil || IsNil(o.Balances) {
+		var ret []BankAccountInfoBalancesInner
 		return ret
 	}
-	return *o.OpeningBalance
+	return o.Balances
 }
 
-// GetOpeningBalanceOk returns a tuple with the OpeningBalance field value if set, nil otherwise
+// GetBalancesOk returns a tuple with the Balances field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BankAccountInfo) GetOpeningBalanceOk() (*float64, bool) {
-	if o == nil || IsNil(o.OpeningBalance) {
+func (o *BankAccountInfo) GetBalancesOk() ([]BankAccountInfoBalancesInner, bool) {
+	if o == nil || IsNil(o.Balances) {
 		return nil, false
 	}
-	return o.OpeningBalance, true
+	return o.Balances, true
 }
 
-// HasOpeningBalance returns a boolean if a field has been set.
-func (o *BankAccountInfo) HasOpeningBalance() bool {
-	if o != nil && !IsNil(o.OpeningBalance) {
+// HasBalances returns a boolean if a field has been set.
+func (o *BankAccountInfo) HasBalances() bool {
+	if o != nil && !IsNil(o.Balances) {
 		return true
 	}
 
 	return false
 }
 
-// SetOpeningBalance gets a reference to the given float64 and assigns it to the OpeningBalance field.
-func (o *BankAccountInfo) SetOpeningBalance(v float64) {
-	o.OpeningBalance = &v
-}
-
-// GetClosingBalance returns the ClosingBalance field value if set, zero value otherwise.
-func (o *BankAccountInfo) GetClosingBalance() float64 {
-	if o == nil || IsNil(o.ClosingBalance) {
-		var ret float64
-		return ret
-	}
-	return *o.ClosingBalance
-}
-
-// GetClosingBalanceOk returns a tuple with the ClosingBalance field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *BankAccountInfo) GetClosingBalanceOk() (*float64, bool) {
-	if o == nil || IsNil(o.ClosingBalance) {
-		return nil, false
-	}
-	return o.ClosingBalance, true
-}
-
-// HasClosingBalance returns a boolean if a field has been set.
-func (o *BankAccountInfo) HasClosingBalance() bool {
-	if o != nil && !IsNil(o.ClosingBalance) {
-		return true
-	}
-
-	return false
-}
-
-// SetClosingBalance gets a reference to the given float64 and assigns it to the ClosingBalance field.
-func (o *BankAccountInfo) SetClosingBalance(v float64) {
-	o.ClosingBalance = &v
+// SetBalances gets a reference to the given []BankAccountInfoBalancesInner and assigns it to the Balances field.
+func (o *BankAccountInfo) SetBalances(v []BankAccountInfoBalancesInner) {
+	o.Balances = v
 }
 
 func (o BankAccountInfo) MarshalJSON() ([]byte, error) {
@@ -187,11 +155,8 @@ func (o BankAccountInfo) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.BankId) {
 		toSerialize["bankId"] = o.BankId
 	}
-	if !IsNil(o.OpeningBalance) {
-		toSerialize["openingBalance"] = o.OpeningBalance
-	}
-	if !IsNil(o.ClosingBalance) {
-		toSerialize["closingBalance"] = o.ClosingBalance
+	if !IsNil(o.Balances) {
+		toSerialize["balances"] = o.Balances
 	}
 	return toSerialize, nil
 }

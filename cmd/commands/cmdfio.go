@@ -2,6 +2,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -13,7 +14,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
-func CmdFio() *cobra.Command {
+func CmdFio(log *slog.Logger) *cobra.Command {
 	res := &cobra.Command{
 		Use:   "fio",
 		Short: "Work with FIO API",
@@ -21,17 +22,18 @@ func CmdFio() *cobra.Command {
 		},
 	}
 
-	res.AddCommand(fetch())
-	res.AddCommand(parse())
+	res.AddCommand(fetchFIO(log))
+	res.AddCommand(parseFIO(log))
 
 	return res
 }
 
-func fetch() *cobra.Command {
+func fetchFIO(log *slog.Logger) *cobra.Command {
 	var tokenFile, outputFile string
 	res := &cobra.Command{
-		Use:   "fetch",
-		Short: "Fetch transactions from FIO API",
+		Use:          "fetch",
+		Short:        "Fetch transactions from FIO API",
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			var err error
 			var token string
@@ -52,9 +54,7 @@ func fetch() *cobra.Command {
 				}
 			}
 
-			res, err := bankimporters.FetchFioTransactions(
-				slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-				cmd.Context(), token)
+			res, err := bankimporters.FetchFioTransactions(log, cmd.Context(), token)
 			if err != nil {
 				return fmt.Errorf("can't fetch FIO transactions: %w", err)
 			}
@@ -77,12 +77,13 @@ func fetch() *cobra.Command {
 	return res
 }
 
-func parse() *cobra.Command {
+func parseFIO(log *slog.Logger) *cobra.Command {
 	var jsonFile string
 	var hideTransactions *bool
 	res := &cobra.Command{
-		Use:   "parse",
-		Short: "Parse FIO transactions from JSON",
+		Use:          "parse",
+		Short:        "Parse FIO transactions from JSON",
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			var err error
 			var data []byte
@@ -102,7 +103,7 @@ func parse() *cobra.Command {
 			}
 
 			fc, err := bankimporters.NewFioConverter(
-				slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+				log,
 				goserver.BankImporter{
 					AccountId: "__accountID__",
 				}, []goserver.Currency{
@@ -118,8 +119,11 @@ func parse() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("can't parse FIO transactions: %w", err)
 			}
-			fmt.Printf("Opening balance: %v\n", info.OpeningBalance)
-			fmt.Printf("Closing balance: %v\n", info.ClosingBalance)
+			for _, b := range info.Balances {
+				fmt.Printf("Balance for %s\n", b.CurrencyId)
+				fmt.Printf("- Opening balance: %v\n", b.OpeningBalance)
+				fmt.Printf("- Closing balance: %v\n", b.ClosingBalance)
+			}
 			fmt.Printf("Parsed transactions: %d\n", len(transactions))
 			if hideTransactions != nil && !*hideTransactions {
 				for _, t := range transactions {
@@ -138,6 +142,10 @@ func parse() *cobra.Command {
 }
 
 func printTransactionNoID(t goserver.TransactionNoId) {
-	t.UnprocessedSources = "<replaced>"
-	fmt.Printf("TransactionNoId: %+v\n", t)
+	t.UnprocessedSources = "__replaced__"
+	json, err := json.MarshalIndent(t, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("TransactionNoId: %s\n", json)
 }

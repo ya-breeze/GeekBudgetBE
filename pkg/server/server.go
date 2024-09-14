@@ -12,7 +12,6 @@ import (
 	"runtime/debug"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
@@ -135,13 +134,54 @@ func upsertUser(storage database.Storage, username, hashedPassword string, logge
 
 //nolint:funlen,cyclop,maintidx // function is not complex, it just creates many default items
 func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger) error {
+	// Create default currencies
+	currency := &goserver.CurrencyNoId{
+		Name: "USD",
+	}
+	curUSD, err := storage.CreateCurrency(userID, currency)
+	if err != nil {
+		return fmt.Errorf("failed to create USD currency: %w", err)
+	}
+
+	currency = &goserver.CurrencyNoId{
+		Name: "EUR",
+	}
+	curEUR, err := storage.CreateCurrency(userID, currency)
+	if err != nil {
+		return fmt.Errorf("failed to create EUR currency: %w", err)
+	}
+
+	currency = &goserver.CurrencyNoId{
+		Name: "CZK",
+	}
+	curCZK, err := storage.CreateCurrency(userID, currency)
+	if err != nil {
+		return fmt.Errorf("failed to create CZK currency: %w", err)
+	}
+
 	// Create default accounts
 	account := &goserver.AccountNoId{
 		Name:        "Cash",
 		Description: "Cash account",
 		Type:        "asset",
+		BankInfo: goserver.BankAccountInfo{
+			Balances: []goserver.BankAccountInfoBalancesInner{
+				{
+					CurrencyId:     curCZK.Id,
+					OpeningBalance: 1000,
+				},
+				{
+					CurrencyId:     curUSD.Id,
+					OpeningBalance: 1,
+				},
+				{
+					CurrencyId:     curEUR.Id,
+					OpeningBalance: 2,
+				},
+			},
+		},
 	}
-	accCash, err := storage.CreateAccount(userID, account)
+	_, err = storage.CreateAccount(userID, account)
 	if err != nil {
 		return fmt.Errorf("failed to create cash account: %w", err)
 	}
@@ -198,57 +238,32 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 	logger.Info(fmt.Sprintf("Created rent account %q", accRent.Id))
 
-	// Create default currencies
-	currency := &goserver.CurrencyNoId{
-		Name: "USD",
-	}
-	curUSD, err := storage.CreateCurrency(userID, currency)
-	if err != nil {
-		return fmt.Errorf("failed to create USD currency: %w", err)
-	}
-
-	currency = &goserver.CurrencyNoId{
-		Name: "EUR",
-	}
-	curEUR, err := storage.CreateCurrency(userID, currency)
-	if err != nil {
-		return fmt.Errorf("failed to create EUR currency: %w", err)
-	}
-
-	currency = &goserver.CurrencyNoId{
-		Name: "CZK",
-	}
-	curCZK, err := storage.CreateCurrency(userID, currency)
-	if err != nil {
-		return fmt.Errorf("failed to create CZK currency: %w", err)
-	}
-
 	// Create default transactions
-	transaction := &goserver.TransactionNoId{
-		Date:        time.Now().Add(-5 * 24 * time.Hour),
-		Description: "Initial state for cash",
-		Tags:        []string{"initial_account_state"},
-		Movements: []goserver.Movement{
-			{
-				AccountId:  accCash.Id,
-				Amount:     1000,
-				CurrencyId: curCZK.Id,
-			},
-			{
-				AccountId:  accCash.Id,
-				Amount:     1,
-				CurrencyId: curUSD.Id,
-			},
-			{
-				AccountId:  accCash.Id,
-				Amount:     1,
-				CurrencyId: curEUR.Id,
-			},
-		},
-	}
-	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-		return fmt.Errorf("failed to create initial cash transaction: %w", err)
-	}
+	// transaction := &goserver.TransactionNoId{
+	// 	Date:        time.Now().Add(-5 * 24 * time.Hour),
+	// 	Description: "Initial state for cash",
+	// 	Tags:        []string{"initial_account_state"},
+	// 	Movements: []goserver.Movement{
+	// 		{
+	// 			AccountId:  accCash.Id,
+	// 			Amount:     1000,
+	// 			CurrencyId: curCZK.Id,
+	// 		},
+	// 		{
+	// 			AccountId:  accCash.Id,
+	// 			Amount:     1,
+	// 			CurrencyId: curUSD.Id,
+	// 		},
+	// 		{
+	// 			AccountId:  accCash.Id,
+	// 			Amount:     1,
+	// 			CurrencyId: curEUR.Id,
+	// 		},
+	// 	},
+	// }
+	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+	// 	return fmt.Errorf("failed to create initial cash transaction: %w", err)
+	// }
 
 	// transaction = &goserver.TransactionNoId{
 	// 	Date:        time.Now().Add(-5 * 24 * time.Hour),

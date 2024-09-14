@@ -63,6 +63,8 @@ func (fc *FioConverter) Import(ctx context.Context) (*goserver.BankAccountInfo, 
 }
 
 func (fc *FioConverter) ParseTransactions(data []byte) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
+	fc.logger.Info("Parsing FIO transactions")
+
 	var fio FioTransactions
 	if err := json.Unmarshal(data, &fio); err != nil {
 		return nil, nil, fmt.Errorf("can't unmarshal FIO transactions: %w", err)
@@ -77,6 +79,8 @@ func (fc *FioConverter) ParseTransactions(data []byte) (*goserver.BankAccountInf
 		}
 		res = append(res, tr)
 	}
+
+	fc.logger.Info("Successfully parser FIO transactions", "count", len(res))
 
 	return &fio.AccountStatement.Info, res, nil
 }

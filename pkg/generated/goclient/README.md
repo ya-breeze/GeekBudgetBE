@@ -124,6 +124,7 @@ Class | Method | HTTP request | Description
  - [AuthData](docs/AuthData.md)
  - [Authorize200Response](docs/Authorize200Response.md)
  - [BankAccountInfo](docs/BankAccountInfo.md)
+ - [BankAccountInfoBalancesInner](docs/BankAccountInfoBalancesInner.md)
  - [BankImporter](docs/BankImporter.md)
  - [BankImporterNoID](docs/BankImporterNoID.md)
  - [BankImporterNoIDMappingsInner](docs/BankImporterNoIDMappingsInner.md)

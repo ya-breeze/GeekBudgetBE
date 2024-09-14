@@ -14,12 +14,14 @@
         "dupl",
         "Env",
         "Errorf",
+        "excelize",
         "fc",
         "Fio",
         "fmt",
         "forbidigo",
         "geekbudgetbe",
         "Globus",
+        "gochecknoglobals",
         "goclient",
         "gofumpt",
         "gomega",
@@ -40,6 +42,7 @@
         "Sprintf",
         "struct",
         "USD",
-        "vcs"
+        "vcs",
+        "xslx"
     ]
 }

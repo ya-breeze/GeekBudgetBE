@@ -7,7 +7,8 @@ Name | Type | Description | Notes
 **Id** | **string** |  | 
 **Name** | **string** |  | 
 **Description** | Pointer to **string** |  | [optional] 
-**AccountId** | **string** | ID of account which is used to store transactions from this bank importer | 
+**AccountId** | **string** | ID of account which is used to for movements from this bank importer | 
+**FeeAccountId** | Pointer to **string** | ID of account which is used for fee movements from this bank importer | [optional] 
 **Extra** | Pointer to **string** | Stores extra data about bank importer. For example could hold \&quot;bank account number\&quot; to be able to distinguish between different bank accounts, or it could hold token for bank API | [optional] 
 **Type** | Pointer to **string** | Type of bank importer. It&#39;s used to distinguish between different banks. For example, FIO bank or KB bank. | [optional] 
 **LastSuccessfulImport** | Pointer to **time.Time** | Date of last successful import. | [optional] 
@@ -117,6 +118,31 @@ and a boolean to check if the value has been set.
 
 SetAccountId sets AccountId field to given value.
 
+
+### GetFeeAccountId
+
+`func (o *BankImporter) GetFeeAccountId() string`
+
+GetFeeAccountId returns the FeeAccountId field if non-nil, zero value otherwise.
+
+### GetFeeAccountIdOk
+
+`func (o *BankImporter) GetFeeAccountIdOk() (*string, bool)`
+
+GetFeeAccountIdOk returns a tuple with the FeeAccountId field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetFeeAccountId
+
+`func (o *BankImporter) SetFeeAccountId(v string)`
+
+SetFeeAccountId sets FeeAccountId field to given value.
+
+### HasFeeAccountId
+
+`func (o *BankImporter) HasFeeAccountId() bool`
+
+HasFeeAccountId returns a boolean if a field has been set.
 
 ### GetExtra
 

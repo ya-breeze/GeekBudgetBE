@@ -16,16 +16,14 @@ type BankAccountInfo struct {
 
 	BankId string `json:"bankId,omitempty"`
 
-	OpeningBalance float64 `json:"openingBalance,omitempty"`
-
-	ClosingBalance float64 `json:"closingBalance,omitempty"`
+	// List of balances for this account. It's an array since one account could hold multiple currencies, for example, cash account could hold EUR, USD and CZK. Or one bank account could hold multiple currencies.
+	Balances []BankAccountInfoBalancesInner `json:"balances,omitempty"`
 }
 
 type BankAccountInfoInterface interface {
 	GetAccountId() string
 	GetBankId() string
-	GetOpeningBalance() float64
-	GetClosingBalance() float64
+	GetBalances() []BankAccountInfoBalancesInner
 }
 
 func (c *BankAccountInfo) GetAccountId() string {
@@ -34,19 +32,26 @@ func (c *BankAccountInfo) GetAccountId() string {
 func (c *BankAccountInfo) GetBankId() string {
 	return c.BankId
 }
-func (c *BankAccountInfo) GetOpeningBalance() float64 {
-	return c.OpeningBalance
-}
-func (c *BankAccountInfo) GetClosingBalance() float64 {
-	return c.ClosingBalance
+func (c *BankAccountInfo) GetBalances() []BankAccountInfoBalancesInner {
+	return c.Balances
 }
 
 // AssertBankAccountInfoRequired checks if the required fields are not zero-ed
 func AssertBankAccountInfoRequired(obj BankAccountInfo) error {
+	for _, el := range obj.Balances {
+		if err := AssertBankAccountInfoBalancesInnerRequired(el); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 // AssertBankAccountInfoConstraints checks if the values respects the defined constraints
 func AssertBankAccountInfoConstraints(obj BankAccountInfo) error {
+	for _, el := range obj.Balances {
+		if err := AssertBankAccountInfoBalancesInnerConstraints(el); err != nil {
+			return err
+		}
+	}
 	return nil
 }

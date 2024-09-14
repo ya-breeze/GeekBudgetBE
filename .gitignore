@@ -27,3 +27,6 @@ pkg/generated/angular/
 token
 transactions.json
 geekbudget.db
+account-statement*
+kb_*
+revolut_*

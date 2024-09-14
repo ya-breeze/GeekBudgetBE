@@ -7,6 +7,9 @@ import (
 )
 
 type Importer interface {
-	// Import imports transactions from the source and returns them.
+	// Import transactions from the source and returns them.
 	Import(ctx context.Context) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error)
+
+	// Parse and import transactions from the source and returns them. Format could be for example 'csv', 'xslx', etc.
+	ParseAndImport(ctx context.Context, format, data string) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error)
 }

@@ -6,8 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **AccountId** | Pointer to **string** |  | [optional] 
 **BankId** | Pointer to **string** |  | [optional] 
-**OpeningBalance** | Pointer to **float64** |  | [optional] 
-**ClosingBalance** | Pointer to **float64** |  | [optional] 
+**Balances** | Pointer to [**[]BankAccountInfoBalancesInner**](BankAccountInfoBalancesInner.md) | List of balances for this account. It&#39;s an array since one account could hold multiple currencies, for example, cash account could hold EUR, USD and CZK. Or one bank account could hold multiple currencies. | [optional] 
 
 ## Methods
 
@@ -78,55 +77,30 @@ SetBankId sets BankId field to given value.
 
 HasBankId returns a boolean if a field has been set.
 
-### GetOpeningBalance
+### GetBalances
 
-`func (o *BankAccountInfo) GetOpeningBalance() float64`
+`func (o *BankAccountInfo) GetBalances() []BankAccountInfoBalancesInner`
 
-GetOpeningBalance returns the OpeningBalance field if non-nil, zero value otherwise.
+GetBalances returns the Balances field if non-nil, zero value otherwise.
 
-### GetOpeningBalanceOk
+### GetBalancesOk
 
-`func (o *BankAccountInfo) GetOpeningBalanceOk() (*float64, bool)`
+`func (o *BankAccountInfo) GetBalancesOk() (*[]BankAccountInfoBalancesInner, bool)`
 
-GetOpeningBalanceOk returns a tuple with the OpeningBalance field if it's non-nil, zero value otherwise
+GetBalancesOk returns a tuple with the Balances field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetOpeningBalance
+### SetBalances
 
-`func (o *BankAccountInfo) SetOpeningBalance(v float64)`
+`func (o *BankAccountInfo) SetBalances(v []BankAccountInfoBalancesInner)`
 
-SetOpeningBalance sets OpeningBalance field to given value.
+SetBalances sets Balances field to given value.
 
-### HasOpeningBalance
+### HasBalances
 
-`func (o *BankAccountInfo) HasOpeningBalance() bool`
+`func (o *BankAccountInfo) HasBalances() bool`
 
-HasOpeningBalance returns a boolean if a field has been set.
-
-### GetClosingBalance
-
-`func (o *BankAccountInfo) GetClosingBalance() float64`
-
-GetClosingBalance returns the ClosingBalance field if non-nil, zero value otherwise.
-
-### GetClosingBalanceOk
-
-`func (o *BankAccountInfo) GetClosingBalanceOk() (*float64, bool)`
-
-GetClosingBalanceOk returns a tuple with the ClosingBalance field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetClosingBalance
-
-`func (o *BankAccountInfo) SetClosingBalance(v float64)`
-
-SetClosingBalance sets ClosingBalance field to given value.
-
-### HasClosingBalance
-
-`func (o *BankAccountInfo) HasClosingBalance() bool`
-
-HasClosingBalance returns a boolean if a field has been set.
+HasBalances returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

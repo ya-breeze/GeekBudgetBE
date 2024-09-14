@@ -154,8 +154,8 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 	lastImport := goserver.ImportResult{
 		Date:   biData.LastSuccessfulImport,
 		Status: "success",
-		Description: fmt.Sprintf("Fetched %d transactions. Imported %d new transactions. Balance: %v",
-			totalTransactionsCnt, newTransactionsCnt, info.ClosingBalance),
+		Description: fmt.Sprintf("Fetched %d transactions. Imported %d new transactions. Final balances: %v",
+			totalTransactionsCnt, newTransactionsCnt, info.Balances),
 	}
 	biData.LastSuccessfulImport = time.Now()
 	biData.LastImports = append(biData.LastImports, lastImport)

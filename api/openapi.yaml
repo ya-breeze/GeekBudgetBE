@@ -862,14 +862,27 @@ components:
         bankId:
           type: string
           example: "12345"
-        openingBalance:
-          type: number
-          format: double
-          example: 1000.0
-        closingBalance:
-          type: number
-          format: double
-          example: 1000.0
+        balances:
+          description: >-
+            List of balances for this account. It's an array since one account could hold multiple
+            currencies, for example, cash account could hold EUR, USD and CZK. Or one bank account could
+            hold multiple currencies.
+          type: array
+          items:
+            type: object
+            properties:
+              currencyId:
+                type: string
+                format: uuid
+              openingBalance:
+                type: number
+                format: double
+                example: 123.0
+              closingBalance:
+                type: number
+                format: double
+                example: 321.0
+
     AccountNoID:
       type: object
       properties:
@@ -887,6 +900,7 @@ components:
       required:
         - name
         - type
+
     Account:
       type: object
       allOf:
@@ -971,7 +985,12 @@ components:
           type: string
           format: uuid
           description: >-
-            ID of account which is used to store transactions from this bank importer
+            ID of account which is used to for movements from this bank importer
+        feeAccountId:
+          type: string
+          format: uuid
+          description: >-
+            ID of account which is used for fee movements from this bank importer
         extra:
           type: string
           description: >-

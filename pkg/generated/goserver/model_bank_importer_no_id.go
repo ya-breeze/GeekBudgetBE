@@ -20,8 +20,11 @@ type BankImporterNoId struct {
 
 	Description string `json:"description,omitempty"`
 
-	// ID of account which is used to store transactions from this bank importer
+	// ID of account which is used to for movements from this bank importer
 	AccountId string `json:"accountId"`
+
+	// ID of account which is used for fee movements from this bank importer
+	FeeAccountId string `json:"feeAccountId,omitempty"`
 
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra string `json:"extra,omitempty"`
@@ -43,6 +46,7 @@ type BankImporterNoIdInterface interface {
 	GetName() string
 	GetDescription() string
 	GetAccountId() string
+	GetFeeAccountId() string
 	GetExtra() string
 	GetType() string
 	GetLastSuccessfulImport() time.Time
@@ -58,6 +62,9 @@ func (c *BankImporterNoId) GetDescription() string {
 }
 func (c *BankImporterNoId) GetAccountId() string {
 	return c.AccountId
+}
+func (c *BankImporterNoId) GetFeeAccountId() string {
+	return c.FeeAccountId
 }
 func (c *BankImporterNoId) GetExtra() string {
 	return c.Extra

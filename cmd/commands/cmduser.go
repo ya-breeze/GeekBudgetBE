@@ -4,13 +4,14 @@ package commands
 import (
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 
 	"github.com/howeyc/gopass"
 	"github.com/spf13/cobra"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 )
 
-func CmdUser() *cobra.Command {
+func CmdUser(log *slog.Logger) *cobra.Command {
 	res := &cobra.Command{
 		Use:   "user",
 		Short: "Control users",
@@ -18,12 +19,12 @@ func CmdUser() *cobra.Command {
 		},
 	}
 
-	res.AddCommand(NewUserAdd())
+	res.AddCommand(NewUserAdd(log))
 
 	return res
 }
 
-func NewUserAdd() *cobra.Command {
+func NewUserAdd(log *slog.Logger) *cobra.Command {
 	res := &cobra.Command{
 		Use:   "add",
 		Short: "Add a new user",

@@ -11,6 +11,7 @@ import (
 )
 
 func FetchFioTransactions(logger *slog.Logger, ctx context.Context, token string) ([]byte, error) {
+	logger.Info("Fetching FIO transactions")
 	if false {
 		// read from file for testing
 		data, err := os.ReadFile("transactions.json")
@@ -48,5 +49,6 @@ func FetchFioTransactions(logger *slog.Logger, ctx context.Context, token string
 		return nil, fmt.Errorf("unexpected status code %d - %s", resp.StatusCode, body)
 	}
 
+	logger.Info("Fetched FIO transactions")
 	return body, nil
 }

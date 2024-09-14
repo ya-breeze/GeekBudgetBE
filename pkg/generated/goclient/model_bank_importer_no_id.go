@@ -25,8 +25,10 @@ var _ MappedNullable = &BankImporterNoID{}
 type BankImporterNoID struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description,omitempty"`
-	// ID of account which is used to store transactions from this bank importer
+	// ID of account which is used to for movements from this bank importer
 	AccountId string `json:"accountId"`
+	// ID of account which is used for fee movements from this bank importer
+	FeeAccountId *string `json:"feeAccountId,omitempty"`
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra *string `json:"extra,omitempty"`
 	// Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
@@ -138,6 +140,38 @@ func (o *BankImporterNoID) GetAccountIdOk() (*string, bool) {
 // SetAccountId sets field value
 func (o *BankImporterNoID) SetAccountId(v string) {
 	o.AccountId = v
+}
+
+// GetFeeAccountId returns the FeeAccountId field value if set, zero value otherwise.
+func (o *BankImporterNoID) GetFeeAccountId() string {
+	if o == nil || IsNil(o.FeeAccountId) {
+		var ret string
+		return ret
+	}
+	return *o.FeeAccountId
+}
+
+// GetFeeAccountIdOk returns a tuple with the FeeAccountId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporterNoID) GetFeeAccountIdOk() (*string, bool) {
+	if o == nil || IsNil(o.FeeAccountId) {
+		return nil, false
+	}
+	return o.FeeAccountId, true
+}
+
+// HasFeeAccountId returns a boolean if a field has been set.
+func (o *BankImporterNoID) HasFeeAccountId() bool {
+	if o != nil && !IsNil(o.FeeAccountId) {
+		return true
+	}
+
+	return false
+}
+
+// SetFeeAccountId gets a reference to the given string and assigns it to the FeeAccountId field.
+func (o *BankImporterNoID) SetFeeAccountId(v string) {
+	o.FeeAccountId = &v
 }
 
 // GetExtra returns the Extra field value if set, zero value otherwise.
@@ -315,6 +349,9 @@ func (o BankImporterNoID) ToMap() (map[string]interface{}, error) {
 		toSerialize["description"] = o.Description
 	}
 	toSerialize["accountId"] = o.AccountId
+	if !IsNil(o.FeeAccountId) {
+		toSerialize["feeAccountId"] = o.FeeAccountId
+	}
 	if !IsNil(o.Extra) {
 		toSerialize["extra"] = o.Extra
 	}
