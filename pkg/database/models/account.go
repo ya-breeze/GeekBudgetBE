@@ -10,7 +10,11 @@ import (
 type Account struct {
 	gorm.Model
 
-	goserver.AccountNoId
+	Name        string
+	Description string
+	Type        string
+
+	BankInfo goserver.BankAccountInfo `gorm:"serializer:json"`
 
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
@@ -22,5 +26,16 @@ func (a *Account) FromDB() goserver.Account {
 		Name:        a.Name,
 		Type:        a.Type,
 		Description: a.Description,
+		BankInfo:    a.BankInfo,
+	}
+}
+
+func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
+	return &Account{
+		UserID:      userID,
+		Name:        m.GetName(),
+		Description: m.GetDescription(),
+		Type:        m.GetType(),
+		BankInfo:    m.GetBankInfo(),
 	}
 }

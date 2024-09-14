@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"slices"
 	"time"
 
@@ -99,16 +100,9 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
-	cnt, err := s.saveImportedTransactions(userID, transactions)
+	lastImport, err := s.saveImportedTransactions(userID, id, info, transactions)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to save imported transactions")
-		return goserver.Response(500, nil), nil
-	}
-
-	// update last import fields
-	lastImport, err := s.updateLastImportFields(userID, id, info, len(transactions), cnt)
-	if err != nil {
-		s.logger.With("error", err).Error("Failed to update last import fields")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -171,20 +165,20 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 }
 
 func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
-	userID string, transactions []goserver.TransactionNoId,
-) (int, error) {
+	userID, id string, info *goserver.BankAccountInfo, transactions []goserver.TransactionNoId,
+) (*goserver.ImportResult, error) {
 	// Fetch all transactions from the database
 	// TODO don't fetch - just search by external ID
 	dbTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
 	if err != nil {
-		return 0, fmt.Errorf("can't fetch transactions from DB: %w", err)
+		return nil, fmt.Errorf("can't fetch transactions from DB: %w", err)
 	}
 
 	// save transactions to the database
 	cnt := 0
 	for _, t := range transactions {
 		if len(t.ExternalIds) != 1 {
-			return 0, fmt.Errorf("transaction has invalid external IDs: %v", t)
+			return nil, fmt.Errorf("transaction has invalid external IDs: %v", t)
 		}
 
 		// search for existing transaction with the same external ID. If found, skip saving
@@ -202,12 +196,70 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 
 		_, err = s.db.CreateTransaction(userID, &t)
 		if err != nil {
-			return 0, fmt.Errorf("can't save transaction: %w", err)
+			return nil, fmt.Errorf("can't save transaction: %w", err)
 		}
 		s.logger.Info("Imported transaction saved to DB")
 		cnt++
 	}
 	s.logger.With("count", cnt).Info("All new imported transactions saved to DB")
 
-	return cnt, nil
+	// update last import fields
+	lastImport, err := s.updateLastImportFields(userID, id, info, len(transactions), cnt)
+	if err != nil {
+		return nil, fmt.Errorf("can't update last import fields: %w", err)
+	}
+
+	return lastImport, nil
+}
+
+func (s *BankImportersAPIServiceImpl) UploadBankImporter(
+	ctx context.Context, id, format string, file *os.File,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	biData, err := s.db.GetBankImporter(userID, id)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get BankImporter")
+		return goserver.Response(500, nil), nil
+	}
+
+	if biData.Type != "revolut" {
+		s.logger.With("type", biData.Type).Error("Unsupported bank importer type")
+		return goserver.Response(500, nil), nil
+	}
+
+	currencies, err := s.db.GetCurrencies(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get currencies")
+		return goserver.Response(500, nil), nil
+	}
+
+	bi, err := bankimporters.NewRevolutConverter(s.logger, biData, currencies)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to create RevolutConverter")
+		return goserver.Response(500, nil), nil
+	}
+
+	data, err := os.ReadFile(file.Name())
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to read uploaded file")
+		return goserver.Response(500, nil), nil
+	}
+
+	info, transactions, err := bi.ParseAndImport(ctx, "format", string(data))
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to parse and import Revolut data")
+		return goserver.Response(500, nil), nil
+	}
+
+	lastImport, err := s.saveImportedTransactions(userID, id, info, transactions)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to save imported transactions")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, lastImport), nil
 }

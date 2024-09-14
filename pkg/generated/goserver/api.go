@@ -14,6 +14,7 @@ package goserver
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -54,6 +55,7 @@ type BankImportersAPIRouter interface {
 	FetchBankImporter(http.ResponseWriter, *http.Request)
 	GetBankImporters(http.ResponseWriter, *http.Request)
 	UpdateBankImporter(http.ResponseWriter, *http.Request)
+	UploadBankImporter(http.ResponseWriter, *http.Request)
 }
 
 // CurrenciesAPIRouter defines the required methods for binding the api requests to a responses for the CurrenciesAPI
@@ -153,6 +155,7 @@ type BankImportersAPIServicer interface {
 	FetchBankImporter(context.Context, string) (ImplResponse, error)
 	GetBankImporters(context.Context) (ImplResponse, error)
 	UpdateBankImporter(context.Context, string, BankImporterNoId) (ImplResponse, error)
+	UploadBankImporter(context.Context, string, string, *os.File) (ImplResponse, error)
 }
 
 // CurrenciesAPIServicer defines the api actions for the CurrenciesAPI service

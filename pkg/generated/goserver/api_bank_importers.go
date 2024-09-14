@@ -13,7 +13,10 @@ package goserver
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -76,6 +79,11 @@ func (c *BankImportersAPIController) Routes() Routes {
 			strings.ToUpper("Put"),
 			"/v1/bankImporters/{id}",
 			c.UpdateBankImporter,
+		},
+		"UploadBankImporter": Route{
+			strings.ToUpper("Post"),
+			"/v1/bankImporters/{id}/upload",
+			c.UploadBankImporter,
 		},
 	}
 }
@@ -179,6 +187,36 @@ func (c *BankImportersAPIController) UpdateBankImporter(w http.ResponseWriter, r
 		return
 	}
 	result, err := c.service.UpdateBankImporter(r.Context(), idParam, bankImporterNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// UploadBankImporter - Upload new transactions from bank
+func (c *BankImportersAPIController) UploadBankImporter(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	formatParam := params["format"]
+	if formatParam == "" {
+		c.errorHandler(w, r, &RequiredError{"format"}, nil)
+		return
+	}
+	bodyParam := &os.File{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&bodyParam); err != nil && !errors.Is(err, io.EOF) {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	result, err := c.service.UploadBankImporter(r.Context(), idParam, formatParam, bodyParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

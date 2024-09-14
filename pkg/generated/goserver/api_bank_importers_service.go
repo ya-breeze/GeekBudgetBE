@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 )
 
 // BankImportersAPIService is an interface that defines the logic for the BankImportersAPIServicer
@@ -29,6 +30,8 @@ type BankImportersAPIService interface {
 	GetBankImporters(ctx context.Context) (ImplResponse, error)
 	// UpdateBankImporter - update bank importer
 	UpdateBankImporter(ctx context.Context, id string, bankImporterNoId BankImporterNoId) (ImplResponse, error)
+	// UploadBankImporter - Upload new transactions from bank
+	UploadBankImporter(ctx context.Context, id string, format string, body *os.File) (ImplResponse, error)
 }
 
 // BankImportersAPIService is a service that implements the logic for the BankImportersAPIServicer
@@ -98,4 +101,15 @@ func (s *BankImportersAPIServiceImpl) UpdateBankImporter(ctx context.Context, id
 	// return Response(200, BankImporter{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("UpdateBankImporter method not implemented")
+}
+
+// UploadBankImporter - Upload new transactions from bank
+func (s *BankImportersAPIServiceImpl) UploadBankImporter(ctx context.Context, id string, format string, body *os.File) (ImplResponse, error) {
+	// TODO - update UploadBankImporter with the required logic for this service method.
+	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, ImportResult{}) or use other options such as http.Ok ...
+	// return Response(200, ImportResult{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("UploadBankImporter method not implemented")
 }

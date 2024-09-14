@@ -93,6 +93,7 @@ Class | Method | HTTP request | Description
 *BankImportersAPI* | [**FetchBankImporter**](docs/BankImportersAPI.md#fetchbankimporter) | **Post** /v1/bankImporters/{id}/fetch | fetch new transactions from bank
 *BankImportersAPI* | [**GetBankImporters**](docs/BankImportersAPI.md#getbankimporters) | **Get** /v1/bankImporters | get all bank importers
 *BankImportersAPI* | [**UpdateBankImporter**](docs/BankImportersAPI.md#updatebankimporter) | **Put** /v1/bankImporters/{id} | update bank importer
+*BankImportersAPI* | [**UploadBankImporter**](docs/BankImportersAPI.md#uploadbankimporter) | **Post** /v1/bankImporters/{id}/upload | Upload new transactions from bank
 *CurrenciesAPI* | [**CreateCurrency**](docs/CurrenciesAPI.md#createcurrency) | **Post** /v1/currencies | create new currency
 *CurrenciesAPI* | [**DeleteCurrency**](docs/CurrenciesAPI.md#deletecurrency) | **Delete** /v1/currencies/{id} | delete currency
 *CurrenciesAPI* | [**GetCurrencies**](docs/CurrenciesAPI.md#getcurrencies) | **Get** /v1/currencies | get all currencies

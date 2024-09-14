@@ -363,6 +363,41 @@ paths:
                 $ref: "#/components/schemas/ImportResult"
         "429":
           description: too many requests
+  /v1/bankImporters/{id}/upload:
+    post:
+      tags:
+        - bank importers
+      summary: Upload new transactions from bank
+      operationId: uploadBankImporter
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the bank importer"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+        - name: "format"
+          in: "path"
+          description: "format of the data"
+          required: true
+          schema:
+            type: string
+            enum: [csv, xslx]
+      requestBody:
+        content:
+          plain/text:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: status of the upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
 
   /v1/transactions:
     get:

@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**FetchBankImporter**](BankImportersAPI.md#FetchBankImporter) | **Post** /v1/bankImporters/{id}/fetch | fetch new transactions from bank
 [**GetBankImporters**](BankImportersAPI.md#GetBankImporters) | **Get** /v1/bankImporters | get all bank importers
 [**UpdateBankImporter**](BankImportersAPI.md#UpdateBankImporter) | **Put** /v1/bankImporters/{id} | update bank importer
+[**UploadBankImporter**](BankImportersAPI.md#UploadBankImporter) | **Post** /v1/bankImporters/{id}/upload | Upload new transactions from bank
 
 
 
@@ -332,6 +333,79 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## UploadBankImporter
+
+> ImportResult UploadBankImporter(ctx, id, format).Body(body).Execute()
+
+Upload new transactions from bank
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the bank importer
+	format := "format_example" // string | format of the data
+	body := os.NewFile(1234, "some_file") // *os.File |  (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.BankImportersAPI.UploadBankImporter(context.Background(), id, format).Body(body).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.UploadBankImporter``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `UploadBankImporter`: ImportResult
+	fmt.Fprintf(os.Stdout, "Response from `BankImportersAPI.UploadBankImporter`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** | ID of the bank importer | 
+**format** | **string** | format of the data | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiUploadBankImporterRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+ **body** | ***os.File** |  | 
+
+### Return type
+
+[**ImportResult**](ImportResult.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: plain/text
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
