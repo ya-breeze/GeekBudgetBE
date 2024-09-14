@@ -17,6 +17,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
@@ -105,19 +106,26 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 }
 
 func upsertUser(storage database.Storage, username, hashedPassword string, logger *slog.Logger, prefill bool) error {
-	user, err := storage.GetUser(username)
+	userID, err := storage.GetUserID(username)
 	if err != nil && !errors.Is(err, database.ErrNotFound) {
 		return fmt.Errorf("failed to reading user from DB: %w", err)
 	}
-	if user != nil {
+	var user *models.User
+	if !errors.Is(err, database.ErrNotFound) {
 		logger.Info(fmt.Sprintf("Updating password for user %q", username))
+
+		user, err = storage.GetUser(userID)
+		if err != nil {
+			return fmt.Errorf("failed to get user: %w", err)
+		}
 		user.HashedPassword = hashedPassword
 		if err = storage.PutUser(user); err != nil {
 			return fmt.Errorf("failed to update user: %w", err)
 		}
 	} else {
 		logger.Info(fmt.Sprintf("Creating user %q", username))
-		if user, err = storage.CreateUser(username, hashedPassword); err != nil {
+		user, err = storage.CreateUser(username, hashedPassword)
+		if err != nil {
 			return fmt.Errorf("failed to create user: %w", err)
 		}
 
