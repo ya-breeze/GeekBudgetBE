@@ -2,13 +2,13 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -149,10 +149,46 @@ func printResults(
 }
 
 func printTransactionNoID(t goserver.TransactionNoId) {
-	t.UnprocessedSources = "__replaced__"
-	json, err := json.MarshalIndent(t, "", "  ")
-	if err != nil {
-		panic(err)
+	fmt.Printf("%s %v\n", color.RedString("Transaction from:"), t.Date)
+	fmt.Printf("   %s %v %v\n", color.YellowString("Description:"), t.Description, t.Tags)
+	if t.Place != "" {
+		fmt.Printf("   %s %v\n", color.YellowString("Place:"), t.Place)
 	}
-	fmt.Printf("TransactionNoId: %s\n", json)
+	minusMovements := []goserver.Movement{}
+	plusMovements := []goserver.Movement{}
+	for _, m := range t.Movements {
+		if m.Amount < 0 {
+			minusMovements = append(minusMovements, m)
+		} else {
+			plusMovements = append(plusMovements, m)
+		}
+	}
+	minusStr := ""
+	minusMoney := ""
+	for i, m := range minusMovements {
+		if i != 0 {
+			minusStr += " and "
+			minusMoney += " and "
+		}
+		minusStr += fmt.Sprintf("%q", m.AccountId)
+		minusMoney += fmt.Sprintf("%v %s", -m.Amount, m.CurrencyId)
+	}
+	plusStr := ""
+	plusMoney := ""
+	for i, m := range plusMovements {
+		if i != 0 {
+			plusStr += " and "
+			plusMoney += " and "
+		}
+		plusStr += fmt.Sprintf("%q", m.AccountId)
+		plusMoney += fmt.Sprintf("%v %s", m.Amount, m.CurrencyId)
+	}
+	// if minusMoney == plusMoney {
+	// 	fmt.Printf("        %s => %s\t\t\t\t%s\n", minusStr, plusStr, minusMoney)
+	// } else {
+	// 	fmt.Printf("        %s => %s\t\t\t\t%s => %s\n", minusStr, plusStr, minusMoney, plusMoney)
+	// }
+	fmt.Printf("   %s %s (%s) => %s (%s)\n",
+		color.YellowString("Movements:"),
+		minusStr, color.BlueString(minusMoney), plusStr, color.BlueString(plusMoney))
 }

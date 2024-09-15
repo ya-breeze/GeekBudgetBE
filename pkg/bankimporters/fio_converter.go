@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
@@ -121,12 +122,12 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 			Description: d,
 			Movements: []goserver.Movement{
 				{
-					Amount:     -fio.Amount.Value,
+					Amount:     -fio.Amount.Value.InexactFloat64(),
 					CurrencyId: strCurrencyID,
 				},
 				{
 					AccountId:  fc.bankImporter.AccountId,
-					Amount:     fio.Amount.Value,
+					Amount:     fio.Amount.Value.InexactFloat64(),
 					CurrencyId: strCurrencyID,
 				},
 			},
@@ -138,13 +139,15 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 		}
 		t = t.In(fc.location)
 
-		m, err := strconv.ParseFloat(tokens[0][5], 64)
+		m, err := decimal.NewFromString(tokens[0][5])
 		if err != nil {
 			return res, fmt.Errorf("can't parse amount %q: %w", tokens[0][5], err)
 		}
 
 		var strPaidCurrencyID string
 		paidCurrency := tokens[0][6]
+		amountFio := fio.Amount.Value
+		amountUnknown := fio.Amount.Value.Neg()
 		if paidCurrency != fio.Currency.Value {
 			paidCurrencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
 				return c.Name == paidCurrency
@@ -153,6 +156,7 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 				// TODO Add currency with given name
 				return res, fmt.Errorf("can't find currency %q", paidCurrency)
 			}
+			amountUnknown = m
 			strPaidCurrencyID = fc.currencies[paidCurrencyIdx].Id
 		} else {
 			strPaidCurrencyID = strCurrencyID
@@ -165,12 +169,12 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 			Description: fmt.Sprintf("%s: %s", tokens[0][1], strings.Trim(tokens[0][2], ",  ")),
 			Movements: []goserver.Movement{
 				{
-					Amount:     m,
+					Amount:     amountUnknown.InexactFloat64(),
 					CurrencyId: strPaidCurrencyID,
 				},
 				{
 					AccountId:  fc.bankImporter.AccountId,
-					Amount:     fio.Amount.Value,
+					Amount:     amountFio.InexactFloat64(),
 					CurrencyId: strCurrencyID,
 				},
 			},
@@ -243,9 +247,9 @@ type FioIntColumn struct {
 }
 
 type FioFloatColumn struct {
-	Value float64 `json:"value"`
-	Name  string  `json:"name"`
-	ID    int     `json:"id"`
+	Value decimal.Decimal `json:"value"`
+	Name  string          `json:"name"`
+	ID    int             `json:"id"`
 }
 type FioTransaction struct {
 	Date             FioStringColumn `json:"column0"`  // Datum
