@@ -68,6 +68,20 @@ type CurrenciesAPIRouter interface {
 	UpdateCurrency(http.ResponseWriter, *http.Request)
 }
 
+// ExportAPIRouter defines the required methods for binding the api requests to a responses for the ExportAPI
+// The ExportAPIRouter implementation should parse necessary information from the http request,
+// pass the data to a ExportAPIServicer to perform the required actions, then write the service results to the http response.
+type ExportAPIRouter interface {
+	Export(http.ResponseWriter, *http.Request)
+}
+
+// ImportAPIRouter defines the required methods for binding the api requests to a responses for the ImportAPI
+// The ImportAPIRouter implementation should parse necessary information from the http request,
+// pass the data to a ImportAPIServicer to perform the required actions, then write the service results to the http response.
+type ImportAPIRouter interface {
+	CallImport(http.ResponseWriter, *http.Request)
+}
+
 // MatchersAPIRouter defines the required methods for binding the api requests to a responses for the MatchersAPI
 // The MatchersAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a MatchersAPIServicer to perform the required actions, then write the service results to the http response.
@@ -167,6 +181,22 @@ type CurrenciesAPIServicer interface {
 	DeleteCurrency(context.Context, string) (ImplResponse, error)
 	GetCurrencies(context.Context) (ImplResponse, error)
 	UpdateCurrency(context.Context, string, CurrencyNoId) (ImplResponse, error)
+}
+
+// ExportAPIServicer defines the api actions for the ExportAPI service
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can be ignored with the .openapi-generator-ignore file
+// and updated with the logic required for the API.
+type ExportAPIServicer interface {
+	Export(context.Context) (ImplResponse, error)
+}
+
+// ImportAPIServicer defines the api actions for the ImportAPI service
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can be ignored with the .openapi-generator-ignore file
+// and updated with the logic required for the API.
+type ImportAPIServicer interface {
+	CallImport(context.Context, WholeUserData) (ImplResponse, error)
 }
 
 // MatchersAPIServicer defines the api actions for the MatchersAPI service

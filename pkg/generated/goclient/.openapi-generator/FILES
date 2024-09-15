@@ -8,6 +8,8 @@ api_aggregations.go
 api_auth.go
 api_bank_importers.go
 api_currencies.go
+api_export.go
+api_import.go
 api_matchers.go
 api_notifications.go
 api_transactions.go
@@ -37,6 +39,8 @@ docs/Currency.md
 docs/CurrencyAggregation.md
 docs/CurrencyNoID.md
 docs/Entity.md
+docs/ExportAPI.md
+docs/ImportAPI.md
 docs/ImportResult.md
 docs/Matcher.md
 docs/MatcherAndTransaction.md
@@ -52,6 +56,7 @@ docs/UnprocessedTransaction.md
 docs/UnprocessedTransactionsAPI.md
 docs/User.md
 docs/UserAPI.md
+docs/WholeUserData.md
 git_push.sh
 model_account.go
 model_account_aggregation.go
@@ -80,12 +85,15 @@ model_transaction.go
 model_transaction_no_id.go
 model_unprocessed_transaction.go
 model_user.go
+model_whole_user_data.go
 response.go
 test/api_accounts_test.go
 test/api_aggregations_test.go
 test/api_auth_test.go
 test/api_bank_importers_test.go
 test/api_currencies_test.go
+test/api_export_test.go
+test/api_import_test.go
 test/api_matchers_test.go
 test/api_notifications_test.go
 test/api_transactions_test.go

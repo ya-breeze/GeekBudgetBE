@@ -22,3 +22,17 @@ func (a *Currency) FromDB() goserver.Currency {
 		Description: a.Description,
 	}
 }
+
+func (a *Currency) WithoutID() *goserver.CurrencyNoId {
+	return &goserver.CurrencyNoId{
+		Name:        a.Name,
+		Description: a.Description,
+	}
+}
+
+func CurrencyWithoutID(currency *goserver.Currency) *goserver.CurrencyNoId {
+	return &goserver.CurrencyNoId{
+		Name:        currency.Name,
+		Description: currency.Description,
+	}
+}

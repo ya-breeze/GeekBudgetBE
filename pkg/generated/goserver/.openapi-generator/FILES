@@ -14,6 +14,10 @@ go/api_bank_importers.go
 go/api_bank_importers_service.go
 go/api_currencies.go
 go/api_currencies_service.go
+go/api_export.go
+go/api_export_service.go
+go/api_import.go
+go/api_import_service.go
 go/api_matchers.go
 go/api_matchers_service.go
 go/api_notifications.go
@@ -55,5 +59,6 @@ go/model_transaction.go
 go/model_transaction_no_id.go
 go/model_unprocessed_transaction.go
 go/model_user.go
+go/model_whole_user_data.go
 go/routers.go
 main.go

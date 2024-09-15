@@ -39,3 +39,12 @@ func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
 		BankInfo:    m.GetBankInfo(),
 	}
 }
+
+func AccountWithoutID(account *goserver.Account) *goserver.AccountNoId {
+	return &goserver.AccountNoId{
+		Name:        account.Name,
+		Type:        account.Type,
+		Description: account.Description,
+		BankInfo:    account.BankInfo,
+	}
+}

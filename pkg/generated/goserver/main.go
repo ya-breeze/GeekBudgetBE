@@ -31,6 +31,8 @@ type CustomControllers struct {
 	AuthAPIService                    AuthAPIService
 	BankImportersAPIService           BankImportersAPIService
 	CurrenciesAPIService              CurrenciesAPIService
+	ExportAPIService                  ExportAPIService
+	ImportAPIService                  ImportAPIService
 	MatchersAPIService                MatchersAPIService
 	NotificationsAPIService           NotificationsAPIService
 	TransactionsAPIService            TransactionsAPIService
@@ -76,6 +78,18 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	CurrenciesAPIController := NewCurrenciesAPIController(CurrenciesAPIService)
 
+	ExportAPIService := NewExportAPIService()
+	if controllers.ExportAPIService != nil {
+		ExportAPIService = controllers.ExportAPIService
+	}
+	ExportAPIController := NewExportAPIController(ExportAPIService)
+
+	ImportAPIService := NewImportAPIService()
+	if controllers.ImportAPIService != nil {
+		ImportAPIService = controllers.ImportAPIService
+	}
+	ImportAPIController := NewImportAPIController(ImportAPIService)
+
 	MatchersAPIService := NewMatchersAPIService()
 	if controllers.MatchersAPIService != nil {
 		MatchersAPIService = controllers.MatchersAPIService
@@ -106,7 +120,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	UserAPIController := NewUserAPIController(UserAPIService)
 
-	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
 	router := NewRouter(routers...)
 
 	router.Use(middlewares...)

@@ -845,24 +845,34 @@ paths:
         "400":
           description: bad request
 
-  # /v1/import:
-  #   post:
-  #     tags:
-  #       - import
-  #     summary: Upload and import full user's data
-  #     operationId: import
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               file:
-  #                 type: string
-  #                 format: binary
-  #     responses:
-  #       "200":
-  #         description: File uploaded successfully
+  /v1/import:
+    post:
+      tags:
+        - import
+      summary: Upload and import full user's data
+      operationId: import
+      requestBody:
+        content:
+          application/json::
+            schema:
+              $ref: "#/components/schemas/WholeUserData"
+      responses:
+        "200":
+          description: File uploaded successfully
+
+  /v1/export:
+    post:
+      tags:
+        - export
+      summary: Download full user's data
+      operationId: export
+      responses:
+        "200":
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WholeUserData"
 
 security:
   - BearerAuth: []
@@ -1290,8 +1300,35 @@ components:
         - name
         - outputDescription
         - outputAccountId
+
     Matcher:
       type: object
       allOf:
         - $ref: "#/components/schemas/Entity"
         - $ref: "#/components/schemas/MatcherNoID"
+
+    WholeUserData:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        currencies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Currency"
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+        matchers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Matcher"
+        bankImporters:
+          type: array
+          items:
+            $ref: "#/components/schemas/BankImporter"

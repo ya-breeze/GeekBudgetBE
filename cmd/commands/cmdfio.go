@@ -119,18 +119,8 @@ func parseFIO(log *slog.Logger) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("can't parse FIO transactions: %w", err)
 			}
-			for _, b := range info.Balances {
-				fmt.Printf("Balance for %s\n", b.CurrencyId)
-				fmt.Printf("- Opening balance: %v\n", b.OpeningBalance)
-				fmt.Printf("- Closing balance: %v\n", b.ClosingBalance)
-			}
-			fmt.Printf("Parsed transactions: %d\n", len(transactions))
-			if hideTransactions != nil && !*hideTransactions {
-				for _, t := range transactions {
-					printTransactionNoID(t)
-					fmt.Println()
-				}
-			}
+
+			printResults(info, transactions, hideTransactions)
 
 			return nil
 		},
@@ -139,6 +129,23 @@ func parseFIO(log *slog.Logger) *cobra.Command {
 	hideTransactions = res.Flags().BoolP("hide-transactions", "q", false, "Don't print transactions")
 
 	return res
+}
+
+func printResults(
+	info *goserver.BankAccountInfo, transactions []goserver.TransactionNoId, hideTransactions *bool,
+) {
+	for _, b := range info.Balances {
+		fmt.Printf("Balance for %s\n", b.CurrencyId)
+		fmt.Printf("- Opening balance: %v\n", b.OpeningBalance)
+		fmt.Printf("- Closing balance: %v\n", b.ClosingBalance)
+	}
+	fmt.Printf("Parsed transactions: %d\n", len(transactions))
+	if hideTransactions != nil && !*hideTransactions {
+		for _, t := range transactions {
+			printTransactionNoID(t)
+			fmt.Println()
+		}
+	}
 }
 
 func printTransactionNoID(t goserver.TransactionNoId) {

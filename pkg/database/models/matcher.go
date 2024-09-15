@@ -49,3 +49,16 @@ func MatcherToDB(m *goserver.MatcherNoId, userID string) *Matcher {
 		ExtraRegExp:          m.ExtraRegExp,
 	}
 }
+
+func MatcherWithoutID(matcher *goserver.Matcher) *goserver.MatcherNoId {
+	return &goserver.MatcherNoId{
+		Name:                 matcher.Name,
+		OutputDescription:    matcher.OutputDescription,
+		OutputAccountId:      matcher.OutputAccountId,
+		CurrencyRegExp:       matcher.CurrencyRegExp,
+		PartnerNameRegExp:    matcher.PartnerNameRegExp,
+		PartnerAccountNumber: matcher.PartnerAccountNumber,
+		DescriptionRegExp:    matcher.DescriptionRegExp,
+		ExtraRegExp:          matcher.ExtraRegExp,
+	}
+}

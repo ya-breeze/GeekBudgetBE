@@ -175,8 +175,8 @@ func (s *storage) GetUserID(username string) (string, error) {
 }
 
 func (s *storage) UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error) {
-	var acc *models.Account
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(acc).Error; err != nil {
+	var acc models.Account
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&acc).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return goserver.Account{}, ErrNotFound
 		}
@@ -185,7 +185,7 @@ func (s *storage) UpdateAccount(userID string, id string, account *goserver.Acco
 	}
 
 	accID := acc.ID
-	acc = models.AccountToDB(account, userID)
+	acc = *models.AccountToDB(account, userID)
 	acc.ID = accID
 	if err := s.db.Save(&acc).Error; err != nil {
 		return goserver.Account{}, fmt.Errorf(StorageError, err)

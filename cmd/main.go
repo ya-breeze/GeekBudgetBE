@@ -13,10 +13,9 @@ import (
 )
 
 // Write to stdout in gray color
-type grayWriter struct {
-}
+type grayWriter struct{}
 
-func (w *grayWriter) Write(p []byte) (n int, err error) {
+func (w *grayWriter) Write(p []byte) (int, error) {
 	return fmt.Fprint(os.Stdout, "\x1b[90m", string(p), "\x1b[0m")
 }
 

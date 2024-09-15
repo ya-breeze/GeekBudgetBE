@@ -50,3 +50,15 @@ func BankImporterToDB(m goserver.BankImporterNoIdInterface, userID string) *Bank
 		LastImports:          m.GetLastImports(),
 	}
 }
+
+func BankImporterWithoutID(bankImporter *goserver.BankImporter) *goserver.BankImporterNoId {
+	return &goserver.BankImporterNoId{
+		Name:                 bankImporter.Name,
+		Description:          bankImporter.Description,
+		AccountId:            bankImporter.AccountId,
+		Extra:                bankImporter.Extra,
+		Type:                 bankImporter.Type,
+		LastSuccessfulImport: bankImporter.LastSuccessfulImport,
+		LastImports:          bankImporter.LastImports,
+	}
+}

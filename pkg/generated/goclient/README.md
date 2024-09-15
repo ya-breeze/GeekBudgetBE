@@ -98,6 +98,8 @@ Class | Method | HTTP request | Description
 *CurrenciesAPI* | [**DeleteCurrency**](docs/CurrenciesAPI.md#deletecurrency) | **Delete** /v1/currencies/{id} | delete currency
 *CurrenciesAPI* | [**GetCurrencies**](docs/CurrenciesAPI.md#getcurrencies) | **Get** /v1/currencies | get all currencies
 *CurrenciesAPI* | [**UpdateCurrency**](docs/CurrenciesAPI.md#updatecurrency) | **Put** /v1/currencies/{id} | update currency
+*ExportAPI* | [**Export**](docs/ExportAPI.md#export) | **Post** /v1/export | Download full user&#39;s data
+*ImportAPI* | [**CallImport**](docs/ImportAPI.md#callimport) | **Post** /v1/import | Upload and import full user&#39;s data
 *MatchersAPI* | [**CheckMatcher**](docs/MatchersAPI.md#checkmatcher) | **Post** /v1/matchers/check | check if passed matcher matches given transaction
 *MatchersAPI* | [**CreateMatcher**](docs/MatchersAPI.md#creatematcher) | **Post** /v1/matchers | create new matcher
 *MatchersAPI* | [**DeleteMatcher**](docs/MatchersAPI.md#deletematcher) | **Delete** /v1/matchers/{id} | delete matcher
@@ -145,6 +147,7 @@ Class | Method | HTTP request | Description
  - [TransactionNoID](docs/TransactionNoID.md)
  - [UnprocessedTransaction](docs/UnprocessedTransaction.md)
  - [User](docs/User.md)
+ - [WholeUserData](docs/WholeUserData.md)
 
 
 ## Documentation For Authorization

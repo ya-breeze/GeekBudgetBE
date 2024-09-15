@@ -1,4 +1,3 @@
-//nolint:forbidigo // it's okay to use fmt in this file
 package commands
 
 import (
@@ -74,18 +73,8 @@ func parseRevolut(log *slog.Logger) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("can't parse Revolut transactions: %w", err)
 			}
-			for _, b := range info.Balances {
-				fmt.Printf("Balance for %s\n", b.CurrencyId)
-				fmt.Printf("- Opening balance: %v\n", b.OpeningBalance)
-				fmt.Printf("- Closing balance: %v\n", b.ClosingBalance)
-			}
-			fmt.Printf("Parsed transactions: %d\n\n", len(transactions))
-			if hideTransactions != nil && !*hideTransactions {
-				for _, t := range transactions {
-					printTransactionNoID(t)
-					fmt.Println()
-				}
-			}
+
+			printResults(info, transactions, hideTransactions)
 
 			return nil
 		},
