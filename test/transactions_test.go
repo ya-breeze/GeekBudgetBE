@@ -11,20 +11,26 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
+	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
 var _ = Describe("Transactions API", func() {
-	var ctx context.Context
-	var cancel context.CancelFunc
-	var cfg *config.Config
-	var addr net.Addr
-	var finishCham chan int
-	var client *goclient.APIClient
-	var accessToken string
+	var (
+		ctx         context.Context
+		cancel      context.CancelFunc
+		cfg         *config.Config
+		addr        net.Addr
+		finishCham  chan int
+		client      *goclient.APIClient
+		accessToken string
+		accounts    []goserver.Account
+		currencies  []goserver.Currency
+	)
 	logger := test.CreateTestLogger()
+	now := time.Now()
 
 	BeforeEach(func() {
 		ctx, cancel = context.WithCancel(context.Background())
@@ -46,6 +52,27 @@ var _ = Describe("Transactions API", func() {
 		client = goclient.NewAPIClient(clientCfg)
 
 		accessToken = getAccessToken(client, ctx)
+
+		authCtx := context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+		accounts = test.PrepareAccounts()
+		currencies = test.PrepareCurrencies()
+		for i, account := range accounts {
+			a := goclient.AccountNoID{
+				Name: account.Name,
+				Type: account.Type,
+			}
+			acc, _, err := client.AccountsAPI.CreateAccount(authCtx).AccountNoID(a).Execute()
+			Expect(err).ToNot(HaveOccurred())
+			accounts[i].Id = acc.Id
+		}
+		for i, currency := range currencies {
+			c := goclient.CurrencyNoID{
+				Name: currency.Name,
+			}
+			cur, _, err := client.CurrenciesAPI.CreateCurrency(authCtx).CurrencyNoID(c).Execute()
+			Expect(err).ToNot(HaveOccurred())
+			currencies[i].Id = cur.Id
+		}
 	})
 
 	AfterEach(func() {
@@ -64,18 +91,18 @@ var _ = Describe("Transactions API", func() {
 	It("performs CRUD for transaction", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 		t := goclient.TransactionNoID{
-			Date:        time.Now(),
+			Date:        now,
 			Tags:        []string{"tag1", "tag2"},
 			ExternalIds: []string{"ext1", "ext2"},
 			Movements: []goclient.Movement{
 				{
-					AccountId:  utils.StrToRef("account1"),
-					CurrencyId: "currency1",
+					AccountId:  &accounts[2].Id,
+					CurrencyId: currencies[2].Id,
 					Amount:     100,
 				},
 				{
-					AccountId:  utils.StrToRef("account2"),
-					CurrencyId: "currency1",
+					AccountId:  &accounts[0].Id,
+					CurrencyId: currencies[2].Id,
 					Amount:     -100,
 				},
 			},
@@ -109,6 +136,23 @@ var _ = Describe("Transactions API", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(transaction).ToNot(BeNil())
 		Expect(transaction.Id).To(Equal(created.Id))
+
+		// Get aggregated expenses
+		expenses, _, err := client.AggregationsAPI.GetExpenses(ctx).From(now).To(time.Now()).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(expenses).ToNot(BeNil())
+		Expect(expenses.From.UnixMilli()).To(Equal(
+			utils.RoundToGranularity(now, utils.GranularityMonth, false).UnixMilli()))
+		Expect(expenses.To.UnixMilli()).To(Equal(
+			utils.RoundToGranularity(now, utils.GranularityMonth, true).UnixMilli()))
+		Expect(expenses.Intervals).To(HaveLen(1))
+		Expect(expenses.Currencies).To(HaveLen(1))
+		Expect(expenses.Currencies[0].CurrencyId).To(Equal(currencies[2].Id))
+		Expect(expenses.Currencies[0].Accounts).To(HaveLen(1))
+
+		Expect(expenses.Currencies[0].Accounts[0].AccountId).To(Equal(accounts[2].Id))
+		Expect(expenses.Currencies[0].Accounts[0].Amounts).To(HaveLen(1))
+		Expect(expenses.Currencies[0].Accounts[0].Amounts[0]).To(Equal(100.0))
 
 		// Delete transaction
 		_, err = client.TransactionsAPI.DeleteTransaction(ctx, created.Id).Execute()

@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -173,7 +174,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	account := &goserver.AccountNoId{
 		Name:        "Cash",
 		Description: "Cash account",
-		Type:        "asset",
+		Type:        constants.AccountAsset,
 		BankInfo: goserver.BankAccountInfo{
 			Balances: []goserver.BankAccountInfoBalancesInner{
 				{
@@ -199,7 +200,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	account = &goserver.AccountNoId{
 		Name:        "FIO bank",
 		Description: "FIO bank account",
-		Type:        "asset",
+		Type:        constants.AccountAsset,
 	}
 	accFio, err := storage.CreateAccount(userID, account)
 	if err != nil {
@@ -209,7 +210,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	account = &goserver.AccountNoId{
 		Name:        "Revolut",
 		Description: "Revolut bank account",
-		Type:        "asset",
+		Type:        constants.AccountAsset,
 	}
 	accRevolut, err := storage.CreateAccount(userID, account)
 	if err != nil {
@@ -219,7 +220,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	account = &goserver.AccountNoId{
 		Name:        "Salary",
 		Description: "Salary account",
-		Type:        "income",
+		Type:        constants.AccountIncome,
 	}
 	accSalary, err := storage.CreateAccount(userID, account)
 	if err != nil {
@@ -229,7 +230,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 
 	account = &goserver.AccountNoId{
 		Name: "Bank fees",
-		Type: "expense",
+		Type: constants.AccountExpense,
 	}
 	accFees, err := storage.CreateAccount(userID, account)
 	if err != nil {
@@ -239,7 +240,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 
 	account = &goserver.AccountNoId{
 		Name: "🛒 Groceries",
-		Type: "expense",
+		Type: constants.AccountExpense,
 	}
 	accGroceries, err := storage.CreateAccount(userID, account)
 	if err != nil {
@@ -250,7 +251,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	account = &goserver.AccountNoId{
 		Name:        "Transport",
 		Description: "Transport expenses account",
-		Type:        "expense",
+		Type:        constants.AccountExpense,
 	}
 	accTransport, err := storage.CreateAccount(userID, account)
 	if err != nil {
@@ -260,7 +261,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 
 	account = &goserver.AccountNoId{
 		Name: "🏠 Rent",
-		Type: "expense",
+		Type: constants.AccountExpense,
 	}
 	accRent, err := storage.CreateAccount(userID, account)
 	if err != nil {

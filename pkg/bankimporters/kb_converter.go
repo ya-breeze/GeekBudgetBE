@@ -137,6 +137,7 @@ func (fc *KBConverter) ParseTransactions(data string,
 	return &info, res, nil
 }
 
+//nolint:funlen,cyclop // TODO: refactor
 func (fc *KBConverter) ConvertToTransaction(record []string) (goserver.TransactionNoId, error) {
 	var err error
 	var res goserver.TransactionNoId

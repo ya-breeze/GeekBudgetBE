@@ -22,7 +22,6 @@ var _ = Describe("KB converter", func() {
 	loc, _ := time.LoadLocation("Europe/Prague")
 
 	BeforeEach(func() {
-
 		rc, err = bankimporters.NewKBConverter(
 			log,
 			goserver.BankImporter{

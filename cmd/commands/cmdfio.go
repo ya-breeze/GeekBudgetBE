@@ -14,6 +14,8 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
+const and = " and "
+
 func CmdFio(log *slog.Logger) *cobra.Command {
 	res := &cobra.Command{
 		Use:   "fio",
@@ -167,8 +169,8 @@ func printTransactionNoID(t goserver.TransactionNoId) {
 	minusMoney := ""
 	for i, m := range minusMovements {
 		if i != 0 {
-			minusStr += " and "
-			minusMoney += " and "
+			minusStr += and
+			minusMoney += and
 		}
 		minusStr += fmt.Sprintf("%q", m.AccountId)
 		minusMoney += fmt.Sprintf("%v %s", -m.Amount, m.CurrencyId)
@@ -177,8 +179,8 @@ func printTransactionNoID(t goserver.TransactionNoId) {
 	plusMoney := ""
 	for i, m := range plusMovements {
 		if i != 0 {
-			plusStr += " and "
-			plusMoney += " and "
+			plusStr += and
+			plusMoney += and
 		}
 		plusStr += fmt.Sprintf("%q", m.AccountId)
 		plusMoney += fmt.Sprintf("%v %s", m.Amount, m.CurrencyId)
