@@ -20,18 +20,18 @@ import (
 )
 
 const (
-	IndexType          = 0
-	IndexProduct       = 1
-	IndexStartedDate   = 2
-	IndexCompletedDate = 3
-	IndexDescription   = 4
-	IndexAmount        = 5
-	IndexFee           = 6
-	IndexCurrency      = 7
-	IndexState         = 8
-	IndexBalance       = 9
+	RevolutIndexType          = 0
+	RevolutIndexProduct       = 1
+	RevolutIndexStartedDate   = 2
+	RevolutIndexCompletedDate = 3
+	RevolutIndexDescription   = 4
+	RevolutIndexAmount        = 5
+	RevolutIndexFee           = 6
+	RevolutIndexCurrency      = 7
+	RevolutIndexState         = 8
+	RevolutIndexBalance       = 9
 
-	ExchangePrefix = "EXCHANGE: Exchanged to "
+	RevolutExchangePrefix = "EXCHANGE: Exchanged to "
 )
 
 //nolint:gochecknoglobals // const list of fields in Revolut file
@@ -146,12 +146,12 @@ func (fc *RevolutConverter) shouldSkipRecord(i int, record []string) bool {
 		return true
 	}
 
-	if record[IndexState] != "COMPLETED" {
-		fc.logger.Info("Skipping transaction because of state", "state", record[IndexState])
+	if record[RevolutIndexState] != "COMPLETED" {
+		fc.logger.Info("Skipping transaction because of state", "state", record[RevolutIndexState])
 		return true
 	}
 
-	if len(record[IndexBalance]) == 0 {
+	if len(record[RevolutIndexBalance]) == 0 {
 		fc.logger.Info("Skipping transaction without balance", "record", record)
 		return true
 	}
@@ -162,17 +162,17 @@ func (fc *RevolutConverter) shouldSkipRecord(i int, record []string) bool {
 func (fc *RevolutConverter) updateBalances(
 	info *goserver.BankAccountInfo, filledOpeningBalances map[string]bool, record []string,
 ) error {
-	balance, err := decimal.NewFromString(record[IndexBalance])
+	balance, err := decimal.NewFromString(record[RevolutIndexBalance])
 	if err != nil {
 		return fmt.Errorf("can't parse balance (%v): %w", record, err)
 	}
 
 	// Fill opening/closing balances
 	currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-		return c.Name == record[IndexCurrency]
+		return c.Name == record[RevolutIndexCurrency]
 	})
 	if currencyIdx == -1 {
-		return fmt.Errorf("can't find currency %q", record[IndexCurrency])
+		return fmt.Errorf("can't find currency %q", record[RevolutIndexCurrency])
 	}
 
 	balanceIdx := slices.IndexFunc(info.Balances, func(b goserver.BankAccountInfoBalancesInner) bool {
@@ -186,15 +186,15 @@ func (fc *RevolutConverter) updateBalances(
 	}
 
 	info.Balances[balanceIdx].ClosingBalance = balance.InexactFloat64()
-	if !filledOpeningBalances[record[IndexCurrency]] {
+	if !filledOpeningBalances[record[RevolutIndexCurrency]] {
 		var amount decimal.Decimal
-		amount, err = decimal.NewFromString(record[IndexAmount])
+		amount, err = decimal.NewFromString(record[RevolutIndexAmount])
 		if err != nil {
 			return fmt.Errorf("can't parse amount (%v): %w", record, err)
 		}
 
 		info.Balances[balanceIdx].OpeningBalance = balance.Sub(amount).InexactFloat64()
-		filledOpeningBalances[record[IndexCurrency]] = true
+		filledOpeningBalances[record[RevolutIndexCurrency]] = true
 	}
 
 	return nil
@@ -206,30 +206,30 @@ func (fc *RevolutConverter) convertToTransaction(_ goserver.BankImporter, record
 	var res goserver.TransactionNoId
 
 	currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-		return c.Name == record[IndexCurrency]
+		return c.Name == record[RevolutIndexCurrency]
 	})
 	if currencyIdx == -1 {
-		return res, fmt.Errorf("can't find currency %q", record[IndexCurrency])
+		return res, fmt.Errorf("can't find currency %q", record[RevolutIndexCurrency])
 	}
 	strCurrencyID := fc.currencies[currencyIdx].Id
 
-	res.Date, err = time.ParseInLocation("2006-01-02 15:04:05", record[IndexStartedDate], fc.location)
+	res.Date, err = time.ParseInLocation("2006-01-02 15:04:05", record[RevolutIndexStartedDate], fc.location)
 	if err != nil {
-		res.Date, err = time.ParseInLocation("1/2/06 15:04", record[IndexStartedDate], fc.location)
+		res.Date, err = time.ParseInLocation("1/2/06 15:04", record[RevolutIndexStartedDate], fc.location)
 		if err != nil {
-			return res, fmt.Errorf("can't parse date %q: %w", record[IndexStartedDate], err)
+			return res, fmt.Errorf("can't parse date %q: %w", record[RevolutIndexStartedDate], err)
 		}
 	}
 
-	res.Description = record[IndexType] + ": " + record[IndexDescription]
+	res.Description = record[RevolutIndexType] + ": " + record[RevolutIndexDescription]
 
-	amount, err := strconv.ParseFloat(record[IndexAmount], 64)
+	amount, err := strconv.ParseFloat(record[RevolutIndexAmount], 64)
 	if err != nil {
-		return res, fmt.Errorf("can't parse amount %q: %w", record[IndexAmount], err)
+		return res, fmt.Errorf("can't parse amount %q: %w", record[RevolutIndexAmount], err)
 	}
-	feeAmount, err := strconv.ParseFloat(record[IndexFee], 64)
+	feeAmount, err := strconv.ParseFloat(record[RevolutIndexFee], 64)
 	if err != nil {
-		return res, fmt.Errorf("can't parse fee %q: %w", record[IndexFee], err)
+		return res, fmt.Errorf("can't parse fee %q: %w", record[RevolutIndexFee], err)
 	}
 
 	res.Movements = []goserver.Movement{
@@ -322,11 +322,11 @@ outerLoop:
 		if toSkip[i] {
 			continue
 		}
-		if !strings.HasPrefix(transactions[i].Description, ExchangePrefix) {
+		if !strings.HasPrefix(transactions[i].Description, RevolutExchangePrefix) {
 			res = append(res, transactions[i])
 			continue
 		}
-		cur := strings.TrimPrefix(transactions[i].Description, ExchangePrefix)
+		cur := strings.TrimPrefix(transactions[i].Description, RevolutExchangePrefix)
 		fc.logger.Info("Found exchange transaction", "transaction", transactions[i], "currency", cur)
 
 		// Find matching exchange transaction

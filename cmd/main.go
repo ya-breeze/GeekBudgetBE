@@ -43,6 +43,7 @@ func main() {
 		commands.CmdServer(),
 		commands.CmdFio(log),
 		commands.CmdRevolut(log),
+		commands.CmdKB(log),
 	)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Printf("ERROR: %s", err)
