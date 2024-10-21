@@ -22,7 +22,7 @@ func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 			// Skip authorization for the root endpoint
-			if req.URL.Path == "/" {
+			if req.URL.Path == "/" || strings.HasPrefix(req.URL.Path, "/web/") {
 				next.ServeHTTP(writer, req)
 				return
 			}

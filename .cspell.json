@@ -42,6 +42,7 @@
         "Sprintf",
         "struct",
         "sut",
+        "tmpl",
         "USD",
         "vcs",
         "xslx"

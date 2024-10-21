@@ -1,0 +1,15 @@
+{{ template "header.html" . }}
+
+<main>
+    <h1>{{ .Title }}</h1>
+
+    <h2>Bank Importers</h2>
+    {{ range .BankImporters }}
+    <div>
+        {{ .Name }} - {{ .Description }}
+    </div>
+    {{ end }}
+
+</main>
+
+{{ template "footer.html" . }}
