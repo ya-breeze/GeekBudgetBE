@@ -25,10 +25,18 @@ import (
 func Server(logger *slog.Logger, cfg *config.Config) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, finishCham, err := Serve(ctx, logger, cfg)
+
+	storage := database.NewStorage(logger, cfg)
+	if err := storage.Open(); err != nil {
+		return fmt.Errorf("failed to open storage: %w", err)
+	}
+
+	_, finishChan, err := Serve(ctx, logger, storage, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
+
+	importFinishChan := startBankImporters(ctx, logger, storage)
 
 	// Wait for an interrupt signal
 	stopChan := make(chan os.Signal, 1)
@@ -38,7 +46,8 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 
 	// Stop the server
 	cancel()
-	<-finishCham
+	<-finishChan
+	<-importFinishChan
 	return nil
 }
 
@@ -59,7 +68,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 	}
 }
 
-func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Addr, chan int, error) {
+func Serve(ctx context.Context, logger *slog.Logger, storage database.Storage, cfg *config.Config) (net.Addr, chan int, error) {
 	commit := func() string {
 		if info, ok := debug.ReadBuildInfo(); ok {
 			for _, setting := range info.Settings {
@@ -76,11 +85,6 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 	if cfg.JWTSecret == "" {
 		logger.Warn("JWT secret is not set. Creating random secret...")
 		cfg.JWTSecret = auth.GenerateRandomString(32)
-	}
-
-	storage := database.NewStorage(logger, cfg)
-	if err := storage.Open(); err != nil {
-		return nil, nil, fmt.Errorf("failed to open storage: %w", err)
 	}
 
 	logger.Info("Starting GeekBudget server...")

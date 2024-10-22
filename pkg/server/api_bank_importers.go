@@ -18,8 +18,9 @@ type BankImportersAPIServiceImpl struct {
 	db     database.Storage
 }
 
-func NewBankImportersAPIServiceImpl(logger *slog.Logger, db database.Storage,
-) goserver.BankImportersAPIServicer {
+func NewBankImportersAPIServiceImpl(
+	logger *slog.Logger, db database.Storage,
+) *BankImportersAPIServiceImpl {
 	return &BankImportersAPIServiceImpl{logger: logger, db: db}
 }
 
@@ -87,6 +88,26 @@ func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 	return goserver.Response(200, res), nil
 }
 
+func (s *BankImportersAPIServiceImpl) Fetch(
+	ctx context.Context, userID, importerID string,
+) (*goserver.ImportResult, error) {
+	s.logger.Info("Fetching bank importer", "userID", userID, "bankImporterID", importerID)
+	info, transactions, err := s.fetchFioTransactions(ctx, userID, importerID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to fetch for bank importer")
+		return nil, err
+	}
+
+	lastImport, err := s.saveImportedTransactions(userID, importerID, info, transactions)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to save imported transactions")
+		return nil, err
+	}
+	s.logger.Info("Bank importer fetched", "userID", userID, "result", lastImport)
+
+	return lastImport, nil
+}
+
 func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 	ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
@@ -94,15 +115,10 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
-	info, transactions, err := s.fetchFioTransactions(ctx, userID, id)
-	if err != nil {
-		s.logger.With("error", err).Error("Failed to fetch for bank importer")
-		return goserver.Response(500, nil), nil
-	}
 
-	lastImport, err := s.saveImportedTransactions(userID, id, info, transactions)
+	lastImport, err := s.Fetch(ctx, userID, id)
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to save imported transactions")
+		s.logger.With("error", err).Error("Failed to fetch")
 		return goserver.Response(500, nil), nil
 	}
 

@@ -1,0 +1,22 @@
+{{ template "header.html" . }}
+
+<main>
+    <h1>{{ .Title }}</h1>
+
+    <h2>Unprocessed</h2>
+    {{ range .Unprocessed }}
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">{{ formatTime .Date "2006-01-02" }} {{ .Description }}</h5>
+            <p class="card-text">
+                {{ range .Movements }}
+                {{ .Amount }} {{ .CurrencyId }} [{{ .AccountId }}] <br>
+                {{ end }}
+            </p>
+        </div>
+    </div>
+    {{ end }}
+
+</main>
+
+{{ template "footer.html" . }}

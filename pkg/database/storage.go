@@ -18,6 +18,12 @@ const StorageError = "storage error: %w"
 
 var ErrNotFound = errors.New("not found")
 
+type ImportInfo struct {
+	UserID           string
+	BankImporterID   string
+	BankImporterType string
+}
+
 //nolint:interfacebloat
 type Storage interface {
 	Open() error
@@ -53,6 +59,7 @@ type Storage interface {
 	) (goserver.BankImporter, error)
 	DeleteBankImporter(userID string, id string) error
 	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
+	GetAllBankImporters() ([]ImportInfo, error)
 
 	GetMatchers(userID string) ([]goserver.Matcher, error)
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
@@ -394,6 +401,7 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	return transaction.FromDB(), nil
 }
 
+// #region BankImporters
 func (s *storage) GetBankImporters(userID string) ([]goserver.BankImporter, error) {
 	result, err := s.db.Model(&models.BankImporter{}).Where("user_id = ?", userID).Rows()
 	if err != nil {
@@ -471,6 +479,32 @@ func (s *storage) GetBankImporter(userID string, id string) (goserver.BankImport
 
 	return data.FromDB(), nil
 }
+
+func (s *storage) GetAllBankImporters() ([]ImportInfo, error) {
+	result, err := s.db.Model(&models.BankImporter{}).Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	importers := make([]ImportInfo, 0)
+	for result.Next() {
+		var imp models.BankImporter
+		if err := s.db.ScanRows(result, &imp); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		importers = append(importers, ImportInfo{
+			UserID:           imp.UserID,
+			BankImporterID:   imp.ID.String(),
+			BankImporterType: imp.Type,
+		})
+	}
+
+	return importers, nil
+}
+
+// #endregion BankImporters
 
 // #region Matchers
 func (s *storage) GetMatchers(userID string) ([]goserver.Matcher, error) {

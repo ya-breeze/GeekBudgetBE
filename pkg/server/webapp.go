@@ -57,6 +57,16 @@ func (r *RootRouter) Routes() goserver.Routes {
 			Pattern:     "/web/bank-importers",
 			HandlerFunc: r.bankImportersHandler,
 		},
+		"Matchers": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/matchers",
+			HandlerFunc: r.matchersHandler,
+		},
+		"Unprocessed": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/unprocessed",
+			HandlerFunc: r.unprocessedHandler,
+		},
 	}
 }
 
@@ -102,7 +112,7 @@ func (r *RootRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		}
 
 		a := NewAggregationsAPIServiceImpl(r.logger, r.db)
-		dateFrom := utils.RoundToGranularity(time.Now().AddDate(0, -1, 0), utils.GranularityMonth, false)
+		dateFrom := utils.RoundToGranularity(time.Now(), utils.GranularityYear, false)
 		dateTo := utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
 
 		expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, "")
@@ -251,6 +261,97 @@ func (r *RootRouter) bankImportersHandler(w http.ResponseWriter, req *http.Reque
 	}
 
 	if err := tmpl.ExecuteTemplate(w, "bank_importers.html", data); err != nil {
+		r.logger.Warn("failed to execute template", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (r *RootRouter) matchersHandler(w http.ResponseWriter, req *http.Request) {
+	tmpl, err := r.loadTemplates()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data := map[string]interface{}{
+		"Title": "GeekBudget API",
+	}
+
+	session, _ := r.cookies.Get(req, "session-name")
+	userID, ok := session.Values["userID"].(string)
+	if ok {
+		data["UserID"] = userID
+
+		// accounts, err := r.db.GetAccounts(userID)
+		// if err != nil {
+		// 	r.logger.Error("Failed to get accounts", "error", err)
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+
+		// currencies, err := r.db.GetCurrencies(userID)
+		// if err != nil {
+		// 	r.logger.Error("Failed to get currencies", "error", err)
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+
+		matchers, err := r.db.GetMatchers(userID)
+		if err != nil {
+			r.logger.Error("Failed to get matchers", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		r.logger.Info("Matchers", "matchers", matchers)
+
+		data["Matchers"] = &matchers
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "matchers.html", data); err != nil {
+		r.logger.Warn("failed to execute template", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (r *RootRouter) unprocessedHandler(w http.ResponseWriter, req *http.Request) {
+	tmpl, err := r.loadTemplates()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data := map[string]interface{}{
+		"Title": "GeekBudget API",
+	}
+
+	session, _ := r.cookies.Get(req, "session-name")
+	userID, ok := session.Values["userID"].(string)
+	if ok {
+		data["UserID"] = userID
+
+		// accounts, err := r.db.GetAccounts(userID)
+		// if err != nil {
+		// 	r.logger.Error("Failed to get accounts", "error", err)
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+
+		// currencies, err := r.db.GetCurrencies(userID)
+		// if err != nil {
+		// 	r.logger.Error("Failed to get currencies", "error", err)
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+
+		unprocessed, err := r.db.GetTransactions(userID, time.Time{}, time.Time{})
+		if err != nil {
+			r.logger.Error("Failed to get unprocessed", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data["Unprocessed"] = &unprocessed
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "unprocessed.html", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
