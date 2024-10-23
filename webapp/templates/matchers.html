@@ -8,6 +8,9 @@
     <div class="card" style="width: 18rem;">
         <div class="card-body">
             <h5 class="card-title">{{ .Name }}</h5>
+            <form action="/web/matchers" method="DELETE">
+                <input type="hidden" name="id" value="{{ .Id }}">
+                <button type="submit" class="btn btn-primary">Delete</button>
         </div>
     </div>
     {{ end }}

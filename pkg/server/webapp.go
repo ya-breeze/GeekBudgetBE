@@ -62,6 +62,21 @@ func (r *RootRouter) Routes() goserver.Routes {
 			Pattern:     "/web/matchers",
 			HandlerFunc: r.matchersHandler,
 		},
+		"MatchersDelete": goserver.Route{
+			Method:      "DELETE",
+			Pattern:     "/web/matchers",
+			HandlerFunc: r.matchersHandler,
+		},
+		"CreateMatcherGET": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/matcher/edit",
+			HandlerFunc: r.createMatcherHandler,
+		},
+		"CreateMatcherPOST": goserver.Route{
+			Method:      "POST",
+			Pattern:     "/web/matcher/edit",
+			HandlerFunc: r.createMatcherHandler,
+		},
 		"Unprocessed": goserver.Route{
 			Method:      "GET",
 			Pattern:     "/web/unprocessed",
@@ -295,6 +310,17 @@ func (r *RootRouter) matchersHandler(w http.ResponseWriter, req *http.Request) {
 		// 	return
 		// }
 
+		if req.Method == http.MethodDelete {
+			id := req.URL.Query().Get("id")
+			if id != "" {
+				if err := r.db.DeleteMatcher(userID, id); err != nil {
+					r.logger.Error("Failed to delete matcher", "error", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
 		matchers, err := r.db.GetMatchers(userID)
 		if err != nil {
 			r.logger.Error("Failed to get matchers", "error", err)
@@ -327,32 +353,202 @@ func (r *RootRouter) unprocessedHandler(w http.ResponseWriter, req *http.Request
 	if ok {
 		data["UserID"] = userID
 
-		// accounts, err := r.db.GetAccounts(userID)
-		// if err != nil {
-		// 	r.logger.Error("Failed to get accounts", "error", err)
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// 	return
-		// }
+		accounts, err := r.db.GetAccounts(userID)
+		if err != nil {
+			r.logger.Error("Failed to get accounts", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		// currencies, err := r.db.GetCurrencies(userID)
-		// if err != nil {
-		// 	r.logger.Error("Failed to get currencies", "error", err)
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// 	return
-		// }
+		currencies, err := r.db.GetCurrencies(userID)
+		if err != nil {
+			r.logger.Error("Failed to get currencies", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		unprocessed, err := r.db.GetTransactions(userID, time.Time{}, time.Time{})
+		id := req.URL.Query().Get("id")
+		if id != "" {
+			r.logger.Info("Skipping unprocessed transactions", "id", id)
+		}
+		s := NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
+		unprocessed, err := s.PrepareUnprocessedTransactions(req.Context(), userID, true, id)
 		if err != nil {
 			r.logger.Error("Failed to get unprocessed", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if len(unprocessed) != 0 {
+			u := unprocessed[0]
+			web := WebUnprocessedTransaction{
+				Transaction: transactionToWeb(u.Transaction, accounts, currencies),
+			}
+			for _, m := range u.Matched {
+				web.Matched = append(web.Matched, WebMatcherAndTransaction{
+					MatcherId: m.MatcherId,
+					Transaction: transactionToWeb(
+						transactionNoIDToTransaction(m.Transaction, u.Transaction.Id),
+						accounts, currencies),
+				})
+			}
+			for _, d := range u.Duplicates {
+				web.Duplicates = append(web.Duplicates, transactionToWeb(d, accounts, currencies))
+			}
 
-		data["Unprocessed"] = &unprocessed
+			data["Unprocessed"] = &web
+		}
 	}
 
 	if err := tmpl.ExecuteTemplate(w, "unprocessed.html", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func transactionToWeb(
+	t goserver.Transaction, accounts []goserver.Account, currencies []goserver.Currency,
+) WebTransaction {
+	res := WebTransaction{
+		ID:             t.Id,
+		Date:           t.Date,
+		Description:    t.Description,
+		Place:          t.Place,
+		Tags:           t.Tags,
+		PartnerName:    t.PartnerName,
+		PartnerAccount: t.PartnerAccount,
+		Movements:      make([]WebMovement, 0, len(t.Movements)),
+	}
+
+	for _, m := range t.Movements {
+		res.Movements = append(res.Movements, WebMovement{
+			Amount:       m.Amount,
+			AccountID:    m.AccountId,
+			AccountName:  utils.GetAccount(m.AccountId, accounts).Name,
+			CurrencyID:   m.CurrencyId,
+			CurrencyName: utils.GetCurrency(m.CurrencyId, currencies).Name,
+		})
+	}
+
+	return res
+}
+
+func transactionNoIDToTransaction(t goserver.TransactionNoId, id string) goserver.Transaction {
+	res := goserver.Transaction{
+		Id:             id,
+		Date:           t.Date,
+		Description:    t.Description,
+		Place:          t.Place,
+		Tags:           t.Tags,
+		PartnerName:    t.PartnerName,
+		PartnerAccount: t.PartnerAccount,
+		Movements:      make([]goserver.Movement, 0, len(t.Movements)),
+	}
+
+	for _, m := range t.Movements {
+		res.Movements = append(res.Movements, goserver.Movement{
+			Amount:     m.Amount,
+			AccountId:  m.AccountId,
+			CurrencyId: m.CurrencyId,
+		})
+	}
+
+	return res
+}
+
+func (r *RootRouter) createMatcherHandler(w http.ResponseWriter, req *http.Request) {
+	tmpl, err := r.loadTemplates()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data := map[string]interface{}{
+		"Title": "GeekBudget API",
+	}
+
+	if err := req.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	transactionID := req.Form.Get("transaction_id")
+	matcherID := req.Form.Get("matcher_id")
+
+	session, _ := r.cookies.Get(req, "session-name")
+	userID, ok := session.Values["userID"].(string)
+	if !ok {
+		http.Error(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+
+	accounts, err := r.db.GetAccounts(userID)
+	if err != nil {
+		r.logger.Error("Failed to get accounts", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data["Accounts"] = accounts
+
+	transaction := WebTransaction{}
+	if transactionID != "" {
+		t, err := r.db.GetTransaction(userID, transactionID)
+		if err != nil {
+			r.logger.Error("Failed to get transaction", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		currencies, err := r.db.GetCurrencies(userID)
+		if err != nil {
+			r.logger.Error("Failed to get currencies", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		transaction = transactionToWeb(t, accounts, currencies)
+	}
+	data["Transaction"] = transaction
+
+	matcher := goserver.Matcher{}
+	if matcherID != "" {
+		m, err := r.db.GetMatcher(userID, matcherID)
+		if err != nil {
+			r.logger.Error("Failed to get matcher", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		matcher = m
+	} else {
+		matcher = goserver.Matcher{
+			Name:              transaction.Description,
+			OutputDescription: transaction.Description,
+			DescriptionRegExp: transaction.Description,
+		}
+	}
+	data["Matcher"] = matcher
+
+	if req.Method == "POST" {
+		m := goserver.MatcherNoId{
+			Name:              req.Form.Get("name"),
+			OutputDescription: req.Form.Get("outputDescription"),
+			DescriptionRegExp: req.Form.Get("descriptionRegExp"),
+			OutputAccountId:   req.Form.Get("account"),
+		}
+
+		if m.OutputAccountId == "" {
+			http.Error(w, "Account is required", http.StatusBadRequest)
+			return
+		}
+
+		if matcher, err = r.db.CreateMatcher(userID, &m); err != nil {
+			r.logger.Error("Failed to save matcher", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "matcher_edit.html", data); err != nil {
+		r.logger.Warn("failed to execute template", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// http.Redirect(w, req, "/web/matchers", http.StatusFound)
 }

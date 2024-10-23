@@ -62,9 +62,11 @@ type Storage interface {
 	GetAllBankImporters() ([]ImportInfo, error)
 
 	GetMatchers(userID string) ([]goserver.Matcher, error)
+	GetMatcher(userID string, id string) (goserver.Matcher, error)
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
 	CreateMatcher(userID string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
 	UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
+	DeleteMatcher(userID string, id string) error
 }
 
 type MatcherRuntime struct {
@@ -585,6 +587,27 @@ func (s *storage) UpdateMatcher(userID string, id string, matcher *goserver.Matc
 	}
 
 	return data.FromDB(), nil
+}
+
+func (s *storage) GetMatcher(userID string, id string) (goserver.Matcher, error) {
+	var data models.Matcher
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Matcher{}, ErrNotFound
+		}
+
+		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
+	}
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) DeleteMatcher(userID string, id string) error {
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Matcher{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
 }
 
 //#endregion Matchers

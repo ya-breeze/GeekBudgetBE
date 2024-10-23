@@ -24,3 +24,33 @@ type AccountAggregation struct {
 
 	Amounts []float64 `json:"amounts"`
 }
+
+type WebMovement struct {
+	Amount       float64 `json:"amount"`
+	AccountID    string  `json:"accountID"`
+	AccountName  string  `json:"accountName"`
+	CurrencyID   string  `json:"currencyID"`
+	CurrencyName string  `json:"currencyName"`
+}
+
+type WebTransaction struct {
+	ID             string        `json:"id"`
+	Date           time.Time     `json:"date"`
+	Description    string        `json:"description,omitempty"`
+	Place          string        `json:"place,omitempty"`
+	Tags           []string      `json:"tags,omitempty"`
+	PartnerName    string        `json:"partnerName,omitempty"`
+	PartnerAccount string        `json:"partnerAccount,omitempty"`
+	Movements      []WebMovement `json:"movements"`
+}
+
+type WebMatcherAndTransaction struct {
+	MatcherId   string         `json:"matcherId"`
+	Transaction WebTransaction `json:"transaction"`
+}
+
+type WebUnprocessedTransaction struct {
+	Transaction WebTransaction             `json:"transaction"`
+	Matched     []WebMatcherAndTransaction `json:"matched"`
+	Duplicates  []WebTransaction           `json:"duplicates"`
+}

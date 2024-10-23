@@ -4,17 +4,36 @@
     <h1>{{ .Title }}</h1>
 
     <h2>Unprocessed</h2>
-    {{ range .Unprocessed }}
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">{{ formatTime .Date "2006-01-02" }} {{ .Description }}</h5>
-            <p class="card-text">
-                {{ range .Movements }}
-                {{ .Amount }} {{ .CurrencyId }} [{{ .AccountId }}] <br>
-                {{ end }}
-            </p>
-        </div>
-    </div>
+    {{ with .Unprocessed }}
+    <form method="GET">
+        <input type="hidden" name="id" value="{{ .Transaction.ID }}">
+        <button type="submit">Skip</button>
+    </form>
+
+    <form action="/web/matcher/edit" method="GET">
+        <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
+        <button type="submit">Create matcher</button>
+    </form>
+
+    <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
+    <p>
+        {{ range .Transaction.Movements }}
+        {{ .Amount }} {{ .CurrencyName }} [{{ .AccountName }}] <br>
+        {{ end }}
+    </p>
+    {{ with .Matched }}
+    <h3>Matched</h3>
+    {{ range . }}
+    <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
+    <p>
+        {{ range .Transaction.Movements }}
+        {{ .Amount }} {{ .CurrencyName }} [{{ .AccountName }}] <br>
+        {{ end }}
+    </p>
+    {{ end }}
+    {{ end }}
+
+
     {{ end }}
 
 </main>
