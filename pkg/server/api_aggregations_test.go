@@ -16,7 +16,7 @@ var _ = Describe("Aggregation API", func() {
 	currencies := test.PrepareCurrencies()
 	transactions := test.PrepareTransactions(accounts, currencies)
 	dateFrom := time.Date(2024, 9, 1, 0, 0, 0, 0, time.UTC)
-	dateTo := time.Date(2024, 10, 30, 0, 0, 0, 0, time.UTC)
+	dateTo := time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC)
 
 	It("aggregate expenses", func() {
 		sut := server.Aggregate(accounts, transactions, dateFrom, dateTo, utils.GranularityMonth, log)

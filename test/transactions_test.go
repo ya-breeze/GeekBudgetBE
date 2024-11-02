@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
@@ -28,6 +29,7 @@ var _ = Describe("Transactions API", func() {
 		accessToken string
 		accounts    []goserver.Account
 		currencies  []goserver.Currency
+		storage     database.Storage
 	)
 	logger := test.CreateTestLogger()
 	now := time.Now()
@@ -44,7 +46,11 @@ var _ = Describe("Transactions API", func() {
 			Users: User1 + ":" + base64.StdEncoding.EncodeToString(hashed),
 		}
 
-		addr, finishCham, err = server.Serve(ctx, logger, cfg)
+		storage = database.NewStorage(logger, cfg)
+		if err := storage.Open(); err != nil {
+			panic(err)
+		}
+		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg)
 		Expect(err).ToNot(HaveOccurred())
 
 		clientCfg := goclient.NewConfiguration()
@@ -78,6 +84,7 @@ var _ = Describe("Transactions API", func() {
 	AfterEach(func() {
 		cancel()
 		<-finishCham
+		storage.Close()
 	})
 
 	It("gets empty list of existing transactions", func() {
@@ -138,7 +145,7 @@ var _ = Describe("Transactions API", func() {
 		Expect(transaction.Id).To(Equal(created.Id))
 
 		// Get aggregated expenses
-		expenses, _, err := client.AggregationsAPI.GetExpenses(ctx).From(now).To(time.Now()).Execute()
+		expenses, _, err := client.AggregationsAPI.GetExpenses(ctx).Execute()
 		Expect(err).ToNot(HaveOccurred())
 		Expect(expenses).ToNot(BeNil())
 		Expect(expenses.From.UnixMilli()).To(Equal(

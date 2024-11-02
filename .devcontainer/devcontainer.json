@@ -19,7 +19,8 @@
 				"42Crunch.vscode-openapi",
 				"redhat.vscode-yaml",
 				"qwtel.sqlite-viewer",
-				"streetsidesoftware.code-spell-checker-czech"
+				"streetsidesoftware.code-spell-checker-czech",
+				"ms-vscode.copilot-mermaid-diagram"
 			],
 			"settings": {
 				"go.formatTool": "gofumpt",
