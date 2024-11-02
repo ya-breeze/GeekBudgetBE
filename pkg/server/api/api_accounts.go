@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type AccountsAPIServicerImpl struct {
@@ -23,7 +24,7 @@ func NewAccountsAPIService(logger *slog.Logger, db database.Storage) goserver.Ac
 func (s *AccountsAPIServicerImpl) CreateAccount(
 	ctx context.Context, acc goserver.AccountNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -40,7 +41,7 @@ func (s *AccountsAPIServicerImpl) CreateAccount(
 func (s *AccountsAPIServicerImpl) GetAccounts(
 	ctx context.Context,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -57,7 +58,7 @@ func (s *AccountsAPIServicerImpl) GetAccounts(
 func (s *AccountsAPIServicerImpl) UpdateAccount(
 	ctx context.Context, accountID string, acc goserver.AccountNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -74,7 +75,7 @@ func (s *AccountsAPIServicerImpl) UpdateAccount(
 func (s *AccountsAPIServicerImpl) DeleteAccount(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -90,7 +91,7 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 func (s *AccountsAPIServicerImpl) GetAccountHistory(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -107,7 +108,7 @@ func (s *AccountsAPIServicerImpl) GetAccountHistory(
 func (s *AccountsAPIServicerImpl) GetAccount(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

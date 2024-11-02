@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type MatchersAPIServiceImpl struct {
@@ -24,7 +25,7 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.Ch
 }
 
 func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -40,7 +41,7 @@ func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.Impl
 
 func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -60,7 +61,7 @@ func (s *MatchersAPIServiceImpl) DeleteMatcher(context.Context, string) (goserve
 
 func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

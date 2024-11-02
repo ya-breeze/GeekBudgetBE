@@ -10,12 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
-)
-
-type contextKey string
-
-const (
-	UserIDKey contextKey = "userID"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc {
@@ -80,7 +75,7 @@ func checkToken(
 		}
 		logger.With("userID", userID).Info("Authorized user")
 
-		req = req.WithContext(context.WithValue(req.Context(), UserIDKey, userID))
+		req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
 		next.ServeHTTP(writer, req)
 		return
 	}

@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type BankImportersAPIServiceImpl struct {
@@ -26,7 +27,7 @@ func NewBankImportersAPIServiceImpl(
 
 func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, input goserver.BankImporterNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -42,7 +43,7 @@ func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, in
 
 func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -57,7 +58,7 @@ func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id
 }
 
 func (s *BankImportersAPIServiceImpl) GetBankImporters(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -74,7 +75,7 @@ func (s *BankImportersAPIServiceImpl) GetBankImporters(ctx context.Context) (gos
 func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 	ctx context.Context, id string, input goserver.BankImporterNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -111,7 +112,7 @@ func (s *BankImportersAPIServiceImpl) Fetch(
 func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 	ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -231,7 +232,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 	ctx context.Context, id, format string, file *os.File,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

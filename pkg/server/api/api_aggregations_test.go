@@ -1,11 +1,11 @@
-package server_test
+package api_test
 
 import (
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
@@ -19,7 +19,7 @@ var _ = Describe("Aggregation API", func() {
 	dateTo := time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC)
 
 	It("aggregate expenses", func() {
-		sut := server.Aggregate(accounts, transactions, dateFrom, dateTo, utils.GranularityMonth, log)
+		sut := api.Aggregate(accounts, transactions, dateFrom, dateTo, utils.GranularityMonth, log)
 		Expect(sut.From.UnixMilli()).To(Equal(time.Date(2024, 9, 1, 0, 0, 0, 0, time.UTC).UnixMilli()))
 		Expect(sut.To.UnixMilli()).To(Equal(time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC).UnixMilli()))
 

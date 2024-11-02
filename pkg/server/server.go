@@ -20,6 +20,8 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/webapp"
 )
 
 func Server(logger *slog.Logger, cfg *config.Config) error {
@@ -53,18 +55,18 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 
 func createControllers(logger *slog.Logger, cfg *config.Config, db database.Storage) goserver.CustomControllers {
 	return goserver.CustomControllers{
-		AuthAPIService:                    NewAuthAPIService(logger, db, cfg.JWTSecret),
-		UserAPIService:                    NewUserAPIService(logger, db),
-		AccountsAPIService:                NewAccountsAPIService(logger, db),
-		CurrenciesAPIService:              NewCurrenciesAPIServicer(logger, db),
-		TransactionsAPIService:            NewTransactionsAPIService(logger, db),
-		UnprocessedTransactionsAPIService: NewUnprocessedTransactionsAPIServiceImpl(logger, db),
-		MatchersAPIService:                NewMatchersAPIServiceImpl(logger, db),
-		BankImportersAPIService:           NewBankImportersAPIServiceImpl(logger, db),
-		AggregationsAPIService:            NewAggregationsAPIServiceImpl(logger, db),
-		NotificationsAPIService:           NewNotificationsAPIServiceImpl(logger, db),
-		ImportAPIService:                  NewImportAPIServiceImpl(logger, db),
-		ExportAPIService:                  NewExportAPIServiceImpl(logger, db),
+		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg.JWTSecret),
+		UserAPIService:                    api.NewUserAPIService(logger, db),
+		AccountsAPIService:                api.NewAccountsAPIService(logger, db),
+		CurrenciesAPIService:              api.NewCurrenciesAPIServicer(logger, db),
+		TransactionsAPIService:            api.NewTransactionsAPIService(logger, db),
+		UnprocessedTransactionsAPIService: api.NewUnprocessedTransactionsAPIServiceImpl(logger, db),
+		MatchersAPIService:                api.NewMatchersAPIServiceImpl(logger, db),
+		BankImportersAPIService:           api.NewBankImportersAPIServiceImpl(logger, db),
+		AggregationsAPIService:            api.NewAggregationsAPIServiceImpl(logger, db),
+		NotificationsAPIService:           api.NewNotificationsAPIServiceImpl(logger, db),
+		ImportAPIService:                  api.NewImportAPIServiceImpl(logger, db),
+		ExportAPIService:                  api.NewExportAPIServiceImpl(logger, db),
 	}
 }
 
@@ -108,7 +110,7 @@ func Serve(ctx context.Context, logger *slog.Logger, storage database.Storage, c
 
 	return goserver.Serve(ctx, logger, cfg,
 		createControllers(logger, cfg, storage),
-		[]goserver.Router{NewRootRouter(commit, logger, cfg, storage)},
+		[]goserver.Router{webapp.NewWebAppRouter(commit, logger, cfg, storage)},
 		createMiddlewares(logger, cfg)...)
 }
 

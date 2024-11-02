@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 )
 
 func startBankImporters(
@@ -26,7 +27,7 @@ func startBankImporters(
 				// Do something
 				logger.Info("Importing from bank importers...")
 
-				importer := NewBankImportersAPIServiceImpl(logger, db)
+				importer := api.NewBankImportersAPIServiceImpl(logger, db)
 				pairs, err := db.GetAllBankImporters()
 				if err != nil {
 					logger.With("error", err).Error("Failed to get bank importers")

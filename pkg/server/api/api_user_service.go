@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type UserAPIServiceImpl struct {
@@ -23,7 +24,7 @@ func NewUserAPIService(logger *slog.Logger, db database.Storage) goserver.UserAP
 
 // GetUser - return user object
 func (s *UserAPIServiceImpl) GetUser(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
