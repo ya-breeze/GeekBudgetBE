@@ -92,7 +92,7 @@ func (s *storage) Open() error {
 		s.log.Error("failed to connect database", "error", err)
 		panic("failed to connect database")
 	}
-	if err := migrate(s.db); err != nil {
+	if err := autoMigrateModels(s.db); err != nil {
 		s.log.Error("failed to migrate database", "error", err)
 		panic("failed to migrate database")
 	}
