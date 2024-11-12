@@ -10,7 +10,7 @@
         <button type="submit">Skip</button>
     </form>
 
-    <form action="/web/matcher/edit" method="GET">
+    <form action="/web/matchers/edit" method="GET">
         <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
         <button type="submit">Create matcher</button>
     </form>
@@ -24,6 +24,13 @@
     {{ with .Matched }}
     <h3>Matched</h3>
     {{ range . }}
+    <form action="/web/unprocessed/convert" method="POST">
+        <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
+        {{ range $i, $m := .Transaction.Movements }}
+        <input type="hidden" name="account_{{ $i }}" value="{{ $m.AccountID }}">
+        {{ end }}
+        <button type="submit">Convert</button>
+    </form>
     <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
     <p>
         {{ range .Transaction.Movements }}

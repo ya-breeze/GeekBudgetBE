@@ -1,3 +1,4 @@
+//nolint:fatcontext
 package test_test
 
 import (
@@ -39,7 +40,7 @@ var _ = Describe("Accounts API", func() {
 		}
 
 		storage = database.NewStorage(logger, cfg)
-		if err := storage.Open(); err != nil {
+		if err = storage.Open(); err != nil {
 			panic(err)
 		}
 		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg)

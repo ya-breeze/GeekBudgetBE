@@ -49,7 +49,9 @@ type Storage interface {
 
 	GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
 	CreateTransaction(userID string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
-	UpdateTransaction(userID string, id string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
+	UpdateTransaction(
+		userID string, id string, transaction goserver.TransactionNoIdInterface,
+	) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
 
@@ -357,7 +359,7 @@ func (s *storage) CreateTransaction(userID string, input *goserver.TransactionNo
 }
 
 //nolint:dupl // TODO: refactor
-func (s *storage) UpdateTransaction(userID string, id string, input *goserver.TransactionNoId,
+func (s *storage) UpdateTransaction(userID string, id string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)
 	if err != nil {
@@ -436,6 +438,7 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 	return data.FromDB(), nil
 }
 
+//nolint:dupl // TODO: refactor
 func (s *storage) UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
 ) (goserver.BankImporter, error) {
 	idUUID, err := uuid.Parse(id)
@@ -563,7 +566,6 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 	return res, nil
 }
 
-//nolint:dupl // TODO: refactor
 func (s *storage) UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId,
 ) (goserver.Matcher, error) {
 	idUUID, err := uuid.Parse(id)

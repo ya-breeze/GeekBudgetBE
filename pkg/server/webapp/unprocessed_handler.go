@@ -6,6 +6,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 )
 
+//nolint:funlen,cyclop
 func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
@@ -53,7 +54,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 			}
 			for _, m := range u.Matched {
 				web.Matched = append(web.Matched, WebMatcherAndTransaction{
-					MatcherId: m.MatcherId,
+					MatcherID: m.MatcherId,
 					Transaction: transactionToWeb(
 						transactionNoIDToTransaction(m.Transaction, u.Transaction.Id),
 						accounts, currencies),

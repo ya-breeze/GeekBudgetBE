@@ -70,7 +70,9 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 	}
 }
 
-func Serve(ctx context.Context, logger *slog.Logger, storage database.Storage, cfg *config.Config) (net.Addr, chan int, error) {
+func Serve(
+	ctx context.Context, logger *slog.Logger, storage database.Storage, cfg *config.Config,
+) (net.Addr, chan int, error) {
 	commit := func() string {
 		if info, ok := debug.ReadBuildInfo(); ok {
 			for _, setting := range info.Settings {

@@ -1,3 +1,4 @@
+//nolint:tagliatelle
 package webapp
 
 import "time"
@@ -11,7 +12,7 @@ type WebAggregation struct {
 }
 
 type WebCurrencyAggregation struct {
-	CurrencyId   string `json:"currencyId"`
+	CurrencyID   string `json:"currencyId"`
 	CurrencyName string `json:"currencyName"`
 
 	Intervals []time.Time          `json:"intervals"`
@@ -19,7 +20,7 @@ type WebCurrencyAggregation struct {
 }
 
 type AccountAggregation struct {
-	AccountId   string `json:"accountId"`
+	AccountID   string `json:"accountId"`
 	AccountName string `json:"accountName"`
 
 	Amounts []float64 `json:"amounts"`
@@ -45,7 +46,7 @@ type WebTransaction struct {
 }
 
 type WebMatcherAndTransaction struct {
-	MatcherId   string         `json:"matcherId"`
+	MatcherID   string         `json:"matcherId"`
 	Transaction WebTransaction `json:"transaction"`
 }
 

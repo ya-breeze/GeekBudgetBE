@@ -67,19 +67,19 @@ func (t *Transaction) WithoutID() *goserver.TransactionNoId {
 	}
 }
 
-func TransactionToDB(transaction *goserver.TransactionNoId, userID string) *Transaction {
+func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID string) *Transaction {
 	return &Transaction{
-		Date:               transaction.Date,
-		Description:        transaction.Description,
-		Place:              transaction.Place,
-		Tags:               transaction.Tags,
-		PartnerName:        transaction.PartnerName,
-		PartnerAccount:     transaction.PartnerAccount,
-		PartnerInternalID:  transaction.PartnerInternalId,
-		Extra:              transaction.Extra,
-		UnprocessedSources: transaction.UnprocessedSources,
-		ExternalIDs:        transaction.ExternalIds,
-		Movements:          transaction.Movements,
+		Date:               transaction.GetDate(),
+		Description:        transaction.GetDescription(),
+		Place:              transaction.GetPlace(),
+		Tags:               transaction.GetTags(),
+		PartnerName:        transaction.GetPartnerName(),
+		PartnerAccount:     transaction.GetPartnerAccount(),
+		PartnerInternalID:  transaction.GetPartnerInternalId(),
+		Extra:              transaction.GetExtra(),
+		UnprocessedSources: transaction.GetUnprocessedSources(),
+		ExternalIDs:        transaction.GetExternalIds(),
+		Movements:          transaction.GetMovements(),
 		UserID:             userID,
 	}
 }

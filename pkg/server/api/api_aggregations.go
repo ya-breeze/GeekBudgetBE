@@ -72,7 +72,6 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 	return &res, nil
 }
 
-//nolint:funlen,cyclop // TODO: refactor
 func Aggregate(
 	accounts []goserver.Account, transactions []goserver.Transaction,
 	dateFrom, dateTo time.Time, granularity utils.Granularity,

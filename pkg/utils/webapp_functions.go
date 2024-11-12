@@ -10,18 +10,18 @@ func FormatTime(t time.Time, format string) string {
 	return t.Format(format)
 }
 
-func GetCurrency(currencyId string, currencies []goserver.Currency) goserver.Currency {
+func GetCurrency(currencyID string, currencies []goserver.Currency) goserver.Currency {
 	for i := range currencies {
-		if currencies[i].Id == currencyId {
+		if currencies[i].Id == currencyID {
 			return currencies[i]
 		}
 	}
 	return goserver.Currency{}
 }
 
-func GetAccount(accountId string, accounts []goserver.Account) goserver.Account {
+func GetAccount(accountID string, accounts []goserver.Account) goserver.Account {
 	for i := range accounts {
-		if accounts[i].Id == accountId {
+		if accounts[i].Id == accountID {
 			return accounts[i]
 		}
 	}

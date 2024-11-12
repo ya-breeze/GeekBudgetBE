@@ -32,6 +32,7 @@ func NewWebAppRouter(
 	}
 }
 
+//nolint:funlen // This is a webapp router, it's supposed to have many routes.
 func (r *WebAppRouter) Routes() goserver.Routes {
 	return goserver.Routes{
 		"RootPath": goserver.Route{
@@ -64,21 +65,51 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/matchers",
 			HandlerFunc: r.matchersHandler,
 		},
-		"CreateMatcherGET": goserver.Route{
+		"MatcherEditGET": goserver.Route{
 			Method:      "GET",
-			Pattern:     "/web/matcher/edit",
-			HandlerFunc: r.createMatcherHandler,
+			Pattern:     "/web/matchers/edit",
+			HandlerFunc: r.matcherEditHandler,
 		},
-		"CreateMatcherPOST": goserver.Route{
+		"MatcherEditPOST": goserver.Route{
 			Method:      "POST",
-			Pattern:     "/web/matcher/edit",
-			HandlerFunc: r.createMatcherHandler,
+			Pattern:     "/web/matchers/edit",
+			HandlerFunc: r.matcherEditHandler,
+		},
+		"MatcherDelete": goserver.Route{
+			Method:      "DELETE",
+			Pattern:     "/web/matchers",
+			HandlerFunc: r.matcherDeleteHandler,
 		},
 		"Unprocessed": goserver.Route{
 			Method:      "GET",
 			Pattern:     "/web/unprocessed",
 			HandlerFunc: r.unprocessedHandler,
 		},
+		"UnprocessedConvert": goserver.Route{
+			Method:      "POST",
+			Pattern:     "/web/unprocessed/convert",
+			HandlerFunc: r.unprocessedConvertHandler,
+		},
+		"Accounts": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/accounts",
+			HandlerFunc: r.accountsHandler,
+		},
+		"AccountEditGet": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/accounts/edit",
+			HandlerFunc: r.accountsEditHandler,
+		},
+		"AccountEditPost": goserver.Route{
+			Method:      "POST",
+			Pattern:     "/web/accounts/edit",
+			HandlerFunc: r.accountsEditHandler,
+		},
+		// "AccountDelete": goserver.Route{
+		// 	Method:      "DELETE",
+		// 	Pattern:     "/web/accounts",
+		// 	HandlerFunc: r.accountsDeleteHandler,
+		// },
 	}
 }
 

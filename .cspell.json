@@ -23,6 +23,7 @@
         "Globus",
         "gochecknoglobals",
         "goclient",
+        "gocognit",
         "gofumpt",
         "gomega",
         "gorm",

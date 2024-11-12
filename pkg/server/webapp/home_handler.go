@@ -8,6 +8,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
+//nolint:funlen,cyclop
 func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
@@ -59,7 +60,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		}
 		for _, currency := range expenses.Currencies {
 			webCurrency := WebCurrencyAggregation{
-				CurrencyId:   currency.CurrencyId,
+				CurrencyID:   currency.CurrencyId,
 				CurrencyName: utils.GetCurrency(currency.CurrencyId, currencies).Name,
 				Intervals:    expenses.Intervals,
 			}
@@ -69,7 +70,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 
 			for _, account := range currency.Accounts {
 				webAccount := AccountAggregation{
-					AccountId:   account.AccountId,
+					AccountID:   account.AccountId,
 					AccountName: utils.GetAccount(account.AccountId, accounts).Name,
 					Amounts:     account.Amounts,
 				}

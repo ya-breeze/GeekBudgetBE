@@ -24,6 +24,20 @@ func NewUnprocessedTransactionsAPIServiceImpl(logger *slog.Logger, db database.S
 	return &UnprocessedTransactionsAPIServiceImpl{logger: logger, db: db}
 }
 
+func (s *UnprocessedTransactionsAPIServiceImpl) Convert(
+	ctx context.Context, userID string, id string, transactionNoID goserver.TransactionNoIdInterface,
+) (*goserver.Transaction, error) {
+	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", userID)
+
+	transaction, err := s.db.UpdateTransaction(userID, id, transactionNoID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to convert unprocessed transaction")
+		return nil, fmt.Errorf("failed to convert unprocessed transaction: %w", err)
+	}
+
+	return &transaction, nil
+}
+
 func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 	ctx context.Context, userID string, single bool, continuationID string,
 ) ([]goserver.UnprocessedTransaction, error) {
@@ -66,7 +80,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 		return res[i].Transaction.Date.Before(res[j].Transaction.Date)
 	})
 
-	if single {
+	if single && len(res) > 0 {
 		return res[:1], nil
 	}
 	return res, nil
@@ -97,11 +111,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
-	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", userID)
-
-	transaction, err := s.db.UpdateTransaction(userID, id, &transactionNoID)
+	transaction, err := s.Convert(ctx, userID, id, &transactionNoID)
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to convert unprocessed transaction")
 		return goserver.Response(500, nil), nil
 	}
 
