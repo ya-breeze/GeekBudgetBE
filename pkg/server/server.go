@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"runtime/debug"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
@@ -20,15 +20,25 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/webapp"
 )
 
 func Server(logger *slog.Logger, cfg *config.Config) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, finishCham, err := Serve(ctx, logger, cfg)
+
+	storage := database.NewStorage(logger, cfg)
+	if err := storage.Open(); err != nil {
+		return fmt.Errorf("failed to open storage: %w", err)
+	}
+
+	_, finishChan, err := Serve(ctx, logger, storage, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
+
+	// importFinishChan := startBankImporters(ctx, logger, storage)
 
 	// Wait for an interrupt signal
 	stopChan := make(chan os.Signal, 1)
@@ -38,28 +48,31 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 
 	// Stop the server
 	cancel()
-	<-finishCham
+	<-finishChan
+	// <-importFinishChan
 	return nil
 }
 
 func createControllers(logger *slog.Logger, cfg *config.Config, db database.Storage) goserver.CustomControllers {
 	return goserver.CustomControllers{
-		AuthAPIService:                    NewAuthAPIService(logger, db, cfg.JWTSecret),
-		UserAPIService:                    NewUserAPIService(logger, db),
-		AccountsAPIService:                NewAccountsAPIService(logger, db),
-		CurrenciesAPIService:              NewCurrenciesAPIServicer(logger, db),
-		TransactionsAPIService:            NewTransactionsAPIService(logger, db),
-		UnprocessedTransactionsAPIService: NewUnprocessedTransactionsAPIServiceImpl(logger, db),
-		MatchersAPIService:                NewMatchersAPIServiceImpl(logger, db),
-		BankImportersAPIService:           NewBankImportersAPIServiceImpl(logger, db),
-		AggregationsAPIService:            NewAggregationsAPIServiceImpl(logger, db),
-		NotificationsAPIService:           NewNotificationsAPIServiceImpl(logger, db),
-		ImportAPIService:                  NewImportAPIServiceImpl(logger, db),
-		ExportAPIService:                  NewExportAPIServiceImpl(logger, db),
+		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg.JWTSecret),
+		UserAPIService:                    api.NewUserAPIService(logger, db),
+		AccountsAPIService:                api.NewAccountsAPIService(logger, db),
+		CurrenciesAPIService:              api.NewCurrenciesAPIServicer(logger, db),
+		TransactionsAPIService:            api.NewTransactionsAPIService(logger, db),
+		UnprocessedTransactionsAPIService: api.NewUnprocessedTransactionsAPIServiceImpl(logger, db),
+		MatchersAPIService:                api.NewMatchersAPIServiceImpl(logger, db),
+		BankImportersAPIService:           api.NewBankImportersAPIServiceImpl(logger, db),
+		AggregationsAPIService:            api.NewAggregationsAPIServiceImpl(logger, db),
+		NotificationsAPIService:           api.NewNotificationsAPIServiceImpl(logger, db),
+		ImportAPIService:                  api.NewImportAPIServiceImpl(logger, db),
+		ExportAPIService:                  api.NewExportAPIServiceImpl(logger, db),
 	}
 }
 
-func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Addr, chan int, error) {
+func Serve(
+	ctx context.Context, logger *slog.Logger, storage database.Storage, cfg *config.Config,
+) (net.Addr, chan int, error) {
 	commit := func() string {
 		if info, ok := debug.ReadBuildInfo(); ok {
 			for _, setting := range info.Settings {
@@ -76,11 +89,6 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 	if cfg.JWTSecret == "" {
 		logger.Warn("JWT secret is not set. Creating random secret...")
 		cfg.JWTSecret = auth.GenerateRandomString(32)
-	}
-
-	storage := database.NewStorage(logger, cfg)
-	if err := storage.Open(); err != nil {
-		return nil, nil, fmt.Errorf("failed to open storage: %w", err)
 	}
 
 	logger.Info("Starting GeekBudget server...")
@@ -104,7 +112,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config) (net.Ad
 
 	return goserver.Serve(ctx, logger, cfg,
 		createControllers(logger, cfg, storage),
-		[]goserver.Router{NewRootRouter(commit)},
+		[]goserver.Router{webapp.NewWebAppRouter(commit, logger, cfg, storage)},
 		createMiddlewares(logger, cfg)...)
 }
 
@@ -192,7 +200,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 			},
 		},
 	}
-	_, err = storage.CreateAccount(userID, account)
+	accCash, err := storage.CreateAccount(userID, account)
 	if err != nil {
 		return fmt.Errorf("failed to create cash account: %w", err)
 	}
@@ -270,147 +278,147 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	logger.Info(fmt.Sprintf("Created rent account %q", accRent.Id))
 
 	// Create default transactions
-	// transaction := &goserver.TransactionNoId{
-	// 	Date:        time.Now().Add(-5 * 24 * time.Hour),
-	// 	Description: "Initial state for cash",
-	// 	Tags:        []string{"initial_account_state"},
-	// 	Movements: []goserver.Movement{
-	// 		{
-	// 			AccountId:  accCash.Id,
-	// 			Amount:     1000,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 		{
-	// 			AccountId:  accCash.Id,
-	// 			Amount:     1,
-	// 			CurrencyId: curUSD.Id,
-	// 		},
-	// 		{
-	// 			AccountId:  accCash.Id,
-	// 			Amount:     1,
-	// 			CurrencyId: curEUR.Id,
-	// 		},
-	// 	},
-	// }
-	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-	// 	return fmt.Errorf("failed to create initial cash transaction: %w", err)
-	// }
+	transaction := &goserver.TransactionNoId{
+		Date:        time.Now().Add(-5 * 24 * time.Hour),
+		Description: "Initial state for cash",
+		Tags:        []string{"initial_account_state"},
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accCash.Id,
+				Amount:     1000,
+				CurrencyId: curCZK.Id,
+			},
+			{
+				AccountId:  accCash.Id,
+				Amount:     1,
+				CurrencyId: curUSD.Id,
+			},
+			{
+				AccountId:  accCash.Id,
+				Amount:     1,
+				CurrencyId: curEUR.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create initial cash transaction: %w", err)
+	}
 
-	// transaction = &goserver.TransactionNoId{
-	// 	Date:        time.Now().Add(-5 * 24 * time.Hour),
-	// 	Description: "Initial state for bank",
-	// 	Tags:        []string{"initial_account_state"},
-	// 	Movements: []goserver.Movement{
-	// 		{
-	// 			AccountId:  accFio.Id,
-	// 			Amount:     10000,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 	},
-	// }
-	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-	// 	return fmt.Errorf("failed to create initial bank transaction: %w", err)
-	// }
+	transaction = &goserver.TransactionNoId{
+		Date:        time.Now().Add(-5 * 24 * time.Hour),
+		Description: "Initial state for bank",
+		Tags:        []string{"initial_account_state"},
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accFio.Id,
+				Amount:     10000,
+				CurrencyId: curCZK.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create initial bank transaction: %w", err)
+	}
 
-	// transaction = &goserver.TransactionNoId{
-	// 	Date:        time.Now().Add(-24 * time.Hour),
-	// 	Description: "Monthly salary",
-	// 	Movements: []goserver.Movement{
-	// 		{
-	// 			AccountId:  accSalary.Id,
-	// 			Amount:     -10000,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 		{
-	// 			AccountId:  accFio.Id,
-	// 			Amount:     10000,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 	},
-	// }
-	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-	// 	return fmt.Errorf("failed to create salary transaction: %w", err)
-	// }
+	transaction = &goserver.TransactionNoId{
+		Date:        time.Now().Add(-24 * time.Hour),
+		Description: "Monthly salary",
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accSalary.Id,
+				Amount:     -10000,
+				CurrencyId: curCZK.Id,
+			},
+			{
+				AccountId:  accFio.Id,
+				Amount:     10000,
+				CurrencyId: curCZK.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create salary transaction: %w", err)
+	}
 
-	// transaction = &goserver.TransactionNoId{
-	// 	Date:        time.Now().Add(-4 * time.Hour),
-	// 	Description: "Lunch",
-	// 	Movements: []goserver.Movement{
-	// 		{
-	// 			AccountId:  accFood.Id,
-	// 			Amount:     100,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 		{
-	// 			AccountId:  accCash.Id,
-	// 			Amount:     -100,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 	},
-	// }
-	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-	// 	return fmt.Errorf("failed to create lunch transaction: %w", err)
-	// }
+	transaction = &goserver.TransactionNoId{
+		Date:        time.Now().Add(-4 * time.Hour),
+		Description: "Lunch",
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accGroceries.Id,
+				Amount:     100,
+				CurrencyId: curCZK.Id,
+			},
+			{
+				AccountId:  accCash.Id,
+				Amount:     -100,
+				CurrencyId: curCZK.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create lunch transaction: %w", err)
+	}
 
-	// transaction = &goserver.TransactionNoId{
-	// 	Date:        time.Now().Add(-24 * time.Hour),
-	// 	Description: "Lunch",
-	// 	Movements: []goserver.Movement{
-	// 		{
-	// 			AccountId:  accFood.Id,
-	// 			Amount:     150,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 		{
-	// 			AccountId:  accCash.Id,
-	// 			Amount:     -150,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 	},
-	// }
-	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-	// 	return fmt.Errorf("failed to create lunch transaction: %w", err)
-	// }
+	transaction = &goserver.TransactionNoId{
+		Date:        time.Now().Add(-24 * time.Hour),
+		Description: "Lunch",
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accGroceries.Id,
+				Amount:     150,
+				CurrencyId: curCZK.Id,
+			},
+			{
+				AccountId:  accCash.Id,
+				Amount:     -150,
+				CurrencyId: curCZK.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create lunch transaction: %w", err)
+	}
 
-	// transaction = &goserver.TransactionNoId{
-	// 	Date:        time.Now().Add(-3 * time.Hour),
-	// 	Description: "Bus ticket",
-	// 	Movements: []goserver.Movement{
-	// 		{
-	// 			AccountId:  accTransport.Id,
-	// 			Amount:     25,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 		{
-	// 			AccountId:  accCash.Id,
-	// 			Amount:     -25,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 	},
-	// }
-	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-	// 	return fmt.Errorf("failed to create bus ticket transaction: %w", err)
-	// }
+	transaction = &goserver.TransactionNoId{
+		Date:        time.Now().Add(-3 * time.Hour),
+		Description: "Bus ticket",
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accTransport.Id,
+				Amount:     25,
+				CurrencyId: curCZK.Id,
+			},
+			{
+				AccountId:  accCash.Id,
+				Amount:     -25,
+				CurrencyId: curCZK.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create bus ticket transaction: %w", err)
+	}
 
-	// transaction = &goserver.TransactionNoId{
-	// 	Date:        time.Now().Add(-2 * time.Hour),
-	// 	Description: "Apartment rent",
-	// 	Movements: []goserver.Movement{
-	// 		{
-	// 			AccountId:  accRent.Id,
-	// 			Amount:     5000,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 		{
-	// 			AccountId:  accFio.Id,
-	// 			Amount:     -5000,
-	// 			CurrencyId: curCZK.Id,
-	// 		},
-	// 	},
-	// }
-	// if _, err := storage.CreateTransaction(userID, transaction); err != nil {
-	// 	return fmt.Errorf("failed to create rent transaction: %w", err)
-	// }
+	transaction = &goserver.TransactionNoId{
+		Date:        time.Now().Add(-2 * time.Hour),
+		Description: "Apartment rent",
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accRent.Id,
+				Amount:     5000,
+				CurrencyId: curCZK.Id,
+			},
+			{
+				AccountId:  accFio.Id,
+				Amount:     -5000,
+				CurrencyId: curCZK.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create rent transaction: %w", err)
+	}
 
 	// Bank importers
 	bankImporter := &goserver.BankImporterNoId{
@@ -513,28 +521,5 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 func createMiddlewares(logger *slog.Logger, cfg *config.Config) []mux.MiddlewareFunc {
 	return []mux.MiddlewareFunc{
 		AuthMiddleware(logger, cfg),
-	}
-}
-
-type RootRouter struct {
-	commit string
-}
-
-func NewRootRouter(commit string) *RootRouter {
-	return &RootRouter{commit: commit}
-}
-
-func (r *RootRouter) Routes() goserver.Routes {
-	return goserver.Routes{
-		"RootPath": goserver.Route{
-			Method:  "GET",
-			Pattern: "/",
-			HandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
-				w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-				w.WriteHeader(http.StatusOK)
-				fmt.Fprintln(w, "GeekBudget API v0.0.1")
-				fmt.Fprintln(w, "Git commit: "+r.commit)
-			},
-		},
 	}
 }

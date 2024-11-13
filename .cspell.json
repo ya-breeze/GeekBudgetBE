@@ -23,6 +23,7 @@
         "Globus",
         "gochecknoglobals",
         "goclient",
+        "gocognit",
         "gofumpt",
         "gomega",
         "gorm",
@@ -42,6 +43,7 @@
         "Sprintf",
         "struct",
         "sut",
+        "tmpl",
         "USD",
         "vcs",
         "xslx"

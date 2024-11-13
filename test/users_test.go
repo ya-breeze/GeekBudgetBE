@@ -1,3 +1,4 @@
+//nolint:fatcontext
 package test_test
 
 import (
@@ -9,6 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
 	"github.com/ya-breeze/geekbudgetbe/test"
@@ -26,6 +28,7 @@ var _ = Describe("User API", func() {
 	var addr net.Addr
 	var finishCham chan int
 	var client *goclient.APIClient
+	var storage database.Storage
 	logger := test.CreateTestLogger()
 
 	BeforeEach(func() {
@@ -40,7 +43,11 @@ var _ = Describe("User API", func() {
 			Users: User1 + ":" + base64.StdEncoding.EncodeToString(hashed),
 		}
 
-		addr, finishCham, err = server.Serve(ctx, logger, cfg)
+		storage = database.NewStorage(logger, cfg)
+		if err = storage.Open(); err != nil {
+			panic(err)
+		}
+		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg)
 		Expect(err).ToNot(HaveOccurred())
 
 		clientCfg := goclient.NewConfiguration()
@@ -51,6 +58,7 @@ var _ = Describe("User API", func() {
 	AfterEach(func() {
 		cancel()
 		<-finishCham
+		storage.Close()
 	})
 
 	It("authenticates client with valid credentials", func() {

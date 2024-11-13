@@ -18,6 +18,12 @@ const StorageError = "storage error: %w"
 
 var ErrNotFound = errors.New("not found")
 
+type ImportInfo struct {
+	UserID           string
+	BankImporterID   string
+	BankImporterType string
+}
+
 //nolint:interfacebloat
 type Storage interface {
 	Open() error
@@ -43,7 +49,9 @@ type Storage interface {
 
 	GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
 	CreateTransaction(userID string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
-	UpdateTransaction(userID string, id string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
+	UpdateTransaction(
+		userID string, id string, transaction goserver.TransactionNoIdInterface,
+	) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
 
@@ -53,11 +61,14 @@ type Storage interface {
 	) (goserver.BankImporter, error)
 	DeleteBankImporter(userID string, id string) error
 	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
+	GetAllBankImporters() ([]ImportInfo, error)
 
 	GetMatchers(userID string) ([]goserver.Matcher, error)
+	GetMatcher(userID string, id string) (goserver.Matcher, error)
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
 	CreateMatcher(userID string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
 	UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
+	DeleteMatcher(userID string, id string) error
 }
 
 type MatcherRuntime struct {
@@ -83,7 +94,7 @@ func (s *storage) Open() error {
 		s.log.Error("failed to connect database", "error", err)
 		panic("failed to connect database")
 	}
-	if err := migrate(s.db); err != nil {
+	if err := autoMigrateModels(s.db); err != nil {
 		s.log.Error("failed to migrate database", "error", err)
 		panic("failed to migrate database")
 	}
@@ -348,7 +359,7 @@ func (s *storage) CreateTransaction(userID string, input *goserver.TransactionNo
 }
 
 //nolint:dupl // TODO: refactor
-func (s *storage) UpdateTransaction(userID string, id string, input *goserver.TransactionNoId,
+func (s *storage) UpdateTransaction(userID string, id string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)
 	if err != nil {
@@ -394,6 +405,7 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	return transaction.FromDB(), nil
 }
 
+// #region BankImporters
 func (s *storage) GetBankImporters(userID string) ([]goserver.BankImporter, error) {
 	result, err := s.db.Model(&models.BankImporter{}).Where("user_id = ?", userID).Rows()
 	if err != nil {
@@ -426,6 +438,7 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 	return data.FromDB(), nil
 }
 
+//nolint:dupl // TODO: refactor
 func (s *storage) UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
 ) (goserver.BankImporter, error) {
 	idUUID, err := uuid.Parse(id)
@@ -471,6 +484,32 @@ func (s *storage) GetBankImporter(userID string, id string) (goserver.BankImport
 
 	return data.FromDB(), nil
 }
+
+func (s *storage) GetAllBankImporters() ([]ImportInfo, error) {
+	result, err := s.db.Model(&models.BankImporter{}).Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	importers := make([]ImportInfo, 0)
+	for result.Next() {
+		var imp models.BankImporter
+		if err := s.db.ScanRows(result, &imp); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		importers = append(importers, ImportInfo{
+			UserID:           imp.UserID,
+			BankImporterID:   imp.ID.String(),
+			BankImporterType: imp.Type,
+		})
+	}
+
+	return importers, nil
+}
+
+// #endregion BankImporters
 
 // #region Matchers
 func (s *storage) GetMatchers(userID string) ([]goserver.Matcher, error) {
@@ -527,7 +566,6 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 	return res, nil
 }
 
-//nolint:dupl // TODO: refactor
 func (s *storage) UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId,
 ) (goserver.Matcher, error) {
 	idUUID, err := uuid.Parse(id)
@@ -551,6 +589,27 @@ func (s *storage) UpdateMatcher(userID string, id string, matcher *goserver.Matc
 	}
 
 	return data.FromDB(), nil
+}
+
+func (s *storage) GetMatcher(userID string, id string) (goserver.Matcher, error) {
+	var data models.Matcher
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.Matcher{}, ErrNotFound
+		}
+
+		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
+	}
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) DeleteMatcher(userID string, id string) error {
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Matcher{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
 }
 
 //#endregion Matchers

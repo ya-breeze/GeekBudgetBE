@@ -13,10 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 type FioConverter struct {
@@ -196,20 +194,20 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 		}
 	}
 
-	if tokens == nil {
-		orig, err := json.MarshalIndent(fio, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		result, err := json.MarshalIndent(res, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		color.Red("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
-		color.Red("Can't parse %q\n", fio.Comment.Value)
-		utils.PrintInTwoColumns(string(orig), string(result))
-		color.Red("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-	}
+	// if tokens == nil {
+	// 	orig, err := json.MarshalIndent(fio, "", "  ")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	result, err := json.MarshalIndent(res, "", "  ")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	color.Red("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+	// 	color.Red("Can't parse %q\n", fio.Comment.Value)
+	// 	utils.PrintInTwoColumns(string(orig), string(result))
+	// 	color.Red("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+	// }
 
 	b, err := json.Marshal(fio)
 	if err != nil {

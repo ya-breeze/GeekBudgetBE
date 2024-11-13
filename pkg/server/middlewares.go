@@ -10,19 +10,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
-)
-
-type contextKey string
-
-const (
-	UserIDKey contextKey = "userID"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 			// Skip authorization for the root endpoint
-			if req.URL.Path == "/" {
+			if req.URL.Path == "/" || strings.HasPrefix(req.URL.Path, "/web/") {
 				next.ServeHTTP(writer, req)
 				return
 			}
@@ -80,7 +75,7 @@ func checkToken(
 		}
 		logger.With("userID", userID).Info("Authorized user")
 
-		req = req.WithContext(context.WithValue(req.Context(), UserIDKey, userID))
+		req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
 		next.ServeHTTP(writer, req)
 		return
 	}

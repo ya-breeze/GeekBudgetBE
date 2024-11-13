@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
@@ -19,28 +20,45 @@ type UnprocessedTransactionsAPIServiceImpl struct {
 }
 
 func NewUnprocessedTransactionsAPIServiceImpl(logger *slog.Logger, db database.Storage,
-) goserver.UnprocessedTransactionsAPIServicer {
+) *UnprocessedTransactionsAPIServiceImpl {
 	return &UnprocessedTransactionsAPIServiceImpl{logger: logger, db: db}
 }
 
-func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
-	ctx context.Context,
-) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
-	if !ok {
-		return goserver.Response(500, nil), nil
+func (s *UnprocessedTransactionsAPIServiceImpl) Convert(
+	ctx context.Context, userID string, id string, transactionNoID goserver.TransactionNoIdInterface,
+) (*goserver.Transaction, error) {
+	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", userID)
+
+	transaction, err := s.db.UpdateTransaction(userID, id, transactionNoID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to convert unprocessed transaction")
+		return nil, fmt.Errorf("failed to convert unprocessed transaction: %w", err)
 	}
 
+	return &transaction, nil
+}
+
+func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
+	ctx context.Context, userID string, single bool, continuationID string,
+) ([]goserver.UnprocessedTransaction, error) {
 	matchers, err := s.db.GetMatchersRuntime(userID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
-		return goserver.Response(500, nil), nil
+		return nil, err
 	}
 
 	transactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
-		return goserver.Response(500, nil), nil
+		return nil, err
+	}
+	if len(continuationID) > 0 {
+		for i, t := range transactions {
+			if t.Id == continuationID {
+				transactions = transactions[i+1:]
+				break
+			}
+		}
 	}
 	transactions = s.filterUnprocessedTransactions(transactions)
 
@@ -49,7 +67,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 		m, err := s.matchUnprocessedTransactions(matchers, t)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to match unprocessed transaction")
-			return goserver.Response(500, nil), nil
+			return nil, err
 		}
 
 		res = append(res, goserver.UnprocessedTransaction{
@@ -61,6 +79,26 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].Transaction.Date.Before(res[j].Transaction.Date)
 	})
+
+	if single && len(res) > 0 {
+		return res[:1], nil
+	}
+	return res, nil
+}
+
+func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
+	ctx context.Context,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	res, err := s.PrepareUnprocessedTransactions(ctx, userID, false, "")
+	if err != nil {
+		return goserver.Response(500, nil), nil
+	}
+
 	return goserver.Response(200, res), nil
 }
 
@@ -69,15 +107,12 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	id string,
 	transactionNoID goserver.TransactionNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
-	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", userID)
-
-	transaction, err := s.db.UpdateTransaction(userID, id, &transactionNoID)
+	transaction, err := s.Convert(ctx, userID, id, &transactionNoID)
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to convert unprocessed transaction")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -114,7 +149,6 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 		return nil, fmt.Errorf("can't copy transaction: %w", err)
 	}
 
-	s.logger.With("transaction", transaction.Id).Info("Matching transaction")
 	res := make([]goserver.MatcherAndTransaction, 0)
 
 	for _, matcher := range matchers {
@@ -130,7 +164,6 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 			}
 		}
 
-		s.logger.With("matcher", matcher.Matcher.Id).Info("Matched transaction")
 		res = append(res, goserver.MatcherAndTransaction{
 			MatcherId:   matcher.Matcher.Id,
 			Transaction: *outputTransaction,

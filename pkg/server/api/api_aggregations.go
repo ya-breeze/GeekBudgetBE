@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
@@ -18,7 +19,7 @@ type AggregationsAPIServiceImpl struct {
 }
 
 func NewAggregationsAPIServiceImpl(logger *slog.Logger, db database.Storage,
-) goserver.AggregationsAPIServicer {
+) *AggregationsAPIServiceImpl {
 	return &AggregationsAPIServiceImpl{logger: logger, db: db}
 }
 
@@ -30,61 +31,76 @@ func (s *AggregationsAPIServiceImpl) GetBalances(context.Context, time.Time, tim
 func (s *AggregationsAPIServiceImpl) GetExpenses(
 	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(UserIDKey).(string)
+	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
+	}
+
+	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID)
+	if err != nil {
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, aggregation), nil
+}
+
+func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string,
+) (*goserver.Aggregation, error) {
+	if dateFrom.IsZero() {
+		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
+	}
+	if dateTo.IsZero() {
+		dateTo = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
 	}
 
 	accounts, err := s.db.GetAccounts(userID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts")
-		return goserver.Response(500, nil), nil
+		return nil, nil
 	}
 
 	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
-		return goserver.Response(500, nil), nil
+		return nil, nil
 	}
+	s.logger.Info("Read transactions", "count", len(transactions))
 
 	res := Aggregate(accounts, transactions, dateFrom, dateTo, utils.GranularityMonth, s.logger)
 
-	return goserver.Response(200, res), nil
+	return &res, nil
 }
 
-//nolint:funlen,cyclop // TODO: refactor
 func Aggregate(
 	accounts []goserver.Account, transactions []goserver.Transaction,
 	dateFrom, dateTo time.Time, granularity utils.Granularity,
 	log *slog.Logger,
 ) goserver.Aggregation {
-	if dateFrom.IsZero() {
-		dateFrom = utils.RoundToGranularity(time.Now(), granularity, false)
-	}
-	if dateTo.IsZero() {
-		dateTo = utils.RoundToGranularity(time.Now(), granularity, true)
-	}
-
 	res := goserver.Aggregation{
-		From: utils.RoundToGranularity(dateFrom, granularity, false),
-		To:   utils.RoundToGranularity(dateTo, granularity, true),
+		From: dateFrom,
+		To:   dateTo,
 	}
 	res.Intervals = getIntervals(res.From, res.To, granularity)
+	log.Info("Intervals", "intervals", res.Intervals)
 
 	res.Currencies = []goserver.CurrencyAggregation{}
 	for _, t := range transactions {
 		if t.Date.Before(res.From) || t.Date.After(res.To) {
+			log.Info("Ignore transaction", "date", t.Date)
 			continue
 		}
 		intervalIdx := -1
 		for i, interval := range res.Intervals {
 			if t.Date.Before(interval) {
 				intervalIdx = i - 1
+				break
 			}
 		}
 		if intervalIdx < 0 {
 			intervalIdx = len(res.Intervals) - 1
 		}
+		log.Info("Interval", "idx", intervalIdx, "date", res.Intervals[intervalIdx], "transaction", t.Date)
 
 		movements := getExpenseMovements(accounts, t)
 		for _, m := range movements {
@@ -120,7 +136,7 @@ func Aggregate(
 func getExpenseMovements(accounts []goserver.Account, t goserver.Transaction) []goserver.Movement {
 	movements := []goserver.Movement{}
 	for _, m := range t.Movements {
-		if isExpenseAccount(accounts, m.AccountId) {
+		if m.AccountId == "" || isExpenseAccount(accounts, m.AccountId) {
 			movements = append(movements, m)
 		}
 	}
