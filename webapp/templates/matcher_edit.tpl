@@ -12,7 +12,7 @@
         </div>
         <div class="mb-3">
             <label for="outputDescription" class="form-label">Output description</label>
-            <input type="text" class="form-control" name="outputDescription" value=" {{ .Matcher.OutputDescription }}">
+            <input type="text" class="form-control" name="outputDescription" value="{{ .Matcher.OutputDescription }}">
         </div>
         <div class="mb-3">
             <label for="descriptionRegExp" class="form-label">Description regexp</label>
