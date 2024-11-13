@@ -31,7 +31,7 @@ func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request)
 		data["Accounts"] = &accounts
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "accounts.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "accounts.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -122,7 +122,7 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 		}
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "accounts_edit.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "accounts_edit.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

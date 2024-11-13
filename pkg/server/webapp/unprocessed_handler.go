@@ -28,6 +28,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		data["Accounts"] = accounts
 
 		currencies, err := r.db.GetCurrencies(userID)
 		if err != nil {
@@ -68,7 +69,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 		}
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "unprocessed.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "unprocessed.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

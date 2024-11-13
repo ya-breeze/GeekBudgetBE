@@ -47,7 +47,7 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 		"UserID": userID,
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "home.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "home.tpl", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

@@ -1,4 +1,4 @@
-{{ template "header.html" . }}
+{{ template "header.tpl" . }}
 
 <main>
     <h1>{{ .Title }}</h1>
@@ -30,4 +30,4 @@
 
 </main>
 
-{{ template "footer.html" . }}
+{{ template "footer.tpl" . }}

@@ -1,4 +1,4 @@
-{{ template "header.html" . }}
+{{ template "header.tpl" . }}
 
 <main>
     <h1>{{ .Title }}</h1>
@@ -15,12 +15,26 @@
         <button type="submit">Create matcher</button>
     </form>
 
-    <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
-    <p>
-        {{ range .Transaction.Movements }}
-        {{ .Amount }} {{ .CurrencyName }} [{{ .AccountName }}] <br>
-        {{ end }}
-    </p>
+    <form action="/web/unprocessed/convert" method="POST">
+        <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
+        <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
+        <p>
+            {{ range $i, $m := .Transaction.Movements }}
+                <div class="mb-3">
+                    <label for="account" class="form-label">{{ $m.Amount }} {{ $m.CurrencyName }}</label>
+                    <select class="form-select" name="account_{{ $i }}">
+                        <option value="">Select account</option>
+                        {{ range $.Accounts }}
+                        <option value="{{ .Id }}" {{ if eq .Id $m.AccountID }}selected{{ end }}>
+                            {{.Type}}: {{ .Name }}
+                        </option>
+                        {{ end }}
+                    </select>
+                </div>
+            {{ end }}
+        </p>
+        <button type="submit">Convert</button>
+    </form>
     {{ with .Matched }}
     <h3>Matched</h3>
     {{ range . }}
@@ -45,4 +59,4 @@
 
 </main>
 
-{{ template "footer.html" . }}
+{{ template "footer.tpl" . }}

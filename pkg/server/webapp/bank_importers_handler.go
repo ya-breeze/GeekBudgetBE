@@ -42,7 +42,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 		data["BankImporters"] = &bankimporters
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "bank_importers.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "bank_importers.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

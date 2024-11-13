@@ -1,4 +1,4 @@
-{{ template "header.html" . }}
+{{ template "header.tpl" . }}
 
 <main>
     <h1>About Us</h1>
@@ -7,4 +7,4 @@
     <p>This is some information about our web app.</p>
 </main>
 
-{{ template "footer.html" . }}
+{{ template "footer.tpl" . }}

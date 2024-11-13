@@ -1,4 +1,4 @@
-{{ template "header.html" . }}
+{{ template "header.tpl" . }}
 
 <main>
     <h2>Create matcher</h2>
@@ -21,9 +21,11 @@
         <div class="mb-3">
             <label for="account" class="form-label">Account</label>
             <select class="form-select" name="account">
-                <option selected>Select account for matcher</option>
-                {{ range .Accounts }}
-                <option value="{{ .Id }}">{{.Type}}: {{ .Name }}</option>
+                <option value="">Select account</option>
+                {{ range $.Accounts }}
+                <option value="{{ .Id }}" {{ if eq .Id $.Matcher.OutputAccountId }}selected{{ end }}>
+                    {{.Type}}: {{ .Name }}
+                </option>
                 {{ end }}
             </select>
         </div>
@@ -32,4 +34,4 @@
     </form>
 </main>
 
-{{ template "footer.html" . }}
+{{ template "footer.tpl" . }}

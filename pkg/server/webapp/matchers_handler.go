@@ -55,7 +55,7 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 		data["Matchers"] = &matchers
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "matchers.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "matchers.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -165,7 +165,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 	}
 	data["Matcher"] = matcher
 
-	if err := tmpl.ExecuteTemplate(w, "matcher_edit.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "matcher_edit.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

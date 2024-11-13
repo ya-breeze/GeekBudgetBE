@@ -86,7 +86,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		data["Expenses"] = &webAggregation
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "home.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "home.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
