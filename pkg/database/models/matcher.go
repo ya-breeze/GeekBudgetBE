@@ -12,6 +12,7 @@ type Matcher struct {
 	Name                 string
 	OutputDescription    string
 	OutputAccountID      string
+	OutputTags           []string `gorm:"serializer:json"`
 	CurrencyRegExp       string
 	PartnerNameRegExp    string
 	PartnerAccountNumber string
@@ -28,6 +29,7 @@ func (t *Matcher) FromDB() goserver.Matcher {
 		Name:                 t.Name,
 		OutputDescription:    t.OutputDescription,
 		OutputAccountId:      t.OutputAccountID,
+		OutputTags:           t.OutputTags,
 		CurrencyRegExp:       t.CurrencyRegExp,
 		PartnerNameRegExp:    t.PartnerNameRegExp,
 		PartnerAccountNumber: t.PartnerAccountNumber,
@@ -36,17 +38,18 @@ func (t *Matcher) FromDB() goserver.Matcher {
 	}
 }
 
-func MatcherToDB(m *goserver.MatcherNoId, userID string) *Matcher {
+func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
 	return &Matcher{
 		UserID:               userID,
-		Name:                 m.Name,
-		OutputDescription:    m.OutputDescription,
-		OutputAccountID:      m.OutputAccountId,
-		CurrencyRegExp:       m.CurrencyRegExp,
-		PartnerNameRegExp:    m.PartnerNameRegExp,
-		PartnerAccountNumber: m.PartnerAccountNumber,
-		DescriptionRegExp:    m.DescriptionRegExp,
-		ExtraRegExp:          m.ExtraRegExp,
+		Name:                 m.GetName(),
+		OutputDescription:    m.GetOutputDescription(),
+		OutputAccountID:      m.GetOutputAccountId(),
+		OutputTags:           m.GetOutputTags(),
+		CurrencyRegExp:       m.GetCurrencyRegExp(),
+		PartnerNameRegExp:    m.GetPartnerNameRegExp(),
+		PartnerAccountNumber: m.GetPartnerAccountNumber(),
+		DescriptionRegExp:    m.GetDescriptionRegExp(),
+		ExtraRegExp:          m.GetExtraRegExp(),
 	}
 }
 
@@ -55,6 +58,7 @@ func MatcherWithoutID(matcher *goserver.Matcher) *goserver.MatcherNoId {
 		Name:                 matcher.Name,
 		OutputDescription:    matcher.OutputDescription,
 		OutputAccountId:      matcher.OutputAccountId,
+		OutputTags:           matcher.OutputTags,
 		CurrencyRegExp:       matcher.CurrencyRegExp,
 		PartnerNameRegExp:    matcher.PartnerNameRegExp,
 		PartnerAccountNumber: matcher.PartnerAccountNumber,

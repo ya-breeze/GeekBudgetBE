@@ -22,15 +22,16 @@ var _ MappedNullable = &Matcher{}
 
 // Matcher struct for Matcher
 type Matcher struct {
-	Id                   string  `json:"id"`
-	Name                 string  `json:"name"`
-	OutputDescription    string  `json:"outputDescription"`
-	OutputAccountId      string  `json:"outputAccountId"`
-	CurrencyRegExp       *string `json:"currencyRegExp,omitempty"`
-	PartnerNameRegExp    *string `json:"partnerNameRegExp,omitempty"`
-	PartnerAccountNumber *string `json:"partnerAccountNumber,omitempty"`
-	DescriptionRegExp    *string `json:"descriptionRegExp,omitempty"`
-	ExtraRegExp          *string `json:"extraRegExp,omitempty"`
+	Id                   string   `json:"id"`
+	Name                 string   `json:"name"`
+	OutputDescription    string   `json:"outputDescription"`
+	OutputAccountId      string   `json:"outputAccountId"`
+	OutputTags           []string `json:"outputTags,omitempty"`
+	CurrencyRegExp       *string  `json:"currencyRegExp,omitempty"`
+	PartnerNameRegExp    *string  `json:"partnerNameRegExp,omitempty"`
+	PartnerAccountNumber *string  `json:"partnerAccountNumber,omitempty"`
+	DescriptionRegExp    *string  `json:"descriptionRegExp,omitempty"`
+	ExtraRegExp          *string  `json:"extraRegExp,omitempty"`
 }
 
 type _Matcher Matcher
@@ -150,6 +151,38 @@ func (o *Matcher) GetOutputAccountIdOk() (*string, bool) {
 // SetOutputAccountId sets field value
 func (o *Matcher) SetOutputAccountId(v string) {
 	o.OutputAccountId = v
+}
+
+// GetOutputTags returns the OutputTags field value if set, zero value otherwise.
+func (o *Matcher) GetOutputTags() []string {
+	if o == nil || IsNil(o.OutputTags) {
+		var ret []string
+		return ret
+	}
+	return o.OutputTags
+}
+
+// GetOutputTagsOk returns a tuple with the OutputTags field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Matcher) GetOutputTagsOk() ([]string, bool) {
+	if o == nil || IsNil(o.OutputTags) {
+		return nil, false
+	}
+	return o.OutputTags, true
+}
+
+// HasOutputTags returns a boolean if a field has been set.
+func (o *Matcher) HasOutputTags() bool {
+	if o != nil && !IsNil(o.OutputTags) {
+		return true
+	}
+
+	return false
+}
+
+// SetOutputTags gets a reference to the given []string and assigns it to the OutputTags field.
+func (o *Matcher) SetOutputTags(v []string) {
+	o.OutputTags = v
 }
 
 // GetCurrencyRegExp returns the CurrencyRegExp field value if set, zero value otherwise.
@@ -326,6 +359,9 @@ func (o Matcher) ToMap() (map[string]interface{}, error) {
 	toSerialize["name"] = o.Name
 	toSerialize["outputDescription"] = o.OutputDescription
 	toSerialize["outputAccountId"] = o.OutputAccountId
+	if !IsNil(o.OutputTags) {
+		toSerialize["outputTags"] = o.OutputTags
+	}
 	if !IsNil(o.CurrencyRegExp) {
 		toSerialize["currencyRegExp"] = o.CurrencyRegExp
 	}

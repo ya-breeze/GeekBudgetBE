@@ -20,16 +20,16 @@ import (
 
 // TransactionsAPIService is an interface that defines the logic for the TransactionsAPIServicer
 type TransactionsAPIService interface {
-	// CreateTransaction - create new transaction
-	CreateTransaction(ctx context.Context, transactionNoId TransactionNoId) (ImplResponse, error)
-	// DeleteTransaction - delete transaction
-	DeleteTransaction(ctx context.Context, id string) (ImplResponse, error)
-	// GetTransaction - get transaction
-	GetTransaction(ctx context.Context, id string) (ImplResponse, error)
 	// GetTransactions - get all transactions which matches given filters
 	GetTransactions(ctx context.Context, description string, amountFrom float64, amountTo float64, dateFrom time.Time, dateTo time.Time) (ImplResponse, error)
+	// CreateTransaction - create new transaction
+	CreateTransaction(ctx context.Context, transactionNoId TransactionNoId) (ImplResponse, error)
+	// GetTransaction - get transaction
+	GetTransaction(ctx context.Context, id string) (ImplResponse, error)
 	// UpdateTransaction - update transaction
 	UpdateTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error)
+	// DeleteTransaction - delete transaction
+	DeleteTransaction(ctx context.Context, id string) (ImplResponse, error)
 }
 
 // TransactionsAPIService is a service that implements the logic for the TransactionsAPIServicer
@@ -43,6 +43,17 @@ func NewTransactionsAPIService() TransactionsAPIService {
 	return &TransactionsAPIServiceImpl{}
 }
 
+// GetTransactions - get all transactions which matches given filters
+func (s *TransactionsAPIServiceImpl) GetTransactions(ctx context.Context, description string, amountFrom float64, amountTo float64, dateFrom time.Time, dateTo time.Time) (ImplResponse, error) {
+	// TODO - update GetTransactions with the required logic for this service method.
+	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, []Transaction{}) or use other options such as http.Ok ...
+	// return Response(200, []Transaction{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("GetTransactions method not implemented")
+}
+
 // CreateTransaction - create new transaction
 func (s *TransactionsAPIServiceImpl) CreateTransaction(ctx context.Context, transactionNoId TransactionNoId) (ImplResponse, error) {
 	// TODO - update CreateTransaction with the required logic for this service method.
@@ -52,17 +63,6 @@ func (s *TransactionsAPIServiceImpl) CreateTransaction(ctx context.Context, tran
 	// return Response(200, Transaction{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("CreateTransaction method not implemented")
-}
-
-// DeleteTransaction - delete transaction
-func (s *TransactionsAPIServiceImpl) DeleteTransaction(ctx context.Context, id string) (ImplResponse, error) {
-	// TODO - update DeleteTransaction with the required logic for this service method.
-	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
-	// return Response(200, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("DeleteTransaction method not implemented")
 }
 
 // GetTransaction - get transaction
@@ -76,17 +76,6 @@ func (s *TransactionsAPIServiceImpl) GetTransaction(ctx context.Context, id stri
 	return Response(http.StatusNotImplemented, nil), errors.New("GetTransaction method not implemented")
 }
 
-// GetTransactions - get all transactions which matches given filters
-func (s *TransactionsAPIServiceImpl) GetTransactions(ctx context.Context, description string, amountFrom float64, amountTo float64, dateFrom time.Time, dateTo time.Time) (ImplResponse, error) {
-	// TODO - update GetTransactions with the required logic for this service method.
-	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, []Transaction{}) or use other options such as http.Ok ...
-	// return Response(200, []Transaction{}), nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("GetTransactions method not implemented")
-}
-
 // UpdateTransaction - update transaction
 func (s *TransactionsAPIServiceImpl) UpdateTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error) {
 	// TODO - update UpdateTransaction with the required logic for this service method.
@@ -96,4 +85,15 @@ func (s *TransactionsAPIServiceImpl) UpdateTransaction(ctx context.Context, id s
 	// return Response(200, Transaction{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("UpdateTransaction method not implemented")
+}
+
+// DeleteTransaction - delete transaction
+func (s *TransactionsAPIServiceImpl) DeleteTransaction(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update DeleteTransaction with the required logic for this service method.
+	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
+	// return Response(200, nil),nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DeleteTransaction method not implemented")
 }

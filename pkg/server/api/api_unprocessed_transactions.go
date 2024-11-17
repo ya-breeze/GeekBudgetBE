@@ -156,6 +156,10 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 			continue
 		}
 
+		if matcher.Matcher.PartnerAccountNumber != "" && matcher.Matcher.PartnerAccountNumber != transaction.PartnerAccount {
+			continue
+		}
+
 		outputTransaction := models.TransactionWithoutID(&transaction)
 		outputTransaction.Description = matcher.Matcher.OutputDescription
 		for i := range outputTransaction.Movements {
@@ -163,6 +167,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 				outputTransaction.Movements[i].AccountId = matcher.Matcher.OutputAccountId
 			}
 		}
+
+		outputTransaction.Tags = append(outputTransaction.Tags, matcher.Matcher.OutputTags...)
 
 		res = append(res, goserver.MatcherAndTransaction{
 			MatcherId:   matcher.Matcher.Id,

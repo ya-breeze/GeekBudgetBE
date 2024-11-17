@@ -52,6 +52,11 @@ func NewUnprocessedTransactionsAPIController(s UnprocessedTransactionsAPIService
 // Routes returns all the api routes for the UnprocessedTransactionsAPIController
 func (c *UnprocessedTransactionsAPIController) Routes() Routes {
 	return Routes{
+		"GetUnprocessedTransactions": Route{
+			strings.ToUpper("Get"),
+			"/v1/unprocessedTransactions",
+			c.GetUnprocessedTransactions,
+		},
 		"ConvertUnprocessedTransaction": Route{
 			strings.ToUpper("Post"),
 			"/v1/unprocessedTransactions/{id}/convert",
@@ -62,12 +67,19 @@ func (c *UnprocessedTransactionsAPIController) Routes() Routes {
 			"/v1/unprocessedTransactions/{id}",
 			c.DeleteUnprocessedTransaction,
 		},
-		"GetUnprocessedTransactions": Route{
-			strings.ToUpper("Get"),
-			"/v1/unprocessedTransactions",
-			c.GetUnprocessedTransactions,
-		},
 	}
+}
+
+// GetUnprocessedTransactions - get all unprocessed transactions
+func (c *UnprocessedTransactionsAPIController) GetUnprocessedTransactions(w http.ResponseWriter, r *http.Request) {
+	result, err := c.service.GetUnprocessedTransactions(r.Context())
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
 // ConvertUnprocessedTransaction - convert unprocessed transactions into normal transaction
@@ -124,18 +136,6 @@ func (c *UnprocessedTransactionsAPIController) DeleteUnprocessedTransaction(w ht
 	} else {
 	}
 	result, err := c.service.DeleteUnprocessedTransaction(r.Context(), idParam, duplicateOfParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// GetUnprocessedTransactions - get all unprocessed transactions
-func (c *UnprocessedTransactionsAPIController) GetUnprocessedTransactions(w http.ResponseWriter, r *http.Request) {
-	result, err := c.service.GetUnprocessedTransactions(r.Context())
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

@@ -61,9 +61,9 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			HandlerFunc: r.matchersHandler,
 		},
 		"MatchersDelete": goserver.Route{
-			Method:      "DELETE",
-			Pattern:     "/web/matchers",
-			HandlerFunc: r.matchersHandler,
+			Method:      "GET",
+			Pattern:     "/web/matchers/delete",
+			HandlerFunc: r.matchersDeleteHandler,
 		},
 		"MatcherEditGET": goserver.Route{
 			Method:      "GET",

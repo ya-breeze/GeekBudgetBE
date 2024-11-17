@@ -51,17 +51,29 @@ func NewNotificationsAPIController(s NotificationsAPIServicer, opts ...Notificat
 // Routes returns all the api routes for the NotificationsAPIController
 func (c *NotificationsAPIController) Routes() Routes {
 	return Routes{
-		"DeleteNotification": Route{
-			strings.ToUpper("Delete"),
-			"/v1/notifications/{id}",
-			c.DeleteNotification,
-		},
 		"GetNotifications": Route{
 			strings.ToUpper("Get"),
 			"/v1/notifications",
 			c.GetNotifications,
 		},
+		"DeleteNotification": Route{
+			strings.ToUpper("Delete"),
+			"/v1/notifications/{id}",
+			c.DeleteNotification,
+		},
 	}
+}
+
+// GetNotifications - return all notifications
+func (c *NotificationsAPIController) GetNotifications(w http.ResponseWriter, r *http.Request) {
+	result, err := c.service.GetNotifications(r.Context())
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
 // DeleteNotification - delete notification
@@ -73,18 +85,6 @@ func (c *NotificationsAPIController) DeleteNotification(w http.ResponseWriter, r
 		return
 	}
 	result, err := c.service.DeleteNotification(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// GetNotifications - return all notifications
-func (c *NotificationsAPIController) GetNotifications(w http.ResponseWriter, r *http.Request) {
-	result, err := c.service.GetNotifications(r.Context())
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

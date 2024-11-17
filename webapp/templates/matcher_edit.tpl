@@ -10,13 +10,23 @@
             <label for="name" class="form-label">Name</label>
             <input type="text" class="form-control" name="name" value="{{ .Matcher.Name }}">
         </div>
+
         <div class="mb-3">
             <label for="outputDescription" class="form-label">Output description</label>
             <input type="text" class="form-control" name="outputDescription" value="{{ .Matcher.OutputDescription }}">
         </div>
         <div class="mb-3">
+            <label for="outputTags" class="form-label">Output tags</label>
+            <input type="text" class="form-control" name="outputTags" value="{{ range .Matcher.OutputTags }}{{.}}, {{ end }}">
+        </div>
+
+        <div class="mb-3">
             <label for="descriptionRegExp" class="form-label">Description regexp</label>
             <input type="text" class="form-control" name="descriptionRegExp" value="{{ .Matcher.DescriptionRegExp }}">
+        </div>
+        <div class="mb-3">
+            <label for="partnerAccountNumber" class="form-label">Partner account</label>
+            <input type="text" class="form-control" name="partnerAccountNumber" value="{{ .Matcher.PartnerAccountNumber }}">
         </div>
         <div class="mb-3">
             <label for="account" class="form-label">Account</label>

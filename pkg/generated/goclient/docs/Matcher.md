@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **Name** | **string** |  | 
 **OutputDescription** | **string** |  | 
 **OutputAccountId** | **string** |  | 
+**OutputTags** | Pointer to **[]string** |  | [optional] 
 **CurrencyRegExp** | Pointer to **string** |  | [optional] 
 **PartnerNameRegExp** | Pointer to **string** |  | [optional] 
 **PartnerAccountNumber** | Pointer to **string** |  | [optional] 
@@ -112,6 +113,31 @@ and a boolean to check if the value has been set.
 
 SetOutputAccountId sets OutputAccountId field to given value.
 
+
+### GetOutputTags
+
+`func (o *Matcher) GetOutputTags() []string`
+
+GetOutputTags returns the OutputTags field if non-nil, zero value otherwise.
+
+### GetOutputTagsOk
+
+`func (o *Matcher) GetOutputTagsOk() (*[]string, bool)`
+
+GetOutputTagsOk returns a tuple with the OutputTags field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetOutputTags
+
+`func (o *Matcher) SetOutputTags(v []string)`
+
+SetOutputTags sets OutputTags field to given value.
+
+### HasOutputTags
+
+`func (o *Matcher) HasOutputTags() bool`
+
+HasOutputTags returns a boolean if a field has been set.
 
 ### GetCurrencyRegExp
 

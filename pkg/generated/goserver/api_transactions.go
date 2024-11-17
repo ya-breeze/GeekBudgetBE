@@ -53,95 +53,32 @@ func NewTransactionsAPIController(s TransactionsAPIServicer, opts ...Transaction
 // Routes returns all the api routes for the TransactionsAPIController
 func (c *TransactionsAPIController) Routes() Routes {
 	return Routes{
+		"GetTransactions": Route{
+			strings.ToUpper("Get"),
+			"/v1/transactions",
+			c.GetTransactions,
+		},
 		"CreateTransaction": Route{
 			strings.ToUpper("Post"),
 			"/v1/transactions",
 			c.CreateTransaction,
-		},
-		"DeleteTransaction": Route{
-			strings.ToUpper("Delete"),
-			"/v1/transactions/{id}",
-			c.DeleteTransaction,
 		},
 		"GetTransaction": Route{
 			strings.ToUpper("Get"),
 			"/v1/transactions/{id}",
 			c.GetTransaction,
 		},
-		"GetTransactions": Route{
-			strings.ToUpper("Get"),
-			"/v1/transactions",
-			c.GetTransactions,
-		},
 		"UpdateTransaction": Route{
 			strings.ToUpper("Put"),
 			"/v1/transactions/{id}",
 			c.UpdateTransaction,
 		},
+		"DeleteTransaction": Route{
+			strings.ToUpper("Delete"),
+			"/v1/transactions/{id}",
+			c.DeleteTransaction,
+		},
 	}
-}
-
-// CreateTransaction - create new transaction
-func (c *TransactionsAPIController) CreateTransaction(w http.ResponseWriter, r *http.Request) {
-	transactionNoIdParam := TransactionNoId{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&transactionNoIdParam); err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	if err := AssertTransactionNoIdRequired(transactionNoIdParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	if err := AssertTransactionNoIdConstraints(transactionNoIdParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	result, err := c.service.CreateTransaction(r.Context(), transactionNoIdParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// DeleteTransaction - delete transaction
-func (c *TransactionsAPIController) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	idParam := params["id"]
-	if idParam == "" {
-		c.errorHandler(w, r, &RequiredError{"id"}, nil)
-		return
-	}
-	result, err := c.service.DeleteTransaction(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// GetTransaction - get transaction
-func (c *TransactionsAPIController) GetTransaction(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	idParam := params["id"]
-	if idParam == "" {
-		c.errorHandler(w, r, &RequiredError{"id"}, nil)
-		return
-	}
-	result, err := c.service.GetTransaction(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
 // GetTransactions - get all transactions which matches given filters
@@ -218,6 +155,51 @@ func (c *TransactionsAPIController) GetTransactions(w http.ResponseWriter, r *ht
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
+// CreateTransaction - create new transaction
+func (c *TransactionsAPIController) CreateTransaction(w http.ResponseWriter, r *http.Request) {
+	transactionNoIdParam := TransactionNoId{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&transactionNoIdParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertTransactionNoIdRequired(transactionNoIdParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertTransactionNoIdConstraints(transactionNoIdParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.CreateTransaction(r.Context(), transactionNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// GetTransaction - get transaction
+func (c *TransactionsAPIController) GetTransaction(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.GetTransaction(r.Context(), idParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
 // UpdateTransaction - update transaction
 func (c *TransactionsAPIController) UpdateTransaction(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -242,6 +224,24 @@ func (c *TransactionsAPIController) UpdateTransaction(w http.ResponseWriter, r *
 		return
 	}
 	result, err := c.service.UpdateTransaction(r.Context(), idParam, transactionNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// DeleteTransaction - delete transaction
+func (c *TransactionsAPIController) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.DeleteTransaction(r.Context(), idParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

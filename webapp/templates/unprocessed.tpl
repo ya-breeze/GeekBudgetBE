@@ -18,6 +18,17 @@
     <form action="/web/unprocessed/convert" method="POST">
         <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
         <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
+        {{ if ne .Transaction.PartnerName "" }}
+        <h6>Partner name: {{ .Transaction.PartnerName }}</h6>
+        {{ end }}
+        {{ if ne .Transaction.PartnerAccount "" }}
+        <h6>Partner account: {{ .Transaction.PartnerAccount }}</h6>
+        {{ end }}
+        <h6>Tags: 
+        {{ range .Transaction.Tags }}
+        {{ . }}
+        {{ end }}
+        </h6>
         <p>
             {{ range $i, $m := .Transaction.Movements }}
                 <div class="mb-3">
@@ -46,6 +57,17 @@
         <button type="submit">Convert</button>
     </form>
     <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
+    {{ if ne .Transaction.PartnerName "" }}
+    <h6>Partner name: {{ .Transaction.PartnerName }}</h6>
+    {{ end }}
+    {{ if ne .Transaction.PartnerAccount "" }}
+    <h6>Partner account: {{ .Transaction.PartnerAccount }}</h6>
+    {{ end }}
+    <h6>Tags: 
+    {{ range .Transaction.Tags }}
+    {{ . }},
+    {{ end }}
+    </h6>
     <p>
         {{ range .Transaction.Movements }}
         {{ .Amount }} {{ .CurrencyName }} [{{ .AccountName }}] <br>

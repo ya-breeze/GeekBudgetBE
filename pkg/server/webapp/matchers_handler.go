@@ -2,6 +2,7 @@ package webapp
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
@@ -21,31 +22,6 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 	if ok {
 		data["UserID"] = userID
 
-		// accounts, err := r.db.GetAccounts(userID)
-		// if err != nil {
-		// 	r.logger.Error("Failed to get accounts", "error", err)
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// 	return
-		// }
-
-		// currencies, err := r.db.GetCurrencies(userID)
-		// if err != nil {
-		// 	r.logger.Error("Failed to get currencies", "error", err)
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// 	return
-		// }
-
-		if req.Method == http.MethodDelete {
-			id := req.URL.Query().Get("id")
-			if id != "" {
-				if err := r.db.DeleteMatcher(userID, id); err != nil {
-					r.logger.Error("Failed to delete matcher", "error", err)
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			}
-		}
-
 		matchers, err := r.db.GetMatchers(userID)
 		if err != nil {
 			r.logger.Error("Failed to get matchers", "error", err)
@@ -59,6 +35,34 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (r *WebAppRouter) matchersDeleteHandler(w http.ResponseWriter, req *http.Request) {
+	if err := req.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	session, _ := r.cookies.Get(req, "session-name")
+	userID, ok := session.Values["userID"].(string)
+	if !ok {
+		http.Error(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+
+	id := req.FormValue("id")
+	if id == "" {
+		http.Error(w, "ID is required", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.db.DeleteMatcher(userID, id); err != nil {
+		r.logger.Error("Failed to delete matcher", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, req, "/web/matchers", http.StatusFound)
 }
 
 //nolint:funlen,cyclop
@@ -118,45 +122,47 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 
 	var matcher goserver.Matcher
 	if matcherID != "" {
-		var m goserver.Matcher
-		m, err = r.db.GetMatcher(userID, matcherID)
+		matcher, err = r.db.GetMatcher(userID, matcherID)
 		if err != nil {
 			r.logger.Error("Failed to get matcher", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		matcher = m
 	} else {
 		matcher = goserver.Matcher{
-			Name:              transaction.Description,
-			OutputDescription: transaction.Description,
-			DescriptionRegExp: transaction.Description,
+			Name:                 transaction.Description,
+			OutputDescription:    transaction.Description,
+			DescriptionRegExp:    transaction.Description,
+			PartnerAccountNumber: transaction.PartnerAccount,
+			PartnerNameRegExp:    transaction.PartnerName,
 		}
 	}
 
 	if req.Method == http.MethodPost {
-		m := goserver.MatcherNoId{
-			Name:              req.FormValue("name"),
-			OutputDescription: req.FormValue("outputDescription"),
-			DescriptionRegExp: req.FormValue("descriptionRegExp"),
-			OutputAccountId:   req.FormValue("account"),
+		matcher = goserver.Matcher{
+			Name:                 req.FormValue("name"),
+			OutputDescription:    req.FormValue("outputDescription"),
+			DescriptionRegExp:    req.FormValue("descriptionRegExp"),
+			OutputAccountId:      req.FormValue("account"),
+			PartnerAccountNumber: req.FormValue("partnerAccountNumber"),
+			OutputTags:           removeEmptyValues(strings.Split(req.FormValue("outputTags"), ",")),
 		}
 
-		if m.OutputAccountId == "" {
+		if matcher.OutputAccountId == "" {
 			http.Error(w, "Account is required", http.StatusBadRequest)
 			return
 		}
 
 		if matcherID == "" {
-			r.logger.Info("creating matcher", "name", m.Name)
-			if matcher, err = r.db.CreateMatcher(userID, &m); err != nil {
+			r.logger.Info("creating matcher", "matcher", matcher)
+			if matcher, err = r.db.CreateMatcher(userID, &matcher); err != nil {
 				r.logger.Error("Failed to create matcher", "error", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
-			r.logger.Info("updating matcher", "name", m.Name)
-			if matcher, err = r.db.UpdateMatcher(userID, matcherID, &m); err != nil {
+			r.logger.Info("updating matcher", "matcher", matcher)
+			if matcher, err = r.db.UpdateMatcher(userID, matcherID, &matcher); err != nil {
 				r.logger.Error("Failed to save matcher", "error", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -171,6 +177,16 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 	}
 
 	// http.Redirect(w, req, "/web/matchers", http.StatusFound)
+}
+
+func removeEmptyValues(arr []string) []string {
+	var result []string
+	for _, str := range arr {
+		if str != "" {
+			result = append(result, str)
+		}
+	}
+	return result
 }
 
 func (r *WebAppRouter) matcherDeleteHandler(w http.ResponseWriter, req *http.Request) {

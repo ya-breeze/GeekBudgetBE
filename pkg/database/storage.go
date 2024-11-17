@@ -66,8 +66,8 @@ type Storage interface {
 	GetMatchers(userID string) ([]goserver.Matcher, error)
 	GetMatcher(userID string, id string) (goserver.Matcher, error)
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
-	CreateMatcher(userID string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
-	UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId) (goserver.Matcher, error)
+	CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
+	UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	DeleteMatcher(userID string, id string) error
 }
 
@@ -108,7 +108,7 @@ func (s *storage) Close() error {
 }
 
 func (s *storage) GetAccounts(userID string) ([]goserver.Account, error) {
-	result, err := s.db.Model(&models.Account{}).Where("user_id = ?", userID).Rows()
+	result, err := s.db.Model(&models.Account{}).Where("user_id = ?", userID).Order("type, name").Rows()
 	if err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
@@ -326,6 +326,7 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time) ([]
 	if !dateTo.IsZero() {
 		req = req.Where("date < ?", dateTo)
 	}
+	req = req.Order("date")
 
 	result, err := req.Rows()
 	if err != nil {
@@ -532,7 +533,7 @@ func (s *storage) GetMatchers(userID string) ([]goserver.Matcher, error) {
 	return matchers, nil
 }
 
-func (s *storage) CreateMatcher(userID string, matcher *goserver.MatcherNoId) (goserver.Matcher, error) {
+func (s *storage) CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error) {
 	data := models.MatcherToDB(matcher, userID)
 	data.ID = uuid.New()
 	if err := s.db.Create(data).Error; err != nil {
@@ -566,7 +567,7 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 	return res, nil
 }
 
-func (s *storage) UpdateMatcher(userID string, id string, matcher *goserver.MatcherNoId,
+func (s *storage) UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface,
 ) (goserver.Matcher, error) {
 	idUUID, err := uuid.Parse(id)
 	if err != nil {

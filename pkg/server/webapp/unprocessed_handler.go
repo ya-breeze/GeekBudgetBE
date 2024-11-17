@@ -39,7 +39,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 
 		id := req.URL.Query().Get("id")
 		if id != "" {
-			r.logger.Info("Skipping unprocessed transactions", "id", id)
+			r.logger.Info("Skipping unprocessed transactions to specified ID", "id", id)
 		}
 		s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
 		unprocessed, err := s.PrepareUnprocessedTransactions(req.Context(), userID, true, id)

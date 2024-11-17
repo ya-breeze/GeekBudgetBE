@@ -22,12 +22,12 @@ import (
 // The AccountsAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a AccountsAPIServicer to perform the required actions, then write the service results to the http response.
 type AccountsAPIRouter interface {
-	CreateAccount(http.ResponseWriter, *http.Request)
-	DeleteAccount(http.ResponseWriter, *http.Request)
-	GetAccount(http.ResponseWriter, *http.Request)
 	GetAccountHistory(http.ResponseWriter, *http.Request)
 	GetAccounts(http.ResponseWriter, *http.Request)
+	CreateAccount(http.ResponseWriter, *http.Request)
+	GetAccount(http.ResponseWriter, *http.Request)
 	UpdateAccount(http.ResponseWriter, *http.Request)
+	DeleteAccount(http.ResponseWriter, *http.Request)
 }
 
 // AggregationsAPIRouter defines the required methods for binding the api requests to a responses for the AggregationsAPI
@@ -50,11 +50,11 @@ type AuthAPIRouter interface {
 // The BankImportersAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a BankImportersAPIServicer to perform the required actions, then write the service results to the http response.
 type BankImportersAPIRouter interface {
+	GetBankImporters(http.ResponseWriter, *http.Request)
 	CreateBankImporter(http.ResponseWriter, *http.Request)
+	UpdateBankImporter(http.ResponseWriter, *http.Request)
 	DeleteBankImporter(http.ResponseWriter, *http.Request)
 	FetchBankImporter(http.ResponseWriter, *http.Request)
-	GetBankImporters(http.ResponseWriter, *http.Request)
-	UpdateBankImporter(http.ResponseWriter, *http.Request)
 	UploadBankImporter(http.ResponseWriter, *http.Request)
 }
 
@@ -62,10 +62,10 @@ type BankImportersAPIRouter interface {
 // The CurrenciesAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a CurrenciesAPIServicer to perform the required actions, then write the service results to the http response.
 type CurrenciesAPIRouter interface {
-	CreateCurrency(http.ResponseWriter, *http.Request)
-	DeleteCurrency(http.ResponseWriter, *http.Request)
 	GetCurrencies(http.ResponseWriter, *http.Request)
+	CreateCurrency(http.ResponseWriter, *http.Request)
 	UpdateCurrency(http.ResponseWriter, *http.Request)
+	DeleteCurrency(http.ResponseWriter, *http.Request)
 }
 
 // ExportAPIRouter defines the required methods for binding the api requests to a responses for the ExportAPI
@@ -86,39 +86,39 @@ type ImportAPIRouter interface {
 // The MatchersAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a MatchersAPIServicer to perform the required actions, then write the service results to the http response.
 type MatchersAPIRouter interface {
-	CheckMatcher(http.ResponseWriter, *http.Request)
-	CreateMatcher(http.ResponseWriter, *http.Request)
-	DeleteMatcher(http.ResponseWriter, *http.Request)
 	GetMatchers(http.ResponseWriter, *http.Request)
+	CreateMatcher(http.ResponseWriter, *http.Request)
 	UpdateMatcher(http.ResponseWriter, *http.Request)
+	DeleteMatcher(http.ResponseWriter, *http.Request)
+	CheckMatcher(http.ResponseWriter, *http.Request)
 }
 
 // NotificationsAPIRouter defines the required methods for binding the api requests to a responses for the NotificationsAPI
 // The NotificationsAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a NotificationsAPIServicer to perform the required actions, then write the service results to the http response.
 type NotificationsAPIRouter interface {
-	DeleteNotification(http.ResponseWriter, *http.Request)
 	GetNotifications(http.ResponseWriter, *http.Request)
+	DeleteNotification(http.ResponseWriter, *http.Request)
 }
 
 // TransactionsAPIRouter defines the required methods for binding the api requests to a responses for the TransactionsAPI
 // The TransactionsAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a TransactionsAPIServicer to perform the required actions, then write the service results to the http response.
 type TransactionsAPIRouter interface {
-	CreateTransaction(http.ResponseWriter, *http.Request)
-	DeleteTransaction(http.ResponseWriter, *http.Request)
-	GetTransaction(http.ResponseWriter, *http.Request)
 	GetTransactions(http.ResponseWriter, *http.Request)
+	CreateTransaction(http.ResponseWriter, *http.Request)
+	GetTransaction(http.ResponseWriter, *http.Request)
 	UpdateTransaction(http.ResponseWriter, *http.Request)
+	DeleteTransaction(http.ResponseWriter, *http.Request)
 }
 
 // UnprocessedTransactionsAPIRouter defines the required methods for binding the api requests to a responses for the UnprocessedTransactionsAPI
 // The UnprocessedTransactionsAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a UnprocessedTransactionsAPIServicer to perform the required actions, then write the service results to the http response.
 type UnprocessedTransactionsAPIRouter interface {
+	GetUnprocessedTransactions(http.ResponseWriter, *http.Request)
 	ConvertUnprocessedTransaction(http.ResponseWriter, *http.Request)
 	DeleteUnprocessedTransaction(http.ResponseWriter, *http.Request)
-	GetUnprocessedTransactions(http.ResponseWriter, *http.Request)
 }
 
 // UserAPIRouter defines the required methods for binding the api requests to a responses for the UserAPI
@@ -133,12 +133,12 @@ type UserAPIRouter interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type AccountsAPIServicer interface {
-	CreateAccount(context.Context, AccountNoId) (ImplResponse, error)
-	DeleteAccount(context.Context, string) (ImplResponse, error)
-	GetAccount(context.Context, string) (ImplResponse, error)
 	GetAccountHistory(context.Context, string) (ImplResponse, error)
 	GetAccounts(context.Context) (ImplResponse, error)
+	CreateAccount(context.Context, AccountNoId) (ImplResponse, error)
+	GetAccount(context.Context, string) (ImplResponse, error)
 	UpdateAccount(context.Context, string, AccountNoId) (ImplResponse, error)
+	DeleteAccount(context.Context, string) (ImplResponse, error)
 }
 
 // AggregationsAPIServicer defines the api actions for the AggregationsAPI service
@@ -164,11 +164,11 @@ type AuthAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type BankImportersAPIServicer interface {
+	GetBankImporters(context.Context) (ImplResponse, error)
 	CreateBankImporter(context.Context, BankImporterNoId) (ImplResponse, error)
+	UpdateBankImporter(context.Context, string, BankImporterNoId) (ImplResponse, error)
 	DeleteBankImporter(context.Context, string) (ImplResponse, error)
 	FetchBankImporter(context.Context, string) (ImplResponse, error)
-	GetBankImporters(context.Context) (ImplResponse, error)
-	UpdateBankImporter(context.Context, string, BankImporterNoId) (ImplResponse, error)
 	UploadBankImporter(context.Context, string, string, *os.File) (ImplResponse, error)
 }
 
@@ -177,10 +177,10 @@ type BankImportersAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type CurrenciesAPIServicer interface {
-	CreateCurrency(context.Context, CurrencyNoId) (ImplResponse, error)
-	DeleteCurrency(context.Context, string) (ImplResponse, error)
 	GetCurrencies(context.Context) (ImplResponse, error)
+	CreateCurrency(context.Context, CurrencyNoId) (ImplResponse, error)
 	UpdateCurrency(context.Context, string, CurrencyNoId) (ImplResponse, error)
+	DeleteCurrency(context.Context, string) (ImplResponse, error)
 }
 
 // ExportAPIServicer defines the api actions for the ExportAPI service
@@ -204,11 +204,11 @@ type ImportAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type MatchersAPIServicer interface {
-	CheckMatcher(context.Context, CheckMatcherRequest) (ImplResponse, error)
-	CreateMatcher(context.Context, MatcherNoId) (ImplResponse, error)
-	DeleteMatcher(context.Context, string) (ImplResponse, error)
 	GetMatchers(context.Context) (ImplResponse, error)
+	CreateMatcher(context.Context, MatcherNoId) (ImplResponse, error)
 	UpdateMatcher(context.Context, string, MatcherNoId) (ImplResponse, error)
+	DeleteMatcher(context.Context, string) (ImplResponse, error)
+	CheckMatcher(context.Context, CheckMatcherRequest) (ImplResponse, error)
 }
 
 // NotificationsAPIServicer defines the api actions for the NotificationsAPI service
@@ -216,8 +216,8 @@ type MatchersAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type NotificationsAPIServicer interface {
-	DeleteNotification(context.Context, string) (ImplResponse, error)
 	GetNotifications(context.Context) (ImplResponse, error)
+	DeleteNotification(context.Context, string) (ImplResponse, error)
 }
 
 // TransactionsAPIServicer defines the api actions for the TransactionsAPI service
@@ -225,11 +225,11 @@ type NotificationsAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type TransactionsAPIServicer interface {
-	CreateTransaction(context.Context, TransactionNoId) (ImplResponse, error)
-	DeleteTransaction(context.Context, string) (ImplResponse, error)
-	GetTransaction(context.Context, string) (ImplResponse, error)
 	GetTransactions(context.Context, string, float64, float64, time.Time, time.Time) (ImplResponse, error)
+	CreateTransaction(context.Context, TransactionNoId) (ImplResponse, error)
+	GetTransaction(context.Context, string) (ImplResponse, error)
 	UpdateTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)
+	DeleteTransaction(context.Context, string) (ImplResponse, error)
 }
 
 // UnprocessedTransactionsAPIServicer defines the api actions for the UnprocessedTransactionsAPI service
@@ -237,9 +237,9 @@ type TransactionsAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type UnprocessedTransactionsAPIServicer interface {
+	GetUnprocessedTransactions(context.Context) (ImplResponse, error)
 	ConvertUnprocessedTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)
 	DeleteUnprocessedTransaction(context.Context, string, string) (ImplResponse, error)
-	GetUnprocessedTransactions(context.Context) (ImplResponse, error)
 }
 
 // UserAPIServicer defines the api actions for the UserAPI service

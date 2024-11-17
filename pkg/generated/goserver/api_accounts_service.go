@@ -19,18 +19,18 @@ import (
 
 // AccountsAPIService is an interface that defines the logic for the AccountsAPIServicer
 type AccountsAPIService interface {
-	// CreateAccount - create new account
-	CreateAccount(ctx context.Context, accountNoId AccountNoId) (ImplResponse, error)
-	// DeleteAccount - delete account
-	DeleteAccount(ctx context.Context, id string) (ImplResponse, error)
-	// GetAccount - get account
-	GetAccount(ctx context.Context, id string) (ImplResponse, error)
 	// GetAccountHistory - return list of dates when this account was used in some transaction
 	GetAccountHistory(ctx context.Context, accountId string) (ImplResponse, error)
 	// GetAccounts - get all accounts
 	GetAccounts(ctx context.Context) (ImplResponse, error)
+	// CreateAccount - create new account
+	CreateAccount(ctx context.Context, accountNoId AccountNoId) (ImplResponse, error)
+	// GetAccount - get account
+	GetAccount(ctx context.Context, id string) (ImplResponse, error)
 	// UpdateAccount - update account
 	UpdateAccount(ctx context.Context, id string, accountNoId AccountNoId) (ImplResponse, error)
+	// DeleteAccount - delete account
+	DeleteAccount(ctx context.Context, id string) (ImplResponse, error)
 }
 
 // AccountsAPIService is a service that implements the logic for the AccountsAPIServicer
@@ -42,39 +42,6 @@ type AccountsAPIServiceImpl struct {
 // NewAccountsAPIService creates a default api service
 func NewAccountsAPIService() AccountsAPIService {
 	return &AccountsAPIServiceImpl{}
-}
-
-// CreateAccount - create new account
-func (s *AccountsAPIServiceImpl) CreateAccount(ctx context.Context, accountNoId AccountNoId) (ImplResponse, error) {
-	// TODO - update CreateAccount with the required logic for this service method.
-	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, Account{}) or use other options such as http.Ok ...
-	// return Response(200, Account{}), nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("CreateAccount method not implemented")
-}
-
-// DeleteAccount - delete account
-func (s *AccountsAPIServiceImpl) DeleteAccount(ctx context.Context, id string) (ImplResponse, error) {
-	// TODO - update DeleteAccount with the required logic for this service method.
-	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
-	// return Response(200, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("DeleteAccount method not implemented")
-}
-
-// GetAccount - get account
-func (s *AccountsAPIServiceImpl) GetAccount(ctx context.Context, id string) (ImplResponse, error) {
-	// TODO - update GetAccount with the required logic for this service method.
-	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, Account{}) or use other options such as http.Ok ...
-	// return Response(200, Account{}), nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("GetAccount method not implemented")
 }
 
 // GetAccountHistory - return list of dates when this account was used in some transaction
@@ -99,6 +66,28 @@ func (s *AccountsAPIServiceImpl) GetAccounts(ctx context.Context) (ImplResponse,
 	return Response(http.StatusNotImplemented, nil), errors.New("GetAccounts method not implemented")
 }
 
+// CreateAccount - create new account
+func (s *AccountsAPIServiceImpl) CreateAccount(ctx context.Context, accountNoId AccountNoId) (ImplResponse, error) {
+	// TODO - update CreateAccount with the required logic for this service method.
+	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Account{}) or use other options such as http.Ok ...
+	// return Response(200, Account{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("CreateAccount method not implemented")
+}
+
+// GetAccount - get account
+func (s *AccountsAPIServiceImpl) GetAccount(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update GetAccount with the required logic for this service method.
+	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Account{}) or use other options such as http.Ok ...
+	// return Response(200, Account{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("GetAccount method not implemented")
+}
+
 // UpdateAccount - update account
 func (s *AccountsAPIServiceImpl) UpdateAccount(ctx context.Context, id string, accountNoId AccountNoId) (ImplResponse, error) {
 	// TODO - update UpdateAccount with the required logic for this service method.
@@ -108,4 +97,15 @@ func (s *AccountsAPIServiceImpl) UpdateAccount(ctx context.Context, id string, a
 	// return Response(200, Account{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("UpdateAccount method not implemented")
+}
+
+// DeleteAccount - delete account
+func (s *AccountsAPIServiceImpl) DeleteAccount(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update DeleteAccount with the required logic for this service method.
+	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
+	// return Response(200, nil),nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DeleteAccount method not implemented")
 }

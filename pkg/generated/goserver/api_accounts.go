@@ -52,21 +52,6 @@ func NewAccountsAPIController(s AccountsAPIServicer, opts ...AccountsAPIOption) 
 // Routes returns all the api routes for the AccountsAPIController
 func (c *AccountsAPIController) Routes() Routes {
 	return Routes{
-		"CreateAccount": Route{
-			strings.ToUpper("Post"),
-			"/v1/accounts",
-			c.CreateAccount,
-		},
-		"DeleteAccount": Route{
-			strings.ToUpper("Delete"),
-			"/v1/accounts/{id}",
-			c.DeleteAccount,
-		},
-		"GetAccount": Route{
-			strings.ToUpper("Get"),
-			"/v1/accounts/{id}",
-			c.GetAccount,
-		},
 		"GetAccountHistory": Route{
 			strings.ToUpper("Get"),
 			"/v1/accounts/{accountId}/history",
@@ -77,12 +62,57 @@ func (c *AccountsAPIController) Routes() Routes {
 			"/v1/accounts",
 			c.GetAccounts,
 		},
+		"CreateAccount": Route{
+			strings.ToUpper("Post"),
+			"/v1/accounts",
+			c.CreateAccount,
+		},
+		"GetAccount": Route{
+			strings.ToUpper("Get"),
+			"/v1/accounts/{id}",
+			c.GetAccount,
+		},
 		"UpdateAccount": Route{
 			strings.ToUpper("Put"),
 			"/v1/accounts/{id}",
 			c.UpdateAccount,
 		},
+		"DeleteAccount": Route{
+			strings.ToUpper("Delete"),
+			"/v1/accounts/{id}",
+			c.DeleteAccount,
+		},
 	}
+}
+
+// GetAccountHistory - return list of dates when this account was used in some transaction
+func (c *AccountsAPIController) GetAccountHistory(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	accountIdParam := params["accountId"]
+	if accountIdParam == "" {
+		c.errorHandler(w, r, &RequiredError{"accountId"}, nil)
+		return
+	}
+	result, err := c.service.GetAccountHistory(r.Context(), accountIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// GetAccounts - get all accounts
+func (c *AccountsAPIController) GetAccounts(w http.ResponseWriter, r *http.Request) {
+	result, err := c.service.GetAccounts(r.Context())
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
 // CreateAccount - create new account
@@ -112,24 +142,6 @@ func (c *AccountsAPIController) CreateAccount(w http.ResponseWriter, r *http.Req
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
-// DeleteAccount - delete account
-func (c *AccountsAPIController) DeleteAccount(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	idParam := params["id"]
-	if idParam == "" {
-		c.errorHandler(w, r, &RequiredError{"id"}, nil)
-		return
-	}
-	result, err := c.service.DeleteAccount(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
 // GetAccount - get account
 func (c *AccountsAPIController) GetAccount(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -139,36 +151,6 @@ func (c *AccountsAPIController) GetAccount(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	result, err := c.service.GetAccount(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// GetAccountHistory - return list of dates when this account was used in some transaction
-func (c *AccountsAPIController) GetAccountHistory(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	accountIdParam := params["accountId"]
-	if accountIdParam == "" {
-		c.errorHandler(w, r, &RequiredError{"accountId"}, nil)
-		return
-	}
-	result, err := c.service.GetAccountHistory(r.Context(), accountIdParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// GetAccounts - get all accounts
-func (c *AccountsAPIController) GetAccounts(w http.ResponseWriter, r *http.Request) {
-	result, err := c.service.GetAccounts(r.Context())
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -202,6 +184,24 @@ func (c *AccountsAPIController) UpdateAccount(w http.ResponseWriter, r *http.Req
 		return
 	}
 	result, err := c.service.UpdateAccount(r.Context(), idParam, accountNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// DeleteAccount - delete account
+func (c *AccountsAPIController) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.DeleteAccount(r.Context(), idParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

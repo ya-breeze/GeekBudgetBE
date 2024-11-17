@@ -18,6 +18,8 @@ type MatcherNoId struct {
 
 	OutputAccountId string `json:"outputAccountId"`
 
+	OutputTags []string `json:"outputTags,omitempty"`
+
 	CurrencyRegExp string `json:"currencyRegExp,omitempty"`
 
 	PartnerNameRegExp string `json:"partnerNameRegExp,omitempty"`
@@ -33,6 +35,7 @@ type MatcherNoIdInterface interface {
 	GetName() string
 	GetOutputDescription() string
 	GetOutputAccountId() string
+	GetOutputTags() []string
 	GetCurrencyRegExp() string
 	GetPartnerNameRegExp() string
 	GetPartnerAccountNumber() string
@@ -48,6 +51,9 @@ func (c *MatcherNoId) GetOutputDescription() string {
 }
 func (c *MatcherNoId) GetOutputAccountId() string {
 	return c.OutputAccountId
+}
+func (c *MatcherNoId) GetOutputTags() []string {
+	return c.OutputTags
 }
 func (c *MatcherNoId) GetCurrencyRegExp() string {
 	return c.CurrencyRegExp

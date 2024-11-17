@@ -52,52 +52,37 @@ func NewMatchersAPIController(s MatchersAPIServicer, opts ...MatchersAPIOption) 
 // Routes returns all the api routes for the MatchersAPIController
 func (c *MatchersAPIController) Routes() Routes {
 	return Routes{
-		"CheckMatcher": Route{
-			strings.ToUpper("Post"),
-			"/v1/matchers/check",
-			c.CheckMatcher,
+		"GetMatchers": Route{
+			strings.ToUpper("Get"),
+			"/v1/matchers",
+			c.GetMatchers,
 		},
 		"CreateMatcher": Route{
 			strings.ToUpper("Post"),
 			"/v1/matchers",
 			c.CreateMatcher,
 		},
-		"DeleteMatcher": Route{
-			strings.ToUpper("Delete"),
-			"/v1/matchers/{id}",
-			c.DeleteMatcher,
-		},
-		"GetMatchers": Route{
-			strings.ToUpper("Get"),
-			"/v1/matchers",
-			c.GetMatchers,
-		},
 		"UpdateMatcher": Route{
 			strings.ToUpper("Put"),
 			"/v1/matchers/{id}",
 			c.UpdateMatcher,
 		},
+		"DeleteMatcher": Route{
+			strings.ToUpper("Delete"),
+			"/v1/matchers/{id}",
+			c.DeleteMatcher,
+		},
+		"CheckMatcher": Route{
+			strings.ToUpper("Post"),
+			"/v1/matchers/check",
+			c.CheckMatcher,
+		},
 	}
 }
 
-// CheckMatcher - check if passed matcher matches given transaction
-func (c *MatchersAPIController) CheckMatcher(w http.ResponseWriter, r *http.Request) {
-	checkMatcherRequestParam := CheckMatcherRequest{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&checkMatcherRequestParam); err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	if err := AssertCheckMatcherRequestRequired(checkMatcherRequestParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	if err := AssertCheckMatcherRequestConstraints(checkMatcherRequestParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	result, err := c.service.CheckMatcher(r.Context(), checkMatcherRequestParam)
+// GetMatchers - get all matchers
+func (c *MatchersAPIController) GetMatchers(w http.ResponseWriter, r *http.Request) {
+	result, err := c.service.GetMatchers(r.Context())
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -134,36 +119,6 @@ func (c *MatchersAPIController) CreateMatcher(w http.ResponseWriter, r *http.Req
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
-// DeleteMatcher - delete matcher
-func (c *MatchersAPIController) DeleteMatcher(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	idParam := params["id"]
-	if idParam == "" {
-		c.errorHandler(w, r, &RequiredError{"id"}, nil)
-		return
-	}
-	result, err := c.service.DeleteMatcher(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// GetMatchers - get all matchers
-func (c *MatchersAPIController) GetMatchers(w http.ResponseWriter, r *http.Request) {
-	result, err := c.service.GetMatchers(r.Context())
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
 // UpdateMatcher - update matcher
 func (c *MatchersAPIController) UpdateMatcher(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -188,6 +143,51 @@ func (c *MatchersAPIController) UpdateMatcher(w http.ResponseWriter, r *http.Req
 		return
 	}
 	result, err := c.service.UpdateMatcher(r.Context(), idParam, matcherNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// DeleteMatcher - delete matcher
+func (c *MatchersAPIController) DeleteMatcher(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.DeleteMatcher(r.Context(), idParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// CheckMatcher - check if passed matcher matches given transaction
+func (c *MatchersAPIController) CheckMatcher(w http.ResponseWriter, r *http.Request) {
+	checkMatcherRequestParam := CheckMatcherRequest{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&checkMatcherRequestParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertCheckMatcherRequestRequired(checkMatcherRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertCheckMatcherRequestConstraints(checkMatcherRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.CheckMatcher(r.Context(), checkMatcherRequestParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

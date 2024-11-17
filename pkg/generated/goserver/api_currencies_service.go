@@ -19,14 +19,14 @@ import (
 
 // CurrenciesAPIService is an interface that defines the logic for the CurrenciesAPIServicer
 type CurrenciesAPIService interface {
-	// CreateCurrency - create new currency
-	CreateCurrency(ctx context.Context, currencyNoId CurrencyNoId) (ImplResponse, error)
-	// DeleteCurrency - delete currency
-	DeleteCurrency(ctx context.Context, id string) (ImplResponse, error)
 	// GetCurrencies - get all currencies
 	GetCurrencies(ctx context.Context) (ImplResponse, error)
+	// CreateCurrency - create new currency
+	CreateCurrency(ctx context.Context, currencyNoId CurrencyNoId) (ImplResponse, error)
 	// UpdateCurrency - update currency
 	UpdateCurrency(ctx context.Context, id string, currencyNoId CurrencyNoId) (ImplResponse, error)
+	// DeleteCurrency - delete currency
+	DeleteCurrency(ctx context.Context, id string) (ImplResponse, error)
 }
 
 // CurrenciesAPIService is a service that implements the logic for the CurrenciesAPIServicer
@@ -40,28 +40,6 @@ func NewCurrenciesAPIService() CurrenciesAPIService {
 	return &CurrenciesAPIServiceImpl{}
 }
 
-// CreateCurrency - create new currency
-func (s *CurrenciesAPIServiceImpl) CreateCurrency(ctx context.Context, currencyNoId CurrencyNoId) (ImplResponse, error) {
-	// TODO - update CreateCurrency with the required logic for this service method.
-	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, Currency{}) or use other options such as http.Ok ...
-	// return Response(200, Currency{}), nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("CreateCurrency method not implemented")
-}
-
-// DeleteCurrency - delete currency
-func (s *CurrenciesAPIServiceImpl) DeleteCurrency(ctx context.Context, id string) (ImplResponse, error) {
-	// TODO - update DeleteCurrency with the required logic for this service method.
-	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
-	// return Response(200, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("DeleteCurrency method not implemented")
-}
-
 // GetCurrencies - get all currencies
 func (s *CurrenciesAPIServiceImpl) GetCurrencies(ctx context.Context) (ImplResponse, error) {
 	// TODO - update GetCurrencies with the required logic for this service method.
@@ -73,6 +51,17 @@ func (s *CurrenciesAPIServiceImpl) GetCurrencies(ctx context.Context) (ImplRespo
 	return Response(http.StatusNotImplemented, nil), errors.New("GetCurrencies method not implemented")
 }
 
+// CreateCurrency - create new currency
+func (s *CurrenciesAPIServiceImpl) CreateCurrency(ctx context.Context, currencyNoId CurrencyNoId) (ImplResponse, error) {
+	// TODO - update CreateCurrency with the required logic for this service method.
+	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Currency{}) or use other options such as http.Ok ...
+	// return Response(200, Currency{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("CreateCurrency method not implemented")
+}
+
 // UpdateCurrency - update currency
 func (s *CurrenciesAPIServiceImpl) UpdateCurrency(ctx context.Context, id string, currencyNoId CurrencyNoId) (ImplResponse, error) {
 	// TODO - update UpdateCurrency with the required logic for this service method.
@@ -82,4 +71,15 @@ func (s *CurrenciesAPIServiceImpl) UpdateCurrency(ctx context.Context, id string
 	// return Response(200, Currency{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("UpdateCurrency method not implemented")
+}
+
+// DeleteCurrency - delete currency
+func (s *CurrenciesAPIServiceImpl) DeleteCurrency(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update DeleteCurrency with the required logic for this service method.
+	// Add api_currencies_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
+	// return Response(200, nil),nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DeleteCurrency method not implemented")
 }

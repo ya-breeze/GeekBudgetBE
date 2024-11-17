@@ -1285,6 +1285,10 @@ components:
         outputAccountId:
           type: string
           format: uuid
+        outputTags:
+          type: array
+          items:
+            type: string
 
         currencyRegExp:
           type: string

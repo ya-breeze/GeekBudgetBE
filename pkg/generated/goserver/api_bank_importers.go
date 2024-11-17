@@ -53,10 +53,20 @@ func NewBankImportersAPIController(s BankImportersAPIServicer, opts ...BankImpor
 // Routes returns all the api routes for the BankImportersAPIController
 func (c *BankImportersAPIController) Routes() Routes {
 	return Routes{
+		"GetBankImporters": Route{
+			strings.ToUpper("Get"),
+			"/v1/bankImporters",
+			c.GetBankImporters,
+		},
 		"CreateBankImporter": Route{
 			strings.ToUpper("Post"),
 			"/v1/bankImporters",
 			c.CreateBankImporter,
+		},
+		"UpdateBankImporter": Route{
+			strings.ToUpper("Put"),
+			"/v1/bankImporters/{id}",
+			c.UpdateBankImporter,
 		},
 		"DeleteBankImporter": Route{
 			strings.ToUpper("Delete"),
@@ -68,22 +78,24 @@ func (c *BankImportersAPIController) Routes() Routes {
 			"/v1/bankImporters/{id}/fetch",
 			c.FetchBankImporter,
 		},
-		"GetBankImporters": Route{
-			strings.ToUpper("Get"),
-			"/v1/bankImporters",
-			c.GetBankImporters,
-		},
-		"UpdateBankImporter": Route{
-			strings.ToUpper("Put"),
-			"/v1/bankImporters/{id}",
-			c.UpdateBankImporter,
-		},
 		"UploadBankImporter": Route{
 			strings.ToUpper("Post"),
 			"/v1/bankImporters/{id}/upload",
 			c.UploadBankImporter,
 		},
 	}
+}
+
+// GetBankImporters - get all bank importers
+func (c *BankImportersAPIController) GetBankImporters(w http.ResponseWriter, r *http.Request) {
+	result, err := c.service.GetBankImporters(r.Context())
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
 // CreateBankImporter - create new bank importer
@@ -104,6 +116,39 @@ func (c *BankImportersAPIController) CreateBankImporter(w http.ResponseWriter, r
 		return
 	}
 	result, err := c.service.CreateBankImporter(r.Context(), bankImporterNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// UpdateBankImporter - update bank importer
+func (c *BankImportersAPIController) UpdateBankImporter(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	bankImporterNoIdParam := BankImporterNoId{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&bankImporterNoIdParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertBankImporterNoIdRequired(bankImporterNoIdParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertBankImporterNoIdConstraints(bankImporterNoIdParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.UpdateBankImporter(r.Context(), idParam, bankImporterNoIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -140,51 +185,6 @@ func (c *BankImportersAPIController) FetchBankImporter(w http.ResponseWriter, r 
 		return
 	}
 	result, err := c.service.FetchBankImporter(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// GetBankImporters - get all bank importers
-func (c *BankImportersAPIController) GetBankImporters(w http.ResponseWriter, r *http.Request) {
-	result, err := c.service.GetBankImporters(r.Context())
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// UpdateBankImporter - update bank importer
-func (c *BankImportersAPIController) UpdateBankImporter(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	idParam := params["id"]
-	if idParam == "" {
-		c.errorHandler(w, r, &RequiredError{"id"}, nil)
-		return
-	}
-	bankImporterNoIdParam := BankImporterNoId{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&bankImporterNoIdParam); err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	if err := AssertBankImporterNoIdRequired(bankImporterNoIdParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	if err := AssertBankImporterNoIdConstraints(bankImporterNoIdParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	result, err := c.service.UpdateBankImporter(r.Context(), idParam, bankImporterNoIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
