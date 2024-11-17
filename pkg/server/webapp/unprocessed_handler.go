@@ -42,7 +42,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 			r.logger.Info("Skipping unprocessed transactions to specified ID", "id", id)
 		}
 		s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
-		unprocessed, err := s.PrepareUnprocessedTransactions(req.Context(), userID, true, id)
+		unprocessed, cnt, err := s.PrepareUnprocessedTransactions(req.Context(), userID, true, id)
 		if err != nil {
 			r.logger.Error("Failed to get unprocessed", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -66,6 +66,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 			}
 
 			data["Unprocessed"] = &web
+			data["UnprocessedCount"] = cnt
 		}
 	}
 

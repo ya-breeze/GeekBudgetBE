@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **OutputTags** | Pointer to **[]string** |  | [optional] 
 **CurrencyRegExp** | Pointer to **string** |  | [optional] 
 **PartnerNameRegExp** | Pointer to **string** |  | [optional] 
-**PartnerAccountNumber** | Pointer to **string** |  | [optional] 
+**PartnerAccountNumberRegExp** | Pointer to **string** |  | [optional] 
 **DescriptionRegExp** | Pointer to **string** |  | [optional] 
 **ExtraRegExp** | Pointer to **string** |  | [optional] 
 
@@ -189,30 +189,30 @@ SetPartnerNameRegExp sets PartnerNameRegExp field to given value.
 
 HasPartnerNameRegExp returns a boolean if a field has been set.
 
-### GetPartnerAccountNumber
+### GetPartnerAccountNumberRegExp
 
-`func (o *Matcher) GetPartnerAccountNumber() string`
+`func (o *Matcher) GetPartnerAccountNumberRegExp() string`
 
-GetPartnerAccountNumber returns the PartnerAccountNumber field if non-nil, zero value otherwise.
+GetPartnerAccountNumberRegExp returns the PartnerAccountNumberRegExp field if non-nil, zero value otherwise.
 
-### GetPartnerAccountNumberOk
+### GetPartnerAccountNumberRegExpOk
 
-`func (o *Matcher) GetPartnerAccountNumberOk() (*string, bool)`
+`func (o *Matcher) GetPartnerAccountNumberRegExpOk() (*string, bool)`
 
-GetPartnerAccountNumberOk returns a tuple with the PartnerAccountNumber field if it's non-nil, zero value otherwise
+GetPartnerAccountNumberRegExpOk returns a tuple with the PartnerAccountNumberRegExp field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetPartnerAccountNumber
+### SetPartnerAccountNumberRegExp
 
-`func (o *Matcher) SetPartnerAccountNumber(v string)`
+`func (o *Matcher) SetPartnerAccountNumberRegExp(v string)`
 
-SetPartnerAccountNumber sets PartnerAccountNumber field to given value.
+SetPartnerAccountNumberRegExp sets PartnerAccountNumberRegExp field to given value.
 
-### HasPartnerAccountNumber
+### HasPartnerAccountNumberRegExp
 
-`func (o *Matcher) HasPartnerAccountNumber() bool`
+`func (o *Matcher) HasPartnerAccountNumberRegExp() bool`
 
-HasPartnerAccountNumber returns a boolean if a field has been set.
+HasPartnerAccountNumberRegExp returns a boolean if a field has been set.
 
 ### GetDescriptionRegExp
 

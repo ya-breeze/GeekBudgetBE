@@ -7,6 +7,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
+//nolint:dupl
 func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
@@ -37,6 +38,7 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 	}
 }
 
+//nolint:dupl
 func (r *WebAppRouter) matchersDeleteHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -130,22 +132,22 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		}
 	} else {
 		matcher = goserver.Matcher{
-			Name:                 transaction.Description,
-			OutputDescription:    transaction.Description,
-			DescriptionRegExp:    transaction.Description,
-			PartnerAccountNumber: transaction.PartnerAccount,
-			PartnerNameRegExp:    transaction.PartnerName,
+			Name:                       transaction.Description,
+			OutputDescription:          transaction.Description,
+			DescriptionRegExp:          transaction.Description,
+			PartnerAccountNumberRegExp: transaction.PartnerAccount,
+			PartnerNameRegExp:          transaction.PartnerName,
 		}
 	}
 
 	if req.Method == http.MethodPost {
 		matcher = goserver.Matcher{
-			Name:                 req.FormValue("name"),
-			OutputDescription:    req.FormValue("outputDescription"),
-			DescriptionRegExp:    req.FormValue("descriptionRegExp"),
-			OutputAccountId:      req.FormValue("account"),
-			PartnerAccountNumber: req.FormValue("partnerAccountNumber"),
-			OutputTags:           removeEmptyValues(strings.Split(req.FormValue("outputTags"), ",")),
+			Name:                       req.FormValue("name"),
+			OutputDescription:          req.FormValue("outputDescription"),
+			DescriptionRegExp:          req.FormValue("descriptionRegExp"),
+			OutputAccountId:            req.FormValue("account"),
+			PartnerAccountNumberRegExp: req.FormValue("partnerAccountNumberRegExp"),
+			OutputTags:                 removeEmptyValues(strings.Split(req.FormValue("outputTags"), ",")),
 		}
 
 		if matcher.OutputAccountId == "" {
@@ -189,6 +191,7 @@ func removeEmptyValues(arr []string) []string {
 	return result
 }
 
+//nolint:dupl
 func (r *WebAppRouter) matcherDeleteHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

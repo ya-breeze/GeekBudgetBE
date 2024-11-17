@@ -22,16 +22,16 @@ var _ MappedNullable = &Matcher{}
 
 // Matcher struct for Matcher
 type Matcher struct {
-	Id                   string   `json:"id"`
-	Name                 string   `json:"name"`
-	OutputDescription    string   `json:"outputDescription"`
-	OutputAccountId      string   `json:"outputAccountId"`
-	OutputTags           []string `json:"outputTags,omitempty"`
-	CurrencyRegExp       *string  `json:"currencyRegExp,omitempty"`
-	PartnerNameRegExp    *string  `json:"partnerNameRegExp,omitempty"`
-	PartnerAccountNumber *string  `json:"partnerAccountNumber,omitempty"`
-	DescriptionRegExp    *string  `json:"descriptionRegExp,omitempty"`
-	ExtraRegExp          *string  `json:"extraRegExp,omitempty"`
+	Id                         string   `json:"id"`
+	Name                       string   `json:"name"`
+	OutputDescription          string   `json:"outputDescription"`
+	OutputAccountId            string   `json:"outputAccountId"`
+	OutputTags                 []string `json:"outputTags,omitempty"`
+	CurrencyRegExp             *string  `json:"currencyRegExp,omitempty"`
+	PartnerNameRegExp          *string  `json:"partnerNameRegExp,omitempty"`
+	PartnerAccountNumberRegExp *string  `json:"partnerAccountNumberRegExp,omitempty"`
+	DescriptionRegExp          *string  `json:"descriptionRegExp,omitempty"`
+	ExtraRegExp                *string  `json:"extraRegExp,omitempty"`
 }
 
 type _Matcher Matcher
@@ -249,36 +249,36 @@ func (o *Matcher) SetPartnerNameRegExp(v string) {
 	o.PartnerNameRegExp = &v
 }
 
-// GetPartnerAccountNumber returns the PartnerAccountNumber field value if set, zero value otherwise.
-func (o *Matcher) GetPartnerAccountNumber() string {
-	if o == nil || IsNil(o.PartnerAccountNumber) {
+// GetPartnerAccountNumberRegExp returns the PartnerAccountNumberRegExp field value if set, zero value otherwise.
+func (o *Matcher) GetPartnerAccountNumberRegExp() string {
+	if o == nil || IsNil(o.PartnerAccountNumberRegExp) {
 		var ret string
 		return ret
 	}
-	return *o.PartnerAccountNumber
+	return *o.PartnerAccountNumberRegExp
 }
 
-// GetPartnerAccountNumberOk returns a tuple with the PartnerAccountNumber field value if set, nil otherwise
+// GetPartnerAccountNumberRegExpOk returns a tuple with the PartnerAccountNumberRegExp field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Matcher) GetPartnerAccountNumberOk() (*string, bool) {
-	if o == nil || IsNil(o.PartnerAccountNumber) {
+func (o *Matcher) GetPartnerAccountNumberRegExpOk() (*string, bool) {
+	if o == nil || IsNil(o.PartnerAccountNumberRegExp) {
 		return nil, false
 	}
-	return o.PartnerAccountNumber, true
+	return o.PartnerAccountNumberRegExp, true
 }
 
-// HasPartnerAccountNumber returns a boolean if a field has been set.
-func (o *Matcher) HasPartnerAccountNumber() bool {
-	if o != nil && !IsNil(o.PartnerAccountNumber) {
+// HasPartnerAccountNumberRegExp returns a boolean if a field has been set.
+func (o *Matcher) HasPartnerAccountNumberRegExp() bool {
+	if o != nil && !IsNil(o.PartnerAccountNumberRegExp) {
 		return true
 	}
 
 	return false
 }
 
-// SetPartnerAccountNumber gets a reference to the given string and assigns it to the PartnerAccountNumber field.
-func (o *Matcher) SetPartnerAccountNumber(v string) {
-	o.PartnerAccountNumber = &v
+// SetPartnerAccountNumberRegExp gets a reference to the given string and assigns it to the PartnerAccountNumberRegExp field.
+func (o *Matcher) SetPartnerAccountNumberRegExp(v string) {
+	o.PartnerAccountNumberRegExp = &v
 }
 
 // GetDescriptionRegExp returns the DescriptionRegExp field value if set, zero value otherwise.
@@ -368,8 +368,8 @@ func (o Matcher) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.PartnerNameRegExp) {
 		toSerialize["partnerNameRegExp"] = o.PartnerNameRegExp
 	}
-	if !IsNil(o.PartnerAccountNumber) {
-		toSerialize["partnerAccountNumber"] = o.PartnerAccountNumber
+	if !IsNil(o.PartnerAccountNumberRegExp) {
+		toSerialize["partnerAccountNumberRegExp"] = o.PartnerAccountNumberRegExp
 	}
 	if !IsNil(o.DescriptionRegExp) {
 		toSerialize["descriptionRegExp"] = o.DescriptionRegExp

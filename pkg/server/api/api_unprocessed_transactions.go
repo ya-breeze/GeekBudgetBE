@@ -40,17 +40,17 @@ func (s *UnprocessedTransactionsAPIServiceImpl) Convert(
 
 func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 	ctx context.Context, userID string, single bool, continuationID string,
-) ([]goserver.UnprocessedTransaction, error) {
+) ([]goserver.UnprocessedTransaction, int, error) {
 	matchers, err := s.db.GetMatchersRuntime(userID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
-		return nil, err
+		return nil, 0, err
 	}
 
 	transactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
-		return nil, err
+		return nil, 0, err
 	}
 	if len(continuationID) > 0 {
 		for i, t := range transactions {
@@ -67,7 +67,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 		m, err := s.matchUnprocessedTransactions(matchers, t)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to match unprocessed transaction")
-			return nil, err
+			return nil, 0, err
 		}
 
 		res = append(res, goserver.UnprocessedTransaction{
@@ -81,9 +81,9 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 	})
 
 	if single && len(res) > 0 {
-		return res[:1], nil
+		return res[:1], len(res), nil
 	}
-	return res, nil
+	return res, len(res), nil
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
@@ -94,7 +94,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 		return goserver.Response(500, nil), nil
 	}
 
-	res, err := s.PrepareUnprocessedTransactions(ctx, userID, false, "")
+	res, _, err := s.PrepareUnprocessedTransactions(ctx, userID, false, "")
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -156,7 +156,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 			continue
 		}
 
-		if matcher.Matcher.PartnerAccountNumber != "" && matcher.Matcher.PartnerAccountNumber != transaction.PartnerAccount {
+		if matcher.PartnerAccountRegexp != nil &&
+			!matcher.PartnerAccountRegexp.MatchString(transaction.PartnerAccount) {
 			continue
 		}
 
@@ -169,6 +170,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 		}
 
 		outputTransaction.Tags = append(outputTransaction.Tags, matcher.Matcher.OutputTags...)
+		outputTransaction.Tags = sortAndRemoveDuplicates(outputTransaction.Tags)
 
 		res = append(res, goserver.MatcherAndTransaction{
 			MatcherId:   matcher.Matcher.Id,
@@ -177,4 +179,19 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 	}
 
 	return res, nil
+}
+
+func sortAndRemoveDuplicates(input []string) []string {
+	uniqueMap := make(map[string]struct{})
+	for _, str := range input {
+		uniqueMap[str] = struct{}{}
+	}
+
+	uniqueList := make([]string, 0, len(uniqueMap))
+	for key := range uniqueMap {
+		uniqueList = append(uniqueList, key)
+	}
+
+	sort.Strings(uniqueList)
+	return uniqueList
 }

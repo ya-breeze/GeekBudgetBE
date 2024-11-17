@@ -21,9 +21,9 @@
                 <div class="form-group">
                     <label for="type">Type</label>
                     <select class="form-select" aria-label="Account type" name="type">
-                        <option value="expense">Expense</option>
-                        <option value="asset">Asset</option>
-                        <option value="income">Income</option>
+                        <option value="expense" {{ if eq .Type "expense"}}selected{{ end }}>Expense</option>
+                        <option value="asset" {{ if eq .Type "asset"}}selected{{ end }}>Asset</option>
+                        <option value="income" {{ if eq .Type "income"}}selected{{ end }}>Income</option>
                     </select>
                 </div>
                 <div class="form-group">

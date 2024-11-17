@@ -116,6 +116,9 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 	tmpl, err := template.New("").Funcs(template.FuncMap{
 		"formatTime": utils.FormatTime,
+		"decrease": func(i int) int {
+			return i - 1
+		},
 	}).ParseGlob(filepath.Join("webapp", "templates", "*.tpl"))
 	if err != nil {
 		return nil, err

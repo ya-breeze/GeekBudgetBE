@@ -7,6 +7,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
+//nolint:dupl
 func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {

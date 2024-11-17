@@ -24,7 +24,7 @@ type MatcherNoId struct {
 
 	PartnerNameRegExp string `json:"partnerNameRegExp,omitempty"`
 
-	PartnerAccountNumber string `json:"partnerAccountNumber,omitempty"`
+	PartnerAccountNumberRegExp string `json:"partnerAccountNumberRegExp,omitempty"`
 
 	DescriptionRegExp string `json:"descriptionRegExp,omitempty"`
 
@@ -38,7 +38,7 @@ type MatcherNoIdInterface interface {
 	GetOutputTags() []string
 	GetCurrencyRegExp() string
 	GetPartnerNameRegExp() string
-	GetPartnerAccountNumber() string
+	GetPartnerAccountNumberRegExp() string
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
 }
@@ -61,8 +61,8 @@ func (c *MatcherNoId) GetCurrencyRegExp() string {
 func (c *MatcherNoId) GetPartnerNameRegExp() string {
 	return c.PartnerNameRegExp
 }
-func (c *MatcherNoId) GetPartnerAccountNumber() string {
-	return c.PartnerAccountNumber
+func (c *MatcherNoId) GetPartnerAccountNumberRegExp() string {
+	return c.PartnerAccountNumberRegExp
 }
 func (c *MatcherNoId) GetDescriptionRegExp() string {
 	return c.DescriptionRegExp

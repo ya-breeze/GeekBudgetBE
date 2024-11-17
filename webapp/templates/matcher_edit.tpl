@@ -25,8 +25,8 @@
             <input type="text" class="form-control" name="descriptionRegExp" value="{{ .Matcher.DescriptionRegExp }}">
         </div>
         <div class="mb-3">
-            <label for="partnerAccountNumber" class="form-label">Partner account</label>
-            <input type="text" class="form-control" name="partnerAccountNumber" value="{{ .Matcher.PartnerAccountNumber }}">
+            <label for="partnerAccountNumberRegExp" class="form-label">Partner account regexp</label>
+            <input type="text" class="form-control" name="partnerAccountNumberRegExp" value="{{ .Matcher.PartnerAccountNumberRegExp }}">
         </div>
         <div class="mb-3">
             <label for="account" class="form-label">Account</label>

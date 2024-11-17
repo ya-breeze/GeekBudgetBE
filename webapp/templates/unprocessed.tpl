@@ -7,7 +7,7 @@
     {{ with .Unprocessed }}
     <form method="GET">
         <input type="hidden" name="id" value="{{ .Transaction.ID }}">
-        <button type="submit">Skip</button>
+        <button type="submit">Skip ({{ decrease $.UnprocessedCount }} left)</button>
     </form>
 
     <form action="/web/matchers/edit" method="GET">
@@ -17,7 +17,12 @@
 
     <form action="/web/unprocessed/convert" method="POST">
         <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
-        <h5>{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h5>
+        <h5>{{ formatTime .Transaction.Date "2006-01-02" }}</h5>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description: </label>
+            <input type="text" class="form-control" name="description" value="{{ .Transaction.Description }}">
+        </div>
+
         {{ if ne .Transaction.PartnerName "" }}
         <h6>Partner name: {{ .Transaction.PartnerName }}</h6>
         {{ end }}

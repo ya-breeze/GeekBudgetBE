@@ -1294,7 +1294,7 @@ components:
           type: string
         partnerNameRegExp:
           type: string
-        partnerAccountNumber:
+        partnerAccountNumberRegExp:
           type: string
         descriptionRegExp:
           type: string

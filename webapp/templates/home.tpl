@@ -17,14 +17,6 @@
         <button type="submit">Login</button>
     </form>
     {{ end }}
-    <p>Welcome to the home page of our web app.</p>
-
-    <h2>Accounts</h2>
-    {{ range .Accounts }}
-    <div>
-        {{ .Name }} - {{ .Description }}
-    </div>
-    {{ end }}
 
     {{ with .Expenses }}
     <h2>Expenses</h2>

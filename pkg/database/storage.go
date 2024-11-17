@@ -72,8 +72,9 @@ type Storage interface {
 }
 
 type MatcherRuntime struct {
-	Matcher           *goserver.Matcher
-	DescriptionRegexp *regexp.Regexp
+	Matcher              *goserver.Matcher
+	DescriptionRegexp    *regexp.Regexp
+	PartnerAccountRegexp *regexp.Regexp
 }
 
 type storage struct {
@@ -556,9 +557,17 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 		if m.DescriptionRegExp != "" {
 			r, err := regexp.Compile(m.DescriptionRegExp)
 			if err != nil {
-				return nil, fmt.Errorf("failed to compile regexp: %w", err)
+				return nil, fmt.Errorf("failed to compile description regexp: %w", err)
 			}
 			runtime.DescriptionRegexp = r
+		}
+
+		if m.PartnerAccountNumberRegExp != "" {
+			r, err := regexp.Compile(m.PartnerAccountNumberRegExp)
+			if err != nil {
+				return nil, fmt.Errorf("failed to compile partner account regexp: %w", err)
+			}
+			runtime.PartnerAccountRegexp = r
 		}
 
 		res = append(res, runtime)
@@ -567,6 +576,7 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 	return res, nil
 }
 
+//nolint:dupl
 func (s *storage) UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface,
 ) (goserver.Matcher, error) {
 	idUUID, err := uuid.Parse(id)
