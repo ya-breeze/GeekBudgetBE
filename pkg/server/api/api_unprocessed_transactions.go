@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math"
 	"sort"
 	"time"
 
@@ -70,20 +71,64 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 			return nil, 0, err
 		}
 
+		d := s.getDuplicateTransactions(transactions, t)
+
 		res = append(res, goserver.UnprocessedTransaction{
 			Transaction: t,
 			Matched:     m,
-			Duplicates:  nil,
+			Duplicates:  d,
 		})
-	}
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].Transaction.Date.Before(res[j].Transaction.Date)
-	})
 
-	if single && len(res) > 0 {
-		return res[:1], len(res), nil
+		if single {
+			break
+		}
 	}
-	return res, len(res), nil
+
+	return res, len(transactions), nil
+}
+
+func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
+	transactions []goserver.Transaction, transaction goserver.Transaction,
+) []goserver.Transaction {
+	res := make([]goserver.Transaction, 0)
+
+	// compute all increases for the specified transaction
+	var increases float64
+	for _, m := range transaction.Movements {
+		if m.Amount > 0 {
+			increases += m.Amount
+		}
+	}
+
+	for _, t := range transactions {
+		if t.Id == transaction.Id {
+			continue
+		}
+
+		// skip transactions which didn't happen within 2 days
+		delta := t.Date.Sub(transaction.Date)
+		if delta < 0 {
+			delta = -delta
+		}
+		if delta > 2*time.Hour*24 {
+			continue
+		}
+
+		// compute all increases in the transaction to compare
+		var d float64
+		for _, m := range t.Movements {
+			if m.Amount > 0 {
+				d += m.Amount
+			}
+		}
+		if math.Abs(increases-d) > 1 {
+			continue
+		}
+		res = append(res, t)
+	}
+	s.logger.Info("Found duplicates", "transaction", transaction.Id, "duplicates", len(res))
+
+	return res
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(

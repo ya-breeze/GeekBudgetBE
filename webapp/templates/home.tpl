@@ -40,7 +40,7 @@
             <tr>
                 <td style="border: 1px solid black;">{{ .AccountName }}</td>
                 {{ range .Amounts }}
-                <td style="border: 1px solid black;">{{ . }}</td>
+                <td style="border: 1px solid black;">{{ money . }}</td>
                 {{ end }}
             </tr>
             {{ end }}

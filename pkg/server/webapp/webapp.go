@@ -3,6 +3,7 @@ package webapp
 import (
 	"html/template"
 	"log/slog"
+	"math"
 	"path/filepath"
 
 	"github.com/gorilla/sessions"
@@ -118,6 +119,9 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 		"formatTime": utils.FormatTime,
 		"decrease": func(i int) int {
 			return i - 1
+		},
+		"money": func(num float64) float64 {
+			return math.Round(num*100) / 100
 		},
 	}).ParseGlob(filepath.Join("webapp", "templates", "*.tpl"))
 	if err != nil {
