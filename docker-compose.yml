@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: example/geekbudget:latest
     pull_policy: build
     ports:
       - "8080:8080"
