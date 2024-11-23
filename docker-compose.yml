@@ -5,10 +5,13 @@ services:
       dockerfile: Dockerfile
     pull_policy: build
     ports:
-      - "8080:8080"
+      - "8080:${PORT}"
     environment:
       - GB_USERS=test:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl
       - GB_PREFILL=false
       - GB_DBPATH=/data/geekbudget.db
     volumes:
-      - /tmp/geekbudget:/data
+      - geekbudget:/data
+volumes:
+  geekbudget:
+    driver: local
