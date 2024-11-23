@@ -1,5 +1,5 @@
 services:
-  be:
+  geekbudget:
     build:
       context: .
       dockerfile: Dockerfile
