@@ -4,7 +4,6 @@ ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 all: build test lint
 	@echo "🎉 You are good to go!"
 
-
 .PHONY: build
 build:
 	@cd cmd && go build -o ../bin/geekbudget

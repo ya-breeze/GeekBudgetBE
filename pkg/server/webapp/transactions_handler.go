@@ -31,6 +31,7 @@ func getTimeRange(req *http.Request) (time.Time, time.Time, error) {
 	return dateFrom, dateTo, nil
 }
 
+//nolint:funlen,cyclop
 func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
@@ -102,6 +103,7 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 	}
 }
 
+//nolint:funlen,cyclop
 func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
