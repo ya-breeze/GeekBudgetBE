@@ -93,3 +93,7 @@ test:
 .PHONY: watch
 watch:
 	@ginkgo watch -r
+
+.PHONE: compose
+compose:
+	@docker-compose up --build

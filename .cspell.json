@@ -4,7 +4,9 @@
     "minWordLength": 2,
     "words": [
         "Anzhela",
+        "apk",
         "Billa",
+        "CGO",
         "ctx",
         "cyclop",
         "CZK",
@@ -44,6 +46,7 @@
         "struct",
         "sut",
         "tmpl",
+        "tzdata",
         "USD",
         "vcs",
         "xslx"
