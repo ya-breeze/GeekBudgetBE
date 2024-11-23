@@ -48,11 +48,13 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 		return nil, 0, err
 	}
 
-	transactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
+	var transactions []goserver.Transaction
+	allTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, 0, err
 	}
+	transactions = allTransactions
 	if len(continuationID) > 0 {
 		for i, t := range transactions {
 			if t.Id == continuationID {
@@ -71,7 +73,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 			return nil, 0, err
 		}
 
-		d := s.getDuplicateTransactions(transactions, t)
+		d := s.getDuplicateTransactions(allTransactions, t)
 
 		res = append(res, goserver.UnprocessedTransaction{
 			Transaction: t,
@@ -164,12 +166,31 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	return goserver.Response(200, transaction), nil
 }
 
+func (s *UnprocessedTransactionsAPIServiceImpl) Delete(
+	ctx context.Context,
+	userID string,
+	transactionID string,
+	duplicateTransactionID string,
+) error {
+	return s.db.DeleteDuplicateTransaction(userID, transactionID, duplicateTransactionID)
+}
+
 func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(
 	ctx context.Context,
 	transactionID string,
 	duplicateTransactionID string,
 ) (goserver.ImplResponse, error) {
-	return goserver.ImplResponse{}, nil
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	err := s.Delete(ctx, userID, transactionID, duplicateTransactionID)
+	if err != nil {
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(204, nil), nil
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) filterUnprocessedTransactions(transactions []goserver.Transaction,

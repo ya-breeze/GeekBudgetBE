@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"math"
 	"path/filepath"
+	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
@@ -91,6 +92,11 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/unprocessed/convert",
 			HandlerFunc: r.unprocessedConvertHandler,
 		},
+		"UnprocessedDelete": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/unprocessed/delete",
+			HandlerFunc: r.unprocessedDeleteHandler,
+		},
 		"Accounts": goserver.Route{
 			Method:      "GET",
 			Pattern:     "/web/accounts",
@@ -106,11 +112,22 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/accounts/edit",
 			HandlerFunc: r.accountsEditHandler,
 		},
-		// "AccountDelete": goserver.Route{
-		// 	Method:      "DELETE",
-		// 	Pattern:     "/web/accounts",
-		// 	HandlerFunc: r.accountsDeleteHandler,
-		// },
+
+		"Transactions": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/transactions",
+			HandlerFunc: r.transactionsHandler,
+		},
+		"TransactionEditGet": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/transactions/edit",
+			HandlerFunc: r.transactionsEditHandler,
+		},
+		"TransactionEditPost": goserver.Route{
+			Method:      "POST",
+			Pattern:     "/web/transactions/edit",
+			HandlerFunc: r.transactionsEditHandler,
+		},
 	}
 }
 
@@ -122,6 +139,9 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 		},
 		"money": func(num float64) float64 {
 			return math.Round(num*100) / 100
+		},
+		"timestamp": func(t time.Time) int64 {
+			return t.Unix()
 		},
 	}).ParseGlob(filepath.Join("webapp", "templates", "*.tpl"))
 	if err != nil {

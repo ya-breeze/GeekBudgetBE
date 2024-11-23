@@ -43,7 +43,6 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"Title":  "GeekBudget API",
 		"UserID": userID,
 	}
 

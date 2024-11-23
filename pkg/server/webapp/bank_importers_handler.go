@@ -8,9 +8,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{
-		"Title": "GeekBudget API",
-	}
+	data := map[string]interface{}{}
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)

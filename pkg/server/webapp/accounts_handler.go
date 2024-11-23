@@ -14,9 +14,7 @@ func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{
-		"Title": "GeekBudget API",
-	}
+	data := map[string]interface{}{}
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)
@@ -45,9 +43,7 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{
-		"Title": "GeekBudget API",
-	}
+	data := map[string]interface{}{}
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)

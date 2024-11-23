@@ -1,8 +1,6 @@
 {{ template "header.tpl" . }}
 
 <main>
-    <h1>{{ .Title }}</h1>
-
     <h2>Unprocessed</h2>
     {{ with .Unprocessed }}
         <form method="GET">
@@ -28,6 +26,9 @@
             {{ end }}
             {{ if ne .Transaction.PartnerAccount "" }}
             <h6>Partner account: {{ .Transaction.PartnerAccount }}</h6>
+            {{ end }}
+            {{ if ne .Transaction.Place "" }}
+            <h6>Place: {{ .Transaction.Place }}</h6>
             {{ end }}
             <h6>Tags: 
             {{ range .Transaction.Tags }}
@@ -92,6 +93,9 @@
                         {{ .Amount }} {{ .CurrencyName }} [{{ .AccountName }}] <br>
                     {{ end }}
                 </p>
+                <a href="/web/unprocessed/delete?id={{$.Unprocessed.Transaction.ID}}&duplicateOf={{.ID}}" class="btn btn-primary" tabindex="-1" role="button">
+                    Mark as duplicate
+                </a>
             {{ end }}
         {{ end }}
 

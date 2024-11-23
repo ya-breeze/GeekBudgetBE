@@ -13,9 +13,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{
-		"Title": "GeekBudget API",
-	}
+	data := map[string]interface{}{}
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)
@@ -74,4 +72,35 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 		r.logger.Warn("failed to execute template", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (r *WebAppRouter) unprocessedDeleteHandler(w http.ResponseWriter, req *http.Request) {
+	session, _ := r.cookies.Get(req, "session-name")
+	userID, ok := session.Values["userID"].(string)
+	if !ok {
+		http.Error(w, "not authorized", http.StatusUnauthorized)
+		return
+	}
+
+	id := req.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "no id", http.StatusBadRequest)
+		return
+	}
+	duplicateOf := req.URL.Query().Get("duplicateOf")
+	if duplicateOf == "" {
+		http.Error(w, "no duplicateOf", http.StatusBadRequest)
+		return
+	}
+
+	s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
+	err := s.Delete(req.Context(), userID, id, duplicateOf)
+	if err != nil {
+		r.logger.Error("Failed to delete unprocessed", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// TODO redirect to the same page, not to the start of the unprocessed
+	http.Redirect(w, req, "/web/unprocessed", http.StatusSeeOther)
 }

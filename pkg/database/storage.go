@@ -48,11 +48,12 @@ type Storage interface {
 	DeleteCurrency(userID string, id string) error
 
 	GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
-	CreateTransaction(userID string, transaction *goserver.TransactionNoId) (goserver.Transaction, error)
+	CreateTransaction(userID string, transaction goserver.TransactionNoIdInterface) (goserver.Transaction, error)
 	UpdateTransaction(
 		userID string, id string, transaction goserver.TransactionNoIdInterface,
 	) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
+	DeleteDuplicateTransaction(userID string, id, duplicateID string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
 
 	GetBankImporters(userID string) ([]goserver.BankImporter, error)
@@ -348,7 +349,7 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time) ([]
 	return transactions, nil
 }
 
-func (s *storage) CreateTransaction(userID string, input *goserver.TransactionNoId,
+func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
 	t := models.TransactionToDB(input, userID)
 	t.ID = uuid.New()
@@ -392,6 +393,30 @@ func (s *storage) DeleteTransaction(userID string, id string) error {
 	}
 
 	return nil
+}
+
+func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID string) error {
+	s.log.Info("Deleting duplicate transaction", "id", id, "duplicate_id", duplicateID)
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		var duplicate models.Transaction
+		if err := tx.Where("id = ? AND user_id = ?", duplicateID, userID).First(&duplicate).Error; err != nil {
+			s.log.Warn("Failed to find duplicate transaction", "id", duplicateID, "error", err)
+			return fmt.Errorf(StorageError, err)
+		}
+
+		duplicate.ExternalIDs = append(duplicate.ExternalIDs, id)
+		if err := tx.Save(&duplicate).Error; err != nil {
+			s.log.Warn("Failed to update duplicate transaction", "id", duplicateID, "error", err)
+			return fmt.Errorf(StorageError, err)
+		}
+
+		if err := tx.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error; err != nil {
+			s.log.Warn("Failed to delete transaction", "id", id, "error", err)
+			return fmt.Errorf(StorageError, err)
+		}
+
+		return nil
+	})
 }
 
 func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction, error) {

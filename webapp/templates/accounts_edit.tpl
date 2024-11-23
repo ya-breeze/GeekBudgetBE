@@ -1,8 +1,6 @@
 {{ template "header.tpl" . }}
 
 <main>
-    <h1>{{ .Title }}</h1>
-
     <h2>Accounts</h2>
     {{ with .Error }}
     <div class="alert alert-danger" role="alert">

@@ -18,6 +18,8 @@
         <nav>
             <a href="/">Home</a>
             |
+            <a href="/web/transactions">Transactions</a>
+            |
             <a href="/web/accounts">Accounts</a>
             |
             <a href="/web/bank-importers">Importers</a>

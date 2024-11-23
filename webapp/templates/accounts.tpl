@@ -1,8 +1,6 @@
 {{ template "header.tpl" . }}
 
 <main>
-    <h1>{{ .Title }}</h1>
-
     <h2>Accounts</h2>
 
     <a class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"

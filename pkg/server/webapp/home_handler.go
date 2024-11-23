@@ -16,9 +16,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data := map[string]interface{}{
-		"Title": "GeekBudget API",
-	}
+	data := map[string]interface{}{}
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)
@@ -63,6 +61,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 				CurrencyID:   currency.CurrencyId,
 				CurrencyName: utils.GetCurrency(currency.CurrencyId, currencies).Name,
 				Intervals:    expenses.Intervals,
+				Total:        make([]float64, len(expenses.Intervals)),
 			}
 			if webCurrency.CurrencyName == "" {
 				webCurrency.CurrencyName = "Unknown"
@@ -77,12 +76,18 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 				if webAccount.AccountName == "" {
 					webAccount.AccountName = "Unknown"
 				}
+				for _, amount := range account.Amounts {
+					webAccount.TotalForYear += amount
+				}
+				for i := range expenses.Intervals {
+					webCurrency.Total[i] += account.Amounts[i]
+				}
+
 				webCurrency.Accounts = append(webCurrency.Accounts, webAccount)
 			}
 
 			webAggregation.Currencies = append(webAggregation.Currencies, webCurrency)
 		}
-
 		data["Expenses"] = &webAggregation
 	}
 

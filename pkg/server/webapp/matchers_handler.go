@@ -14,9 +14,7 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{
-		"Title": "GeekBudget API",
-	}
+	data := map[string]interface{}{}
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)
@@ -74,9 +72,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{
-		"Title": "GeekBudget API",
-	}
+	data := map[string]interface{}{}
 
 	if err = req.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -184,6 +180,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 func removeEmptyValues(arr []string) []string {
 	var result []string
 	for _, str := range arr {
+		str = strings.TrimSpace(str)
 		if str != "" {
 			result = append(result, str)
 		}

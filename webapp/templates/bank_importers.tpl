@@ -1,8 +1,6 @@
 {{ template "header.tpl" . }}
 
 <main>
-    <h1>{{ .Title }}</h1>
-
     <h2>Bank Importers</h2>
     {{ range .BankImporters }}
     <div class="card" style="width: 18rem;">

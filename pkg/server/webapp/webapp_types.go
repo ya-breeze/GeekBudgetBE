@@ -17,13 +17,15 @@ type WebCurrencyAggregation struct {
 
 	Intervals []time.Time          `json:"intervals"`
 	Accounts  []AccountAggregation `json:"accounts"`
+	Total     []float64            `json:"total"`
 }
 
 type AccountAggregation struct {
 	AccountID   string `json:"accountId"`
 	AccountName string `json:"accountName"`
 
-	Amounts []float64 `json:"amounts"`
+	Amounts      []float64 `json:"amounts"`
+	TotalForYear float64   `json:"totalForYear"`
 }
 
 type WebMovement struct {
