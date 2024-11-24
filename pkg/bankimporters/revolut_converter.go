@@ -1,7 +1,6 @@
 package bankimporters
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/csv"
 	"encoding/hex"
@@ -63,7 +62,8 @@ func NewRevolutConverter(logger *slog.Logger, bankImporter goserver.BankImporter
 	}, nil
 }
 
-func (fc *RevolutConverter) ParseAndImport(ctx context.Context, format, data string,
+func (fc *RevolutConverter) ParseAndImport(
+	format, data string,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	return fc.ParseTransactions(format, data)
 }

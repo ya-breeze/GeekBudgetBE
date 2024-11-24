@@ -52,11 +52,18 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/about",
 			HandlerFunc: r.aboutHandler,
 		},
+
 		"BankImporters": goserver.Route{
 			Method:      "GET",
 			Pattern:     "/web/bank-importers",
 			HandlerFunc: r.bankImportersHandler,
 		},
+		"BankImporterUpload": goserver.Route{
+			Method:      "POST",
+			Pattern:     "/web/bank-importers/upload",
+			HandlerFunc: r.bankImporterUploadHandler,
+		},
+
 		"Matchers": goserver.Route{
 			Method:      "GET",
 			Pattern:     "/web/matchers",

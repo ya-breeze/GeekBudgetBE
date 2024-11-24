@@ -65,7 +65,6 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, nil
 	}
-	s.logger.Info("Read transactions", "count", len(transactions))
 
 	res := Aggregate(accounts, transactions, dateFrom, dateTo, utils.GranularityMonth, s.logger)
 
@@ -82,7 +81,6 @@ func Aggregate(
 		To:   dateTo,
 	}
 	res.Intervals = getIntervals(res.From, res.To, granularity)
-	log.Info("Intervals", "intervals", res.Intervals)
 
 	res.Currencies = []goserver.CurrencyAggregation{}
 	for _, t := range transactions {
@@ -100,7 +98,6 @@ func Aggregate(
 		if intervalIdx < 0 {
 			intervalIdx = len(res.Intervals) - 1
 		}
-		log.Info("Interval", "idx", intervalIdx, "date", res.Intervals[intervalIdx], "transaction", t.Date)
 
 		movements := getExpenseMovements(accounts, t)
 		for _, m := range movements {
