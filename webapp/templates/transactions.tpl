@@ -25,6 +25,11 @@
 
     {{ range .Transactions }}
         <h5>{{ formatTime .Date "2006-01-02" }} {{ .Description }}</h5>
+        <h6>Tags: 
+            {{ range .Tags }}
+                {{ . }}
+            {{ end }}
+        </h6>
         <p>
             {{ range .Movements }}
                 {{ .Amount }} {{ .CurrencyName }} [{{ .AccountName }}] <br>
