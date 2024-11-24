@@ -46,9 +46,9 @@
                         {{ $accountID := .AccountID }}
                         <td>{{ .AccountName }}</td>
                         {{ range $i, $a := .Amounts }}
-                        <td>
+                        <td {{ if and (eq $accountID "") (ne $a 0.0) }}class="table-danger"{{end}}>
                             {{ if eq $a 0.0 }}
-                            0
+                                0
                             {{ else }}
                                 <a class="link-dark link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
                                     href="/web/transactions?from={{timestamp (index $intervals $i)}}&accountID={{$accountID}}">
