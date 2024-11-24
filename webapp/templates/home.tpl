@@ -18,8 +18,13 @@
 
     {{ with .Expenses }}
         <h2>Expenses</h2>
-        <h3>From: {{ formatTime .From "2006-01-02" }}</h3>
-        <h3>To: {{ formatTime .To "2006-01-02" }}</h3>
+        <a href="/?from={{$.Last}}" class="btn btn-primary" tabindex="-1" role="button">
+            <i class="bi-arrow-left-circle-fill"></i>
+        </a>
+        {{ formatTime $.From "2006-01-02" }} - {{ formatTime $.To "2006-01-02" }}
+        <a href="/?from={{$.Next}}" class="btn btn-primary" tabindex="-1" role="button">
+            <i class="bi-arrow-right-circle-fill"></i>
+        </a>
 
         {{ range .Currencies }}
             <h4>Currency: {{ .CurrencyName }}</h4>

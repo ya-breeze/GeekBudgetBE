@@ -44,8 +44,15 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		}
 
 		a := api.NewAggregationsAPIServiceImpl(r.logger, r.db)
-		dateFrom := utils.RoundToGranularity(time.Now(), utils.GranularityYear, false)
-		dateTo := utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
+		// dateFrom := utils.RoundToGranularity(time.Now(), utils.GranularityYear, false)
+		// dateTo := utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
+
+		dateFrom, dateTo, err := getTimeRange(req, utils.GranularityYear)
+		if err != nil {
+			r.logger.Error("Failed to get time range", "error", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, "")
 		if err != nil {
@@ -94,6 +101,13 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 			webAggregation.Currencies = append(webAggregation.Currencies, webCurrency)
 		}
 		data["Expenses"] = &webAggregation
+		data["From"] = dateFrom
+		data["To"] = dateTo
+		data["Current"] = dateFrom.Unix()
+		data["Last"] = time.Date(
+			dateFrom.Year(), 1, 1, 0, 0, 0, 0, dateFrom.Location(),
+		).AddDate(-1, 0, 0).Unix()
+		data["Next"] = dateTo.Unix()
 	}
 
 	if err := tmpl.ExecuteTemplate(w, "home.tpl", data); err != nil {

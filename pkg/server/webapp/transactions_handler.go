@@ -11,7 +11,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
-func getTimeRange(req *http.Request) (time.Time, time.Time, error) {
+func getTimeRange(req *http.Request, granularity utils.Granularity) (time.Time, time.Time, error) {
 	var dateFrom, dateTo time.Time
 	from := req.URL.Query().Get("from")
 	if from != "" {
@@ -24,9 +24,9 @@ func getTimeRange(req *http.Request) (time.Time, time.Time, error) {
 		dateFrom = time.Unix(ts, 0).Local()
 	} else {
 		//nolint:gosmopolitan // take TZ from user config eventually
-		dateFrom = utils.RoundToGranularity(time.Now().Local(), utils.GranularityMonth, false)
+		dateFrom = utils.RoundToGranularity(time.Now().Local(), granularity, false)
 	}
-	dateTo = utils.RoundToGranularity(dateFrom, utils.GranularityMonth, true)
+	dateTo = utils.RoundToGranularity(dateFrom, granularity, true)
 
 	return dateFrom, dateTo, nil
 }
@@ -63,7 +63,7 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 			return
 		}
 
-		dateFrom, dateTo, err := getTimeRange(req)
+		dateFrom, dateTo, err := getTimeRange(req, utils.GranularityMonth)
 		if err != nil {
 			r.logger.Error("Failed to get time range", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
