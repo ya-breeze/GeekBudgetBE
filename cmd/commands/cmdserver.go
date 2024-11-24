@@ -21,27 +21,35 @@ func CmdServer() *cobra.Command {
 		Use:   "server",
 		Short: "Start HTTP server",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			cfg, ok := cmd.Context().Value(ConfigKey).(*config.Config)
-			if !ok {
-				return errors.New("could not retrieve config from context")
+			cfg, logger, err := createConfigAndLogger(cmd)
+			if err != nil {
+				return err
 			}
-
-			var h slog.Handler
-			if term.IsTerminal(int(os.Stdout.Fd())) {
-				h = prettylog.NewHandler(&slog.HandlerOptions{
-					Level:     slog.LevelInfo,
-					AddSource: false,
-				})
-			} else {
-				h = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-					Level: slog.LevelInfo,
-				})
-			}
-
-			logger := slog.New(h)
 			return server.Server(logger, cfg)
 		},
 	}
 
 	return res
+}
+
+func createConfigAndLogger(cmd *cobra.Command) (*config.Config, *slog.Logger, error) {
+	cfg, ok := cmd.Context().Value(ConfigKey).(*config.Config)
+	if !ok {
+		return nil, nil, errors.New("could not retrieve config from context")
+	}
+
+	var h slog.Handler
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		h = prettylog.NewHandler(&slog.HandlerOptions{
+			Level:     slog.LevelInfo,
+			AddSource: false,
+		})
+	} else {
+		h = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		})
+	}
+
+	logger := slog.New(h)
+	return cfg, logger, nil
 }

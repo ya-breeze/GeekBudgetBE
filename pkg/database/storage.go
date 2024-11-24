@@ -67,6 +67,7 @@ type Storage interface {
 	GetMatchers(userID string) ([]goserver.Matcher, error)
 	GetMatcher(userID string, id string) (goserver.Matcher, error)
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
+	GetMatcherRuntime(userID, id string) (MatcherRuntime, error)
 	CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	DeleteMatcher(userID string, id string) error
@@ -570,6 +571,36 @@ func (s *storage) CreateMatcher(userID string, matcher goserver.MatcherNoIdInter
 	return data.FromDB(), nil
 }
 
+func (s *storage) createMatcherRuntime(m goserver.Matcher) (MatcherRuntime, error) {
+	runtime := MatcherRuntime{Matcher: &m}
+	if m.DescriptionRegExp != "" {
+		r, err := regexp.Compile(m.DescriptionRegExp)
+		if err != nil {
+			return MatcherRuntime{}, fmt.Errorf("failed to compile description regexp: %w", err)
+		}
+		runtime.DescriptionRegexp = r
+	}
+
+	if m.PartnerAccountNumberRegExp != "" {
+		r, err := regexp.Compile(m.PartnerAccountNumberRegExp)
+		if err != nil {
+			return MatcherRuntime{}, fmt.Errorf("failed to compile partner account regexp: %w", err)
+		}
+		runtime.PartnerAccountRegexp = r
+	}
+
+	return runtime, nil
+}
+
+func (s *storage) GetMatcherRuntime(userID, id string) (MatcherRuntime, error) {
+	m, err := s.GetMatcher(userID, id)
+	if err != nil {
+		return MatcherRuntime{}, err
+	}
+
+	return s.createMatcherRuntime(m)
+}
+
 func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 	matchers, err := s.GetMatchers(userID)
 	if err != nil {
@@ -578,21 +609,9 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 
 	res := make([]MatcherRuntime, 0, len(matchers))
 	for _, m := range matchers {
-		runtime := MatcherRuntime{Matcher: &m}
-		if m.DescriptionRegExp != "" {
-			r, err := regexp.Compile(m.DescriptionRegExp)
-			if err != nil {
-				return nil, fmt.Errorf("failed to compile description regexp: %w", err)
-			}
-			runtime.DescriptionRegexp = r
-		}
-
-		if m.PartnerAccountNumberRegExp != "" {
-			r, err := regexp.Compile(m.PartnerAccountNumberRegExp)
-			if err != nil {
-				return nil, fmt.Errorf("failed to compile partner account regexp: %w", err)
-			}
-			runtime.PartnerAccountRegexp = r
+		runtime, err := s.createMatcherRuntime(m)
+		if err != nil {
+			return nil, err
 		}
 
 		res = append(res, runtime)

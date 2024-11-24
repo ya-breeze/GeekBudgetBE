@@ -88,7 +88,6 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 		return
 	}
 	format := fileName[strings.LastIndex(fileName, ".")+1:]
-	r.logger.Info("File read", "fileData", fileData, "format", format)
 
 	bankImporterID := req.FormValue("id")
 	if bankImporterID == "" {

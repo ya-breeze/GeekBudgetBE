@@ -2,7 +2,6 @@ package bankimporters
 
 import (
 	"bufio"
-	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -14,6 +13,8 @@ import (
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
 )
 
 const (
@@ -83,7 +84,8 @@ func NewKBConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cur
 	}, nil
 }
 
-func (fc *KBConverter) ParseAndImport(ctx context.Context, data string,
+func (fc *KBConverter) ParseAndImport(
+	format, data string,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	return fc.ParseTransactions(data)
 }
@@ -94,7 +96,9 @@ func (fc *KBConverter) ParseTransactions(data string,
 
 	fc.logger.Info("Parsing KB transactions")
 	reader := strings.NewReader(data)
-	scanner := bufio.NewScanner(reader)
+	// Create a new reader that decodes windows-1250 to UTF-8
+	decoder := transform.NewReader(reader, charmap.Windows1250.NewDecoder())
+	scanner := bufio.NewScanner(decoder)
 	for range 17 {
 		if !scanner.Scan() {
 			return nil, nil, errors.New("can't read CSV header")
@@ -197,12 +201,12 @@ func (fc *KBConverter) ConvertToTransaction(record []string) (goserver.Transacti
 
 	res.Movements = []goserver.Movement{
 		{
-			Amount:     amount,
+			Amount:     -amount,
 			CurrencyId: strCurrencyID,
 		},
 		{
 			AccountId:  fc.bankImporter.AccountId,
-			Amount:     -amount,
+			Amount:     amount,
 			CurrencyId: strCurrencyID,
 		},
 	}

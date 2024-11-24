@@ -218,12 +218,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 	res := make([]goserver.MatcherAndTransaction, 0)
 
 	for _, matcher := range matchers {
-		if matcher.DescriptionRegexp != nil && !matcher.DescriptionRegexp.MatchString(transaction.Description) {
-			continue
-		}
-
-		if matcher.PartnerAccountRegexp != nil &&
-			!matcher.PartnerAccountRegexp.MatchString(transaction.PartnerAccount) {
+		if common.Match(&matcher, &transaction) != common.MatchResultSuccess {
 			continue
 		}
 

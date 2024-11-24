@@ -238,27 +238,36 @@ func (s *BankImportersAPIServiceImpl) Upload(
 		return nil, fmt.Errorf("can't get BankImporter: %w", err)
 	}
 
-	if biData.Type != "revolut" {
-		s.logger.With("type", biData.Type).Error("Unsupported bank importer type")
-		return nil, fmt.Errorf("unsupported bank importer type: %s", biData.Type)
-	}
-
 	currencies, err := s.db.GetCurrencies(userID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get currencies")
 		return nil, fmt.Errorf("can't get currencies: %w", err)
 	}
 
-	bi, err := bankimporters.NewRevolutConverter(s.logger, biData, currencies)
-	if err != nil {
-		s.logger.With("error", err).Error("Failed to create RevolutConverter")
-		return nil, fmt.Errorf("can't create RevolutConverter: %w", err)
+	var bi bankimporters.Importer
+
+	switch biData.Type {
+	case "revolut":
+		bi, err = bankimporters.NewRevolutConverter(s.logger, biData, currencies)
+		if err != nil {
+			s.logger.With("error", err).Error("Failed to create RevolutConverter")
+			return nil, fmt.Errorf("can't create RevolutConverter: %w", err)
+		}
+	case "kb":
+		bi, err = bankimporters.NewKBConverter(s.logger, biData, currencies)
+		if err != nil {
+			s.logger.With("error", err).Error("Failed to create KbConverter")
+			return nil, fmt.Errorf("can't create KbConverter: %w", err)
+		}
+	default:
+		s.logger.With("type", biData.Type).Error("Unsupported bank importer type")
+		return nil, fmt.Errorf("unsupported bank importer type: %s", biData.Type)
 	}
 
 	info, transactions, err := bi.ParseAndImport(format, string(data))
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to parse and import Revolut data")
-		return nil, fmt.Errorf("can't parse and import Revolut data: %w", err)
+		s.logger.With("error", err).Error("Failed to parse and import data")
+		return nil, fmt.Errorf("can't parse and import data: %w", err)
 	}
 
 	lastImport, err := s.saveImportedTransactions(userID, id, info, transactions)

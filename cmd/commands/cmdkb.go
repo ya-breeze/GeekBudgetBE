@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/transform"
 )
 
 func CmdKB(log *slog.Logger) *cobra.Command {
@@ -45,9 +43,7 @@ func parseKB(log *slog.Logger) *cobra.Command {
 				}
 				defer file.Close()
 
-				// Create a new reader that decodes windows-1250 to UTF-8
-				reader := transform.NewReader(file, charmap.Windows1250.NewDecoder())
-				data, err = io.ReadAll(reader)
+				data, err = io.ReadAll(file)
 				if err != nil {
 					return fmt.Errorf("can't read file %q: %w", filename, err)
 				}
