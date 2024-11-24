@@ -18,7 +18,12 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 
 	data := map[string]interface{}{}
 
-	session, _ := r.cookies.Get(req, "session-name")
+	session, err := r.cookies.Get(req, "session-name")
+	if err != nil {
+		r.logger.Error("Failed to get session", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	userID, ok := session.Values["userID"].(string)
 	if ok {
 		data["UserID"] = userID

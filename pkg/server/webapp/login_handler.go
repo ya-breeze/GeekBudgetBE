@@ -28,10 +28,18 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	session, _ := r.cookies.Get(req, "session-name")
+	session, err := r.cookies.Get(req, "session-name")
+	if err != nil {
+		r.logger.Warn("failed to get session", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	session.Values["userID"] = userID
+	// Allow to use without HTTPS - for local network
+	session.Options.Secure = false
 	err = session.Save(req, w)
 	if err != nil {
+		r.logger.Warn("failed to save session", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
