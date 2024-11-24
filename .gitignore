@@ -19,13 +19,12 @@
 
 # Go workspace file
 go.work
-test.db
+*.db
 bin/geekbudget
 bin/geekbudget
 bin/geekbudget
 pkg/generated/angular/
 token
 transactions.json
-geekbudget.db
 *.xlsx
 *.csv
