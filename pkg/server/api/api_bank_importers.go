@@ -194,6 +194,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	// save transactions to the database
 	cnt := 0
 	for _, t := range transactions {
+		// Imported transactions should have exactly one external ID fille by the bank importer
 		if len(t.ExternalIds) != 1 {
 			return nil, fmt.Errorf("transaction has invalid external IDs: %v", t)
 		}
