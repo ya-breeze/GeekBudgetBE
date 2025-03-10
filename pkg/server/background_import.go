@@ -9,7 +9,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 )
 
-//nolint:gocognit,unused,cyclop // TODO refactor
+//nolint:gocognit,cyclop // TODO refactor
 func startBankImporters(
 	ctx context.Context, logger *slog.Logger, db database.Storage,
 ) <-chan struct{} {

@@ -8,7 +8,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
-//nolint:funlen,cyclop
+//nolint:funlen,cyclop,gocognit
 func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
