@@ -61,7 +61,7 @@ var _ = Describe("KB converter", func() {
 			Expect(transaction.Movements[1].AccountId).To(Equal(expectedTransaction.Movements[1].AccountId))
 		},
 		Entry("transaction N1",
-			`"26.09.2024";"26.09.2024";"123/45";"companyname";"+12345,00";"";"";"";"9";"138";"0";`+
+			`"26.09.2024";"26.09.2024";"123/45";"companyname";"-12345,00";"";"";"";"9";"138";"0";`+
 				`"externalid";"incoming";"companyname";"personname";"9/0138/0/11/                       "`+
 				`;"/VS9/SS/KS0138                     ";"B/O company ";"                                   ";`,
 			goserver.TransactionNoId{
