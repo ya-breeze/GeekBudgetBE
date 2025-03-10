@@ -16,7 +16,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data := map[string]interface{}{}
+	data := map[string]any{}
 
 	session, err := r.cookies.Get(req, "session-name")
 	if err != nil {
@@ -47,12 +47,13 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		// dateFrom := utils.RoundToGranularity(time.Now(), utils.GranularityYear, false)
 		// dateTo := utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
 
-		dateFrom, dateTo, err := getTimeRange(req, utils.GranularityYear)
+		dateFrom, dateTo, err := getTimeRange(req, utils.GranularityMonth)
 		if err != nil {
 			r.logger.Error("Failed to get time range", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		dateFrom = dateFrom.AddDate(0, -12, 0)
 
 		expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, "")
 		if err != nil {

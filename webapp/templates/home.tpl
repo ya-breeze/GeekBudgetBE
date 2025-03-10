@@ -36,7 +36,7 @@
                         {{ range .Intervals }}
                         <th>{{ formatTime . "2006-01-02" }}</th>
                         {{ end }}
-                        <th>Total for year</th>
+                        <th>Total</th>
                     </tr>
                 </thead>
                 <tbody class="table-group-divider">
@@ -65,7 +65,7 @@
                 </tbody>
                 <tfoot class="table-secondary">
                         <td>
-                            <strong>Total for month</strong>
+                            <strong>Total</strong>
                         </td>
                         {{ range .Total }}
                             <td>{{ money . }}</td>
