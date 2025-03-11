@@ -9,12 +9,13 @@ import (
 )
 
 type Config struct {
-	Users     string `mapstructure:"users" default:""`
-	JWTSecret string `mapstructure:"jwt_secret" default:""`
-	Verbose   bool   `mapstructure:"verbose" default:"false"`
-	Port      int    `mapstructure:"port" default:"8080"`
-	DBPath    string `mapstructure:"dbpath" default:":memory:"`
-	Prefill   bool   `mapstructure:"prefill" default:"false"`
+	Users            string `mapstructure:"users" default:""`
+	JWTSecret        string `mapstructure:"jwt_secret" default:""`
+	Verbose          bool   `mapstructure:"verbose" default:"false"`
+	Port             int    `mapstructure:"port" default:"8080"`
+	DBPath           string `mapstructure:"dbpath" default:":memory:"`
+	Prefill          bool   `mapstructure:"prefill" default:"false"`
+	DisableImporters bool   `mapstructure:"disableimporters" default:"false"`
 }
 
 func InitiateConfig(cfgFile string) (*Config, error) {

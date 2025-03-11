@@ -51,5 +51,6 @@ func createConfigAndLogger(cmd *cobra.Command) (*config.Config, *slog.Logger, er
 	}
 
 	logger := slog.New(h)
+	logger.Info("Config loaded", "config", cfg)
 	return cfg, logger, nil
 }

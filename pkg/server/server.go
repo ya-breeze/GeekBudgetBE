@@ -38,7 +38,13 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
 
-	importFinishChan := startBankImporters(ctx, logger, storage)
+	var importFinishChan <-chan struct{}
+	startImporters := !cfg.DisableImporters
+	if startImporters {
+		importFinishChan = startBankImporters(ctx, logger, storage)
+	} else {
+		logger.Info("Bank importers are disabled")
+	}
 
 	// Wait for an interrupt signal
 	stopChan := make(chan os.Signal, 1)
@@ -49,7 +55,9 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// Stop the server
 	cancel()
 	<-finishChan
-	<-importFinishChan
+	if startImporters {
+		<-importFinishChan
+	}
 	return nil
 }
 
