@@ -150,6 +150,12 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 		"timestamp": func(t time.Time) int64 {
 			return t.Unix()
 		},
+		"lastMonth": func(t time.Time) time.Time {
+			return time.Date(t.Year(), t.Month()-1, 1, 0, 0, 0, 0, t.Location())
+		},
+		"addMonths": func(t time.Time, num int) time.Time {
+			return time.Date(t.Year(), t.Month()+time.Month(num), 1, 0, 0, 0, 0, t.Location())
+		},
 	}).ParseGlob(filepath.Join("webapp", "templates", "*.tpl"))
 	if err != nil {
 		return nil, err

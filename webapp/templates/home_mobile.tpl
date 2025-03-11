@@ -17,10 +17,10 @@
 
     {{ with .Expenses }}
         <h2>Expenses</h2>
-        <a href="/?from={{$.Last}}" class="btn btn-primary" tabindex="-1" role="button">
+        <a href="/?from={{timestamp (addMonths $.To -2)}}" class="btn btn-primary" tabindex="-1" role="button">
             <i class="bi-arrow-left-circle-fill"></i>
         </a>
-        {{ formatTime $.From "2006-01-02" }} - {{ formatTime $.To "2006-01-02" }}
+        {{ formatTime (lastMonth $.To) "2006-01-02" }}
         <a href="/?from={{$.Next}}" class="btn btn-primary" tabindex="-1" role="button">
             <i class="bi-arrow-right-circle-fill"></i>
         </a>
@@ -56,6 +56,12 @@
                         {{ end }}
                     </tr>
                 </tbody>
+                <tfoot class="table-secondary">
+                    <td>
+                        <strong>Total</strong>
+                    </td>
+                    <td>{{ money (index .Total $last_index) }}</td>
+                </tfoot>                
             </table>
         {{ end }}
     {{ end }}
