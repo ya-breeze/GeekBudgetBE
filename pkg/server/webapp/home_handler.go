@@ -111,8 +111,15 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		data["Next"] = dateTo.Unix()
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "home.tpl", data); err != nil {
-		r.logger.Warn("failed to execute template", "error", err)
+	if utils.IsMobile(req.Header.Get("User-Agent")) {
+		data["Template"] = "home_mobile.tpl"
+	} else {
+		data["Template"] = "home.tpl"
+	}
+
+	templateName := data["Template"].(string)
+	if err := tmpl.ExecuteTemplate(w, templateName, data); err != nil {
+		r.logger.Warn("failed to execute template", "error", err, "template", templateName)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

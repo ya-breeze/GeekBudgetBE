@@ -47,3 +47,10 @@ func DeepCopy(src, dst interface{}) error {
 	}
 	return nil
 }
+
+func IsMobile(userAgent string) bool {
+	return strings.Contains(userAgent, "Mobile") ||
+		strings.Contains(userAgent, "Android") ||
+		strings.Contains(userAgent, "iPhone") ||
+		strings.Contains(userAgent, "iPad")
+}
