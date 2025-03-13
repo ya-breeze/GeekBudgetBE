@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
@@ -51,9 +52,8 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data := map[string]interface{}{
-		"UserID": userID,
-	}
+	data := utils.CreateTemplateData(req, "home")
+	data["UserID"] = userID
 
 	if err := tmpl.ExecuteTemplate(w, "home.tpl", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

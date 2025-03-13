@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Request) {
@@ -15,7 +16,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{}
+	data := utils.CreateTemplateData(req, "bank_importers")
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)
@@ -60,7 +61,7 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{}
+	data := utils.CreateTemplateData(req, "bank_importers")
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)

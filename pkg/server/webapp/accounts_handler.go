@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 //nolint:dupl
@@ -14,7 +15,7 @@ func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{}
+	data := utils.CreateTemplateData(req, "accounts")
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)

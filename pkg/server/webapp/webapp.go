@@ -1,9 +1,11 @@
 package webapp
 
 import (
+	"fmt"
 	"html/template"
 	"log/slog"
 	"math"
+	"net/url"
 	"path/filepath"
 	"time"
 
@@ -155,6 +157,16 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 		},
 		"addMonths": func(t time.Time, num int) time.Time {
 			return time.Date(t.Year(), t.Month()+time.Month(num), 1, 0, 0, 0, 0, t.Location())
+		},
+		"addQueryParam": func(rawURL string, key string, value any) (string, error) {
+			u, err := url.Parse(rawURL)
+			if err != nil {
+				return "", err
+			}
+			q := u.Query()
+			q.Set(key, fmt.Sprintf("%v", value))
+			u.RawQuery = q.Encode()
+			return u.String(), nil
 		},
 	}).ParseGlob(filepath.Join("webapp", "templates", "*.tpl"))
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 //nolint:dupl
@@ -14,7 +15,7 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data := map[string]interface{}{}
+	data := utils.CreateTemplateData(req, "matchers")
 
 	session, _ := r.cookies.Get(req, "session-name")
 	userID, ok := session.Values["userID"].(string)

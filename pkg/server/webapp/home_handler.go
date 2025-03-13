@@ -15,8 +15,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	data := map[string]any{}
+	data := utils.CreateTemplateData(req, "home")
 
 	session, err := r.cookies.Get(req, "session-name")
 	if err != nil {
@@ -117,7 +116,12 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		data["Template"] = "home.tpl"
 	}
 
-	templateName := data["Template"].(string)
+	templateName, ok := data["Template"].(string)
+	if !ok {
+		r.logger.Error("Failed to assert template name")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 	if err := tmpl.ExecuteTemplate(w, templateName, data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err, "template", templateName)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

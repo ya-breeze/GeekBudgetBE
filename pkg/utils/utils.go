@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -53,4 +55,24 @@ func IsMobile(userAgent string) bool {
 		strings.Contains(userAgent, "Android") ||
 		strings.Contains(userAgent, "iPhone") ||
 		strings.Contains(userAgent, "iPad")
+}
+
+// ConvertQueryToMap converts url.Values to a map of strings.
+func ConvertQueryToMap(query url.Values) map[string]string {
+	result := make(map[string]string)
+	for key, values := range query {
+		if len(values) > 0 {
+			result[key] = values[0]
+		}
+	}
+	return result
+}
+
+func CreateTemplateData(req *http.Request, page string) map[string]any {
+	data := map[string]any{}
+	data["CurrentPage"] = page
+	data["CurrentURL"] = req.URL.String()
+	data["Query"] = ConvertQueryToMap(req.URL.Query())
+
+	return data
 }

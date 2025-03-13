@@ -1,6 +1,10 @@
 package webapp
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
+)
 
 func (r *WebAppRouter) aboutHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
@@ -9,7 +13,9 @@ func (r *WebAppRouter) aboutHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "about.tpl", nil); err != nil {
+	data := utils.CreateTemplateData(req, "about")
+
+	if err := tmpl.ExecuteTemplate(w, "about.tpl", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

@@ -17,22 +17,26 @@
 
     {{ with .Expenses }}
         <h2>Expenses</h2>
-        <a href="/?from={{timestamp (addMonths $.To -2)}}" class="btn btn-primary" tabindex="-1" role="button">
+        <a href="{{ addQueryParam $.CurrentURL "from" (timestamp (addMonths $.To -2)) }}" class="btn btn-primary" tabindex="-1" role="button">
             <i class="bi-arrow-left-circle-fill"></i>
         </a>
         {{ formatTime (lastMonth $.To) "2006-01-02" }}
-        <a href="/?from={{$.Next}}" class="btn btn-primary" tabindex="-1" role="button">
+        <a href="{{ addQueryParam $.CurrentURL "from" $.Next }}" class="btn btn-primary" tabindex="-1" role="button">
             <i class="bi-arrow-right-circle-fill"></i>
         </a>
 
         {{ range .Currencies }}
-            <h4>Currency: {{ .CurrencyName }}</h4>
-
             {{ $last_index := decrease (len .Intervals) }}
             <table class="table table-sm table-hover">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>
+                            <a href="{{ addQueryParam $.CurrentURL "currency" .CurrencyName }}"
+                                    class="btn btn-light {{if eq (index $.Query "currency") .CurrencyName}}active{{end}}" tabindex="-1" role="button">
+                                <i class="bi-arrow-through-heart-fill"></i>
+                            </a>
+                            Currency: {{ .CurrencyName }}
+                        </th>
                         <th>{{ formatTime (index .Intervals $last_index) "2006-01-02" }}</th>
                     </tr>
                 </thead>
