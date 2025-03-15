@@ -38,12 +38,20 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
 
+	// Start bank importers
 	var importFinishChan <-chan struct{}
-	startImporters := !cfg.DisableImporters
-	if startImporters {
+	if !cfg.DisableImporters {
 		importFinishChan = startBankImporters(ctx, logger, storage)
 	} else {
 		logger.Info("Bank importers are disabled")
+	}
+
+	// Start currency rate fetcher
+	var fetchCurrenciesRatesChan <-chan struct{}
+	if !cfg.DisableCurrenciesRatesFetch {
+		fetchCurrenciesRatesChan = startCurrenciesRatesFetcher(ctx, logger, storage)
+	} else {
+		logger.Info("Fetcher for currencies rates is disabled")
 	}
 
 	// Wait for an interrupt signal
@@ -55,8 +63,11 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// Stop the server
 	cancel()
 	<-finishChan
-	if startImporters {
+	if !cfg.DisableImporters {
 		<-importFinishChan
+	}
+	if !cfg.DisableCurrenciesRatesFetch {
+		<-fetchCurrenciesRatesChan
 	}
 	return nil
 }
