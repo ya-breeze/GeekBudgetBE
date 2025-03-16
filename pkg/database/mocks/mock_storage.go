@@ -81,6 +81,21 @@ func (mr *MockStorageMockRecorder) CreateBankImporter(arg0, arg1 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBankImporter", reflect.TypeOf((*MockStorage)(nil).CreateBankImporter), arg0, arg1)
 }
 
+// CreateBudgetItem mocks base method.
+func (m *MockStorage) CreateBudgetItem(arg0 string, arg1 *goserver.BudgetItemNoId) (goserver.BudgetItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateBudgetItem", arg0, arg1)
+	ret0, _ := ret[0].(goserver.BudgetItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateBudgetItem indicates an expected call of CreateBudgetItem.
+func (mr *MockStorageMockRecorder) CreateBudgetItem(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBudgetItem", reflect.TypeOf((*MockStorage)(nil).CreateBudgetItem), arg0, arg1)
+}
+
 // CreateCurrency mocks base method.
 func (m *MockStorage) CreateCurrency(arg0 string, arg1 *goserver.CurrencyNoId) (goserver.Currency, error) {
 	m.ctrl.T.Helper()
@@ -167,6 +182,20 @@ func (m *MockStorage) DeleteBankImporter(arg0, arg1 string) error {
 func (mr *MockStorageMockRecorder) DeleteBankImporter(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBankImporter", reflect.TypeOf((*MockStorage)(nil).DeleteBankImporter), arg0, arg1)
+}
+
+// DeleteBudgetItem mocks base method.
+func (m *MockStorage) DeleteBudgetItem(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteBudgetItem", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteBudgetItem indicates an expected call of DeleteBudgetItem.
+func (mr *MockStorageMockRecorder) DeleteBudgetItem(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBudgetItem", reflect.TypeOf((*MockStorage)(nil).DeleteBudgetItem), arg0, arg1)
 }
 
 // DeleteCurrency mocks base method.
@@ -313,6 +342,36 @@ func (m *MockStorage) GetBankImporters(arg0 string) ([]goserver.BankImporter, er
 func (mr *MockStorageMockRecorder) GetBankImporters(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBankImporters", reflect.TypeOf((*MockStorage)(nil).GetBankImporters), arg0)
+}
+
+// GetBudgetItem mocks base method.
+func (m *MockStorage) GetBudgetItem(arg0, arg1 string) (goserver.BudgetItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBudgetItem", arg0, arg1)
+	ret0, _ := ret[0].(goserver.BudgetItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBudgetItem indicates an expected call of GetBudgetItem.
+func (mr *MockStorageMockRecorder) GetBudgetItem(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBudgetItem", reflect.TypeOf((*MockStorage)(nil).GetBudgetItem), arg0, arg1)
+}
+
+// GetBudgetItems mocks base method.
+func (m *MockStorage) GetBudgetItems(arg0 string) ([]goserver.BudgetItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBudgetItems", arg0)
+	ret0, _ := ret[0].([]goserver.BudgetItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBudgetItems indicates an expected call of GetBudgetItems.
+func (mr *MockStorageMockRecorder) GetBudgetItems(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBudgetItems", reflect.TypeOf((*MockStorage)(nil).GetBudgetItems), arg0)
 }
 
 // GetCNBRates mocks base method.
@@ -550,6 +609,21 @@ func (m *MockStorage) UpdateBankImporter(arg0, arg1 string, arg2 goserver.BankIm
 func (mr *MockStorageMockRecorder) UpdateBankImporter(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBankImporter", reflect.TypeOf((*MockStorage)(nil).UpdateBankImporter), arg0, arg1, arg2)
+}
+
+// UpdateBudgetItem mocks base method.
+func (m *MockStorage) UpdateBudgetItem(arg0, arg1 string, arg2 *goserver.BudgetItemNoId) (goserver.BudgetItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBudgetItem", arg0, arg1, arg2)
+	ret0, _ := ret[0].(goserver.BudgetItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateBudgetItem indicates an expected call of UpdateBudgetItem.
+func (mr *MockStorageMockRecorder) UpdateBudgetItem(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBudgetItem", reflect.TypeOf((*MockStorage)(nil).UpdateBudgetItem), arg0, arg1, arg2)
 }
 
 // UpdateCurrency mocks base method.
