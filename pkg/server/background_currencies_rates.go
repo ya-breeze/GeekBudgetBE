@@ -29,7 +29,7 @@ func startCurrenciesRatesFetcher(
 				fetcher := NewCurrenciesRatesFetcher(logger, db)
 				_, err := fetcher.Convert(ctx, time.Now(), "CZK", "USD", 100)
 				if err != nil {
-					logger.With("error", err).Error("Failed to get bank importers")
+					logger.With("error", err).Error("Failed to fetch currencies rates, retring in 1 hour")
 
 					// Retry in 1 hour
 					select {
@@ -40,7 +40,7 @@ func startCurrenciesRatesFetcher(
 					}
 				}
 
-				logger.Info("Delaying currencies rates fetcher for 24 hours...")
+				logger.Info("Received rates for today. Delaying currencies rates fetcher for 24 hours...")
 				select {
 				case <-time.After(24 * time.Hour):
 					continue

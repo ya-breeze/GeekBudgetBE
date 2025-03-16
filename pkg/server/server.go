@@ -439,6 +439,26 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		return fmt.Errorf("failed to create rent transaction: %w", err)
 	}
 
+	transaction = &goserver.TransactionNoId{
+		Date:        time.Now().Add(-4 * time.Hour),
+		Description: "USD spending",
+		Movements: []goserver.Movement{
+			{
+				AccountId:  accGroceries.Id,
+				Amount:     1,
+				CurrencyId: curUSD.Id,
+			},
+			{
+				AccountId:  accFio.Id,
+				Amount:     -25,
+				CurrencyId: curCZK.Id,
+			},
+		},
+	}
+	if _, err := storage.CreateTransaction(userID, transaction); err != nil {
+		return fmt.Errorf("failed to create lunch transaction: %w", err)
+	}
+
 	// Bank importers
 	bankImporter := &goserver.BankImporterNoId{
 		Name:        "FIO Bank CZK",

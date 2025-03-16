@@ -110,11 +110,14 @@ func (f *CurrenciesRatesFetcher) performConversion(
 
 func (f *CurrenciesRatesFetcher) fetchRates(ctx context.Context, date string) (map[string]float64, error) {
 	url := fmt.Sprintf("%s?date=%s", f.BaseURL, date)
+	f.logger.Debug("fetching rates", "url", url)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
+	// Set user-agent
+	req.Header.Set("User-Agent", "GeekBudgetBE/1.0")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
