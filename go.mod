@@ -67,3 +67,5 @@ require (
 )
 
 tool github.com/golang/mock/mockgen
+tool github.com/golangci/golangci-lint
+
