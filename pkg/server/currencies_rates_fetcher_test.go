@@ -7,7 +7,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
+	"github.com/ya-breeze/geekbudgetbe/test"
+)
+
+// Use Prague timezone to avoid issues with daylight saving time
+//
+//nolint:gochecknoglobals // Test data
+var (
+	location, _ = time.LoadLocation("Europe/Prague")
+	testDate    = time.Date(2025, 3, 14, 10, 0, 0, 0, location)
 )
 
 func createMockServer() (*httptest.Server, *int) {
@@ -38,9 +49,25 @@ func TestCurrenciesRatesFetcher_Convert(t *testing.T) {
 	cnbMockServer, _ := createMockServer()
 	defer cnbMockServer.Close()
 
-	sut := server.NewCurrenciesRatesFetcher(nil, nil) // Using nil for logger and config in tests
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockStorage := mocks.NewMockStorage(ctrl)
+
+	// Set expectations for the storage
+	// Expect storage to look for the rates first
+	mockStorage.EXPECT().
+		GetCNBRates(testDate).
+		Return(nil, nil).
+		AnyTimes()
+
+	// Expect storage to save the fetched rates
+	mockStorage.EXPECT().
+		SaveCNBRates(gomock.Any(), testDate).
+		Return(nil).
+		AnyTimes()
+
+	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	testDate := time.Date(2025, 3, 14, 0, 0, 0, 0, time.UTC)
 	ctx := context.Background()
 
 	tests := []struct {
@@ -131,9 +158,25 @@ func TestCurrenciesRatesFetcher_FetchRates(t *testing.T) {
 	cnbMockServer, callCount := createMockServer()
 	defer cnbMockServer.Close()
 
-	sut := server.NewCurrenciesRatesFetcher(nil, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockStorage := mocks.NewMockStorage(ctrl)
+
+	// Set expectations for the storage
+	// Expect storage to look for the rates first
+	mockStorage.EXPECT().
+		GetCNBRates(gomock.Any()).
+		Return(nil, nil).
+		AnyTimes()
+
+	// Expect storage to save the fetched rates
+	mockStorage.EXPECT().
+		SaveCNBRates(gomock.Any(), gomock.Any()).
+		Return(nil).
+		AnyTimes()
+
+	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	testDate := time.Date(2025, 3, 14, 0, 0, 0, 0, time.UTC)
 	ctx := context.Background()
 
 	// First call should fetch from server
@@ -165,6 +208,88 @@ func TestCurrenciesRatesFetcher_FetchRates(t *testing.T) {
 	}
 }
 
+//nolint:funlen // Test function with many cases
+func TestCurrenciesRatesFetcher_GetRatesFromStorage(t *testing.T) {
+	// Setup a mock HTTP server
+	cnbMockServer, callCount := createMockServer()
+	defer cnbMockServer.Close()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockStorage := mocks.NewMockStorage(ctrl)
+
+	// Create mock rates to return from storage
+	mockRates := map[string]float64{
+		"USD": 20.5,
+		"EUR": 25.0,
+		"JPY": 0.18,
+		"AUD": 15.75,
+	}
+
+	// Expect storage to return our mock rates
+	mockStorage.EXPECT().
+		GetCNBRates(testDate).
+		Return(mockRates, nil).
+		AnyTimes()
+
+	// The server should not save rates since we already have them
+	// No SaveCNBRates calls should happen
+
+	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
+	sut.BaseURL = cnbMockServer.URL
+	ctx := context.Background()
+
+	// Test some conversions with our mock rates
+	tests := []struct {
+		name     string
+		from     string
+		to       string
+		amount   float64
+		expected float64
+	}{
+		{
+			name:     "Convert USD to CZK using stored rates",
+			from:     "USD",
+			to:       "CZK",
+			amount:   100,
+			expected: 100 * 20.5,
+		},
+		{
+			name:     "Convert CZK to EUR using stored rates",
+			from:     "CZK",
+			to:       "EUR",
+			amount:   250,
+			expected: 250 / 25.0,
+		},
+		{
+			name:     "Convert EUR to JPY using stored rates",
+			from:     "EUR",
+			to:       "JPY",
+			amount:   50,
+			expected: (50 * 25.0) / 0.18,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := sut.Convert(ctx, testDate, tt.from, tt.to, tt.amount)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			if !almostEqual(result, tt.expected, 0.0001) {
+				t.Errorf("expected %.4f, got %.4f", tt.expected, result)
+			}
+		})
+	}
+
+	// Verify that the HTTP server was never called
+	if *callCount != 0 {
+		t.Errorf("expected 0 HTTP calls, got %d", *callCount)
+	}
+}
+
 // Helper function to compare floating point numbers
 func almostEqual(a, b, delta float64) bool {
 	diff := a - b
@@ -182,9 +307,20 @@ func TestCurrenciesRatesFetcher_ErrorHandling(t *testing.T) {
 	}))
 	defer cnbMockServer.Close()
 
-	sut := server.NewCurrenciesRatesFetcher(nil, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockStorage := mocks.NewMockStorage(ctrl)
+
+	// Set expectations for the storage
+	// Expect storage to look for the rates first
+	// No save call should happen due to fetch error
+	mockStorage.EXPECT().
+		GetCNBRates(testDate).
+		Return(nil, nil).
+		AnyTimes()
+
+	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	testDate := time.Date(2025, 3, 14, 0, 0, 0, 0, time.UTC)
 	ctx := context.Background()
 
 	_, err := sut.Convert(ctx, testDate, "USD", "CZK", 100)
@@ -198,9 +334,20 @@ func TestCurrenciesRatesFetcher_ContextCancellation(t *testing.T) {
 	cnbMockServer, _ := createMockServer()
 	defer cnbMockServer.Close()
 
-	sut := server.NewCurrenciesRatesFetcher(nil, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockStorage := mocks.NewMockStorage(ctrl)
+
+	// Set expectations for the storage
+	// Expect storage to look for the rates first
+	// No save call should happen due to context cancellation
+	mockStorage.EXPECT().
+		GetCNBRates(testDate).
+		Return(nil, nil).
+		AnyTimes()
+
+	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	testDate := time.Date(2025, 3, 14, 0, 0, 0, 0, time.UTC)
 
 	// Create a context with timeout shorter than the server's response time
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)

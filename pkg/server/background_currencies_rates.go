@@ -26,19 +26,19 @@ func startCurrenciesRatesFetcher(
 				// Do something
 				logger.Info("Fetching currencies rates...")
 
-				// importer := api.NewBankImportersAPIServiceImpl(logger, db)
-				// pairs, err := db.GetAllBankImporters()
-				// if err != nil {
-				// 	logger.With("error", err).Error("Failed to get bank importers")
+				fetcher := NewCurrenciesRatesFetcher(logger, db)
+				_, err := fetcher.Convert(ctx, time.Now(), "CZK", "USD", 100)
+				if err != nil {
+					logger.With("error", err).Error("Failed to get bank importers")
 
-				// 	// Retry in 1 hour
-				// 	select {
-				// 	case <-time.After(time.Hour):
-				// 		continue
-				// 	case <-ctx.Done():
-				// 		continue
-				// 	}
-				// }
+					// Retry in 1 hour
+					select {
+					case <-time.After(time.Hour):
+						continue
+					case <-ctx.Done():
+						continue
+					}
+				}
 
 				logger.Info("Delaying currencies rates fetcher for 24 hours...")
 				select {

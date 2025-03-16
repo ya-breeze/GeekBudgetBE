@@ -42,17 +42,41 @@ func (f *CurrenciesRatesFetcher) Convert(
 	dateKey := day.Format("2006-01-02")
 	rates, ok := f.rateCache[dateKey]
 	if !ok {
-		// Fetch rates if not cached
-		var err error
-		rates, err = f.fetchRates(ctx, dateStr)
+		// Try to get rates from DB first
+		dbRates, err := f.storage.GetCNBRates(day)
 		if err != nil {
-			return 0, fmt.Errorf("failed to fetch currency rates: %w", err)
+			f.logger.Warn("failed to get rates from DB", "error", err, "date", dateKey)
+		}
+
+		if len(dbRates) > 0 {
+			// Use rates from DB
+			rates = dbRates
+			f.logger.Debug("using rates from DB", "date", dateKey)
+		} else {
+			// Fetch rates if not in DB
+			rates, err = f.fetchRates(ctx, dateStr)
+			if err != nil {
+				return 0, fmt.Errorf("failed to fetch currency rates: %w", err)
+			}
+
+			// Store rates in DB
+			if err := f.storage.SaveCNBRates(rates, day); err != nil {
+				f.logger.Warn("failed to store rates to DB", "error", err, "date", dateKey)
+			}
 		}
 
 		// Cache the rates
 		f.rateCache[dateKey] = rates
 	}
 
+	// Perform the currency conversion
+	return f.performConversion(from, to, amount, rates)
+}
+
+// performConversion handles the actual currency conversion calculation
+func (f *CurrenciesRatesFetcher) performConversion(
+	from, to string, amount float64, rates map[string]float64,
+) (float64, error) {
 	// Convert CZK to another currency or vice versa
 	switch {
 	case from == "CZK":

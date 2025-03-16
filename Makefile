@@ -1,7 +1,7 @@
 ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 .PHONY: all
-all: build test lint
+all: build test validate lint
 	@echo "🎉 You are good to go!"
 
 .PHONY: build
@@ -28,8 +28,15 @@ replace-templates:
 		openapitools/openapi-generator-cli author template -g go-server \
 		-o /local/pkg/generated/templates/goserver
 
+.PHONY: generate_mocks
+generate_mocks:
+	@echo "🚀 Generating mocks..."
+	@go generate ./...
+	@echo "✅ Mocks generated"
+
 .PHONY: generate
-generate:
+generate: generate_mocks
+	@echo "🚀 Generating code from OpenAPI spec..."
 	# Golang client and server
 	@rm -rf pkg/generated/goclient pkg/generated/goserver pkg/generated/angular
 	@mkdir -p pkg/generated/goclient pkg/generated/goserver
@@ -81,7 +88,7 @@ validate:
 	@echo "✅ Validation complete"
 
 .PHONY: lint
-lint: validate
+lint:
 	@golangci-lint run
 	@gofumpt -l -d .
 	@echo "✅ Lint complete"

@@ -14,6 +14,8 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockgen -destination=mocks/mock_storage.go -package=mocks github.com/ya-breeze/geekbudgetbe/pkg/database Storage
+
 const StorageError = "storage error: %w"
 
 var ErrNotFound = errors.New("not found")
@@ -71,6 +73,9 @@ type Storage interface {
 	CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	DeleteMatcher(userID string, id string) error
+
+	SaveCNBRates(rates map[string]float64, day time.Time) error
+	GetCNBRates(day time.Time) (map[string]float64, error)
 }
 
 type MatcherRuntime struct {
@@ -673,3 +678,63 @@ func (s *storage) DeleteMatcher(userID string, id string) error {
 }
 
 //#endregion Matchers
+
+// #region CNB rates
+func (s *storage) SaveCNBRates(rates map[string]float64, date time.Time) error {
+	// Use a transaction to ensure all rates are saved together
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		// First delete all existing rates for this date to avoid duplicates
+		if err := tx.Where("rate_date = ?", date).Delete(&models.CNBCurrencyRate{}).Error; err != nil {
+			return fmt.Errorf(StorageError, err)
+		}
+
+		// Create new rates
+		for currencyCode, rate := range rates {
+			currencyRate := models.CNBCurrencyRate{
+				CurrencyCode: currencyCode,
+				RateToCZK:    rate,
+				RateDate:     date,
+			}
+
+			if err := tx.Create(&currencyRate).Error; err != nil {
+				return fmt.Errorf(StorageError, err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func (s *storage) GetCNBRates(date time.Time) (map[string]float64, error) {
+	var rates []models.CNBCurrencyRate
+	query := s.db.Model(&models.CNBCurrencyRate{})
+
+	// If a specific date is provided, use it
+	if !date.IsZero() {
+		query = query.Where("rate_date = ?", date)
+	} else {
+		// Otherwise get the most recent rates
+		var latestDate time.Time
+		if err := s.db.Model(&models.CNBCurrencyRate{}).
+			Select("MAX(rate_date)").
+			Scan(&latestDate).Error; err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		query = query.Where("rate_date = ?", latestDate)
+	}
+
+	if err := query.Find(&rates).Error; err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+
+	// Convert to map
+	result := make(map[string]float64, len(rates))
+	for _, rate := range rates {
+		result[rate.CurrencyCode] = rate.RateToCZK
+	}
+
+	return result, nil
+}
+
+//#endregion CNB rates
