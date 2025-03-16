@@ -1,4 +1,4 @@
-package server_test
+package common_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -66,7 +66,7 @@ func TestCurrenciesRatesFetcher_Convert(t *testing.T) {
 		Return(nil).
 		AnyTimes()
 
-	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
+	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
 	ctx := context.Background()
 
@@ -175,7 +175,7 @@ func TestCurrenciesRatesFetcher_FetchRates(t *testing.T) {
 		Return(nil).
 		AnyTimes()
 
-	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
+	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
 	ctx := context.Background()
 
@@ -235,7 +235,7 @@ func TestCurrenciesRatesFetcher_GetRatesFromStorage(t *testing.T) {
 	// The server should not save rates since we already have them
 	// No SaveCNBRates calls should happen
 
-	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
+	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
 	ctx := context.Background()
 
@@ -319,7 +319,7 @@ func TestCurrenciesRatesFetcher_ErrorHandling(t *testing.T) {
 		Return(nil, nil).
 		AnyTimes()
 
-	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
+	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
 	ctx := context.Background()
 
@@ -346,7 +346,7 @@ func TestCurrenciesRatesFetcher_ContextCancellation(t *testing.T) {
 		Return(nil, nil).
 		AnyTimes()
 
-	sut := server.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
+	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
 
 	// Create a context with timeout shorter than the server's response time
