@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-//go:generate mockgen -destination=mocks/mock_storage.go -package=mocks github.com/ya-breeze/geekbudgetbe/pkg/database Storage
+//go:generate go tool github.com/golang/mock/mockgen -destination=mocks/mock_storage.go -package=mocks github.com/ya-breeze/geekbudgetbe/pkg/database Storage
 
 const StorageError = "storage error: %w"
 

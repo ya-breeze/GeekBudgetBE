@@ -29,13 +29,13 @@ replace-templates:
 		-o /local/pkg/generated/templates/goserver
 
 .PHONY: generate_mocks
-generate_mocks:
+generate_mocks: generate
 	@echo "🚀 Generating mocks..."
 	@go generate ./...
 	@echo "✅ Mocks generated"
 
 .PHONY: generate
-generate: generate_mocks
+generate:
 	@echo "🚀 Generating code from OpenAPI spec..."
 	# Golang client and server
 	@rm -rf pkg/generated/goclient pkg/generated/goserver pkg/generated/angular
