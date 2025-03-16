@@ -874,6 +874,107 @@ paths:
               schema:
                 $ref: "#/components/schemas/WholeUserData"
 
+  /v1/budgetItems:
+    get:
+      tags:
+        - budgetItems
+      summary: get all budgetItems
+      operationId: getBudgetItems
+      responses:
+        "200":
+          description: budgetItems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BudgetItem"
+    post:
+      tags:
+        - budgetItems
+      summary: create new budgetItem
+      operationId: createBudgetItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetItemNoID"
+      responses:
+        "200":
+          description: created budgetItem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetItem"
+
+  /v1/budgetItems/{id}:
+    get:
+      tags:
+        - budgetItems
+      summary: get budgetItem
+      operationId: getBudgetItem
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the budgetItem"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: budgetItem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetItem"
+    put:
+      tags:
+        - budgetItems
+      summary: update budgetItem
+      operationId: updateBudgetItem
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the budgetItem"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetItemNoID"
+      responses:
+        "200":
+          description: updated budgetItem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetItem"
+    delete:
+      tags:
+        - budgetItems
+      summary: delete budgetItem
+      operationId: deleteBudgetItem
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the budgetItem"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: no body
+
 security:
   - BearerAuth: []
 
@@ -1336,3 +1437,28 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BankImporter"
+
+    BudgetItemNoID:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        accountId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        description:
+          type: string
+      required:
+        - date
+        - accountId
+        - amount
+
+    BudgetItem:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - $ref: "#/components/schemas/BudgetItemNoID"

@@ -19,7 +19,10 @@ var _ = Describe("Aggregation API", func() {
 	dateTo := time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC)
 
 	It("aggregate expenses", func() {
-		sut := api.Aggregate(accounts, transactions, dateFrom, dateTo, utils.GranularityMonth, log)
+		sut := api.Aggregate(
+			accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
+			"", nil,
+			log)
 		Expect(sut.From.UnixMilli()).To(Equal(time.Date(2024, 9, 1, 0, 0, 0, 0, time.UTC).UnixMilli()))
 		Expect(sut.To.UnixMilli()).To(Equal(time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC).UnixMilli()))
 

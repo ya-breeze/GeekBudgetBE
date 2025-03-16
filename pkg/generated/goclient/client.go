@@ -57,6 +57,8 @@ type APIClient struct {
 
 	BankImportersAPI *BankImportersAPIService
 
+	BudgetItemsAPI *BudgetItemsAPIService
+
 	CurrenciesAPI *CurrenciesAPIService
 
 	ExportAPI *ExportAPIService
@@ -94,6 +96,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.AggregationsAPI = (*AggregationsAPIService)(&c.common)
 	c.AuthAPI = (*AuthAPIService)(&c.common)
 	c.BankImportersAPI = (*BankImportersAPIService)(&c.common)
+	c.BudgetItemsAPI = (*BudgetItemsAPIService)(&c.common)
 	c.CurrenciesAPI = (*CurrenciesAPIService)(&c.common)
 	c.ExportAPI = (*ExportAPIService)(&c.common)
 	c.ImportAPI = (*ImportAPIService)(&c.common)

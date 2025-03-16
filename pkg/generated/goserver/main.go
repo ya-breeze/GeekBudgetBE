@@ -30,6 +30,7 @@ type CustomControllers struct {
 	AggregationsAPIService            AggregationsAPIService
 	AuthAPIService                    AuthAPIService
 	BankImportersAPIService           BankImportersAPIService
+	BudgetItemsAPIService             BudgetItemsAPIService
 	CurrenciesAPIService              CurrenciesAPIService
 	ExportAPIService                  ExportAPIService
 	ImportAPIService                  ImportAPIService
@@ -71,6 +72,12 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 		BankImportersAPIService = controllers.BankImportersAPIService
 	}
 	BankImportersAPIController := NewBankImportersAPIController(BankImportersAPIService)
+
+	BudgetItemsAPIService := NewBudgetItemsAPIService()
+	if controllers.BudgetItemsAPIService != nil {
+		BudgetItemsAPIService = controllers.BudgetItemsAPIService
+	}
+	BudgetItemsAPIController := NewBudgetItemsAPIController(BudgetItemsAPIService)
 
 	CurrenciesAPIService := NewCurrenciesAPIService()
 	if controllers.CurrenciesAPIService != nil {
@@ -120,7 +127,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	UserAPIController := NewUserAPIController(UserAPIService)
 
-	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
 	router := NewRouter(routers...)
 
 	router.Use(middlewares...)

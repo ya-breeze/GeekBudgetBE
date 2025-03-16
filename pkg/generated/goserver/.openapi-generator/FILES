@@ -12,6 +12,8 @@ go/api_auth.go
 go/api_auth_service.go
 go/api_bank_importers.go
 go/api_bank_importers_service.go
+go/api_budget_items.go
+go/api_budget_items_service.go
 go/api_currencies.go
 go/api_currencies_service.go
 go/api_export.go
@@ -43,6 +45,8 @@ go/model_bank_account_info_balances_inner.go
 go/model_bank_importer.go
 go/model_bank_importer_no_id.go
 go/model_bank_importer_no_id_mappings_inner.go
+go/model_budget_item.go
+go/model_budget_item_no_id.go
 go/model_check_matcher_200_response.go
 go/model_check_matcher_request.go
 go/model_currency.go

@@ -7,6 +7,7 @@ api_accounts.go
 api_aggregations.go
 api_auth.go
 api_bank_importers.go
+api_budget_items.go
 api_currencies.go
 api_export.go
 api_import.go
@@ -32,6 +33,9 @@ docs/BankImporter.md
 docs/BankImporterNoID.md
 docs/BankImporterNoIDMappingsInner.md
 docs/BankImportersAPI.md
+docs/BudgetItem.md
+docs/BudgetItemNoID.md
+docs/BudgetItemsAPI.md
 docs/CheckMatcher200Response.md
 docs/CheckMatcherRequest.md
 docs/CurrenciesAPI.md
@@ -69,6 +73,8 @@ model_bank_account_info_balances_inner.go
 model_bank_importer.go
 model_bank_importer_no_id.go
 model_bank_importer_no_id_mappings_inner.go
+model_budget_item.go
+model_budget_item_no_id.go
 model_check_matcher_200_response.go
 model_check_matcher_request.go
 model_currency.go
@@ -91,6 +97,7 @@ test/api_accounts_test.go
 test/api_aggregations_test.go
 test/api_auth_test.go
 test/api_bank_importers_test.go
+test/api_budget_items_test.go
 test/api_currencies_test.go
 test/api_export_test.go
 test/api_import_test.go

@@ -58,6 +58,17 @@ type BankImportersAPIRouter interface {
 	UploadBankImporter(http.ResponseWriter, *http.Request)
 }
 
+// BudgetItemsAPIRouter defines the required methods for binding the api requests to a responses for the BudgetItemsAPI
+// The BudgetItemsAPIRouter implementation should parse necessary information from the http request,
+// pass the data to a BudgetItemsAPIServicer to perform the required actions, then write the service results to the http response.
+type BudgetItemsAPIRouter interface {
+	GetBudgetItems(http.ResponseWriter, *http.Request)
+	CreateBudgetItem(http.ResponseWriter, *http.Request)
+	GetBudgetItem(http.ResponseWriter, *http.Request)
+	UpdateBudgetItem(http.ResponseWriter, *http.Request)
+	DeleteBudgetItem(http.ResponseWriter, *http.Request)
+}
+
 // CurrenciesAPIRouter defines the required methods for binding the api requests to a responses for the CurrenciesAPI
 // The CurrenciesAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a CurrenciesAPIServicer to perform the required actions, then write the service results to the http response.
@@ -170,6 +181,18 @@ type BankImportersAPIServicer interface {
 	DeleteBankImporter(context.Context, string) (ImplResponse, error)
 	FetchBankImporter(context.Context, string) (ImplResponse, error)
 	UploadBankImporter(context.Context, string, string, *os.File) (ImplResponse, error)
+}
+
+// BudgetItemsAPIServicer defines the api actions for the BudgetItemsAPI service
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can be ignored with the .openapi-generator-ignore file
+// and updated with the logic required for the API.
+type BudgetItemsAPIServicer interface {
+	GetBudgetItems(context.Context) (ImplResponse, error)
+	CreateBudgetItem(context.Context, BudgetItemNoId) (ImplResponse, error)
+	GetBudgetItem(context.Context, string) (ImplResponse, error)
+	UpdateBudgetItem(context.Context, string, BudgetItemNoId) (ImplResponse, error)
+	DeleteBudgetItem(context.Context, string) (ImplResponse, error)
 }
 
 // CurrenciesAPIServicer defines the api actions for the CurrenciesAPI service

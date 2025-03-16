@@ -54,7 +54,8 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		}
 		dateFrom = dateFrom.AddDate(0, -12, 0)
 
-		expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, "")
+		outputCurrencyID, _ := session.Values["currency"].(string)
+		expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, outputCurrencyID)
 		if err != nil {
 			r.logger.Error("Failed to get aggregated expenses", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 func startCurrenciesRatesFetcher(
@@ -26,7 +27,7 @@ func startCurrenciesRatesFetcher(
 				// Do something
 				logger.Info("Fetching currencies rates...")
 
-				fetcher := NewCurrenciesRatesFetcher(logger, db)
+				fetcher := common.NewCurrenciesRatesFetcher(logger, db)
 				_, err := fetcher.Convert(ctx, time.Now(), "CZK", "USD", 100)
 				if err != nil {
 					logger.With("error", err).Error("Failed to fetch currencies rates, retring in 1 hour")

@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-//go:generate mockgen -destination=mocks/mock_storage.go -package=mocks github.com/ya-breeze/geekbudgetbe/pkg/database Storage
+//go:generate go tool github.com/golang/mock/mockgen -destination=mocks/mock_storage.go -package=mocks github.com/ya-breeze/geekbudgetbe/pkg/database Storage
 
 const StorageError = "storage error: %w"
 
@@ -76,6 +76,12 @@ type Storage interface {
 
 	SaveCNBRates(rates map[string]float64, day time.Time) error
 	GetCNBRates(day time.Time) (map[string]float64, error)
+
+	CreateBudgetItem(userID string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
+	GetBudgetItems(userID string) ([]goserver.BudgetItem, error)
+	GetBudgetItem(userID string, id string) (goserver.BudgetItem, error)
+	UpdateBudgetItem(userID string, id string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
+	DeleteBudgetItem(userID string, id string) error
 }
 
 type MatcherRuntime struct {
@@ -738,3 +744,84 @@ func (s *storage) GetCNBRates(date time.Time) (map[string]float64, error) {
 }
 
 //#endregion CNB rates
+
+// #region BudgetItems
+func (s *storage) CreateBudgetItem(userID string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error) {
+	data := models.BudgetItemToDB(budgetItem, userID)
+	data.ID = uuid.New()
+	if err := s.db.Create(data).Error; err != nil {
+		return goserver.BudgetItem{}, fmt.Errorf(StorageError, err)
+	}
+	s.log.Info("BudgetItem created", "id", data.ID)
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) GetBudgetItems(userID string) ([]goserver.BudgetItem, error) {
+	result, err := s.db.Model(&models.BudgetItem{}).Where("user_id = ?", userID).Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	items := make([]goserver.BudgetItem, 0)
+	for result.Next() {
+		var item models.BudgetItem
+		if err := s.db.ScanRows(result, &item); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		items = append(items, item.FromDB())
+	}
+
+	return items, nil
+}
+
+func (s *storage) GetBudgetItem(userID string, id string) (goserver.BudgetItem, error) {
+	var data models.BudgetItem
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.BudgetItem{}, ErrNotFound
+		}
+
+		return goserver.BudgetItem{}, fmt.Errorf(StorageError, err)
+	}
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) UpdateBudgetItem(
+	userID string, id string, budgetItem *goserver.BudgetItemNoId,
+) (goserver.BudgetItem, error) {
+	idUUID, err := uuid.Parse(id)
+	if err != nil {
+		return goserver.BudgetItem{}, fmt.Errorf(StorageError+"; id is not UUID", err)
+	}
+
+	var data *models.BudgetItem
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.BudgetItem{}, ErrNotFound
+		}
+
+		return goserver.BudgetItem{}, fmt.Errorf(StorageError, err)
+	}
+
+	data = models.BudgetItemToDB(budgetItem, userID)
+	data.ID = idUUID
+	if err := s.db.Save(&data).Error; err != nil {
+		return goserver.BudgetItem{}, fmt.Errorf(StorageError, err)
+	}
+
+	return data.FromDB(), nil
+}
+
+func (s *storage) DeleteBudgetItem(userID string, id string) error {
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.BudgetItem{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
+}
+
+//#endregion BudgetItems
