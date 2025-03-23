@@ -19,10 +19,11 @@ type ForcedImport struct {
 }
 
 func GetForcedImportChannel(ctx context.Context) chan<- ForcedImport {
-	return ctx.Value(ForcedImportKey).(chan<- ForcedImport)
+	res, _ := ctx.Value(ForcedImportKey).(chan<- ForcedImport)
+	return res
 }
 
-//nolint:gocognit,cyclop // TODO refactor
+//nolint:funlen,gocognit,cyclop // TODO refactor
 func StartBankImporters(
 	ctx context.Context, logger *slog.Logger, db database.Storage, forcedImports <-chan ForcedImport,
 ) <-chan struct{} {

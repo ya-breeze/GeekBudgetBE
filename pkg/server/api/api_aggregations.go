@@ -67,7 +67,12 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 	}
 
 	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
-	res := Aggregate(accounts, transactions, dateFrom, dateTo, utils.GranularityMonth, outputCurrencyID, currenciesRatesFetcher, s.logger)
+	res := Aggregate(
+		accounts, transactions,
+		dateFrom, dateTo,
+		utils.GranularityMonth,
+		outputCurrencyID, currenciesRatesFetcher,
+		s.logger)
 
 	return &res, nil
 }
@@ -78,7 +83,6 @@ func Aggregate(
 	outputCurrencyID string, currenciesRatesFetcher *common.CurrenciesRatesFetcher,
 	log *slog.Logger,
 ) goserver.Aggregation {
-
 	res := goserver.Aggregation{
 		From: dateFrom,
 		To:   dateTo,

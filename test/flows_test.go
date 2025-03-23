@@ -15,6 +15,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 )
 
 var _ = Describe("Flows", func() {
@@ -29,6 +30,8 @@ var _ = Describe("Flows", func() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	BeforeEach(func() {
+		forcedImportChan := make(chan background.ForcedImport)
+
 		ctx, cancel = context.WithCancel(context.Background())
 		hashed, err := auth.HashPassword([]byte(Pass1))
 		if err != nil {
@@ -44,7 +47,7 @@ var _ = Describe("Flows", func() {
 		if err = storage.Open(); err != nil {
 			panic(err)
 		}
-		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg)
+		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg, forcedImportChan)
 		Expect(err).ToNot(HaveOccurred())
 
 		clientCfg := goclient.NewConfiguration()

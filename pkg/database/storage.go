@@ -61,7 +61,9 @@ type Storage interface {
 
 	GetBankImporters(userID string) ([]goserver.BankImporter, error)
 	CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
-	UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface) (goserver.BankImporter, error)
+	UpdateBankImporter(
+		userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
+	) (goserver.BankImporter, error)
 	DeleteBankImporter(userID string, id string) error
 	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
 	GetAllBankImporters() ([]ImportInfo, error)

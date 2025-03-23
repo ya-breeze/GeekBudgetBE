@@ -15,6 +15,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
@@ -36,6 +37,8 @@ var _ = Describe("Transactions API", func() {
 	now := time.Now()
 
 	BeforeEach(func() {
+		forcedImportChan := make(chan background.ForcedImport)
+
 		ctx, cancel = context.WithCancel(context.Background())
 		hashed, err := auth.HashPassword([]byte(Pass1))
 		if err != nil {
@@ -51,7 +54,7 @@ var _ = Describe("Transactions API", func() {
 		if err = storage.Open(); err != nil {
 			panic(err)
 		}
-		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg)
+		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg, forcedImportChan)
 		Expect(err).ToNot(HaveOccurred())
 
 		clientCfg := goclient.NewConfiguration()

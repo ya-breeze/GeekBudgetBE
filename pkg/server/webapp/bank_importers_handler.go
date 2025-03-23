@@ -37,7 +37,11 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 				if bankImporter.Id == req.URL.Query().Get("id") {
 					r.logger.Info("Set 'FetchAll' to true", "id", bankImporter.Id)
 					bankImporter.FetchAll = true
-					r.db.UpdateBankImporter(userID, bankImporter.Id, &bankImporter)
+					if _, err = r.db.UpdateBankImporter(userID, bankImporter.Id, &bankImporter); err != nil {
+						r.logger.Error("Failed to update bank importer", "error", err)
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
 					bankimporters[i] = bankImporter
 
 					// schedule forced import

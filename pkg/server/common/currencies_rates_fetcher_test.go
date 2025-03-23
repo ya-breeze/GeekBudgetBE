@@ -68,7 +68,7 @@ func TestCurrenciesRatesFetcher_Convert(t *testing.T) {
 
 	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	ctx := context.Background()
+	ctx := t.Context()
 
 	tests := []struct {
 		name          string
@@ -177,7 +177,7 @@ func TestCurrenciesRatesFetcher_FetchRates(t *testing.T) {
 
 	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// First call should fetch from server
 	_, err := sut.Convert(ctx, testDate, "USD", "CZK", 100)
@@ -237,7 +237,7 @@ func TestCurrenciesRatesFetcher_GetRatesFromStorage(t *testing.T) {
 
 	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// Test some conversions with our mock rates
 	tests := []struct {
@@ -321,7 +321,7 @@ func TestCurrenciesRatesFetcher_ErrorHandling(t *testing.T) {
 
 	sut := common.NewCurrenciesRatesFetcher(test.CreateTestLogger(), mockStorage)
 	sut.BaseURL = cnbMockServer.URL
-	ctx := context.Background()
+	ctx := t.Context()
 
 	_, err := sut.Convert(ctx, testDate, "USD", "CZK", 100)
 	if err == nil {
@@ -350,7 +350,7 @@ func TestCurrenciesRatesFetcher_ContextCancellation(t *testing.T) {
 	sut.BaseURL = cnbMockServer.URL
 
 	// Create a context with timeout shorter than the server's response time
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 1*time.Millisecond)
 	defer cancel()
 
 	_, err := sut.Convert(ctx, testDate, "USD", "CZK", 100)

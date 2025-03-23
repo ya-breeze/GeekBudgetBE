@@ -13,6 +13,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -21,13 +22,15 @@ var _ = Describe("Accounts API", func() {
 	var cancel context.CancelFunc
 	var cfg *config.Config
 	var addr net.Addr
-	var finishCham chan int
+	var finishChan chan int
 	var client *goclient.APIClient
 	var accessToken string
 	var storage database.Storage
 	logger := test.CreateTestLogger()
 
 	BeforeEach(func() {
+		forcedImportChan := make(chan background.ForcedImport)
+
 		ctx, cancel = context.WithCancel(context.Background())
 		hashed, err := auth.HashPassword([]byte(Pass1))
 		if err != nil {
@@ -43,7 +46,7 @@ var _ = Describe("Accounts API", func() {
 		if err = storage.Open(); err != nil {
 			panic(err)
 		}
-		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg)
+		addr, finishChan, err = server.Serve(ctx, logger, storage, cfg, forcedImportChan)
 		Expect(err).ToNot(HaveOccurred())
 
 		clientCfg := goclient.NewConfiguration()
@@ -55,7 +58,7 @@ var _ = Describe("Accounts API", func() {
 
 	AfterEach(func() {
 		cancel()
-		<-finishCham
+		<-finishChan
 		storage.Close()
 	})
 
