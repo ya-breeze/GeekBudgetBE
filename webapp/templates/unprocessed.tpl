@@ -1,41 +1,20 @@
 {{ template "header.tpl" . }}
 
 <main>
-    <h2>Unprocessed</h2>
     {{ with .Unprocessed }}
-        <form method="GET">
-            <input type="hidden" name="id" value="{{ .Transaction.ID }}">
-            <button type="submit">Skip ({{ decrease $.UnprocessedCount }} left)</button>
-        </form>
-
-        <form action="/web/matchers/edit" method="GET">
+        <h5></h5>
+        <form class="row g-3" action="/web/unprocessed/convert" method="POST">
             <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
-            <button type="submit">Create matcher</button>
-        </form>
 
-        <form action="/web/unprocessed/convert" method="POST">
-            <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
-            <h5>{{ formatTime .Transaction.Date "2006-01-02" }}</h5>
+            <strong><i class="bi-calendar-event"></i> Date: {{ formatTime .Transaction.Date "2006-01-02" }}</strong>
+
             <div class="mb-3">
                 <label for="description" class="form-label">Description: </label>
                 <input type="text" class="form-control" name="description" value="{{ .Transaction.Description }}">
             </div>
 
-            {{ if ne .Transaction.PartnerName "" }}
-            <h6>Partner name: {{ .Transaction.PartnerName }}</h6>
-            {{ end }}
-            {{ if ne .Transaction.PartnerAccount "" }}
-            <h6>Partner account: {{ .Transaction.PartnerAccount }}</h6>
-            {{ end }}
-            {{ if ne .Transaction.Place "" }}
-            <h6>Place: {{ .Transaction.Place }}</h6>
-            {{ end }}
-            <h6>Tags: 
-            {{ range .Transaction.Tags }}
-            {{ . }}
-            {{ end }}
-            </h6>
-            <p>
+            <div class="mb-3">
+                <i class="bi-bank"></i> Movements:
                 {{ range $i, $m := .Transaction.Movements }}
                     <div class="mb-3">
                         <label for="account" class="form-label">{{ $m.Amount }} {{ $m.CurrencyName }}</label>
@@ -50,7 +29,35 @@
                     </div>
                 {{ end }}
             </p>
-            <button type="submit">Convert</button>
+
+            <div class="mb-3">
+                {{ if ne .Transaction.PartnerName "" }}
+                    Partner name: {{ .Transaction.PartnerName }}
+                {{ end }}
+            </div>
+            <div class="mb-3">
+                {{ if ne .Transaction.PartnerAccount "" }}
+                    <i class="bi-bank"></i> Partner account: {{ .Transaction.PartnerAccount }}
+                {{ end }}
+            </div>
+            <div class="mb-3">
+                {{ if ne .Transaction.Place "" }}
+                    <i class="bi-pin-map-fill"></i> Place: {{ .Transaction.Place }}
+                {{ end }}
+            </div>
+            <div class="mb-3">
+                <i class="bi-tags"></i> Tags: 
+                {{ range .Transaction.Tags }}
+                    {{ . }}
+                {{ end }}
+            </div>
+            
+
+            <div class="mb-3">
+                <button class="btn btn-success btn-lg" type="submit">Convert</button>
+                <a href="/web/matchers/edit?transaction_id={{ .Transaction.ID }}" class="btn btn-outline-primary pull-right">Create matcher</a>
+                <a href="?id={{ .Transaction.ID }}" class="btn btn-outline-secondary pull-right">Skip ({{ decrease $.UnprocessedCount }} left)</a>
+            </div>
         </form>
 
         {{ with .Matched }}
