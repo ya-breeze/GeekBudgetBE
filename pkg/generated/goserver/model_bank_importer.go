@@ -31,6 +31,9 @@ type BankImporter struct {
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra string `json:"extra,omitempty"`
 
+	// If true, importer will fetch all transactions from the bank, if false, it will fetch only recent transactions
+	FetchAll bool `json:"fetchAll,omitempty"`
+
 	// Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
 	Type string `json:"type,omitempty"`
 
@@ -51,6 +54,7 @@ type BankImporterInterface interface {
 	GetAccountId() string
 	GetFeeAccountId() string
 	GetExtra() string
+	GetFetchAll() bool
 	GetType() string
 	GetLastSuccessfulImport() time.Time
 	GetLastImports() []ImportResult
@@ -74,6 +78,9 @@ func (c *BankImporter) GetFeeAccountId() string {
 }
 func (c *BankImporter) GetExtra() string {
 	return c.Extra
+}
+func (c *BankImporter) GetFetchAll() bool {
+	return c.FetchAll
 }
 func (c *BankImporter) GetType() string {
 	return c.Type

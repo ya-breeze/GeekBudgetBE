@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
@@ -23,20 +24,6 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 	if ok {
 		data["UserID"] = userID
 
-		// accounts, err := r.db.GetAccounts(userID)
-		// if err != nil {
-		// 	r.logger.Error("Failed to get accounts", "error", err)
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// 	return
-		// }
-
-		// currencies, err := r.db.GetCurrencies(userID)
-		// if err != nil {
-		// 	r.logger.Error("Failed to get currencies", "error", err)
-		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-		// 	return
-		// }
-
 		bankimporters, err := r.db.GetBankImporters(userID)
 		if err != nil {
 			r.logger.Error("Failed to get bank importers", "error", err)
@@ -44,6 +31,23 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 			return
 		}
 		r.logger.Info("Bank importers", "bankimporters", bankimporters)
+
+		if req.URL.Query().Get("fetchAll") == "true" {
+			for i, bankImporter := range bankimporters {
+				if bankImporter.Id == req.URL.Query().Get("id") {
+					r.logger.Info("Set 'FetchAll' to true", "id", bankImporter.Id)
+					bankImporter.FetchAll = true
+					r.db.UpdateBankImporter(userID, bankImporter.Id, &bankImporter)
+					bankimporters[i] = bankImporter
+
+					// schedule forced import
+					background.GetForcedImportChannel(req.Context()) <- background.ForcedImport{
+						UserID:         userID,
+						BankImporterID: bankImporter.Id,
+					}
+				}
+			}
+		}
 
 		data["BankImporters"] = &bankimporters
 	}

@@ -19,9 +19,9 @@ type BankImporter struct {
 	LastSuccessfulImport time.Time
 	LastImports          []goserver.ImportResult                  `gorm:"serializer:json"`
 	Mappings             []goserver.BankImporterNoIdMappingsInner `gorm:"serializer:json"`
-
-	UserID string    `gorm:"index"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FetchAll             bool
+	UserID               string    `gorm:"index"`
+	ID                   uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (t *BankImporter) FromDB() goserver.BankImporter {
@@ -35,6 +35,7 @@ func (t *BankImporter) FromDB() goserver.BankImporter {
 		LastSuccessfulImport: t.LastSuccessfulImport,
 		LastImports:          t.LastImports,
 		Mappings:             t.Mappings,
+		FetchAll:             t.FetchAll,
 	}
 }
 
@@ -48,6 +49,7 @@ func BankImporterToDB(m goserver.BankImporterNoIdInterface, userID string) *Bank
 		Type:                 m.GetType(),
 		LastSuccessfulImport: m.GetLastSuccessfulImport(),
 		LastImports:          m.GetLastImports(),
+		FetchAll:             m.GetFetchAll(),
 	}
 }
 
@@ -60,5 +62,6 @@ func BankImporterWithoutID(bankImporter *goserver.BankImporter) *goserver.BankIm
 		Type:                 bankImporter.Type,
 		LastSuccessfulImport: bankImporter.LastSuccessfulImport,
 		LastImports:          bankImporter.LastImports,
+		FetchAll:             bankImporter.FetchAll,
 	}
 }

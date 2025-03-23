@@ -31,6 +31,8 @@ type BankImporterNoID struct {
 	FeeAccountId *string `json:"feeAccountId,omitempty"`
 	// Stores extra data about bank importer. For example could hold \"bank account number\" to be able to distinguish between different bank accounts, or it could hold token for bank API
 	Extra *string `json:"extra,omitempty"`
+	// If true, importer will fetch all transactions from the bank, if false, it will fetch only recent transactions
+	FetchAll *bool `json:"fetchAll,omitempty"`
 	// Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
 	Type *string `json:"type,omitempty"`
 	// Date of last successful import.
@@ -206,6 +208,38 @@ func (o *BankImporterNoID) SetExtra(v string) {
 	o.Extra = &v
 }
 
+// GetFetchAll returns the FetchAll field value if set, zero value otherwise.
+func (o *BankImporterNoID) GetFetchAll() bool {
+	if o == nil || IsNil(o.FetchAll) {
+		var ret bool
+		return ret
+	}
+	return *o.FetchAll
+}
+
+// GetFetchAllOk returns a tuple with the FetchAll field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporterNoID) GetFetchAllOk() (*bool, bool) {
+	if o == nil || IsNil(o.FetchAll) {
+		return nil, false
+	}
+	return o.FetchAll, true
+}
+
+// HasFetchAll returns a boolean if a field has been set.
+func (o *BankImporterNoID) HasFetchAll() bool {
+	if o != nil && !IsNil(o.FetchAll) {
+		return true
+	}
+
+	return false
+}
+
+// SetFetchAll gets a reference to the given bool and assigns it to the FetchAll field.
+func (o *BankImporterNoID) SetFetchAll(v bool) {
+	o.FetchAll = &v
+}
+
 // GetType returns the Type field value if set, zero value otherwise.
 func (o *BankImporterNoID) GetType() string {
 	if o == nil || IsNil(o.Type) {
@@ -354,6 +388,9 @@ func (o BankImporterNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Extra) {
 		toSerialize["extra"] = o.Extra
+	}
+	if !IsNil(o.FetchAll) {
+		toSerialize["fetchAll"] = o.FetchAll
 	}
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type

@@ -53,7 +53,7 @@ func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cu
 
 func (fc *FioConverter) Import(ctx context.Context) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	// Fetch transactions from FIO
-	body, err := FetchFioTransactions(fc.logger, ctx, fc.bankImporter.Extra)
+	body, err := FetchFioTransactions(fc.logger, ctx, fc.bankImporter.Extra, fc.bankImporter.FetchAll)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't fetch FIO transactions: %w", err)
 	}

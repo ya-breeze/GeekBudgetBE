@@ -1166,6 +1166,11 @@ components:
             Stores extra data about bank importer. For example could hold "bank account number"
             to be able to distinguish between different bank accounts, or it could hold token
             for bank API
+        fetchAll:
+          type: boolean
+          description: >-
+            If true, importer will fetch all transactions from the bank, if false, it will
+            fetch only recent transactions
         type:
           enum:
             - fio

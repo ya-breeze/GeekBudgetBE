@@ -15,6 +15,12 @@
                     <input type="file" id="file" name="file">
                     <button class="btn btn-primary" type="submit">Upload</button>
                 </form>
+            {{ else }}
+                {{ if eq .FetchAll true }}
+                    Fetching of all transactions is in progress
+                {{ else }}
+                    <a href="?id={{.Id }}&fetchAll=true" class="btn btn-primary" >Fetch all transactions</a>
+                {{ end }}
             {{ end }}
         </div>
     </div>

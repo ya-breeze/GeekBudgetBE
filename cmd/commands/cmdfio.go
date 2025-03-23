@@ -32,6 +32,7 @@ func CmdFio(log *slog.Logger) *cobra.Command {
 
 func fetchFIO(log *slog.Logger) *cobra.Command {
 	var tokenFile, outputFile string
+	fetchAll := false
 	res := &cobra.Command{
 		Use:          "fetch",
 		Short:        "Fetch transactions from FIO API",
@@ -56,7 +57,7 @@ func fetchFIO(log *slog.Logger) *cobra.Command {
 				}
 			}
 
-			res, err := bankimporters.FetchFioTransactions(log, cmd.Context(), token)
+			res, err := bankimporters.FetchFioTransactions(log, cmd.Context(), token, fetchAll)
 			if err != nil {
 				return fmt.Errorf("can't fetch FIO transactions: %w", err)
 			}
@@ -75,6 +76,7 @@ func fetchFIO(log *slog.Logger) *cobra.Command {
 	}
 	res.Flags().StringVarP(&tokenFile, "token-file", "f", "", "File with FIO API token")
 	res.Flags().StringVarP(&outputFile, "output-file", "o", "", "Write transactions to file")
+	res.Flags().BoolVarP(&fetchAll, "all", "a", false, "Fetch all transactions")
 
 	return res
 }

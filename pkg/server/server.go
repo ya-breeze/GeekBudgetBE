@@ -21,6 +21,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/webapp"
 )
 
@@ -33,7 +34,8 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 		return fmt.Errorf("failed to open storage: %w", err)
 	}
 
-	_, finishChan, err := Serve(ctx, logger, storage, cfg)
+	forcedImportChan := make(chan background.ForcedImport, 100)
+	_, finishChan, err := Serve(ctx, logger, storage, cfg, forcedImportChan)
 	if err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
@@ -41,7 +43,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// Start bank importers
 	var importFinishChan <-chan struct{}
 	if !cfg.DisableImporters {
-		importFinishChan = startBankImporters(ctx, logger, storage)
+		importFinishChan = background.StartBankImporters(ctx, logger, storage, forcedImportChan)
 	} else {
 		logger.Info("Bank importers are disabled")
 	}
@@ -49,7 +51,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// Start currency rate fetcher
 	var fetchCurrenciesRatesChan <-chan struct{}
 	if !cfg.DisableCurrenciesRatesFetch {
-		fetchCurrenciesRatesChan = startCurrenciesRatesFetcher(ctx, logger, storage)
+		fetchCurrenciesRatesChan = background.StartCurrenciesRatesFetcher(ctx, logger, storage)
 	} else {
 		logger.Info("Fetcher for currencies rates is disabled")
 	}
@@ -90,7 +92,9 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 }
 
 func Serve(
-	ctx context.Context, logger *slog.Logger, storage database.Storage, cfg *config.Config,
+	ctx context.Context, logger *slog.Logger,
+	storage database.Storage, cfg *config.Config,
+	forcedImports chan<- background.ForcedImport,
 ) (net.Addr, chan int, error) {
 	commit := func() string {
 		if info, ok := debug.ReadBuildInfo(); ok {
@@ -132,7 +136,7 @@ func Serve(
 	return goserver.Serve(ctx, logger, cfg,
 		createControllers(logger, cfg, storage),
 		[]goserver.Router{webapp.NewWebAppRouter(commit, logger, cfg, storage)},
-		createMiddlewares(logger, cfg)...)
+		createMiddlewares(logger, cfg, forcedImports)...)
 }
 
 func upsertUser(storage database.Storage, username, hashedPassword string, logger *slog.Logger, prefill bool) error {
@@ -557,8 +561,11 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	return nil
 }
 
-func createMiddlewares(logger *slog.Logger, cfg *config.Config) []mux.MiddlewareFunc {
+func createMiddlewares(
+	logger *slog.Logger, cfg *config.Config, forcedImports chan<- background.ForcedImport,
+) []mux.MiddlewareFunc {
 	return []mux.MiddlewareFunc{
 		AuthMiddleware(logger, cfg),
+		ForcedImportMiddleware(logger, forcedImports),
 	}
 }

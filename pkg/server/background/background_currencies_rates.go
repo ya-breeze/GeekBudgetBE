@@ -1,4 +1,4 @@
-package server
+package background
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
-func startCurrenciesRatesFetcher(
+func StartCurrenciesRatesFetcher(
 	ctx context.Context, logger *slog.Logger, db database.Storage,
 ) <-chan struct{} {
 	logger.Info("Starting currencies rates fetcher...")

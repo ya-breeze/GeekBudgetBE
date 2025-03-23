@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **AccountId** | **string** | ID of account which is used to for movements from this bank importer | 
 **FeeAccountId** | Pointer to **string** | ID of account which is used for fee movements from this bank importer | [optional] 
 **Extra** | Pointer to **string** | Stores extra data about bank importer. For example could hold \&quot;bank account number\&quot; to be able to distinguish between different bank accounts, or it could hold token for bank API | [optional] 
+**FetchAll** | Pointer to **bool** | If true, importer will fetch all transactions from the bank, if false, it will fetch only recent transactions | [optional] 
 **Type** | Pointer to **string** | Type of bank importer. It&#39;s used to distinguish between different banks. For example, FIO bank or KB bank. | [optional] 
 **LastSuccessfulImport** | Pointer to **time.Time** | Date of last successful import. | [optional] 
 **LastImports** | Pointer to [**[]ImportResult**](ImportResult.md) | List of last imports. It could be shown to user to explain what was imported recently | [optional] 
@@ -168,6 +169,31 @@ SetExtra sets Extra field to given value.
 `func (o *BankImporter) HasExtra() bool`
 
 HasExtra returns a boolean if a field has been set.
+
+### GetFetchAll
+
+`func (o *BankImporter) GetFetchAll() bool`
+
+GetFetchAll returns the FetchAll field if non-nil, zero value otherwise.
+
+### GetFetchAllOk
+
+`func (o *BankImporter) GetFetchAllOk() (*bool, bool)`
+
+GetFetchAllOk returns a tuple with the FetchAll field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetFetchAll
+
+`func (o *BankImporter) SetFetchAll(v bool)`
+
+SetFetchAll sets FetchAll field to given value.
+
+### HasFetchAll
+
+`func (o *BankImporter) HasFetchAll() bool`
+
+HasFetchAll returns a boolean if a field has been set.
 
 ### GetType
 

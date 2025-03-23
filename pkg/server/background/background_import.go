@@ -1,4 +1,4 @@
-package server
+package background
 
 import (
 	"context"
@@ -9,9 +9,22 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 )
 
+type ForcedImportKeyType string
+
+const ForcedImportKey ForcedImportKeyType = "forced_import_channel"
+
+type ForcedImport struct {
+	UserID         string
+	BankImporterID string
+}
+
+func GetForcedImportChannel(ctx context.Context) chan<- ForcedImport {
+	return ctx.Value(ForcedImportKey).(chan<- ForcedImport)
+}
+
 //nolint:gocognit,cyclop // TODO refactor
-func startBankImporters(
-	ctx context.Context, logger *slog.Logger, db database.Storage,
+func StartBankImporters(
+	ctx context.Context, logger *slog.Logger, db database.Storage, forcedImports <-chan ForcedImport,
 ) <-chan struct{} {
 	logger.Info("Starting bank importers...")
 
@@ -24,6 +37,8 @@ func startBankImporters(
 				close(done)
 				logger.Info("Stopped bank importers")
 				return
+			case forcedImport := <-forcedImports:
+				logger.Info("Forced import", "userID", forcedImport.UserID, "BankImporterID", forcedImport.BankImporterID)
 			default:
 				// Do something
 				logger.Info("Importing from bank importers...")
@@ -35,6 +50,8 @@ func startBankImporters(
 
 					// Retry in 1 hour
 					select {
+					case forcedImport := <-forcedImports:
+						logger.Info("Forced import", "userID", forcedImport.UserID, "BankImporterID", forcedImport.BankImporterID)
 					case <-time.After(time.Hour):
 						continue
 					case <-ctx.Done():
@@ -60,6 +77,8 @@ func startBankImporters(
 
 				logger.Info("Delaying bank imports for 24 hours...")
 				select {
+				case forcedImport := <-forcedImports:
+					logger.Info("Forced import", "userID", forcedImport.UserID, "BankImporterID", forcedImport.BankImporterID)
 				case <-time.After(24 * time.Hour):
 					continue
 				case <-ctx.Done():

@@ -126,7 +126,8 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 	return goserver.Response(200, lastImport), nil
 }
 
-func (s *BankImportersAPIServiceImpl) fetchFioTransactions(ctx context.Context, userID, id string,
+func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
+	ctx context.Context, userID, id string,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	s.logger.With("user", userID).Info("Fetching transactions for bank importer")
 
@@ -151,6 +152,15 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(ctx context.Context, 
 		return nil, nil, fmt.Errorf("can't import transactions: %w", err)
 	}
 	s.logger.With("info", info, "transactions", len(transactions)).Info("Imported transactions")
+
+	if biData.FetchAll {
+		s.logger.With("bankImporterID", id).With("userID", userID).Info("All transactions fetched. Disabling FetchAll")
+		biData.FetchAll = false
+		_, err = s.db.UpdateBankImporter(userID, id, &biData)
+		if err != nil {
+			return nil, nil, fmt.Errorf("can't update BankImporter: %w", err)
+		}
+	}
 
 	return info, transactions, nil
 }

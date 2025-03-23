@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
@@ -81,4 +82,16 @@ func checkToken(
 	}
 
 	http.Error(writer, "Unauthorized", http.StatusUnauthorized)
+}
+
+func ForcedImportMiddleware(logger *slog.Logger, forcedImports chan<- background.ForcedImport) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+			// Store forced import in the context
+			ctx := context.WithValue(req.Context(), background.ForcedImportKey, forcedImports)
+			req = req.WithContext(ctx)
+
+			next.ServeHTTP(writer, req)
+		})
+	}
 }
