@@ -89,13 +89,13 @@ validate:
 
 .PHONY: lint
 lint:
-	@golangci-lint run
+	@go tool github.com/golangci/golangci-lint/cmd/golangci-lint run
 	@gofumpt -l -d .
 	@echo "✅ Lint complete"
 
 .PHONY: test
 test:
-	@ginkgo -r
+	@go tool github.com/onsi/ginkgo/v2/ginkgo -r
 	@echo "✅ Tests complete"
 
 .PHONY: watch
