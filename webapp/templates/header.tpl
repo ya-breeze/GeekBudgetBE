@@ -51,7 +51,7 @@
                     </form>
                     <ul class="navbar-nav ms-3">
                         <li class="nav-item">
-                            <a class="nav-link" href="/logout">Logout</a>
+                            <a class="nav-link" href="/web/logout">Logout</a>
                         </li>
                     </ul>
                 </div>

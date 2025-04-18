@@ -19,42 +19,42 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 	}
 	data := utils.CreateTemplateData(req, "bank_importers")
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if ok {
-		data["UserID"] = userID
+	userID, err := r.ValidateUserID(tmpl, w, req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
+		return
+	}
+	data["UserID"] = userID
 
-		bankimporters, err := r.db.GetBankImporters(userID)
-		if err != nil {
-			r.logger.Error("Failed to get bank importers", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		r.logger.Info("Bank importers", "bankimporters", bankimporters)
+	bankimporters, err := r.db.GetBankImporters(userID)
+	if err != nil {
+		r.logger.Error("Failed to get bank importers", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	r.logger.Info("Bank importers", "bankimporters", bankimporters)
 
-		if req.URL.Query().Get("fetchAll") == "true" {
-			for i, bankImporter := range bankimporters {
-				if bankImporter.Id == req.URL.Query().Get("id") {
-					r.logger.Info("Set 'FetchAll' to true", "id", bankImporter.Id)
-					bankImporter.FetchAll = true
-					if _, err = r.db.UpdateBankImporter(userID, bankImporter.Id, &bankImporter); err != nil {
-						r.logger.Error("Failed to update bank importer", "error", err)
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-					bankimporters[i] = bankImporter
+	if req.URL.Query().Get("fetchAll") == "true" {
+		for i, bankImporter := range bankimporters {
+			if bankImporter.Id == req.URL.Query().Get("id") {
+				r.logger.Info("Set 'FetchAll' to true", "id", bankImporter.Id)
+				bankImporter.FetchAll = true
+				if _, err = r.db.UpdateBankImporter(userID, bankImporter.Id, &bankImporter); err != nil {
+					r.logger.Error("Failed to update bank importer", "error", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				bankimporters[i] = bankImporter
 
-					// schedule forced import
-					background.GetForcedImportChannel(req.Context()) <- background.ForcedImport{
-						UserID:         userID,
-						BankImporterID: bankImporter.Id,
-					}
+				// schedule forced import
+				background.GetForcedImportChannel(req.Context()) <- background.ForcedImport{
+					UserID:         userID,
+					BankImporterID: bankImporter.Id,
 				}
 			}
 		}
-
-		data["BankImporters"] = &bankimporters
 	}
+	data["BankImporters"] = &bankimporters
 
 	if err := tmpl.ExecuteTemplate(w, "bank_importers.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
@@ -71,12 +71,12 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 	}
 	data := utils.CreateTemplateData(req, "bank_importers")
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	userID, err := r.ValidateUserID(tmpl, w, req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
+	data["UserID"] = userID
 
 	if err = req.ParseMultipartForm(10 << 20); err != nil {
 		r.logger.Error("Failed to parse form", "error", err)

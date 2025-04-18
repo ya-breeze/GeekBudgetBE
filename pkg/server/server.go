@@ -76,7 +76,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 
 func createControllers(logger *slog.Logger, cfg *config.Config, db database.Storage) goserver.CustomControllers {
 	return goserver.CustomControllers{
-		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg.JWTSecret),
+		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg.Issuer, cfg.JWTSecret),
 		UserAPIService:                    api.NewUserAPIService(logger, db),
 		AccountsAPIService:                api.NewAccountsAPIService(logger, db),
 		CurrenciesAPIService:              api.NewCurrenciesAPIServicer(logger, db),

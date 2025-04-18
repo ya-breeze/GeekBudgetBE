@@ -17,19 +17,20 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 	}
 	data := utils.CreateTemplateData(req, "matchers")
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if ok {
-		data["UserID"] = userID
-
-		matchers, err := r.db.GetMatchers(userID)
-		if err != nil {
-			r.logger.Error("Failed to get matchers", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		data["Matchers"] = &matchers
+	userID, err := r.ValidateUserID(tmpl, w, req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
+		return
 	}
+	data["UserID"] = userID
+
+	matchers, err := r.db.GetMatchers(userID)
+	if err != nil {
+		r.logger.Error("Failed to get matchers", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data["Matchers"] = &matchers
 
 	if err := tmpl.ExecuteTemplate(w, "matchers.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)

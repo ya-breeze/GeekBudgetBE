@@ -14,10 +14,10 @@ func (r *WebAppRouter) unprocessedConvertHandler(w http.ResponseWriter, req *htt
 	}
 	transactionID := req.Form.Get("transaction_id")
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if !ok {
-		http.Error(w, "User ID is required", http.StatusBadRequest)
+	userID, code, err := r.GetUserIDFromSession(req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
+		http.Error(w, err.Error(), code)
 		return
 	}
 

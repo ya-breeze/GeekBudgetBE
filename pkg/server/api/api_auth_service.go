@@ -14,13 +14,15 @@ import (
 type AuthAPIService struct {
 	logger    *slog.Logger
 	db        database.Storage
+	issuer    string
 	jwtSecret string
 }
 
-func NewAuthAPIService(logger *slog.Logger, db database.Storage, jwtSecret string) goserver.AuthAPIService {
+func NewAuthAPIService(logger *slog.Logger, db database.Storage, issuer, jwtSecret string) goserver.AuthAPIService {
 	return &AuthAPIService{
 		logger:    logger,
 		db:        db,
+		issuer:    issuer,
 		jwtSecret: jwtSecret,
 	}
 }
@@ -49,7 +51,7 @@ func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData
 		return goserver.Response(401, nil), nil
 	}
 
-	token, err := auth.CreateJWT(userID, s.jwtSecret)
+	token, err := auth.CreateJWT(userID, s.issuer, s.jwtSecret)
 	if err != nil {
 		return goserver.Response(500, nil), nil // TODO internal error
 	}

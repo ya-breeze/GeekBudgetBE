@@ -17,6 +17,8 @@ type Config struct {
 	Prefill                     bool   `mapstructure:"prefill" default:"false"`
 	DisableImporters            bool   `mapstructure:"disableimporters" default:"false"`
 	DisableCurrenciesRatesFetch bool   `mapstructure:"disablecurrenciesratesfetch" default:"false"`
+	Issuer                      string `mapstructure:"issuer" default:"geekbudget"`
+	CookieName                  string `mapstructure:"cookiename" default:"geekbudgetcookie"`
 }
 
 func InitiateConfig(cfgFile string) (*Config, error) {
