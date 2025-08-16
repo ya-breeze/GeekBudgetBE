@@ -22,7 +22,8 @@
 				"streetsidesoftware.code-spell-checker-czech",
 				"ms-vscode.copilot-mermaid-diagram",
 				"casualjim.gotemplate",
-				"eamodio.gitlens"
+				"eamodio.gitlens",
+				"GitHub.vscode-pull-request-github"
 			],
 			"settings": {
 				"go.formatTool": "gofumpt",
