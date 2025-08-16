@@ -21,7 +21,8 @@
 				"qwtel.sqlite-viewer",
 				"streetsidesoftware.code-spell-checker-czech",
 				"ms-vscode.copilot-mermaid-diagram",
-				"casualjim.gotemplate"
+				"casualjim.gotemplate",
+				"eamodio.gitlens"
 			],
 			"settings": {
 				"go.formatTool": "gofumpt",
