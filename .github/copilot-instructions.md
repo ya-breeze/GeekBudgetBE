@@ -38,6 +38,7 @@ webapp/                - Static assets and HTML templates
 - Project stores each financial event as a transaction linked to a user.
 - Project supports automatic import of transactions from various sources.
 - Project allows to define "matchers" for categorizing transactions based on rules.
+- Always run 'gofumpt -w' for every changed file and then 'make lint' after finishing changes.
 
 ### Code Generation
 - The project uses OpenAPI Generator for API client/server code
