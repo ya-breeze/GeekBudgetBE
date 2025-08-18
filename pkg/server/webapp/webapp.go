@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/url"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gorilla/sessions"
@@ -164,6 +165,7 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 		"addMonths": func(t time.Time, num int) time.Time {
 			return time.Date(t.Year(), t.Month()+time.Month(num), 1, 0, 0, 0, 0, t.Location())
 		},
+		"join": strings.Join,
 		"addQueryParam": func(rawURL string, key string, value any) (string, error) {
 			u, err := url.Parse(rawURL)
 			if err != nil {

@@ -48,8 +48,9 @@ type WebTransaction struct {
 }
 
 type WebMatcherAndTransaction struct {
-	MatcherID   string         `json:"matcherId"`
-	Transaction WebTransaction `json:"transaction"`
+	MatcherID       string         `json:"matcherId"`
+	OtherMatcherIDs []string       `json:"otherMatcherIds"`
+	Transaction     WebTransaction `json:"transaction"`
 }
 
 type WebUnprocessedTransaction struct {

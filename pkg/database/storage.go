@@ -70,6 +70,10 @@ type Storage interface {
 
 	GetMatchers(userID string) ([]goserver.Matcher, error)
 	GetMatcher(userID string, id string) (goserver.Matcher, error)
+	// Add a single confirmation (true = confirmed, false = rejected) to a matcher
+	// This operation is performed atomically and enforces the configured
+	// confirmation history maximum length.
+	AddMatcherConfirmation(userID string, id string, confirmed bool) error
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
 	GetMatcherRuntime(userID, id string) (MatcherRuntime, error)
 	CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
@@ -684,6 +688,32 @@ func (s *storage) DeleteMatcher(userID string, id string) error {
 	}
 
 	return nil
+}
+
+// AddMatcherConfirmation atomically appends a confirmation boolean to the matcher's
+// confirmation history and trims it to the configured maximum length.
+func (s *storage) AddMatcherConfirmation(userID string, id string, confirmed bool) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		var m models.Matcher
+		if err := tx.Where("id = ? AND user_id = ?", id, userID).First(&m).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				s.log.Warn("Matcher not found when adding confirmation", "userID", userID, "matcherID", id)
+				return ErrNotFound
+			}
+			s.log.Error("DB error when loading matcher for confirmation", "error", err)
+			return fmt.Errorf(StorageError, err)
+		}
+
+		// Use the model helper to add confirmation and respect config max length
+		m.AddConfirmation(confirmed, s.cfg.MatcherConfirmationHistoryMax)
+
+		if err := tx.Save(&m).Error; err != nil {
+			s.log.Error("DB error when saving matcher after adding confirmation", "error", err)
+			return fmt.Errorf(StorageError, err)
+		}
+
+		return nil
+	})
 }
 
 //#endregion Matchers

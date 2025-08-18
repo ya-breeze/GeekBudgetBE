@@ -75,6 +75,7 @@
                                         <form action="/web/unprocessed/convert" method="POST">
                                             <input type="hidden" name="transaction_id" value="{{ .Transaction.ID }}">
                                             <input type="hidden" name="matcher_id" value="{{ .MatcherID }}">
+                                            <input type="hidden" name="other_matchers" value="{{ join .OtherMatcherIDs "," }}">
                                             {{ range $i, $m := .Transaction.Movements }}
                                                 <input type="hidden" name="account_{{ $i }}" value="{{ $m.AccountID }}">
                                             {{ end }}

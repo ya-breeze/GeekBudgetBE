@@ -74,6 +74,9 @@ var _ = Describe("User API", func() {
 			Password: "wrongpassword",
 		})
 		resp, httpResp, err := req.Execute()
+		if httpResp != nil {
+			defer func() { _ = httpResp.Body.Close() }()
+		}
 		Expect(err).To(HaveOccurred())
 		Expect(httpResp).ToNot(BeNil())
 		Expect(httpResp.StatusCode).To(Equal(401))
@@ -99,6 +102,9 @@ func getAccessToken(client *goclient.APIClient, ctx context.Context) string {
 		Password: Pass1,
 	})
 	resp, httpResp, err := req.Execute()
+	if httpResp != nil {
+		defer func() { _ = httpResp.Body.Close() }()
+	}
 	Expect(err).ToNot(HaveOccurred())
 	Expect(httpResp).ToNot(BeNil())
 	Expect(httpResp.StatusCode).To(Equal(200))

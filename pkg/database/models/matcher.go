@@ -24,19 +24,19 @@ type Matcher struct {
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
-func (t *Matcher) FromDB() goserver.Matcher {
+func (m *Matcher) FromDB() goserver.Matcher {
 	return goserver.Matcher{
-		Id:                         t.ID.String(),
-		Name:                       t.Name,
-		OutputDescription:          t.OutputDescription,
-		OutputAccountId:            t.OutputAccountID,
-		OutputTags:                 t.OutputTags,
-		CurrencyRegExp:             t.CurrencyRegExp,
-		PartnerNameRegExp:          t.PartnerNameRegExp,
-		PartnerAccountNumberRegExp: t.PartnerAccountNumberRegExp,
-		DescriptionRegExp:          t.DescriptionRegExp,
-		ExtraRegExp:                t.ExtraRegExp,
-		ConfirmationHistory:        t.ConfirmationHistory,
+		Id:                         m.ID.String(),
+		Name:                       m.Name,
+		OutputDescription:          m.OutputDescription,
+		OutputAccountId:            m.OutputAccountID,
+		OutputTags:                 m.OutputTags,
+		CurrencyRegExp:             m.CurrencyRegExp,
+		PartnerNameRegExp:          m.PartnerNameRegExp,
+		PartnerAccountNumberRegExp: m.PartnerAccountNumberRegExp,
+		DescriptionRegExp:          m.DescriptionRegExp,
+		ExtraRegExp:                m.ExtraRegExp,
+		ConfirmationHistory:        m.ConfirmationHistory,
 	}
 }
 

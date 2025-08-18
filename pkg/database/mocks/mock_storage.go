@@ -37,6 +37,20 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 	return m.recorder
 }
 
+// AddMatcherConfirmation mocks base method.
+func (m *MockStorage) AddMatcherConfirmation(arg0, arg1 string, arg2 bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMatcherConfirmation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddMatcherConfirmation indicates an expected call of AddMatcherConfirmation.
+func (mr *MockStorageMockRecorder) AddMatcherConfirmation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMatcherConfirmation", reflect.TypeOf((*MockStorage)(nil).AddMatcherConfirmation), arg0, arg1, arg2)
+}
+
 // Close mocks base method.
 func (m *MockStorage) Close() error {
 	m.ctrl.T.Helper()

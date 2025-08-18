@@ -1,9 +1,10 @@
-package models
+package models_test
 
 import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 )
 
 func TestMatcher_GetConfirmationPercentage(t *testing.T) {
@@ -51,7 +52,7 @@ func TestMatcher_GetConfirmationPercentage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			matcher := &Matcher{
+			matcher := &models.Matcher{
 				ID:                  uuid.New(),
 				ConfirmationHistory: tt.confirmationHistory,
 			}
@@ -64,6 +65,7 @@ func TestMatcher_GetConfirmationPercentage(t *testing.T) {
 	}
 }
 
+//nolint:funlen
 func TestMatcher_AddConfirmation(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -117,7 +119,7 @@ func TestMatcher_AddConfirmation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			matcher := &Matcher{
+			matcher := &models.Matcher{
 				ID:                  uuid.New(),
 				ConfirmationHistory: make([]bool, len(tt.initialHistory)),
 			}
@@ -164,7 +166,7 @@ func TestMatcher_GetConfirmationHistoryLength(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			matcher := &Matcher{
+			matcher := &models.Matcher{
 				ID:                  uuid.New(),
 				ConfirmationHistory: tt.confirmationHistory,
 			}
@@ -178,7 +180,7 @@ func TestMatcher_GetConfirmationHistoryLength(t *testing.T) {
 }
 
 func TestMatcher_IntegrationConfirmationWorkflow(t *testing.T) {
-	matcher := &Matcher{
+	matcher := &models.Matcher{
 		ID:                  uuid.New(),
 		Name:                "Test Matcher",
 		ConfirmationHistory: make([]bool, 0),
@@ -215,7 +217,7 @@ func TestMatcher_IntegrationConfirmationWorkflow(t *testing.T) {
 
 func TestMatcher_FromDBAndToDB_ConfirmationHistoryRoundTrip(t *testing.T) {
 	// Prepare DB model with confirmation history
-	dbMatcher := &Matcher{
+	dbMatcher := &models.Matcher{
 		ID:                  uuid.New(),
 		Name:                "roundtrip",
 		ConfirmationHistory: []bool{true, false, true},
@@ -230,16 +232,18 @@ func TestMatcher_FromDBAndToDB_ConfirmationHistoryRoundTrip(t *testing.T) {
 	}
 
 	// Create NoId model and convert back
-	noID := MatcherWithoutID(&apiModel)
-	db2 := MatcherToDB(noID, "user-1")
+	noID := models.MatcherWithoutID(&apiModel)
+	db2 := models.MatcherToDB(noID, "user-1")
 
 	// Compare histories
 	if len(db2.ConfirmationHistory) != len(dbMatcher.ConfirmationHistory) {
-		t.Fatalf("Roundtrip history length mismatch: got %d want %d", len(db2.ConfirmationHistory), len(dbMatcher.ConfirmationHistory))
+		t.Fatalf("Roundtrip history length mismatch: got %d want %d",
+			len(db2.ConfirmationHistory), len(dbMatcher.ConfirmationHistory))
 	}
 	for i := range db2.ConfirmationHistory {
 		if db2.ConfirmationHistory[i] != dbMatcher.ConfirmationHistory[i] {
-			t.Fatalf("Roundtrip history mismatch at %d: got %v want %v", i, db2.ConfirmationHistory[i], dbMatcher.ConfirmationHistory[i])
+			t.Fatalf("Roundtrip history mismatch at %d: got %v want %v",
+				i, db2.ConfirmationHistory[i], dbMatcher.ConfirmationHistory[i])
 		}
 	}
 }

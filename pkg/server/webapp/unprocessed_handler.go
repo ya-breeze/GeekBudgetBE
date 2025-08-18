@@ -54,9 +54,22 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 		web := WebUnprocessedTransaction{
 			Transaction: transactionToWeb(u.Transaction, accounts, currencies),
 		}
+
+		allMatcherIDs := make([]string, 0, len(u.Matched))
 		for _, m := range u.Matched {
+			allMatcherIDs = append(allMatcherIDs, m.MatcherId)
+		}
+		for _, m := range u.Matched {
+			others := make([]string, 0, len(allMatcherIDs)-1)
+			for _, id := range allMatcherIDs {
+				if id != m.MatcherId {
+					others = append(others, id)
+				}
+			}
+
 			web.Matched = append(web.Matched, WebMatcherAndTransaction{
-				MatcherID: m.MatcherId,
+				MatcherID:       m.MatcherId,
+				OtherMatcherIDs: others,
 				Transaction: transactionToWeb(
 					transactionNoIDToTransaction(m.Transaction, u.Transaction.Id),
 					accounts, currencies),
