@@ -51,6 +51,11 @@ type WebMatcherAndTransaction struct {
 	MatcherID       string         `json:"matcherId"`
 	OtherMatcherIDs []string       `json:"otherMatcherIds"`
 	Transaction     WebTransaction `json:"transaction"`
+	// Confirmation history: X/Y where X = successful confirmations, Y = total history length
+	ConfirmationsOK    int `json:"confirmationsOk"`
+	ConfirmationsTotal int `json:"confirmationsTotal"`
+	// ConfidenceClass contains CSS classes for badge styling based on confirmation ratio
+	ConfidenceClass string `json:"confidenceClass"`
 }
 
 type WebUnprocessedTransaction struct {

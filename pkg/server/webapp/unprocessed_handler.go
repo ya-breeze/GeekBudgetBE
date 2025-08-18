@@ -67,12 +67,46 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 				}
 			}
 
+			// Fetch matcher to obtain confirmation history
+			confirmationsOK := 0
+			confirmationsTotal := 0
+			if matcher, err := r.db.GetMatcher(userID, m.MatcherId); err == nil {
+				history := matcher.GetConfirmationHistory()
+				if history != nil {
+					for _, v := range history {
+						if v {
+							confirmationsOK++
+						}
+					}
+					confirmationsTotal = len(history)
+				}
+			} else {
+				// Log the error but continue; leave counts at 0
+				r.logger.Warn("failed to load matcher for unprocessed", "matcherId", m.MatcherId, "error", err)
+			}
+
 			web.Matched = append(web.Matched, WebMatcherAndTransaction{
 				MatcherID:       m.MatcherId,
 				OtherMatcherIDs: others,
 				Transaction: transactionToWeb(
 					transactionNoIDToTransaction(m.Transaction, u.Transaction.Id),
 					accounts, currencies),
+				ConfirmationsOK:    confirmationsOK,
+				ConfirmationsTotal: confirmationsTotal,
+				ConfidenceClass: func() string {
+					if confirmationsTotal == 0 {
+						return "bg-secondary"
+					}
+					ratio := float64(confirmationsOK) / float64(confirmationsTotal)
+					switch {
+					case ratio >= 0.7:
+						return "bg-success"
+					case ratio >= 0.4:
+						return "bg-warning text-dark"
+					default:
+						return "bg-danger"
+					}
+				}(),
 			})
 		}
 		for _, d := range u.Duplicates {

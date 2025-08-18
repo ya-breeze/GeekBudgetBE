@@ -83,7 +83,10 @@
                                                 <button type="submit" class="btn btn-success">Convert</button>
                                             </div>
                                         </form>
-                                        <h6 class="card-title">{{ formatTime .Transaction.Date "2006-01-02" }} {{ .Transaction.Description }}</h6>
+                                        <h6 class="card-title">
+                                            <span class="badge {{ .ConfidenceClass }} text-white rounded-pill" data-bs-toggle="tooltip" data-bs-placement="top" title="Last {{ .ConfirmationsOK }} attempt(s) out of {{ .ConfirmationsTotal }} were confirmed">{{ .ConfirmationsOK }}/{{ .ConfirmationsTotal }}</span>
+                                            {{ formatTime .Transaction.Date "2006-01-02" }}
+                                            {{ .Transaction.Description }}</h6>
                                         {{ if ne .Transaction.PartnerName "" }}
                                             <small class="text-muted">Partner: {{ .Transaction.PartnerName }}</small><br>
                                         {{ end }}
