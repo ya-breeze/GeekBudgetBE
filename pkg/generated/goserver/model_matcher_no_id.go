@@ -29,6 +29,9 @@ type MatcherNoId struct {
 	DescriptionRegExp string `json:"descriptionRegExp,omitempty"`
 
 	ExtraRegExp string `json:"extraRegExp,omitempty"`
+
+	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
+	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
 }
 
 type MatcherNoIdInterface interface {
@@ -41,6 +44,7 @@ type MatcherNoIdInterface interface {
 	GetPartnerAccountNumberRegExp() string
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
+	GetConfirmationHistory() []bool
 }
 
 func (c *MatcherNoId) GetName() string {
@@ -69,6 +73,9 @@ func (c *MatcherNoId) GetDescriptionRegExp() string {
 }
 func (c *MatcherNoId) GetExtraRegExp() string {
 	return c.ExtraRegExp
+}
+func (c *MatcherNoId) GetConfirmationHistory() []bool {
+	return c.ConfirmationHistory
 }
 
 // AssertMatcherNoIdRequired checks if the required fields are not zero-ed

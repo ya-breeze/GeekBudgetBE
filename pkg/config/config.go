@@ -9,16 +9,17 @@ import (
 )
 
 type Config struct {
-	Users                       string `mapstructure:"users" default:""`
-	JWTSecret                   string `mapstructure:"jwt_secret" default:""`
-	Verbose                     bool   `mapstructure:"verbose" default:"false"`
-	Port                        int    `mapstructure:"port" default:"8080"`
-	DBPath                      string `mapstructure:"dbpath" default:":memory:"`
-	Prefill                     bool   `mapstructure:"prefill" default:"false"`
-	DisableImporters            bool   `mapstructure:"disableimporters" default:"false"`
-	DisableCurrenciesRatesFetch bool   `mapstructure:"disablecurrenciesratesfetch" default:"false"`
-	Issuer                      string `mapstructure:"issuer" default:"geekbudget"`
-	CookieName                  string `mapstructure:"cookiename" default:"geekbudgetcookie"`
+	Users                         string `mapstructure:"users" default:""`
+	JWTSecret                     string `mapstructure:"jwt_secret" default:""`
+	Verbose                       bool   `mapstructure:"verbose" default:"false"`
+	Port                          int    `mapstructure:"port" default:"8080"`
+	DBPath                        string `mapstructure:"dbpath" default:":memory:"`
+	Prefill                       bool   `mapstructure:"prefill" default:"false"`
+	DisableImporters              bool   `mapstructure:"disableimporters" default:"false"`
+	DisableCurrenciesRatesFetch   bool   `mapstructure:"disablecurrenciesratesfetch" default:"false"`
+	Issuer                        string `mapstructure:"issuer" default:"geekbudget"`
+	CookieName                    string `mapstructure:"cookiename" default:"geekbudgetcookie"`
+	MatcherConfirmationHistoryMax int    `mapstructure:"matcherconfirmationhistorymax" default:"10"`
 }
 
 func InitiateConfig(cfgFile string) (*Config, error) {

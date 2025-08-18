@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **PartnerAccountNumberRegExp** | Pointer to **string** |  | [optional] 
 **DescriptionRegExp** | Pointer to **string** |  | [optional] 
 **ExtraRegExp** | Pointer to **string** |  | [optional] 
+**ConfirmationHistory** | Pointer to **[]bool** | List of booleans representing manual confirmations for this matcher (true &#x3D; confirmed, false &#x3D; rejected). Server enforces maximum length configured via application config. | [optional] 
 
 ## Methods
 
@@ -242,6 +243,31 @@ SetExtraRegExp sets ExtraRegExp field to given value.
 `func (o *MatcherNoID) HasExtraRegExp() bool`
 
 HasExtraRegExp returns a boolean if a field has been set.
+
+### GetConfirmationHistory
+
+`func (o *MatcherNoID) GetConfirmationHistory() []bool`
+
+GetConfirmationHistory returns the ConfirmationHistory field if non-nil, zero value otherwise.
+
+### GetConfirmationHistoryOk
+
+`func (o *MatcherNoID) GetConfirmationHistoryOk() (*[]bool, bool)`
+
+GetConfirmationHistoryOk returns a tuple with the ConfirmationHistory field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetConfirmationHistory
+
+`func (o *MatcherNoID) SetConfirmationHistory(v []bool)`
+
+SetConfirmationHistory sets ConfirmationHistory field to given value.
+
+### HasConfirmationHistory
+
+`func (o *MatcherNoID) HasConfirmationHistory() bool`
+
+HasConfirmationHistory returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

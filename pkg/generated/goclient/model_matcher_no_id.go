@@ -31,6 +31,8 @@ type MatcherNoID struct {
 	PartnerAccountNumberRegExp *string  `json:"partnerAccountNumberRegExp,omitempty"`
 	DescriptionRegExp          *string  `json:"descriptionRegExp,omitempty"`
 	ExtraRegExp                *string  `json:"extraRegExp,omitempty"`
+	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
+	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
 }
 
 type _MatcherNoID MatcherNoID
@@ -319,6 +321,38 @@ func (o *MatcherNoID) SetExtraRegExp(v string) {
 	o.ExtraRegExp = &v
 }
 
+// GetConfirmationHistory returns the ConfirmationHistory field value if set, zero value otherwise.
+func (o *MatcherNoID) GetConfirmationHistory() []bool {
+	if o == nil || IsNil(o.ConfirmationHistory) {
+		var ret []bool
+		return ret
+	}
+	return o.ConfirmationHistory
+}
+
+// GetConfirmationHistoryOk returns a tuple with the ConfirmationHistory field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *MatcherNoID) GetConfirmationHistoryOk() ([]bool, bool) {
+	if o == nil || IsNil(o.ConfirmationHistory) {
+		return nil, false
+	}
+	return o.ConfirmationHistory, true
+}
+
+// HasConfirmationHistory returns a boolean if a field has been set.
+func (o *MatcherNoID) HasConfirmationHistory() bool {
+	if o != nil && !IsNil(o.ConfirmationHistory) {
+		return true
+	}
+
+	return false
+}
+
+// SetConfirmationHistory gets a reference to the given []bool and assigns it to the ConfirmationHistory field.
+func (o *MatcherNoID) SetConfirmationHistory(v []bool) {
+	o.ConfirmationHistory = v
+}
+
 func (o MatcherNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -349,6 +383,9 @@ func (o MatcherNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ExtraRegExp) {
 		toSerialize["extraRegExp"] = o.ExtraRegExp
+	}
+	if !IsNil(o.ConfirmationHistory) {
+		toSerialize["confirmationHistory"] = o.ConfirmationHistory
 	}
 	return toSerialize, nil
 }

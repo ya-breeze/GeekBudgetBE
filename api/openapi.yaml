@@ -1406,6 +1406,14 @@ components:
           type: string
         extraRegExp:
           type: string
+        confirmationHistory:
+          type: array
+          items:
+            type: boolean
+          description: >-
+            List of booleans representing manual confirmations for this matcher
+            (true = confirmed, false = rejected). Server enforces maximum length
+            configured via application config.
       required:
         - name
         - outputDescription
