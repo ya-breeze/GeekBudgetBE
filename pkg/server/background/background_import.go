@@ -2,10 +2,12 @@ package background
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 )
 
@@ -76,6 +78,9 @@ func StartBankImporters(
 					}
 				}
 
+				// Process unprocessed transactions for auto-conversion before delay
+				processUnprocessedTransactionsForAutoConversion(ctx, logger, db)
+
 				logger.Info("Delaying bank imports for 24 hours...")
 				select {
 				case forcedImport := <-forcedImports:
@@ -90,4 +95,162 @@ func StartBankImporters(
 	}()
 
 	return done
+}
+
+// processUnprocessedTransactionsForAutoConversion processes all unprocessed transactions
+// and automatically converts those that have exactly one matcher with 100% success history
+func processUnprocessedTransactionsForAutoConversion(
+	ctx context.Context, logger *slog.Logger, db database.Storage,
+) {
+	logger.Info("Processing unprocessed transactions for auto-conversion...")
+
+	// Get all users to process their unprocessed transactions
+	users, err := getAllUsers(db)
+	if err != nil {
+		logger.With("error", err).Error("Failed to get users for auto-conversion")
+		return
+	}
+
+	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, db)
+
+	for _, userID := range users {
+		logger.Debug("Processing unprocessed transactions for user", "userID", userID)
+
+		// Get all unprocessed transactions for this user
+		unprocessedTransactions, _, err := unprocessedService.PrepareUnprocessedTransactions(
+			ctx, userID, false, "",
+		)
+		if err != nil {
+			logger.With("error", err, "userID", userID).Error("Failed to get unprocessed transactions")
+			continue
+		}
+
+		if len(unprocessedTransactions) == 0 {
+			logger.Debug("No unprocessed transactions for user", "userID", userID)
+			continue
+		}
+
+		logger.Info("Found unprocessed transactions for auto-conversion", 
+			"userID", userID, "count", len(unprocessedTransactions))
+
+		// Process each unprocessed transaction
+		for _, unprocessed := range unprocessedTransactions {
+			processUnprocessedTransactionForAutoConversion(
+				ctx, logger, db, unprocessedService, userID, unprocessed,
+			)
+		}
+	}
+
+	logger.Info("Completed processing unprocessed transactions for auto-conversion")
+}
+
+// processUnprocessedTransactionForAutoConversion processes a single unprocessed transaction
+// for potential auto-conversion based on matcher success history
+func processUnprocessedTransactionForAutoConversion(
+	ctx context.Context, logger *slog.Logger, db database.Storage,
+	unprocessedService *api.UnprocessedTransactionsAPIServiceImpl,
+	userID string, unprocessed goserver.UnprocessedTransaction,
+) {
+	if len(unprocessed.Matched) == 0 {
+		logger.Debug("No matched matchers for transaction", 
+			"transactionID", unprocessed.Transaction.Id, "userID", userID)
+		return
+	}
+
+	// Find matchers with 100% success history
+	perfectMatchers := make([]goserver.MatcherAndTransaction, 0)
+
+	for _, matched := range unprocessed.Matched {
+		matcher, err := db.GetMatcher(userID, matched.MatcherId)
+		if err != nil {
+			logger.With("error", err, "matcherID", matched.MatcherId, "userID", userID).Warn(
+				"Failed to get matcher for auto-conversion check")
+			continue
+		}
+
+		history := matcher.GetConfirmationHistory()
+		if len(history) == 0 {
+			logger.Debug("Matcher has no confirmation history", 
+				"matcherID", matched.MatcherId, "userID", userID)
+			continue
+		}
+
+		// Check if all confirmations are successful (100% success rate)
+		allSuccessful := true
+		for _, confirmed := range history {
+			if !confirmed {
+				allSuccessful = false
+				break
+			}
+		}
+
+		if allSuccessful {
+			perfectMatchers = append(perfectMatchers, matched)
+			logger.Debug("Found matcher with 100% success history", 
+				"matcherID", matched.MatcherId, "userID", userID, 
+				"historyLength", len(history))
+		}
+	}
+
+	// Auto-convert only if exactly one matcher has 100% success history
+	if len(perfectMatchers) == 1 {
+		matcher := perfectMatchers[0]
+		logger.Info("Auto-converting unprocessed transaction using perfect matcher", 
+			"transactionID", unprocessed.Transaction.Id, 
+			"matcherID", matcher.MatcherId, 
+			"userID", userID)
+
+		// Convert the transaction using the perfect matcher
+		convertedTransaction, err := unprocessedService.Convert(
+			ctx, userID, unprocessed.Transaction.Id, &matcher.Transaction,
+		)
+		if err != nil {
+			logger.With("error", err, "transactionID", unprocessed.Transaction.Id, 
+				"matcherID", matcher.MatcherId, "userID", userID).Error(
+				"Failed to auto-convert unprocessed transaction")
+			return
+		}
+
+		// Add successful confirmation to the matcher's history
+		if err := db.AddMatcherConfirmation(userID, matcher.MatcherId, true); err != nil {
+			logger.With("error", err, "matcherID", matcher.MatcherId, "userID", userID).Warn(
+				"Failed to add confirmation to matcher after auto-conversion")
+		}
+
+		logger.Info("Successfully auto-converted unprocessed transaction", 
+			"transactionID", convertedTransaction.Id, 
+			"matcherID", matcher.MatcherId, 
+			"userID", userID)
+	} else if len(perfectMatchers) > 1 {
+		logger.Debug("Multiple matchers with 100% success history, keeping transaction unprocessed", 
+			"transactionID", unprocessed.Transaction.Id, 
+			"userID", userID, 
+			"perfectMatchersCount", len(perfectMatchers))
+	} else {
+		logger.Debug("No matchers with 100% success history for transaction", 
+			"transactionID", unprocessed.Transaction.Id, 
+			"userID", userID)
+	}
+}
+
+// getAllUsers retrieves all user IDs from the database
+func getAllUsers(db database.Storage) ([]string, error) {
+	// Get all bank importers and extract unique user IDs
+	// This is a simple way to get active users - could be optimized with a dedicated method
+	importers, err := db.GetAllBankImporters()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bank importers to extract users: %w", err)
+	}
+
+	userSet := make(map[string]bool)
+	for _, importer := range importers {
+		userSet[importer.UserID] = true
+	}
+
+	users := make([]string, 0, len(userSet))
+	for userID := range userSet {
+		users = append(users, userID)
+	}
+
+	return users, nil
 }
