@@ -125,9 +125,9 @@
                                             {{ end }}
                                         </div>
                                         <div class="d-grid gap-2 mb-2">
-                                            <a href="/web/unprocessed/delete?id={{$.Unprocessed.Transaction.ID}}&duplicateOf={{.ID}}" class="btn btn-primary btn-sm" tabindex="-1" role="button">
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="confirmMarkAsDuplicate('{{$.Unprocessed.Transaction.ID}}', '{{.ID}}', '{{ .Description }}', '{{ formatTime .Date "2006-01-02" }}')">
                                                 Mark as duplicate
-                                            </a>
+                                            </button>
                                         </div>                                        
                                     </div>
                                 </div>
@@ -140,5 +140,15 @@
     {{ end }}
 
 </main>
+
+<script>
+function confirmMarkAsDuplicate(transactionId, duplicateOfId, duplicateDescription, duplicateDate) {
+    const message = `Are you sure you want to mark this transaction as a duplicate of:\n\n${duplicateDate} - ${duplicateDescription}?\n\nThis action cannot be undone.`;
+    
+    if (confirm(message)) {
+        window.location.href = `/web/unprocessed/delete?id=${transactionId}&duplicateOf=${duplicateOfId}`;
+    }
+}
+</script>
 
 {{ template "footer.tpl" . }}

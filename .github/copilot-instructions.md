@@ -62,6 +62,7 @@ webapp/                - Static assets and HTML templates
 - Implement CSRF protection for forms
 - Ensure user sessions are managed securely
 - User token is passed in cookies for web requests
+- Run 'make run' to start webserver and use user 'test' with password 'test' to login
 
 ### Database & Models
 - Use GORM for database operations
