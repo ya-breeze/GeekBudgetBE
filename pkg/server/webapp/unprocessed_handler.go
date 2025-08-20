@@ -124,10 +124,9 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 }
 
 func (r *WebAppRouter) unprocessedDeleteHandler(w http.ResponseWriter, req *http.Request) {
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if !ok {
-		http.Error(w, "not authorized", http.StatusUnauthorized)
+	userID, code, err := r.GetUserIDFromSession(req)
+	if err != nil {
+		http.Error(w, http.StatusText(code), code)
 		return
 	}
 
@@ -143,7 +142,7 @@ func (r *WebAppRouter) unprocessedDeleteHandler(w http.ResponseWriter, req *http
 	}
 
 	s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
-	err := s.Delete(req.Context(), userID, id, duplicateOf)
+	err = s.Delete(req.Context(), userID, id, duplicateOf)
 	if err != nil {
 		r.logger.Error("Failed to delete unprocessed", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
