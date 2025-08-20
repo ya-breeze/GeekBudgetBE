@@ -119,10 +119,10 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 	}
 	transactionID := req.FormValue("id")
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if !ok {
-		http.Error(w, "User ID is required", http.StatusBadRequest)
+	// Validate session and obtain user ID using the centralized helper
+	userID, err := r.ValidateUserID(tmpl, w, req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
 

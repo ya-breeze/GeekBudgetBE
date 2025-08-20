@@ -45,10 +45,10 @@ func (r *WebAppRouter) matchersDeleteHandler(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if !ok {
-		http.Error(w, "User ID is required", http.StatusBadRequest)
+	userID, _, err := r.GetUserIDFromSession(req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -83,10 +83,10 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 	matcherID := req.FormValue("id")
 	transactionID := req.FormValue("transaction_id")
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if !ok {
-		http.Error(w, "User ID is required", http.StatusBadRequest)
+	userID, _, err := r.GetUserIDFromSession(req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -197,10 +197,10 @@ func (r *WebAppRouter) matcherDeleteHandler(w http.ResponseWriter, req *http.Req
 		return
 	}
 
-	session, _ := r.cookies.Get(req, "session-name")
-	userID, ok := session.Values["userID"].(string)
-	if !ok {
-		http.Error(w, "User ID is required", http.StatusBadRequest)
+	userID, _, err := r.GetUserIDFromSession(req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
