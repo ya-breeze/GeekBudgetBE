@@ -114,7 +114,7 @@ func processUnprocessedTransactionsForAutoConversion(
 	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, db)
 
 	for _, userID := range users {
-		logger.Debug("Processing unprocessed transactions for user", "userID", userID)
+		logger.Info("Processing unprocessed transactions for user", "userID", userID)
 
 		// Get all unprocessed transactions for this user
 		unprocessedTransactions, _, err := unprocessedService.PrepareUnprocessedTransactions(
@@ -126,11 +126,11 @@ func processUnprocessedTransactionsForAutoConversion(
 		}
 
 		if len(unprocessedTransactions) == 0 {
-			logger.Debug("No unprocessed transactions for user", "userID", userID)
+			logger.Info("No unprocessed transactions for user", "userID", userID)
 			continue
 		}
 
-		logger.Info("Found unprocessed transactions for auto-conversion", 
+		logger.Info("Found unprocessed transactions for auto-conversion",
 			"userID", userID, "count", len(unprocessedTransactions))
 
 		// Process each unprocessed transaction
@@ -152,52 +152,19 @@ func processUnprocessedTransactionForAutoConversion(
 	userID string, unprocessed goserver.UnprocessedTransaction,
 ) {
 	if len(unprocessed.Matched) == 0 {
-		logger.Debug("No matched matchers for transaction", 
+		logger.Info("No matched matchers for transaction",
 			"transactionID", unprocessed.Transaction.Id, "userID", userID)
 		return
 	}
 
-	// Find matchers with 100% success history
-	perfectMatchers := make([]goserver.MatcherAndTransaction, 0)
+	perfectMatchers := findPerfectMatchers(db, logger, userID, unprocessed.Matched)
 
-	for _, matched := range unprocessed.Matched {
-		matcher, err := db.GetMatcher(userID, matched.MatcherId)
-		if err != nil {
-			logger.With("error", err, "matcherID", matched.MatcherId, "userID", userID).Warn(
-				"Failed to get matcher for auto-conversion check")
-			continue
-		}
-
-		history := matcher.GetConfirmationHistory()
-		if len(history) == 0 {
-			logger.Debug("Matcher has no confirmation history", 
-				"matcherID", matched.MatcherId, "userID", userID)
-			continue
-		}
-
-		// Check if all confirmations are successful (100% success rate)
-		allSuccessful := true
-		for _, confirmed := range history {
-			if !confirmed {
-				allSuccessful = false
-				break
-			}
-		}
-
-		if allSuccessful {
-			perfectMatchers = append(perfectMatchers, matched)
-			logger.Debug("Found matcher with 100% success history", 
-				"matcherID", matched.MatcherId, "userID", userID, 
-				"historyLength", len(history))
-		}
-	}
-
-	// Auto-convert only if exactly one matcher has 100% success history
-	if len(perfectMatchers) == 1 {
+	switch len(perfectMatchers) {
+	case 1:
 		matcher := perfectMatchers[0]
-		logger.Info("Auto-converting unprocessed transaction using perfect matcher", 
-			"transactionID", unprocessed.Transaction.Id, 
-			"matcherID", matcher.MatcherId, 
+		logger.Info("Auto-converting unprocessed transaction using perfect matcher",
+			"transactionID", unprocessed.Transaction.Id,
+			"matcherID", matcher.MatcherId,
 			"userID", userID)
 
 		// Convert the transaction using the perfect matcher
@@ -205,7 +172,7 @@ func processUnprocessedTransactionForAutoConversion(
 			ctx, userID, unprocessed.Transaction.Id, &matcher.Transaction,
 		)
 		if err != nil {
-			logger.With("error", err, "transactionID", unprocessed.Transaction.Id, 
+			logger.With("error", err, "transactionID", unprocessed.Transaction.Id,
 				"matcherID", matcher.MatcherId, "userID", userID).Error(
 				"Failed to auto-convert unprocessed transaction")
 			return
@@ -217,20 +184,70 @@ func processUnprocessedTransactionForAutoConversion(
 				"Failed to add confirmation to matcher after auto-conversion")
 		}
 
-		logger.Info("Successfully auto-converted unprocessed transaction", 
-			"transactionID", convertedTransaction.Id, 
-			"matcherID", matcher.MatcherId, 
+		logger.Info("Successfully auto-converted unprocessed transaction",
+			"transactionID", convertedTransaction.Id,
+			"matcherID", matcher.MatcherId,
 			"userID", userID)
-	} else if len(perfectMatchers) > 1 {
-		logger.Debug("Multiple matchers with 100% success history, keeping transaction unprocessed", 
-			"transactionID", unprocessed.Transaction.Id, 
-			"userID", userID, 
+	case 0:
+		logger.Debug("No matchers with 100% success history for transaction",
+			"transactionID", unprocessed.Transaction.Id,
+			"userID", userID)
+	default:
+		logger.Debug("Multiple matchers with 100% success history, keeping transaction unprocessed",
+			"transactionID", unprocessed.Transaction.Id,
+			"userID", userID,
 			"perfectMatchersCount", len(perfectMatchers))
-	} else {
-		logger.Debug("No matchers with 100% success history for transaction", 
-			"transactionID", unprocessed.Transaction.Id, 
-			"userID", userID)
 	}
+}
+
+// findPerfectMatchers returns matchers (from matchedList) whose confirmation
+// history exists and contains only successful confirmations (all true).
+func findPerfectMatchers(
+	db database.Storage, logger *slog.Logger, userID string,
+	matchedList []goserver.MatcherAndTransaction,
+) []goserver.MatcherAndTransaction {
+	perfect := make([]goserver.MatcherAndTransaction, 0, len(matchedList))
+
+	for _, matched := range matchedList {
+		matcher, err := db.GetMatcher(userID, matched.MatcherId)
+		if err != nil {
+			logger.With("error", err, "matcherID", matched.MatcherId, "userID", userID).Warn(
+				"Failed to get matcher for auto-conversion check")
+			continue
+		}
+
+		history := matcher.GetConfirmationHistory()
+		if len(history) == 0 {
+			logger.Info("Matcher has no confirmation history",
+				"matcherID", matched.MatcherId, "userID", userID)
+			continue
+		}
+
+		allSuccessful := true
+		for _, confirmed := range history {
+			if !confirmed {
+				allSuccessful = false
+				break
+			}
+		}
+
+		if allSuccessful {
+			perfect = append(perfect, matched)
+			logger.Info("Found matcher with 100% success history",
+				"matcherID", matched.MatcherId, "userID", userID,
+				"historyLength", len(history))
+		}
+	}
+
+	return perfect
+}
+
+// ProcessUnprocessedTransactionsForAutoConversion is an exported wrapper used by
+// tests and external callers to trigger the auto-conversion pass.
+func ProcessUnprocessedTransactionsForAutoConversion(
+	ctx context.Context, logger *slog.Logger, db database.Storage,
+) {
+	processUnprocessedTransactionsForAutoConversion(ctx, logger, db)
 }
 
 // getAllUsers retrieves all user IDs from the database

@@ -1,7 +1,6 @@
-package background
+package background_test
 
 import (
-	"context"
 	"log/slog"
 	"testing"
 	"time"
@@ -10,16 +9,25 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 )
 
-func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
-	// Create in-memory database for testing
-	logger := slog.Default()
+// mustOpenTestStorage creates and opens an in-memory storage for tests and fails
+// the test on error.
+func mustOpenTestStorage(t *testing.T, logger *slog.Logger) database.Storage {
+	t.Helper()
 	cfg := &config.Config{DBPath: ":memory:", Verbose: false, MatcherConfirmationHistoryMax: 10}
 	storage := database.NewStorage(logger, cfg)
 	if err := storage.Open(); err != nil {
 		t.Fatalf("failed to open storage: %v", err)
 	}
+	return storage
+}
+
+//nolint:cyclop,funlen
+func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
+	logger := slog.Default()
+	storage := mustOpenTestStorage(t, logger)
 	defer storage.Close()
 
 	// Create a user
@@ -105,7 +113,7 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 	// Before auto-conversion: verify transaction exists and is unprocessed
 	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, storage)
 	unprocessedBefore, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		context.Background(), userID, false, "",
+		t.Context(), userID, false, "",
 	)
 	if err != nil {
 		t.Fatalf("failed to get unprocessed transactions before: %v", err)
@@ -123,12 +131,11 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 	}
 
 	// Run the auto-conversion process
-	ctx := context.Background()
-	processUnprocessedTransactionsForAutoConversion(ctx, logger, storage)
+	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, storage)
 
 	// After auto-conversion: verify transaction was converted using the perfect matcher
 	unprocessedAfter, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		ctx, userID, false, "",
+		t.Context(), userID, false, "",
 	)
 	if err != nil {
 		t.Fatalf("failed to get unprocessed transactions after: %v", err)
@@ -147,13 +154,13 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 
 	// Check that the transaction was updated with matcher's output
 	if convertedTransaction.Description != createdMatcher.OutputDescription {
-		t.Fatalf("expected description '%s', got '%s'", 
+		t.Fatalf("expected description '%s', got '%s'",
 			createdMatcher.OutputDescription, convertedTransaction.Description)
 	}
 
 	// Check that the empty account was filled
 	if convertedTransaction.Movements[0].AccountId != createdMatcher.OutputAccountId {
-		t.Fatalf("expected account ID '%s', got '%s'", 
+		t.Fatalf("expected account ID '%s', got '%s'",
 			createdMatcher.OutputAccountId, convertedTransaction.Movements[0].AccountId)
 	}
 
@@ -179,11 +186,12 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 	if len(history) != 4 { // Original 3 + 1 new confirmation
 		t.Fatalf("expected 4 confirmations in history, got %d", len(history))
 	}
-	if !history[len(history)-1] { // Last confirmation should be true
+	if !history[len(history)-1] {
 		t.Fatalf("expected last confirmation to be true (successful auto-conversion)")
 	}
 }
 
+//nolint:cyclop,funlen
 func TestProcessUnprocessedTransactionsMultiplePerfectMatchers(t *testing.T) {
 	// Create in-memory database for testing
 	logger := slog.Default()
@@ -276,7 +284,7 @@ func TestProcessUnprocessedTransactionsMultiplePerfectMatchers(t *testing.T) {
 	// Before auto-conversion: verify transaction exists and is unprocessed
 	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, storage)
 	unprocessedBefore, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		context.Background(), userID, false, "",
+		t.Context(), userID, false, "",
 	)
 	if err != nil {
 		t.Fatalf("failed to get unprocessed transactions before: %v", err)
@@ -286,13 +294,12 @@ func TestProcessUnprocessedTransactionsMultiplePerfectMatchers(t *testing.T) {
 	}
 
 	// Run the auto-conversion process
-	ctx := context.Background()
-	processUnprocessedTransactionsForAutoConversion(ctx, logger, storage)
+	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, storage)
 
 	// After auto-conversion: verify transaction is still unprocessed
 	// (because there are multiple perfect matchers)
 	unprocessedAfter, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		ctx, userID, false, "",
+		t.Context(), userID, false, "",
 	)
 	if err != nil {
 		t.Fatalf("failed to get unprocessed transactions after: %v", err)
@@ -300,7 +307,10 @@ func TestProcessUnprocessedTransactionsMultiplePerfectMatchers(t *testing.T) {
 
 	// The transaction should still be unprocessed due to multiple perfect matchers
 	if len(unprocessedAfter) != 1 {
-		t.Fatalf("expected 1 unprocessed transaction after auto-conversion (multiple perfect matchers), got %d", len(unprocessedAfter))
+		t.Fatalf(
+			"expected 1 unprocessed transaction after auto-conversion (multiple perfect matchers), got %d",
+			len(unprocessedAfter),
+		)
 	}
 
 	// Verify the transaction was not modified
