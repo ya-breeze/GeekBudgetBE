@@ -79,20 +79,39 @@ document.addEventListener('DOMContentLoaded', function() {
         return isNaN(value) ? 0 : value; // Keep original sign
     }
 
-    // Function to convert value to color (green for small, red for large)
-    function valueToColor(value, maxValue) {
-        if (maxValue === 0 || value <= 0) return 'rgba(255, 255, 255, 0)'; // transparent for no data or negative values
+    // Function to calculate 90th percentile
+    function calculatePercentile(values, percentile) {
+        if (values.length === 0) return 0;
+        const sorted = values.slice().sort((a, b) => a - b);
+        const index = (percentile / 100) * (sorted.length - 1);
+        if (index === Math.floor(index)) {
+            return sorted[index];
+        } else {
+            const lower = sorted[Math.floor(index)];
+            const upper = sorted[Math.ceil(index)];
+            return lower + (upper - lower) * (index - Math.floor(index));
+        }
+    }
+
+    // Function to convert value to color using 90th percentile
+    function valueToColor(value, percentile90) {
+        if (percentile90 === 0 || value <= 0) return 'rgba(255, 255, 255, 0)'; // transparent for no data or negative values
         
-        const ratio = value / maxValue;
-        // const intensity = Math.min(ratio * 0.3, 0.3); // Reduced intensity cap to 30%
-        const intensity = ratio; // Reduced intensity cap to 30%
+        if (value > percentile90) {
+            // For values above 90th percentile, use only red color with 30% opacity
+            return 'rgba(255, 0, 0, 0.3)';
+        }
+        
+        // For values below 90th percentile, use gradient from green to red
+        const ratio = value / percentile90;
+        const intensity = ratio;
         
         // Interpolate between green (small values) and red (large values)
         const red = Math.round(255 * intensity);
         const green = Math.round(155 * (1 - intensity));
         const blue = 50; // Keep some blue for better visibility
         
-        return `rgba(${red}, ${green}, ${blue}, 0.1)`; // Reduced opacity to 15%
+        return `rgba(${red}, ${green}, ${blue}, 0.1)`; // Reduced opacity to 10%
     }
 
     // Find all tables with expense data
@@ -100,9 +119,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     tables.forEach(function(table) {
         const cells = [];
-        let maxValue = 0;
+        const values = [];
         
-        // Collect all numeric cells and find maximum value
+        // Collect all numeric cells and their values
         const rows = table.querySelectorAll('tbody tr');
         rows.forEach(function(row) {
             const dataCells = row.querySelectorAll('td');
@@ -112,14 +131,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 const value = extractNumericValue(cell.textContent);
                 if (value > 0) {
                     cells.push({ element: cell, value: value });
-                    maxValue = Math.max(maxValue, value);
+                    values.push(value);
                 }
             }
         });
         
+        // Calculate 90th percentile
+        const percentile90 = calculatePercentile(values, 90);
+        
         // Apply color coding to cells
         cells.forEach(function(cellData) {
-            const color = valueToColor(cellData.value, maxValue);
+            const color = valueToColor(cellData.value, percentile90);
             cellData.element.style.backgroundColor = color;
         });
     });
