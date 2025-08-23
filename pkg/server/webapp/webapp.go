@@ -176,6 +176,16 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 			u.RawQuery = q.Encode()
 			return u.String(), nil
 		},
+		"removeQueryParam": func(rawURL string, key string) (string, error) {
+			u, err := url.Parse(rawURL)
+			if err != nil {
+				return "", err
+			}
+			q := u.Query()
+			q.Del(key)
+			u.RawQuery = q.Encode()
+			return u.String(), nil
+		},
 	}).ParseGlob(filepath.Join("webapp", "templates", "*.tpl"))
 	if err != nil {
 		return nil, err

@@ -17,7 +17,11 @@
                 <thead>
                     <tr>
                         <th>
-                            <a href="{{ addQueryParam $.CurrentURL "currency" .CurrencyName }}"
+                            <a href="{{ if ne (index $.Query "currency") .CurrencyName }}
+                                        {{ addQueryParam $.CurrentURL "currency" .CurrencyName }}
+                                    {{ else }}
+                                        {{ removeQueryParam $.CurrentURL "currency" }}
+                                    {{ end }}"
                                     class="btn btn-light {{if eq (index $.Query "currency") .CurrencyName}}active{{end}}" tabindex="-1" role="button">
                                 <i class="bi-arrow-through-heart-fill"></i>
                             </a>

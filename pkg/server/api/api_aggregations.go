@@ -45,7 +45,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string,
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyName string,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
@@ -66,21 +66,94 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		return nil, nil
 	}
 
+	// Prepare map currencyID->CurrencyName for all currencies of the current user.
+	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+
 	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
 	res := Aggregate(
-		accounts, transactions,
+		ctx, accounts, transactions,
 		dateFrom, dateTo,
 		utils.GranularityMonth,
-		outputCurrencyID, currenciesRatesFetcher,
+		outputCurrencyName, currenciesRatesFetcher,
+		currencyMap,
 		s.logger)
 
 	return &res, nil
 }
 
+func buildCurrencyMap(logger *slog.Logger, storage database.Storage, userID string) map[string]string {
+	currencies, err := storage.GetCurrencies(userID)
+	if err != nil {
+		logger.With("error", err, "userID", userID).Error("Failed to get currencies for user")
+		return make(map[string]string)
+	}
+
+	currencyMap := make(map[string]string, len(currencies))
+	for _, currency := range currencies {
+		currencyMap[currency.Id] = currency.Name
+	}
+
+	logger.Debug("Built currency map", "userID", userID, "currencyCount", len(currencyMap))
+	return currencyMap
+}
+
+func findCurrencyID(currencyName string, currencyMap map[string]string) string {
+	if currencyName == "" {
+		return ""
+	}
+	for id, name := range currencyMap {
+		if name == currencyName {
+			return id
+		}
+	}
+	return ""
+}
+
+func processMovements(
+	ctx context.Context, movements []goserver.Movement, transactionDate time.Time,
+	outputCurrencyID, outputCurrencyName string, currencyMap map[string]string,
+	currenciesRatesFetcher *common.CurrenciesRatesFetcher, intervalIdx int,
+	res *goserver.Aggregation, log *slog.Logger,
+) {
+	for _, m := range movements {
+		// Convert movement amount to target currency if needed
+		convertedAmount, targetCurrencyID := convertMovementAmount(
+			ctx, m, transactionDate, outputCurrencyID, outputCurrencyName,
+			currencyMap, currenciesRatesFetcher, log)
+
+		// Use target currency ID for grouping (either converted or original)
+		currencyIdx := slices.IndexFunc(res.Currencies,
+			func(item goserver.CurrencyAggregation) bool {
+				return item.CurrencyId == targetCurrencyID
+			})
+		if currencyIdx == -1 {
+			res.Currencies = append(res.Currencies, goserver.CurrencyAggregation{CurrencyId: targetCurrencyID})
+			currencyIdx = len(res.Currencies) - 1
+		}
+
+		accountIdx := slices.IndexFunc(res.Currencies[currencyIdx].Accounts,
+			func(item goserver.AccountAggregation) bool {
+				return item.AccountId == m.AccountId
+			})
+		if accountIdx == -1 {
+			res.Currencies[currencyIdx].Accounts = append(res.Currencies[currencyIdx].Accounts,
+				goserver.AccountAggregation{
+					AccountId: m.AccountId,
+					Amounts:   make([]float64, len(res.Intervals)),
+				})
+			accountIdx = len(res.Currencies[currencyIdx].Accounts) - 1
+		}
+
+		// Use converted amount for aggregation
+		res.Currencies[currencyIdx].Accounts[accountIdx].Amounts[intervalIdx] += convertedAmount
+	}
+}
+
 func Aggregate(
-	accounts []goserver.Account, transactions []goserver.Transaction,
+	ctx context.Context, accounts []goserver.Account, transactions []goserver.Transaction,
 	dateFrom, dateTo time.Time, granularity utils.Granularity,
-	outputCurrencyID string, currenciesRatesFetcher *common.CurrenciesRatesFetcher,
+	outputCurrencyName string, currenciesRatesFetcher *common.CurrenciesRatesFetcher,
+	currencyMap map[string]string,
 	log *slog.Logger,
 ) goserver.Aggregation {
 	res := goserver.Aggregation{
@@ -88,6 +161,9 @@ func Aggregate(
 		To:   dateTo,
 	}
 	res.Intervals = getIntervals(res.From, res.To, granularity)
+
+	// find ID of outputCurrencyMap
+	outputCurrencyID := findCurrencyID(outputCurrencyName, currencyMap)
 
 	res.Currencies = []goserver.CurrencyAggregation{}
 	for _, t := range transactions {
@@ -107,31 +183,8 @@ func Aggregate(
 		}
 
 		movements := getExpenseMovements(accounts, t)
-		for _, m := range movements {
-			currencyIdx := slices.IndexFunc(res.Currencies,
-				func(item goserver.CurrencyAggregation) bool {
-					return item.CurrencyId == m.CurrencyId
-				})
-			if currencyIdx == -1 {
-				res.Currencies = append(res.Currencies, goserver.CurrencyAggregation{CurrencyId: m.CurrencyId})
-				currencyIdx = len(res.Currencies) - 1
-			}
-
-			accountIdx := slices.IndexFunc(res.Currencies[currencyIdx].Accounts,
-				func(item goserver.AccountAggregation) bool {
-					return item.AccountId == m.AccountId
-				})
-			if accountIdx == -1 {
-				res.Currencies[currencyIdx].Accounts = append(res.Currencies[currencyIdx].Accounts,
-					goserver.AccountAggregation{
-						AccountId: m.AccountId,
-						Amounts:   make([]float64, len(res.Intervals)),
-					})
-				accountIdx = len(res.Currencies[currencyIdx].Accounts) - 1
-			}
-
-			res.Currencies[currencyIdx].Accounts[accountIdx].Amounts[intervalIdx] += m.Amount
-		}
+		processMovements(ctx, movements, t.Date, outputCurrencyID, outputCurrencyName,
+			currencyMap, currenciesRatesFetcher, intervalIdx, &res, log)
 	}
 
 	return res
@@ -160,8 +213,7 @@ func isExpenseAccount(accounts []goserver.Account, accountID string) bool {
 	return false
 }
 
-func getIntervals(dateFrom, dateTo time.Time, granularity utils.Granularity,
-) []time.Time {
+func getIntervals(dateFrom, dateTo time.Time, granularity utils.Granularity) []time.Time {
 	intervals := []time.Time{}
 	for dateFrom.Before(dateTo) {
 		intervals = append(intervals, dateFrom)
@@ -171,10 +223,66 @@ func getIntervals(dateFrom, dateTo time.Time, granularity utils.Granularity,
 		case utils.GranularityYear:
 			dateFrom = dateFrom.AddDate(1, 0, 0)
 		default:
-			break
+			dateFrom = dateFrom.AddDate(1, 0, 0)
 		}
 	}
 	return intervals
+}
+
+// convertMovementAmount converts a movement amount to the target currency using the provided exchange rate fetcher.
+// Returns the converted amount and the target currency ID to use for grouping.
+// If conversion is not needed or fails, returns the original amount and currency ID.
+func convertMovementAmount(
+	ctx context.Context, movement goserver.Movement, transactionDate time.Time,
+	outputCurrencyID string, outputCurrencyName string,
+	currencyMap map[string]string,
+	currenciesRatesFetcher *common.CurrenciesRatesFetcher, log *slog.Logger,
+) (float64, string) {
+	// If no output currency specified, return original
+	if outputCurrencyID == "" {
+		log.Debug("No output currency specified, using original currency",
+			"originalCurrency", movement.CurrencyId, "amount", movement.Amount)
+		return movement.Amount, movement.CurrencyId
+	}
+
+	// If currencies rate fetcher is nil, return original
+	if currenciesRatesFetcher == nil {
+		log.Warn("Currency rate fetcher is nil, using original currency",
+			"originalCurrency", movement.CurrencyId, "outputCurrency", outputCurrencyName, "amount", movement.Amount)
+		return movement.Amount, movement.CurrencyId
+	}
+
+	// If same currency, no conversion needed
+	if movement.CurrencyId == outputCurrencyID {
+		log.Debug("Same currency, no conversion needed",
+			"currency", movement.CurrencyId, "amount", movement.Amount)
+		return movement.Amount, movement.CurrencyId
+	}
+
+	// Name of the original currency
+	originalCurrencyName := currencyMap[movement.CurrencyId]
+
+	// Attempt currency conversion
+	convertedAmount, err := currenciesRatesFetcher.Convert(
+		ctx, transactionDate, originalCurrencyName, outputCurrencyName, movement.Amount)
+	if err != nil {
+		log.Warn("Currency conversion failed, using original amount",
+			"error", err,
+			"date", transactionDate.Format("2006-01-02"),
+			"fromCurrency", originalCurrencyName,
+			"toCurrency", outputCurrencyName,
+			"originalAmount", movement.Amount)
+		return movement.Amount, movement.CurrencyId
+	}
+
+	log.Debug("Currency conversion successful",
+		"date", transactionDate.Format("2006-01-02"),
+		"fromCurrency", originalCurrencyName,
+		"toCurrency", outputCurrencyName,
+		"originalAmount", movement.Amount,
+		"convertedAmount", convertedAmount)
+
+	return convertedAmount, outputCurrencyID
 }
 
 func (s *AggregationsAPIServiceImpl) GetIncomes(context.Context, time.Time, time.Time, string,
