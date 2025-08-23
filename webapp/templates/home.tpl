@@ -35,7 +35,8 @@
                         {{ $accountID := .AccountID }}
                         <td>{{ .AccountName }}</td>
                         {{ range $i, $a := .Amounts }}
-                        <td {{ if and (eq $accountID "") (ne $a 0.0) }}class="table-danger"{{end}}>
+                        <td>
+                            {{ if and (eq $accountID "") (ne $a 0.0) }}❓{{end}}
                             {{ if eq $a 0.0 }}
                                 0
                             {{ else }}
@@ -79,10 +80,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return isNaN(value) ? 0 : value; // Keep original sign
     }
 
-    // Function to calculate 90th percentile
+    // Function to calculate percentile
     function calculatePercentile(values, percentile) {
         if (values.length === 0) return 0;
-        const sorted = values.slice().sort((a, b) => a - b);
+        const sorted = values.slice().filter(v => v > 0).sort((a, b) => a - b);
+        if (sorted.length === 0) return 0;
+
         const index = (percentile / 100) * (sorted.length - 1);
         if (index === Math.floor(index)) {
             return sorted[index];
@@ -93,17 +96,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to convert value to color using 90th percentile
-    function valueToColor(value, percentile90) {
-        if (percentile90 === 0 || value <= 0) return 'rgba(255, 255, 255, 0)'; // transparent for no data or negative values
+    // Function to convert value to color using percentile
+    function valueToColor(value, percentile) {
+        if (value < 0) {
+            return 'rgba(255, 249, 167, 1)';
+        }
+
+        if (percentile === 0 || value === 0) return 'rgba(255, 255, 255, 0)'; // transparent for no data or negative values
         
-        if (value > percentile90) {
-            // For values above 90th percentile, use only red color with 30% opacity
+        if (value > percentile) {
+            // For values above percentile, use only red color with 30% opacity
             return 'rgba(255, 0, 0, 0.3)';
         }
         
-        // For values below 90th percentile, use gradient from green to red
-        const ratio = value / percentile90;
+        // For values below percentile, use gradient from green to red
+        const ratio = value / percentile;
         const intensity = ratio;
         
         // Interpolate between green (small values) and red (large values)
@@ -136,12 +143,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Calculate 90th percentile
-        const percentile90 = calculatePercentile(values, 90);
+        // Calculate percentile
+        const percentile = calculatePercentile(values, 99);
         
         // Apply color coding to cells
         cells.forEach(function(cellData) {
-            const color = valueToColor(cellData.value, percentile90);
+            const color = valueToColor(cellData.value, percentile);
             cellData.element.style.backgroundColor = color;
         });
     });
