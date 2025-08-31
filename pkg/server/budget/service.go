@@ -2,6 +2,7 @@ package budget
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -54,7 +55,9 @@ func (s *Service) ValidateFutureMonth(monthStart time.Time) error {
 }
 
 // ListMonthlyBudget retrieves all budget items for a specific month and user
-func (s *Service) ListMonthlyBudget(ctx context.Context, userID string, monthStart time.Time) ([]goserver.BudgetItem, error) {
+func (s *Service) ListMonthlyBudget(
+	ctx context.Context, userID string, monthStart time.Time,
+) ([]goserver.BudgetItem, error) {
 	return s.db.GetBudgetItemsByMonth(userID, monthStart)
 }
 
@@ -192,7 +195,9 @@ func (s *Service) CompareMonthly(ctx context.Context, userID string, monthStart 
 }
 
 // CopyFromPreviousMonth copies budget items from a previous month to a new month
-func (s *Service) CopyFromPreviousMonth(ctx context.Context, userID string, fromMonthStart, toMonthStart time.Time) (int, error) {
+func (s *Service) CopyFromPreviousMonth(
+	ctx context.Context, userID string, fromMonthStart, toMonthStart time.Time,
+) (int, error) {
 	// Validate that target month is in the future
 	if err := s.ValidateFutureMonth(toMonthStart); err != nil {
 		return 0, err
@@ -206,7 +211,7 @@ func (s *Service) CopyFromPreviousMonth(ctx context.Context, userID string, from
 	}
 
 	if len(existingItems) > 0 {
-		return 0, fmt.Errorf("target month already has budget items, cannot overwrite")
+		return 0, errors.New("target month already has budget items, cannot overwrite")
 	}
 
 	// Copy budget items using database method
@@ -216,6 +221,10 @@ func (s *Service) CopyFromPreviousMonth(ctx context.Context, userID string, from
 		return 0, fmt.Errorf("failed to copy budget items: %w", err)
 	}
 
-	s.logger.Info("Budget items copied", "userID", userID, "from", fromMonthStart.Format("2006-01"), "to", toMonthStart.Format("2006-01"), "count", count)
+	s.logger.Info("Budget items copied",
+		"userID", userID,
+		"from", fromMonthStart.Format("2006-01"),
+		"to", toMonthStart.Format("2006-01"),
+		"count", count)
 	return count, nil
 }

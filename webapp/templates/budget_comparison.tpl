@@ -9,13 +9,13 @@
             <div class="row mb-3">
                 <div class="col-12">
                     <div class="btn-group" role="group">
-                        <a href="{{addQueryParam .Request.URL "month" (timestamp .PrevMonth)}}" class="btn btn-outline-primary">
+                        <a href="{{addQueryParam .Request.URL.String "month" (timestamp .PrevMonth)}}" class="btn btn-outline-primary">
                             &larr; Previous Month
                         </a>
                         <span class="btn btn-primary disabled">
                             {{.MonthStart.Format "January 2006"}}
                         </span>
-                        <a href="{{addQueryParam .Request.URL "month" (timestamp .NextMonth)}}" class="btn btn-outline-primary">
+                        <a href="{{addQueryParam .Request.URL.String "month" (timestamp .NextMonth)}}" class="btn btn-outline-primary">
                             Next Month &rarr;
                         </a>
                     </div>

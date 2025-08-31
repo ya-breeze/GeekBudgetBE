@@ -26,7 +26,7 @@ func (r *WebAppRouter) budgetPlanningHandler(w http.ResponseWriter, req *http.Re
 	data["UserID"] = userID
 
 	// Handle POST request (save budget or copy)
-	if req.Method == "POST" {
+	if req.Method == http.MethodPost {
 		if req.FormValue("action") == "copy" {
 			r.handleBudgetCopyPOST(w, req, userID)
 		} else {
@@ -126,7 +126,8 @@ func (r *WebAppRouter) handleBudgetPlanningPOST(w http.ResponseWriter, req *http
 	}
 
 	// Redirect back with success
-	redirectURL := req.URL.Path + "?month=" + strconv.FormatInt(monthStart.Unix(), 10) + "&success=Budget saved successfully"
+	redirectURL := req.URL.Path + "?month=" + strconv.FormatInt(monthStart.Unix(), 10) +
+		"&success=Budget saved successfully"
 	http.Redirect(w, req, redirectURL, http.StatusSeeOther)
 }
 

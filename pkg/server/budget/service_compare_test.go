@@ -14,25 +14,25 @@ func TestCompareMonthly(t *testing.T) {
 	service, storage := setupTestService(t)
 	ctx := context.Background()
 	userID := "test-user"
-	
+
 	// Create test month
 	testMonth := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
-	
+
 	// Create expense accounts
 	foodAccount := &goserver.AccountNoId{
 		Name: "Food",
 		Type: "expense",
 	}
 	transportAccount := &goserver.AccountNoId{
-		Name: "Transport", 
+		Name: "Transport",
 		Type: "expense",
 	}
-	
+
 	foodAcc, err := storage.CreateAccount(userID, foodAccount)
 	require.NoError(t, err)
 	transportAcc, err := storage.CreateAccount(userID, transportAccount)
 	require.NoError(t, err)
-	
+
 	// Create budget items (planned amounts)
 	budgetItems := []goserver.BudgetItemNoId{
 		{
@@ -48,13 +48,13 @@ func TestCompareMonthly(t *testing.T) {
 			Description: "Transport budget",
 		},
 	}
-	
+
 	// Save budget items
 	for _, item := range budgetItems {
 		_, err := storage.CreateBudgetItem(userID, &item)
 		require.NoError(t, err)
 	}
-	
+
 	// Create actual transactions (actual expenses)
 	// Food: $600 actual (over budget by $100)
 	foodTransaction := &goserver.TransactionNoId{
@@ -67,7 +67,7 @@ func TestCompareMonthly(t *testing.T) {
 			},
 		},
 	}
-	
+
 	// Transport: $150 actual (under budget by $50)
 	transportTransaction := &goserver.TransactionNoId{
 		Date:        testMonth.AddDate(0, 0, 20),
@@ -79,25 +79,25 @@ func TestCompareMonthly(t *testing.T) {
 			},
 		},
 	}
-	
+
 	// Save transactions
 	_, err = storage.CreateTransaction(userID, foodTransaction)
 	require.NoError(t, err)
 	_, err = storage.CreateTransaction(userID, transportTransaction)
 	require.NoError(t, err)
-	
+
 	// Test: Compare monthly budget vs actual
 	comparison, err := service.CompareMonthly(ctx, userID, testMonth, "")
 	require.NoError(t, err)
-	
+
 	// Verify totals
 	assert.Equal(t, 700.0, comparison.TotalPlanned) // $500 + $200
 	assert.Equal(t, 750.0, comparison.TotalActual)  // $600 + $150
 	assert.Equal(t, 50.0, comparison.TotalDelta)    // $750 - $700 = $50 over budget
-	
+
 	// Verify individual account rows
 	assert.Len(t, comparison.Rows, 2)
-	
+
 	// Find food and transport rows
 	var foodRow, transportRow *Row
 	for i := range comparison.Rows {
@@ -107,7 +107,7 @@ func TestCompareMonthly(t *testing.T) {
 			transportRow = &comparison.Rows[i]
 		}
 	}
-	
+
 	// Verify food account
 	require.NotNil(t, foodRow)
 	assert.Equal(t, foodAcc.Id, foodRow.AccountID)
@@ -115,7 +115,7 @@ func TestCompareMonthly(t *testing.T) {
 	assert.Equal(t, 500.0, foodRow.Planned)
 	assert.Equal(t, 600.0, foodRow.Actual)
 	assert.Equal(t, 100.0, foodRow.Delta) // Over budget by $100
-	
+
 	// Verify transport account
 	require.NotNil(t, transportRow)
 	assert.Equal(t, transportAcc.Id, transportRow.AccountID)
@@ -129,19 +129,19 @@ func TestCompareMonthly_NoBudgetItems(t *testing.T) {
 	service, storage := setupTestService(t)
 	ctx := context.Background()
 	userID := "test-user"
-	
+
 	// Create test month with no budget items
 	testMonth := time.Date(2024, 7, 1, 0, 0, 0, 0, time.UTC)
-	
+
 	// Create expense account
 	foodAccount := &goserver.AccountNoId{
 		Name: "Food",
 		Type: "expense",
 	}
-	
+
 	foodAcc, err := storage.CreateAccount(userID, foodAccount)
 	require.NoError(t, err)
-	
+
 	// Create actual transaction (no budget planned)
 	transaction := &goserver.TransactionNoId{
 		Date:        testMonth.AddDate(0, 0, 15),
@@ -153,19 +153,19 @@ func TestCompareMonthly_NoBudgetItems(t *testing.T) {
 			},
 		},
 	}
-	
+
 	_, err = storage.CreateTransaction(userID, transaction)
 	require.NoError(t, err)
-	
+
 	// Test: Compare with no budget items
 	comparison, err := service.CompareMonthly(ctx, userID, testMonth, "")
 	require.NoError(t, err)
-	
+
 	// Verify totals
 	assert.Equal(t, 0.0, comparison.TotalPlanned)
 	assert.Equal(t, 100.0, comparison.TotalActual)
 	assert.Equal(t, 100.0, comparison.TotalDelta) // All spending is over budget
-	
+
 	// Verify account row shows actual spending
 	assert.Len(t, comparison.Rows, 1)
 	assert.Equal(t, "Food", comparison.Rows[0].AccountName)
