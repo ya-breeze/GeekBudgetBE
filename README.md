@@ -38,7 +38,9 @@ webapp/                - Static assets and HTML templates
 - Project stores each financial event as a transaction linked to a user.
 - Project supports automatic import of transactions from various sources.
 - Project allows to define "matchers" for categorizing transactions based on rules.
-- Always run 'gofumpt -w' for every changed file and then 'make lint' after finishing changes.
+- Always run 'make all' after finishing each step to ensure nothing is broken.
+- Always commit after finishing each step. Commit message should have format <feature|bug|chore|refactor|test>: <description>
+
 
 ### Code Generation
 - The project uses OpenAPI Generator for API client/server code
@@ -261,3 +263,15 @@ Create a single unified budgeting page at /web/budget that shows Budget Planning
 - Copy-from-previous-month fills only zero/blank planned values
 - Cleaner code: fewer routes and templates to maintain; simplified navigation
 - Better user experience: less navigation, immediate visibility into budget vs actuals
+
+### Acceptance Criteria
+- **Single Route**: Only `/web/budget` exists for budgeting functionality
+- **Legacy Removal**: `/web/budget/plan` and `/web/budget/compare` routes are completely removed
+- **Month Flexibility**: Budget planning is editable for any month (past, current, future)
+- **Copy Behavior**: "Copy from Previous Month" fills only zero/blank values, preserves non-zero entries
+- **Visual Indicators**: Comparison section shows color-coded variance (red for over-budget, green for under-budget)
+- **Navigation**: Month selector with previous/next navigation buttons
+- **Totals Display**: Summary totals row showing planned vs actual amounts
+- **Template Structure**: Side-by-side layout with planning form on left, comparison table on right
+- **Authentication**: Proper session validation and login page rendering for unauthenticated users
+- **Test Coverage**: Integration tests for GET/POST flows, service tests for month validation and copy logic
