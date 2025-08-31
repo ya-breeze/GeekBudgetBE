@@ -1,11 +1,13 @@
 package budget
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
 type Service struct {
@@ -32,4 +34,9 @@ func (s *Service) ValidateFutureMonth(monthStart time.Time) error {
 	}
 
 	return nil
+}
+
+// ListMonthlyBudget retrieves all budget items for a specific month and user
+func (s *Service) ListMonthlyBudget(ctx context.Context, userID string, monthStart time.Time) ([]goserver.BudgetItem, error) {
+	return s.db.GetBudgetItemsByMonth(userID, monthStart)
 }
