@@ -23,8 +23,18 @@ func NewBudgetItemsAPIService(logger *slog.Logger, db database.Storage) goserver
 
 // GetBudgetItems - get all budgetItems
 func (s *BudgetItemsAPIServiceImpl) GetBudgetItems(ctx context.Context) (goserver.ImplResponse, error) {
-	// TODO: implement in next sub-task
-	return goserver.Response(501, nil), nil
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	budgetItems, err := s.db.GetBudgetItems(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get budget items")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, budgetItems), nil
 }
 
 // CreateBudgetItem - create new budgetItem
@@ -47,8 +57,18 @@ func (s *BudgetItemsAPIServiceImpl) CreateBudgetItem(
 
 // GetBudgetItem - get budgetItem
 func (s *BudgetItemsAPIServiceImpl) GetBudgetItem(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	// TODO: implement in next sub-task
-	return goserver.Response(501, nil), nil
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	budgetItem, err := s.db.GetBudgetItem(userID, id)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get budget item")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, budgetItem), nil
 }
 
 // UpdateBudgetItem - update budgetItem
