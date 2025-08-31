@@ -24,6 +24,12 @@ func (r *WebAppRouter) budgetPlanningHandler(w http.ResponseWriter, req *http.Re
 	}
 	data["UserID"] = userID
 
+	// Handle POST request (save budget)
+	if req.Method == "POST" {
+		r.handleBudgetPlanningPOST(w, req, userID)
+		return
+	}
+
 	// Parse month parameter (default to next month)
 	monthStart := getNextMonth()
 	if monthParam := req.URL.Query().Get("month"); monthParam != "" {
@@ -70,4 +76,51 @@ func (r *WebAppRouter) budgetPlanningHandler(w http.ResponseWriter, req *http.Re
 func getNextMonth() time.Time {
 	now := time.Now()
 	return time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location())
+}
+
+func (r *WebAppRouter) handleBudgetPlanningPOST(w http.ResponseWriter, req *http.Request, userID string) {
+	// Parse form data
+	if err := req.ParseForm(); err != nil {
+		r.logger.Error("Failed to parse form", "error", err)
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	// Parse month
+	monthStart := getNextMonth()
+	if monthParam := req.FormValue("month"); monthParam != "" {
+		if timestamp, err := strconv.ParseInt(monthParam, 10, 64); err == nil {
+			monthStart = time.Unix(timestamp, 0)
+		}
+	}
+	monthStart = time.Date(monthStart.Year(), monthStart.Month(), 1, 0, 0, 0, 0, monthStart.Location())
+
+	// Build budget entries from form data
+	var budgetEntries []goserver.BudgetItemNoId
+	for key, values := range req.PostForm {
+		if len(values) > 0 && values[0] != "" && key != "month" {
+			// key should be account ID, value should be amount
+			if amount, err := strconv.ParseFloat(values[0], 64); err == nil && amount > 0 {
+				budgetEntries = append(budgetEntries, goserver.BudgetItemNoId{
+					AccountId:   key,
+					Amount:      amount,
+					Date:        monthStart,
+					Description: "Monthly budget",
+				})
+			}
+		}
+	}
+
+	// Save budget
+	if err := r.budgetService.SaveMonthlyBudget(req.Context(), userID, monthStart, budgetEntries); err != nil {
+		r.logger.Error("Failed to save budget", "error", err)
+		// Redirect back with error
+		redirectURL := req.URL.Path + "?month=" + strconv.FormatInt(monthStart.Unix(), 10) + "&error=" + err.Error()
+		http.Redirect(w, req, redirectURL, http.StatusSeeOther)
+		return
+	}
+
+	// Redirect back with success
+	redirectURL := req.URL.Path + "?month=" + strconv.FormatInt(monthStart.Unix(), 10) + "&success=Budget saved successfully"
+	http.Redirect(w, req, redirectURL, http.StatusSeeOther)
 }
