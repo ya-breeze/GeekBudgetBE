@@ -88,6 +88,8 @@ type Storage interface {
 	GetBudgetItem(userID string, id string) (goserver.BudgetItem, error)
 	UpdateBudgetItem(userID string, id string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
 	DeleteBudgetItem(userID string, id string) error
+	GetBudgetItemsByMonth(userID string, monthStart time.Time) ([]goserver.BudgetItem, error)
+	CopyBudgetToMonth(userID string, fromMonthStart, toMonthStart time.Time) (int, error)
 }
 
 type MatcherRuntime struct {
