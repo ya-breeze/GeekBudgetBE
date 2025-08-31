@@ -859,4 +859,28 @@ func (s *storage) DeleteBudgetItem(userID string, id string) error {
 	return nil
 }
 
+func (s *storage) GetBudgetItemsByMonth(userID string, monthStart time.Time) ([]goserver.BudgetItem, error) {
+	monthEnd := monthStart.AddDate(0, 1, 0)
+
+	result, err := s.db.Model(&models.BudgetItem{}).
+		Where("user_id = ? AND date >= ? AND date < ?", userID, monthStart, monthEnd).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	items := make([]goserver.BudgetItem, 0)
+	for result.Next() {
+		var item models.BudgetItem
+		if err := s.db.ScanRows(result, &item); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		items = append(items, item.FromDB())
+	}
+
+	return items, nil
+}
+
 //#endregion BudgetItems
