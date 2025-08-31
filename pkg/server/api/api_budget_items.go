@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -19,6 +21,19 @@ func NewBudgetItemsAPIService(logger *slog.Logger, db database.Storage) goserver
 		logger: logger,
 		db:     db,
 	}
+}
+
+// validateFutureDate ensures the budget item date is in the future (not past or current month)
+func (s *BudgetItemsAPIServiceImpl) validateFutureDate(date time.Time) error {
+	now := time.Now()
+	nextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location())
+
+	if date.Before(nextMonth) {
+		return fmt.Errorf("budget date must be in the future, got %s but minimum is %s",
+			date.Format("2006-01"), nextMonth.Format("2006-01"))
+	}
+
+	return nil
 }
 
 // GetBudgetItems - get all budgetItems
@@ -44,6 +59,12 @@ func (s *BudgetItemsAPIServiceImpl) CreateBudgetItem(
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
+	}
+
+	// Validate future date
+	if err := s.validateFutureDate(budgetItemNoID.Date); err != nil {
+		s.logger.With("error", err).Error("Budget item date validation failed")
+		return goserver.Response(400, map[string]string{"error": err.Error()}), nil
 	}
 
 	budgetItem, err := s.db.CreateBudgetItem(userID, &budgetItemNoID)
@@ -78,6 +99,12 @@ func (s *BudgetItemsAPIServiceImpl) UpdateBudgetItem(
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
+	}
+
+	// Validate future date
+	if err := s.validateFutureDate(budgetItemNoID.Date); err != nil {
+		s.logger.With("error", err).Error("Budget item date validation failed")
+		return goserver.Response(400, map[string]string{"error": err.Error()}), nil
 	}
 
 	budgetItem, err := s.db.UpdateBudgetItem(userID, id, &budgetItemNoID)
