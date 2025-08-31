@@ -48,7 +48,6 @@ func (r *WebAppRouter) budgetUnifiedHandler(w http.ResponseWriter, req *http.Req
 		}
 	}
 	monthStart = normalizeMonth(monthStart)
-	r.logger.Info("BudgetUnified GET: month parsed", "monthStart", monthStart.Format("2006-01-02"))
 	data["MonthStart"] = monthStart
 	data["PrevMonth"] = monthStart.AddDate(0, -1, 0)
 	data["NextMonth"] = monthStart.AddDate(0, 1, 0)
@@ -66,7 +65,6 @@ func (r *WebAppRouter) budgetUnifiedHandler(w http.ResponseWriter, req *http.Req
 			expenseAccounts = append(expenseAccounts, a)
 		}
 	}
-	r.logger.Info("BudgetUnified GET: loaded accounts", "total", len(accounts), "expense", len(expenseAccounts))
 	data["ExpenseAccounts"] = expenseAccounts
 
 	// Get planned items
@@ -76,7 +74,6 @@ func (r *WebAppRouter) budgetUnifiedHandler(w http.ResponseWriter, req *http.Req
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	r.logger.Info("BudgetUnified GET: loaded budget items", "count", len(budgetItems))
 	data["BudgetItems"] = budgetItems
 
 	// Create planned amounts map by account ID
@@ -93,7 +90,6 @@ func (r *WebAppRouter) budgetUnifiedHandler(w http.ResponseWriter, req *http.Req
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	r.logger.Info("BudgetUnified GET: loaded comparison", "rows", len(comparison.Rows))
 	data["Comparison"] = comparison
 
 	// Build actual map from comparison rows
