@@ -147,68 +147,78 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/transactions/edit",
 			HandlerFunc: r.transactionsEditHandler,
 		},
-		"BudgetPlanGET": goserver.Route{
+		"BudgetUnifiedGET": goserver.Route{
 			Method:      "GET",
-			Pattern:     "/web/budget/plan",
-			HandlerFunc: r.budgetPlanningHandler,
+			Pattern:     "/web/budget",
+			HandlerFunc: r.budgetUnifiedHandler,
 		},
-		"BudgetPlanPOST": goserver.Route{
+		"BudgetUnifiedPOST": goserver.Route{
 			Method:      "POST",
-			Pattern:     "/web/budget/plan",
-			HandlerFunc: r.budgetPlanningHandler,
-		},
-		"BudgetCompareGET": goserver.Route{
-			Method:      "GET",
-			Pattern:     "/web/budget/compare",
-			HandlerFunc: r.budgetComparisonHandler,
+			Pattern:     "/web/budget",
+			HandlerFunc: r.budgetUnifiedHandler,
 		},
 	}
 }
 
 func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
-	tmpl, err := template.New("").Funcs(template.FuncMap{
-		"formatTime": utils.FormatTime,
-		"decrease": func(i int) int {
-			return i - 1
-		},
-		"money": func(num float64) float64 {
-			return math.Round(num*100) / 100
-		},
-		"timestamp": func(t time.Time) int64 {
-			return t.Unix()
-		},
-		"lastMonth": func(t time.Time) time.Time {
-			return time.Date(t.Year(), t.Month()-1, 1, 0, 0, 0, 0, t.Location())
-		},
-		"addMonths": func(t time.Time, num int) time.Time {
-			return time.Date(t.Year(), t.Month()+time.Month(num), 1, 0, 0, 0, 0, t.Location())
-		},
-		"join": strings.Join,
-		"addQueryParam": func(rawURL string, key string, value any) (string, error) {
-			u, err := url.Parse(rawURL)
-			if err != nil {
-				return "", err
-			}
-			q := u.Query()
-			q.Set(key, fmt.Sprintf("%v", value))
-			u.RawQuery = q.Encode()
-			return u.String(), nil
-		},
-		"removeQueryParam": func(rawURL string, key string) (string, error) {
-			u, err := url.Parse(rawURL)
-			if err != nil {
-				return "", err
-			}
-			q := u.Query()
-			q.Del(key)
-			u.RawQuery = q.Encode()
-			return u.String(), nil
-		},
-	}).ParseGlob(filepath.Join("webapp", "templates", "*.tpl"))
-	if err != nil {
-		return nil, err
+	// Try multiple possible template paths to handle different working directories
+	templatePaths := []string{
+		filepath.Join("webapp", "templates", "*.tpl"),       // Normal case
+		filepath.Join("..", "webapp", "templates", "*.tpl"), // When running from test directory
+		filepath.Join(".", "webapp", "templates", "*.tpl"),  // Explicit current directory
 	}
-	return tmpl, nil
+
+	var tmpl *template.Template
+	var err error
+
+	for _, path := range templatePaths {
+		tmpl, err = template.New("").Funcs(template.FuncMap{
+			"formatTime": utils.FormatTime,
+			"decrease": func(i int) int {
+				return i - 1
+			},
+			"money": func(num float64) float64 {
+				return math.Round(num*100) / 100
+			},
+			"timestamp": func(t time.Time) int64 {
+				return t.Unix()
+			},
+			"lastMonth": func(t time.Time) time.Time {
+				return time.Date(t.Year(), t.Month()-1, 1, 0, 0, 0, 0, t.Location())
+			},
+			"addMonths": func(t time.Time, num int) time.Time {
+				return time.Date(t.Year(), t.Month()+time.Month(num), 1, 0, 0, 0, 0, t.Location())
+			},
+			"join": strings.Join,
+			"addQueryParam": func(rawURL string, key string, value any) (string, error) {
+				u, err := url.Parse(rawURL)
+				if err != nil {
+					return "", err
+				}
+				q := u.Query()
+				q.Set(key, fmt.Sprintf("%v", value))
+				u.RawQuery = q.Encode()
+				return u.String(), nil
+			},
+			"removeQueryParam": func(rawURL string, key string) (string, error) {
+				u, err := url.Parse(rawURL)
+				if err != nil {
+					return "", err
+				}
+				q := u.Query()
+				q.Del(key)
+				u.RawQuery = q.Encode()
+				return u.String(), nil
+			},
+		}).ParseGlob(path)
+
+		if err == nil {
+			r.logger.Info("Templates loaded successfully", "path", path)
+			return tmpl, nil
+		}
+	}
+
+	return nil, fmt.Errorf("failed to load templates from any path: %w", err)
 }
 
 func transactionToWeb(

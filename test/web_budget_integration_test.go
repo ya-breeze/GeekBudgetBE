@@ -15,6 +15,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 )
@@ -47,6 +48,25 @@ func TestBudgetWebIntegration(t *testing.T) {
 	require.NoError(t, err)
 	defer storage.Close()
 
+	// Create test user and accounts
+	user, err := storage.CreateUser(testUser, string(hashed))
+	require.NoError(t, err)
+
+	// Create some test expense accounts
+	_, err = storage.CreateAccount(user.ID.String(), &goserver.AccountNoId{
+		Name:        "Groceries",
+		Type:        "expense",
+		Description: "Food and groceries",
+	})
+	require.NoError(t, err)
+
+	_, err = storage.CreateAccount(user.ID.String(), &goserver.AccountNoId{
+		Name:        "Transport",
+		Type:        "expense",
+		Description: "Transportation costs",
+	})
+	require.NoError(t, err)
+
 	// Start server
 	forcedImportChan := make(chan background.ForcedImport)
 	addr, finishChan, err := server.Serve(ctx, logger, storage, cfg, forcedImportChan)
@@ -66,27 +86,16 @@ func TestBudgetWebIntegration(t *testing.T) {
 	// Test: Login and get session cookie
 	sessionCookie := loginAndGetCookie(t, client, baseURL)
 
-	// Test: GET /web/budget/plan should return 200
-	planReq, err := http.NewRequest("GET", baseURL+"/web/budget/plan", nil)
+	// Test: GET /web/budget should return 200
+	budgetReq, err := http.NewRequest("GET", baseURL+"/web/budget", nil)
 	require.NoError(t, err)
-	planReq.AddCookie(sessionCookie)
+	budgetReq.AddCookie(sessionCookie)
 
-	planResp, err := client.Do(planReq)
+	budgetResp, err := client.Do(budgetReq)
 	require.NoError(t, err)
-	defer planResp.Body.Close()
+	defer budgetResp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, planResp.StatusCode, "Budget planning page should return 200")
-
-	// Test: GET /web/budget/compare should return 200
-	compareReq, err := http.NewRequest("GET", baseURL+"/web/budget/compare", nil)
-	require.NoError(t, err)
-	compareReq.AddCookie(sessionCookie)
-
-	compareResp, err := client.Do(compareReq)
-	require.NoError(t, err)
-	defer compareResp.Body.Close()
-
-	assert.Equal(t, http.StatusOK, compareResp.StatusCode, "Budget comparison page should return 200")
+	assert.Equal(t, http.StatusOK, budgetResp.StatusCode, "Unified budget page should return 200")
 }
 
 func loginAndGetCookie(t *testing.T, client *http.Client, baseURL string) *http.Cookie {
@@ -100,8 +109,16 @@ func loginAndGetCookie(t *testing.T, client *http.Client, baseURL string) *http.
 	require.NoError(t, err)
 	loginReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
+	// Use a client that doesn't follow redirects so we can inspect redirect status and cookies
+	noRedirectClient := &http.Client{
+		Timeout: client.Timeout,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
 	// Perform login
-	loginResp, err := client.Do(loginReq)
+	loginResp, err := noRedirectClient.Do(loginReq)
 	require.NoError(t, err)
 	defer loginResp.Body.Close()
 
@@ -160,33 +177,15 @@ func TestBudgetWebIntegration_WithoutAuth(t *testing.T) {
 		},
 	}
 
-	// Test: GET /web/budget/plan without auth should redirect to login
-	planReq, err := http.NewRequest("GET", baseURL+"/web/budget/plan", nil)
+	// Test: GET /web/budget without auth should redirect to login or error
+	budgetReq, err := http.NewRequest("GET", baseURL+"/web/budget", nil)
 	require.NoError(t, err)
 
-	planResp, err := client.Do(planReq)
+	budgetResp, err := client.Do(budgetReq)
 	require.NoError(t, err)
-	defer planResp.Body.Close()
+	defer budgetResp.Body.Close()
 
-	// Should redirect to login (or return error page)
-	assert.True(t, planResp.StatusCode == http.StatusSeeOther ||
-		planResp.StatusCode == http.StatusFound ||
-		planResp.StatusCode == http.StatusUnauthorized ||
-		planResp.StatusCode == http.StatusInternalServerError,
-		"Budget planning without auth should redirect or error, got: %d", planResp.StatusCode)
-
-	// Test: GET /web/budget/compare without auth should redirect to login
-	compareReq, err := http.NewRequest("GET", baseURL+"/web/budget/compare", nil)
-	require.NoError(t, err)
-
-	compareResp, err := client.Do(compareReq)
-	require.NoError(t, err)
-	defer compareResp.Body.Close()
-
-	// Should redirect to login (or return error page)
-	assert.True(t, compareResp.StatusCode == http.StatusSeeOther ||
-		compareResp.StatusCode == http.StatusFound ||
-		compareResp.StatusCode == http.StatusUnauthorized ||
-		compareResp.StatusCode == http.StatusInternalServerError,
-		"Budget comparison without auth should redirect or error, got: %d", compareResp.StatusCode)
+	// Should return login page (200 status) when not authenticated
+	assert.Equal(t, http.StatusOK, budgetResp.StatusCode,
+		"Unified budget page without auth should return login page (200), got: %d", budgetResp.StatusCode)
 }

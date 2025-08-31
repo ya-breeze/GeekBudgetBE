@@ -84,7 +84,7 @@ func TestSaveMonthlyBudget_ValidationErrors(t *testing.T) {
 	incomeAcc, err := storage.CreateAccount(userID, incomeAccount)
 	require.NoError(t, err)
 
-	// Test: Past month should be rejected
+	// Past month is allowed (no error)
 	now := time.Now()
 	pastMonth := time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, now.Location())
 
@@ -98,8 +98,7 @@ func TestSaveMonthlyBudget_ValidationErrors(t *testing.T) {
 	}
 
 	err = service.SaveMonthlyBudget(ctx, userID, pastMonth, entries)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "budget month must be in the future")
+	assert.NoError(t, err)
 
 	// Test: Non-expense account should be rejected
 	nextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location())

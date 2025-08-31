@@ -2,7 +2,6 @@ package budget
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -61,13 +60,8 @@ func (s *Service) ListMonthlyBudget(
 	return s.db.GetBudgetItemsByMonth(userID, monthStart)
 }
 
-// SaveMonthlyBudget saves budget entries for a specific month, validating future date and expense accounts only
+// SaveMonthlyBudget saves budget entries for a specific month; validates expense accounts only
 func (s *Service) SaveMonthlyBudget(ctx context.Context, userID string, monthStart time.Time, entries []goserver.BudgetItemNoId) error {
-	// Validate future month
-	if err := s.ValidateFutureMonth(monthStart); err != nil {
-		return err
-	}
-
 	// Get all accounts for the user
 	accounts, err := s.db.GetAccounts(userID)
 	if err != nil {
@@ -198,27 +192,42 @@ func (s *Service) CompareMonthly(ctx context.Context, userID string, monthStart 
 func (s *Service) CopyFromPreviousMonth(
 	ctx context.Context, userID string, fromMonthStart, toMonthStart time.Time,
 ) (int, error) {
-	// Validate that target month is in the future
-	if err := s.ValidateFutureMonth(toMonthStart); err != nil {
-		return 0, err
-	}
-
-	// Check if target month already has budget items
+	// Fetch target month existing items
 	existingItems, err := s.db.GetBudgetItemsByMonth(userID, toMonthStart)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to check existing budget items")
 		return 0, fmt.Errorf("failed to check existing budget items: %w", err)
 	}
 
-	if len(existingItems) > 0 {
-		return 0, errors.New("target month already has budget items, cannot overwrite")
+	// Build map of target amounts by account
+	targetMap := make(map[string]float64, len(existingItems))
+	for _, it := range existingItems {
+		targetMap[it.AccountId] = it.Amount
 	}
 
-	// Copy budget items using database method
-	count, err := s.db.CopyBudgetToMonth(userID, fromMonthStart, toMonthStart)
+	// Fetch source items
+	sourceItems, err := s.db.GetBudgetItemsByMonth(userID, fromMonthStart)
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to copy budget items")
-		return 0, fmt.Errorf("failed to copy budget items: %w", err)
+		s.logger.With("error", err).Error("Failed to get source budget items")
+		return 0, fmt.Errorf("failed to get source budget items: %w", err)
+	}
+
+	count := 0
+	for _, src := range sourceItems {
+		amt, exists := targetMap[src.AccountId]
+		if !exists || amt == 0 {
+			item := goserver.BudgetItemNoId{
+				Date:        toMonthStart,
+				AccountId:   src.AccountId,
+				Amount:      src.Amount,
+				Description: src.Description,
+			}
+			if _, err := s.db.CreateBudgetItem(userID, &item); err != nil {
+				s.logger.With("error", err).Error("Failed to create budget item during copy")
+				return 0, fmt.Errorf("failed to create budget item during copy: %w", err)
+			}
+			count++
+		}
 	}
 
 	s.logger.Info("Budget items copied",

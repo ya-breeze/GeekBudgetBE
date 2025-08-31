@@ -48,14 +48,8 @@
                         <li class="nav-item">
                             <a class="nav-link {{if eq .CurrentPage "unprocessed"}}active{{end}}" href="/web/unprocessed">Unprocessed</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle {{if or (eq .CurrentPage "budget_planning") (eq .CurrentPage "budget_comparison")}}active{{end}}" href="#" id="budgetDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Budget
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="budgetDropdown">
-                                <li><a class="dropdown-item {{if eq .CurrentPage "budget_planning"}}active{{end}}" href="/web/budget/plan">Budget Planning</a></li>
-                                <li><a class="dropdown-item {{if eq .CurrentPage "budget_comparison"}}active{{end}}" href="/web/budget/compare">Budget vs Actual</a></li>
-                            </ul>
+                        <li class="nav-item">
+                            <a class="nav-link {{if eq .CurrentPage "budget"}}active{{end}}" href="/web/budget">Budget</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{if eq .CurrentPage "about"}}active{{end}}" href="/web/about">About</a>
