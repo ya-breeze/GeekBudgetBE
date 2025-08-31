@@ -36,8 +36,9 @@ func TestBudgetWebIntegration(t *testing.T) {
 	require.NoError(t, err)
 
 	cfg := &config.Config{
-		Port:  0, // Use random port
-		Users: testUser + ":" + base64.StdEncoding.EncodeToString(hashed),
+		Port:       0, // Use random port
+		Users:      testUser + ":" + base64.StdEncoding.EncodeToString(hashed),
+		CookieName: "geekbudgetcookie",
 	}
 
 	// Create storage
