@@ -75,12 +75,32 @@ func (s *BudgetItemsAPIServiceImpl) GetBudgetItem(ctx context.Context, id string
 func (s *BudgetItemsAPIServiceImpl) UpdateBudgetItem(
 	ctx context.Context, id string, budgetItemNoID goserver.BudgetItemNoId,
 ) (goserver.ImplResponse, error) {
-	// TODO: implement in next sub-task
-	return goserver.Response(501, nil), nil
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	budgetItem, err := s.db.UpdateBudgetItem(userID, id, &budgetItemNoID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to update budget item")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, budgetItem), nil
 }
 
 // DeleteBudgetItem - delete budgetItem
 func (s *BudgetItemsAPIServiceImpl) DeleteBudgetItem(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	// TODO: implement in next sub-task
-	return goserver.Response(501, nil), nil
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	err := s.db.DeleteBudgetItem(userID, id)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to delete budget item")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, nil), nil
 }
