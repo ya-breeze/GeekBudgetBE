@@ -157,6 +157,11 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/budget/plan",
 			HandlerFunc: r.budgetPlanningHandler,
 		},
+		"BudgetCompareGET": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/web/budget/compare",
+			HandlerFunc: r.budgetComparisonHandler,
+		},
 	}
 }
 
