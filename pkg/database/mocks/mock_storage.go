@@ -65,6 +65,21 @@ func (mr *MockStorageMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockStorage)(nil).Close))
 }
 
+// CopyBudgetToMonth mocks base method.
+func (m *MockStorage) CopyBudgetToMonth(arg0 string, arg1, arg2 time.Time) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyBudgetToMonth", arg0, arg1, arg2)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CopyBudgetToMonth indicates an expected call of CopyBudgetToMonth.
+func (mr *MockStorageMockRecorder) CopyBudgetToMonth(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyBudgetToMonth", reflect.TypeOf((*MockStorage)(nil).CopyBudgetToMonth), arg0, arg1, arg2)
+}
+
 // CreateAccount mocks base method.
 func (m *MockStorage) CreateAccount(arg0 string, arg1 *goserver.AccountNoId) (goserver.Account, error) {
 	m.ctrl.T.Helper()
@@ -386,6 +401,21 @@ func (m *MockStorage) GetBudgetItems(arg0 string) ([]goserver.BudgetItem, error)
 func (mr *MockStorageMockRecorder) GetBudgetItems(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBudgetItems", reflect.TypeOf((*MockStorage)(nil).GetBudgetItems), arg0)
+}
+
+// GetBudgetItemsByMonth mocks base method.
+func (m *MockStorage) GetBudgetItemsByMonth(arg0 string, arg1 time.Time) ([]goserver.BudgetItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBudgetItemsByMonth", arg0, arg1)
+	ret0, _ := ret[0].([]goserver.BudgetItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBudgetItemsByMonth indicates an expected call of GetBudgetItemsByMonth.
+func (mr *MockStorageMockRecorder) GetBudgetItemsByMonth(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBudgetItemsByMonth", reflect.TypeOf((*MockStorage)(nil).GetBudgetItemsByMonth), arg0, arg1)
 }
 
 // GetCNBRates mocks base method.
