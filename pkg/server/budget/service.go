@@ -190,3 +190,32 @@ func (s *Service) CompareMonthly(ctx context.Context, userID string, monthStart 
 		TotalDelta:   totalActual - totalPlanned,
 	}, nil
 }
+
+// CopyFromPreviousMonth copies budget items from a previous month to a new month
+func (s *Service) CopyFromPreviousMonth(ctx context.Context, userID string, fromMonthStart, toMonthStart time.Time) (int, error) {
+	// Validate that target month is in the future
+	if err := s.ValidateFutureMonth(toMonthStart); err != nil {
+		return 0, err
+	}
+
+	// Check if target month already has budget items
+	existingItems, err := s.db.GetBudgetItemsByMonth(userID, toMonthStart)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to check existing budget items")
+		return 0, fmt.Errorf("failed to check existing budget items: %w", err)
+	}
+
+	if len(existingItems) > 0 {
+		return 0, fmt.Errorf("target month already has budget items, cannot overwrite")
+	}
+
+	// Copy budget items using database method
+	count, err := s.db.CopyBudgetToMonth(userID, fromMonthStart, toMonthStart)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to copy budget items")
+		return 0, fmt.Errorf("failed to copy budget items: %w", err)
+	}
+
+	s.logger.Info("Budget items copied", "userID", userID, "from", fromMonthStart.Format("2006-01"), "to", toMonthStart.Format("2006-01"), "count", count)
+	return count, nil
+}

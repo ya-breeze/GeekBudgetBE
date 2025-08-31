@@ -76,6 +76,19 @@
                         </a>
                     </div>
                 </div>
+
+            <!-- Copy Budget Form -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <form method="POST" action="/web/budget/plan" class="d-inline">
+                        <input type="hidden" name="month" value="{{timestamp .MonthStart}}">
+                        <input type="hidden" name="action" value="copy">
+                        <button type="submit" class="btn btn-outline-primary">
+                            Copy from Previous Month
+                        </button>
+                    </form>
+                </div>
+            </div>
             </form>
         </div>
     </div>
