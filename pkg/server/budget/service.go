@@ -15,6 +15,23 @@ type Service struct {
 	db     database.Storage
 }
 
+// Row represents a single account's budget vs actual comparison
+type Row struct {
+	AccountID   string  `json:"accountId"`
+	AccountName string  `json:"accountName"`
+	Planned     float64 `json:"planned"`
+	Actual      float64 `json:"actual"`
+	Delta       float64 `json:"delta"` // Actual - Planned
+}
+
+// Comparison represents the complete budget vs actual comparison for a month
+type Comparison struct {
+	Rows         []Row   `json:"rows"`
+	TotalPlanned float64 `json:"totalPlanned"`
+	TotalActual  float64 `json:"totalActual"`
+	TotalDelta   float64 `json:"totalDelta"`
+}
+
 func NewService(logger *slog.Logger, db database.Storage) *Service {
 	return &Service{
 		logger: logger,
@@ -98,4 +115,78 @@ func (s *Service) SaveMonthlyBudget(ctx context.Context, userID string, monthSta
 
 	s.logger.Info("Monthly budget saved", "userID", userID, "month", monthStart.Format("2006-01"), "entries", len(entries))
 	return nil
+}
+
+// CompareMonthly compares planned budget vs actual expenses for a specific month
+func (s *Service) CompareMonthly(ctx context.Context, userID string, monthStart time.Time, outputCurrencyName string) (*Comparison, error) {
+	// Get planned amounts from budget items
+	budgetItems, err := s.db.GetBudgetItemsByMonth(userID, monthStart)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get budget items for comparison")
+		return nil, fmt.Errorf("failed to get budget items: %w", err)
+	}
+
+	// Build planned map
+	plannedMap := make(map[string]float64)
+	for _, item := range budgetItems {
+		plannedMap[item.AccountId] = item.Amount
+	}
+
+	// Get all accounts (expense only for budgeting)
+	accounts, err := s.db.GetAccounts(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get accounts for comparison")
+		return nil, fmt.Errorf("failed to get accounts: %w", err)
+	}
+
+	// Get actual expenses for the month
+	monthEnd := monthStart.AddDate(0, 1, 0)
+	transactions, err := s.db.GetTransactions(userID, monthStart, monthEnd)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get transactions for comparison")
+		return nil, fmt.Errorf("failed to get transactions: %w", err)
+	}
+
+	// Calculate actual expenses per account
+	actualMap := make(map[string]float64)
+	for _, transaction := range transactions {
+		for _, movement := range transaction.Movements {
+			// Only count expense movements (positive amounts for expense accounts)
+			if movement.Amount > 0 {
+				actualMap[movement.AccountId] += movement.Amount
+			}
+		}
+	}
+
+	// Build comparison rows
+	var rows []Row
+	var totalPlanned, totalActual float64
+
+	for _, account := range accounts {
+		if account.Type == "expense" {
+			planned := plannedMap[account.Id]
+			actual := actualMap[account.Id]
+			delta := actual - planned
+
+			if planned > 0 || actual > 0 { // Only include accounts with activity
+				rows = append(rows, Row{
+					AccountID:   account.Id,
+					AccountName: account.Name,
+					Planned:     planned,
+					Actual:      actual,
+					Delta:       delta,
+				})
+			}
+
+			totalPlanned += planned
+			totalActual += actual
+		}
+	}
+
+	return &Comparison{
+		Rows:         rows,
+		TotalPlanned: totalPlanned,
+		TotalActual:  totalActual,
+		TotalDelta:   totalActual - totalPlanned,
+	}, nil
 }
