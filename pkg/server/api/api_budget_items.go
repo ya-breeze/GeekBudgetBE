@@ -27,7 +27,9 @@ func (s *BudgetItemsAPIServiceImpl) GetBudgetItems(ctx context.Context) (goserve
 }
 
 // CreateBudgetItem - create new budgetItem
-func (s *BudgetItemsAPIServiceImpl) CreateBudgetItem(ctx context.Context, budgetItemNoId goserver.BudgetItemNoId) (goserver.ImplResponse, error) {
+func (s *BudgetItemsAPIServiceImpl) CreateBudgetItem(
+	ctx context.Context, budgetItemNoID goserver.BudgetItemNoId,
+) (goserver.ImplResponse, error) {
 	// TODO: implement in next sub-task
 	return goserver.Response(501, nil), nil
 }
@@ -39,7 +41,9 @@ func (s *BudgetItemsAPIServiceImpl) GetBudgetItem(ctx context.Context, id string
 }
 
 // UpdateBudgetItem - update budgetItem
-func (s *BudgetItemsAPIServiceImpl) UpdateBudgetItem(ctx context.Context, id string, budgetItemNoId goserver.BudgetItemNoId) (goserver.ImplResponse, error) {
+func (s *BudgetItemsAPIServiceImpl) UpdateBudgetItem(
+	ctx context.Context, id string, budgetItemNoID goserver.BudgetItemNoId,
+) (goserver.ImplResponse, error) {
 	// TODO: implement in next sub-task
 	return goserver.Response(501, nil), nil
 }
