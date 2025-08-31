@@ -14,26 +14,29 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/budget"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 type WebAppRouter struct {
-	commit  string
-	logger  *slog.Logger
-	cfg     *config.Config
-	db      database.Storage
-	cookies *sessions.CookieStore
+	commit        string
+	logger        *slog.Logger
+	cfg           *config.Config
+	db            database.Storage
+	cookies       *sessions.CookieStore
+	budgetService *budget.Service
 }
 
 func NewWebAppRouter(
 	commit string, logger *slog.Logger, cfg *config.Config, db database.Storage,
 ) *WebAppRouter {
 	return &WebAppRouter{
-		commit:  commit,
-		logger:  logger,
-		cfg:     cfg,
-		db:      db,
-		cookies: sessions.NewCookieStore([]byte("SESSION_KEY")),
+		commit:        commit,
+		logger:        logger,
+		cfg:           cfg,
+		db:            db,
+		cookies:       sessions.NewCookieStore([]byte("SESSION_KEY")),
+		budgetService: budget.NewService(logger, db),
 	}
 }
 
