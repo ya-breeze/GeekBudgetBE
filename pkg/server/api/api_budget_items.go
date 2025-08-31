@@ -6,6 +6,7 @@ import (
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type BudgetItemsAPIServiceImpl struct {
@@ -30,8 +31,18 @@ func (s *BudgetItemsAPIServiceImpl) GetBudgetItems(ctx context.Context) (goserve
 func (s *BudgetItemsAPIServiceImpl) CreateBudgetItem(
 	ctx context.Context, budgetItemNoID goserver.BudgetItemNoId,
 ) (goserver.ImplResponse, error) {
-	// TODO: implement in next sub-task
-	return goserver.Response(501, nil), nil
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	budgetItem, err := s.db.CreateBudgetItem(userID, &budgetItemNoID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to create budget item")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, budgetItem), nil
 }
 
 // GetBudgetItem - get budgetItem
