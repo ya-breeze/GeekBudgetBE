@@ -100,13 +100,13 @@
                                     <td>{{.AccountName}}</td>
                                     <td class="text-end">{{money .Planned}}</td>
                                     <td class="text-end">{{money .Actual}}</td>
-                                    <td class="text-end {{if lt .Delta 0}}text-success{{else if gt .Delta 0}}text-danger{{else}}text-secondary{{end}}">
+                                    <td class="text-end {{if lt .Delta 0.0}}text-success{{else if gt .Delta 0.0}}text-danger{{else}}text-secondary{{end}}">
                                         {{money .Delta}}
                                     </td>
                                     <td class="text-end">
-                                        {{if lt .Delta 0}}
+                                        {{if lt .Delta 0.0}}
                                             <span class="badge bg-success">Under Budget</span>
-                                        {{else if gt .Delta 0}}
+                                        {{else if gt .Delta 0.0}}
                                             <span class="badge bg-danger">Over Budget</span>
                                         {{else}}
                                             <span class="badge bg-secondary">On Budget</span>
@@ -127,13 +127,13 @@
                                     <th>Total</th>
                                     <th class="text-end">{{money .Comparison.TotalPlanned}}</th>
                                     <th class="text-end">{{money .Comparison.TotalActual}}</th>
-                                    <th class="text-end {{if lt .Comparison.TotalDelta 0}}text-success{{else if gt .Comparison.TotalDelta 0}}text-danger{{else}}text-secondary{{end}}">
+                                    <th class="text-end {{if lt .Comparison.TotalDelta 0.0}}text-success{{else if gt .Comparison.TotalDelta 0.0}}text-danger{{else}}text-secondary{{end}}">
                                         {{money .Comparison.TotalDelta}}
                                     </th>
                                     <th class="text-end">
-                                        {{if lt .Comparison.TotalDelta 0}}
+                                        {{if lt .Comparison.TotalDelta 0.0}}
                                             <span class="badge bg-success">Under Budget</span>
-                                        {{else if gt .Comparison.TotalDelta 0}}
+                                        {{else if gt .Comparison.TotalDelta 0.0}}
                                             <span class="badge bg-danger">Over Budget</span>
                                         {{else}}
                                             <span class="badge bg-secondary">On Budget</span>
