@@ -135,9 +135,16 @@ func (r *WebAppRouter) ValidateUserID(
 ) (string, error) {
 	userID, _, err := r.GetUserIDFromSession(req)
 	if err != nil {
-		if errTmpl := tmpl.ExecuteTemplate(w, "login.tpl", nil); errTmpl != nil {
-			r.logger.Warn("failed to execute login template", "error", errTmpl)
-			http.Error(w, errTmpl.Error(), http.StatusInternalServerError)
+		r.logger.Info("User not authenticated, rendering login page", "error", err)
+		w.Header().Set("Content-Type", "text/html")
+
+		// Create proper template data for login page
+		data := utils.CreateTemplateData(req, "login")
+
+		if errTmpl := tmpl.ExecuteTemplate(w, "login.tpl", data); errTmpl != nil {
+			r.logger.Error("failed to execute login template", "error", errTmpl)
+			http.Error(w, "Authentication required", http.StatusUnauthorized)
+			return "", fmt.Errorf("failed to render login template: %w", errTmpl)
 		}
 		return "", fmt.Errorf("failed to get user ID from session: %w", err)
 	}

@@ -88,6 +88,8 @@ type Storage interface {
 	GetBudgetItem(userID string, id string) (goserver.BudgetItem, error)
 	UpdateBudgetItem(userID string, id string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
 	DeleteBudgetItem(userID string, id string) error
+	GetBudgetItemsByMonth(userID string, monthStart time.Time) ([]goserver.BudgetItem, error)
+	CopyBudgetToMonth(userID string, fromMonthStart, toMonthStart time.Time) (int, error)
 }
 
 type MatcherRuntime struct {
@@ -855,6 +857,73 @@ func (s *storage) DeleteBudgetItem(userID string, id string) error {
 	}
 
 	return nil
+}
+
+func (s *storage) GetBudgetItemsByMonth(userID string, monthStart time.Time) ([]goserver.BudgetItem, error) {
+	monthEnd := monthStart.AddDate(0, 1, 0)
+
+	result, err := s.db.Model(&models.BudgetItem{}).
+		Where("user_id = ? AND date >= ? AND date < ?", userID, monthStart, monthEnd).
+		Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	items := make([]goserver.BudgetItem, 0)
+	for result.Next() {
+		var item models.BudgetItem
+		if err := s.db.ScanRows(result, &item); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		items = append(items, item.FromDB())
+	}
+
+	return items, nil
+}
+
+func (s *storage) CopyBudgetToMonth(userID string, fromMonthStart, toMonthStart time.Time) (int, error) {
+	// Start transaction
+	tx := s.db.Begin()
+	if tx.Error != nil {
+		return 0, fmt.Errorf(StorageError, tx.Error)
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Fetch source items
+	fromMonthEnd := fromMonthStart.AddDate(0, 1, 0)
+	var sourceItems []models.BudgetItem
+	if err := tx.Where("user_id = ? AND date >= ? AND date < ?", userID, fromMonthStart, fromMonthEnd).
+		Find(&sourceItems).Error; err != nil {
+		tx.Rollback()
+		return 0, fmt.Errorf(StorageError, err)
+	}
+
+	// Create new items with new IDs and target month date
+	count := 0
+	for _, sourceItem := range sourceItems {
+		newItem := sourceItem
+		newItem.ID = uuid.New()
+		newItem.Date = toMonthStart
+
+		if err := tx.Create(&newItem).Error; err != nil {
+			tx.Rollback()
+			return 0, fmt.Errorf(StorageError, err)
+		}
+		count++
+	}
+
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return 0, fmt.Errorf(StorageError, err)
+	}
+
+	return count, nil
 }
 
 //#endregion BudgetItems

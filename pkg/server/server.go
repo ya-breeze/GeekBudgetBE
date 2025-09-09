@@ -79,6 +79,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg.Issuer, cfg.JWTSecret),
 		UserAPIService:                    api.NewUserAPIService(logger, db),
 		AccountsAPIService:                api.NewAccountsAPIService(logger, db),
+		BudgetItemsAPIService:             api.NewBudgetItemsAPIService(logger, db),
 		CurrenciesAPIService:              api.NewCurrenciesAPIServicer(logger, db),
 		TransactionsAPIService:            api.NewTransactionsAPIService(logger, db),
 		UnprocessedTransactionsAPIService: api.NewUnprocessedTransactionsAPIServiceImpl(logger, db),

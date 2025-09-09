@@ -49,6 +49,9 @@
                             <a class="nav-link {{if eq .CurrentPage "unprocessed"}}active{{end}}" href="/web/unprocessed">Unprocessed</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{if eq .CurrentPage "budget"}}active{{end}}" href="/web/budget">Budget</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{if eq .CurrentPage "about"}}active{{end}}" href="/web/about">About</a>
                         </li>
                     </ul>
