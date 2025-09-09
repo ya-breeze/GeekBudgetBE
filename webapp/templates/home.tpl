@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Interpolate between green (small values) and red (large values)
         const red = Math.round(255 * intensity);
-        const green = Math.round(155 * (1 - intensity));
+        const green = Math.round(105 * (1 - intensity));
         const blue = 50; // Keep some blue for better visibility
         
         return `rgba(${red}, ${green}, ${blue}, 0.1)`; // Reduced opacity to 10%
@@ -127,16 +127,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Find all tables with expense data
     const tables = document.querySelectorAll('table.table');
-    
+
     tables.forEach(function(table) {
         const cells = [];
         const values = [];
-        
-        // Collect all numeric cells and their values
+
+        // Collect all numeric cells and their values (exclude first column: account name; and last: total)
         const rows = table.querySelectorAll('tbody tr');
         rows.forEach(function(row) {
             const dataCells = row.querySelectorAll('td');
-            // Skip the first cell (account name) and last cell (total)
             for (let i = 1; i < dataCells.length - 1; i++) {
                 const cell = dataCells[i];
                 const value = extractNumericValue(cell.textContent);
@@ -146,13 +145,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
-        // Calculate percentile
+
+        // Calculate percentile for regular interval cells (keep existing setting)
         const percentile = calculatePercentile(values, 99);
-        
-        // Apply color coding to cells
+
+        // Apply color coding to interval cells
         cells.forEach(function(cellData) {
             const color = valueToColor(cellData.value, percentile);
+            cellData.element.style.backgroundColor = color;
+        });
+
+        // Now color the Total column (last cell of each row) using 90th percentile as requested
+        const totalCells = [];
+        const totalValues = [];
+        rows.forEach(function(row) {
+            const dataCells = row.querySelectorAll('td');
+            if (dataCells.length === 0) return;
+            const totalCell = dataCells[dataCells.length - 1];
+            const totalValue = extractNumericValue(totalCell.textContent);
+            if (totalValue > 0) {
+                totalCells.push({ element: totalCell, value: totalValue });
+                totalValues.push(totalValue);
+            }
+        });
+
+        const totalsPercentile = calculatePercentile(totalValues, 90);
+        totalCells.forEach(function(cellData) {
+            const color = valueToColor(cellData.value, totalsPercentile);
             cellData.element.style.backgroundColor = color;
         });
     });
