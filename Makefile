@@ -1,4 +1,6 @@
 ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+# Use env var or default to current dir
+HOST_PWD ?= ${PWD}
 
 .PHONY: all
 all: build test validate lint
@@ -6,11 +8,13 @@ all: build test validate lint
 
 .PHONY: build
 build:
+	@echo "🚀 Building..."
 	@cd cmd && go build -o ../bin/geekbudget
 	@echo "✅ Build complete"
 
 .PHONY: run
 run: build
+	@echo "🚀 Running..."
 	@GB_USERS=test:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
 	GB_PREFILL=true \
 	GB_DISABLEIMPORTERS=true \
@@ -19,6 +23,7 @@ run: build
 
 .PHONY: replace-templates
 replace-templates:
+	@echo "🚀 Replacing templates..."
 	@rm -rf pkg/generated/templates/goclient pkg/generated/templates/goserver
 	@mkdir -p pkg/generated/templates/goclient pkg/generated/templates/goserver
 	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
@@ -70,7 +75,7 @@ generate:
 	@mv -f pkg/generated/goserver/go/* pkg/generated/goserver
 	@rm -rf pkg/generated/goserver/go
 	@goimports -l -w ./pkg/generated/
-	@gofumpt -l -w ./pkg/generated/
+	@go tool mvdan.cc/gofumpt -l -w ./pkg/generated/
 
 	# Angular client
 	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
@@ -84,24 +89,29 @@ generate:
 
 .PHONY: validate
 validate:
+	@echo "🚀 Validating OpenAPI spec..."
 	@docker run --rm -v ${HOST_PWD}:/local openapitools/openapi-generator-cli validate -i /local/api/openapi.yaml
 	@echo "✅ Validation complete"
 
 .PHONY: lint
 lint:
+	@echo "🚀 Linting..."
 	@go tool github.com/golangci/golangci-lint/cmd/golangci-lint run
-	@gofumpt -l -d .
+	@go tool mvdan.cc/gofumpt -l -d .
 	@echo "✅ Lint complete"
 
 .PHONY: test
 test:
+	@echo "🚀 Testing..."
 	@go tool github.com/onsi/ginkgo/v2/ginkgo -r
 	@echo "✅ Tests complete"
 
 .PHONY: watch
 watch:
+	@echo "🚀 Watching..."
 	@ginkgo watch -r
 
 .PHONE: compose
 compose:
+	@echo "🚀 Starting docker-compose..."
 	@docker-compose up --build
