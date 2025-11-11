@@ -177,9 +177,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Display result
             if (result.result) {
-                resultContent.innerHTML = '<div class="alert alert-success" role="alert"><strong>Match!</strong> The matcher would match this transaction.</div>';
+                let html = '<div class="alert alert-success" role="alert"><strong>Match!</strong> The matcher would match this transaction.';
+                if (result.reason) {
+                    html += '<br><small>' + result.reason + '</small>';
+                }
+                html += '</div>';
+                resultContent.innerHTML = html;
             } else {
-                resultContent.innerHTML = '<div class="alert alert-danger" role="alert"><strong>No Match.</strong> The matcher would not match this transaction.</div>';
+                let html = '<div class="alert alert-danger" role="alert"><strong>No Match.</strong> The matcher would not match this transaction.';
+                if (result.reason) {
+                    html += '<br><small>' + result.reason + '</small>';
+                }
+                html += '</div>';
+                resultContent.innerHTML = html;
             }
         } catch (error) {
             resultContent.innerHTML = '<div class="alert alert-danger">Error: ' + error.message + '</div>';

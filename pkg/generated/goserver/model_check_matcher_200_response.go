@@ -13,14 +13,21 @@ package goserver
 
 type CheckMatcher200Response struct {
 	Result bool `json:"result,omitempty"`
+
+	// Reason why the matcher did or did not match
+	Reason string `json:"reason,omitempty"`
 }
 
 type CheckMatcher200ResponseInterface interface {
 	GetResult() bool
+	GetReason() string
 }
 
 func (c *CheckMatcher200Response) GetResult() bool {
 	return c.Result
+}
+func (c *CheckMatcher200Response) GetReason() string {
+	return c.Reason
 }
 
 // AssertCheckMatcher200ResponseRequired checks if the required fields are not zero-ed

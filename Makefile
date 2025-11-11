@@ -74,7 +74,7 @@ generate:
 		pkg/generated/goserver/go.*
 	@mv -f pkg/generated/goserver/go/* pkg/generated/goserver
 	@rm -rf pkg/generated/goserver/go
-	@goimports -l -w ./pkg/generated/
+	@go tool golang.org/x/tools/cmd/goimports -l -w ./pkg/generated/
 	@go tool mvdan.cc/gofumpt -l -w ./pkg/generated/
 
 	# Angular client

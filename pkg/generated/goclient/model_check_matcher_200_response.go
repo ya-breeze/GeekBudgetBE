@@ -21,6 +21,8 @@ var _ MappedNullable = &CheckMatcher200Response{}
 // CheckMatcher200Response struct for CheckMatcher200Response
 type CheckMatcher200Response struct {
 	Result *bool `json:"result,omitempty"`
+	// Reason why the matcher did or did not match
+	Reason *string `json:"reason,omitempty"`
 }
 
 // NewCheckMatcher200Response instantiates a new CheckMatcher200Response object
@@ -72,6 +74,38 @@ func (o *CheckMatcher200Response) SetResult(v bool) {
 	o.Result = &v
 }
 
+// GetReason returns the Reason field value if set, zero value otherwise.
+func (o *CheckMatcher200Response) GetReason() string {
+	if o == nil || IsNil(o.Reason) {
+		var ret string
+		return ret
+	}
+	return *o.Reason
+}
+
+// GetReasonOk returns a tuple with the Reason field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CheckMatcher200Response) GetReasonOk() (*string, bool) {
+	if o == nil || IsNil(o.Reason) {
+		return nil, false
+	}
+	return o.Reason, true
+}
+
+// HasReason returns a boolean if a field has been set.
+func (o *CheckMatcher200Response) HasReason() bool {
+	if o != nil && !IsNil(o.Reason) {
+		return true
+	}
+
+	return false
+}
+
+// SetReason gets a reference to the given string and assigns it to the Reason field.
+func (o *CheckMatcher200Response) SetReason(v string) {
+	o.Reason = &v
+}
+
 func (o CheckMatcher200Response) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -84,6 +118,9 @@ func (o CheckMatcher200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Result) {
 		toSerialize["result"] = o.Result
+	}
+	if !IsNil(o.Reason) {
+		toSerialize["reason"] = o.Reason
 	}
 	return toSerialize, nil
 }

@@ -54,6 +54,7 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.Ch
 	// Return the result
 	response := goserver.CheckMatcher200Response{
 		Result: matchDetails.Matched,
+		Reason: matchDetails.FailureReason,
 	}
 
 	s.logger.With("userID", userID).With("matched", matchDetails.Matched).

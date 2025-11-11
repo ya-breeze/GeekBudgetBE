@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Result** | Pointer to **bool** |  | [optional] 
+**Reason** | Pointer to **string** | Reason why the matcher did or did not match | [optional] 
 
 ## Methods
 
@@ -49,6 +50,31 @@ SetResult sets Result field to given value.
 `func (o *CheckMatcher200Response) HasResult() bool`
 
 HasResult returns a boolean if a field has been set.
+
+### GetReason
+
+`func (o *CheckMatcher200Response) GetReason() string`
+
+GetReason returns the Reason field if non-nil, zero value otherwise.
+
+### GetReasonOk
+
+`func (o *CheckMatcher200Response) GetReasonOk() (*string, bool)`
+
+GetReasonOk returns a tuple with the Reason field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetReason
+
+`func (o *CheckMatcher200Response) SetReason(v string)`
+
+SetReason sets Reason field to given value.
+
+### HasReason
+
+`func (o *CheckMatcher200Response) HasReason() bool`
+
+HasReason returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

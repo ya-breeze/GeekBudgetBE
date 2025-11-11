@@ -842,6 +842,9 @@ paths:
                 properties:
                   result:
                     type: boolean
+                  reason:
+                    type: string
+                    description: Reason why the matcher did or did not match
         "400":
           description: bad request
 
