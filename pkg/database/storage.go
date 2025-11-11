@@ -618,6 +618,8 @@ func (s *storage) createMatcherRuntime(m goserver.Matcher) (MatcherRuntime, erro
 
 // CreateMatcherRuntimeFromNoId creates a MatcherRuntime from a MatcherNoId (without needing to save to DB first).
 // This is useful for testing matchers before they are saved.
+//
+//nolint:stylecheck
 func (s *storage) CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) (MatcherRuntime, error) {
 	// Convert MatcherNoId to Matcher by creating a temporary matcher with empty ID
 	matcher := goserver.Matcher{

@@ -1,10 +1,14 @@
 package webapp
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
@@ -188,6 +192,51 @@ func removeEmptyValues(arr []string) []string {
 		}
 	}
 	return result
+}
+
+// matcherCheckHandler handles POST requests to /web/matchers/check
+// This is a web wrapper around the API endpoint that handles authentication via session cookies
+func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID, code, err := r.GetUserIDFromSession(req)
+	if err != nil {
+		r.logger.Error("Failed to get user ID from session", "error", err)
+		http.Error(w, "Unauthorized", code)
+		return
+	}
+
+	// Parse the request body
+	var checkRequest goserver.CheckMatcherRequest
+	if decodeErr := json.NewDecoder(req.Body).Decode(&checkRequest); decodeErr != nil {
+		r.logger.Error("Failed to decode request body", "error", decodeErr)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Create a new context with the userID
+	ctx := context.WithValue(req.Context(), common.UserIDKey, userID)
+
+	// Call the API service directly
+	matchersService := api.NewMatchersAPIServiceImpl(r.logger, r.db)
+	result, err := matchersService.CheckMatcher(ctx, checkRequest)
+	if err != nil {
+		r.logger.Error("Failed to check matcher", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Write the response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(result.Code)
+	if result.Body != nil {
+		if err := json.NewEncoder(w).Encode(result.Body); err != nil {
+			r.logger.Error("Failed to encode response", "error", err)
+		}
+	}
 }
 
 //nolint:dupl

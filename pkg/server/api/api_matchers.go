@@ -57,7 +57,7 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.Ch
 	}
 
 	s.logger.With("userID", userID).With("matched", matchDetails.Matched).
-		With("reason", matchDetails.FailureReason).Debug("CheckMatcher result")
+		With("reason", matchDetails.FailureReason).Info("CheckMatcher result")
 
 	return goserver.Response(200, response), nil
 }
