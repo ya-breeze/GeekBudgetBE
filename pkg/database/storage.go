@@ -76,6 +76,7 @@ type Storage interface {
 	AddMatcherConfirmation(userID string, id string, confirmed bool) error
 	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
 	GetMatcherRuntime(userID, id string) (MatcherRuntime, error)
+	CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) (MatcherRuntime, error)
 	CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	DeleteMatcher(userID string, id string) error
@@ -613,6 +614,26 @@ func (s *storage) createMatcherRuntime(m goserver.Matcher) (MatcherRuntime, erro
 	}
 
 	return runtime, nil
+}
+
+// CreateMatcherRuntimeFromNoId creates a MatcherRuntime from a MatcherNoId (without needing to save to DB first).
+// This is useful for testing matchers before they are saved.
+func (s *storage) CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) (MatcherRuntime, error) {
+	// Convert MatcherNoId to Matcher by creating a temporary matcher with empty ID
+	matcher := goserver.Matcher{
+		Name:                       m.GetName(),
+		OutputDescription:          m.GetOutputDescription(),
+		OutputAccountId:            m.GetOutputAccountId(),
+		OutputTags:                 m.GetOutputTags(),
+		CurrencyRegExp:             m.GetCurrencyRegExp(),
+		PartnerNameRegExp:          m.GetPartnerNameRegExp(),
+		PartnerAccountNumberRegExp: m.GetPartnerAccountNumberRegExp(),
+		DescriptionRegExp:          m.GetDescriptionRegExp(),
+		ExtraRegExp:                m.GetExtraRegExp(),
+		ConfirmationHistory:        m.GetConfirmationHistory(),
+	}
+
+	return s.createMatcherRuntime(matcher)
 }
 
 func (s *storage) GetMatcherRuntime(userID, id string) (MatcherRuntime, error) {

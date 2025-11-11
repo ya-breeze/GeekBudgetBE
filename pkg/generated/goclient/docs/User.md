@@ -4,15 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**Id** | **string** |  | 
 **Email** | **string** |  | 
 **StartDate** | **time.Time** |  | 
-**Id** | **string** |  | 
 
 ## Methods
 
 ### NewUser
 
-`func NewUser(email string, startDate time.Time, id string, ) *User`
+`func NewUser(id string, email string, startDate time.Time, ) *User`
 
 NewUser instantiates a new User object
 This constructor will assign default values to properties that have it defined,
@@ -26,6 +26,26 @@ will change when the set of required properties is changed
 NewUserWithDefaults instantiates a new User object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
+
+### GetId
+
+`func (o *User) GetId() string`
+
+GetId returns the Id field if non-nil, zero value otherwise.
+
+### GetIdOk
+
+`func (o *User) GetIdOk() (*string, bool)`
+
+GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetId
+
+`func (o *User) SetId(v string)`
+
+SetId sets Id field to given value.
+
 
 ### GetEmail
 
@@ -65,26 +85,6 @@ and a boolean to check if the value has been set.
 `func (o *User) SetStartDate(v time.Time)`
 
 SetStartDate sets StartDate field to given value.
-
-
-### GetId
-
-`func (o *User) GetId() string`
-
-GetId returns the Id field if non-nil, zero value otherwise.
-
-### GetIdOk
-
-`func (o *User) GetIdOk() (*string, bool)`
-
-GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetId
-
-`func (o *User) SetId(v string)`
-
-SetId sets Id field to given value.
 
 
 

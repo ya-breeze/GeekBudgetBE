@@ -23,9 +23,9 @@ var _ MappedNullable = &User{}
 
 // User struct for User
 type User struct {
+	Id        string    `json:"id"`
 	Email     string    `json:"email"`
 	StartDate time.Time `json:"startDate"`
-	Id        string    `json:"id"`
 }
 
 type _User User
@@ -34,9 +34,11 @@ type _User User
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUser(email string, startDate time.Time, id string) *User {
+func NewUser(id string, email string, startDate time.Time) *User {
 	this := User{}
 	this.Id = id
+	this.Email = email
+	this.StartDate = startDate
 	return &this
 }
 
@@ -46,6 +48,30 @@ func NewUser(email string, startDate time.Time, id string) *User {
 func NewUserWithDefaults() *User {
 	this := User{}
 	return &this
+}
+
+// GetId returns the Id field value
+func (o *User) GetId() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.Id
+}
+
+// GetIdOk returns a tuple with the Id field value
+// and a boolean to check if the value has been set.
+func (o *User) GetIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Id, true
+}
+
+// SetId sets field value
+func (o *User) SetId(v string) {
+	o.Id = v
 }
 
 // GetEmail returns the Email field value
@@ -96,30 +122,6 @@ func (o *User) SetStartDate(v time.Time) {
 	o.StartDate = v
 }
 
-// GetId returns the Id field value
-func (o *User) GetId() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.Id
-}
-
-// GetIdOk returns a tuple with the Id field value
-// and a boolean to check if the value has been set.
-func (o *User) GetIdOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Id, true
-}
-
-// SetId sets field value
-func (o *User) SetId(v string) {
-	o.Id = v
-}
-
 func (o User) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -130,9 +132,9 @@ func (o User) MarshalJSON() ([]byte, error) {
 
 func (o User) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	toSerialize["id"] = o.Id
 	toSerialize["email"] = o.Email
 	toSerialize["startDate"] = o.StartDate
-	toSerialize["id"] = o.Id
 	return toSerialize, nil
 }
 
@@ -141,9 +143,9 @@ func (o *User) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
+		"id",
 		"email",
 		"startDate",
-		"id",
 	}
 
 	allProperties := make(map[string]interface{})

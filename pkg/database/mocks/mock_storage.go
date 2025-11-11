@@ -140,6 +140,21 @@ func (mr *MockStorageMockRecorder) CreateMatcher(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMatcher", reflect.TypeOf((*MockStorage)(nil).CreateMatcher), arg0, arg1)
 }
 
+// CreateMatcherRuntimeFromNoId mocks base method.
+func (m *MockStorage) CreateMatcherRuntimeFromNoId(arg0 goserver.MatcherNoIdInterface) (database.MatcherRuntime, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateMatcherRuntimeFromNoId", arg0)
+	ret0, _ := ret[0].(database.MatcherRuntime)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateMatcherRuntimeFromNoId indicates an expected call of CreateMatcherRuntimeFromNoId.
+func (mr *MockStorageMockRecorder) CreateMatcherRuntimeFromNoId(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMatcherRuntimeFromNoId", reflect.TypeOf((*MockStorage)(nil).CreateMatcherRuntimeFromNoId), arg0)
+}
+
 // CreateTransaction mocks base method.
 func (m *MockStorage) CreateTransaction(arg0 string, arg1 goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
 	m.ctrl.T.Helper()
