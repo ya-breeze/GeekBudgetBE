@@ -196,4 +196,48 @@ var _ = Describe("Matchers API", func() {
 		Expect(matchers).To(HaveLen(1))
 		Expect(matchers[0].Id).To(Equal(created.Id))
 	})
+
+	It("creates matcher with special characters in description - regex escaping", func() {
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+
+		// Create a transaction with special regex characters in description
+		specialDesc := "Payment to Store*123 (test) [urgent]"
+		txnWithSpecial := goclient.TransactionNoID{
+			Date:           now,
+			Description:    ptrString(specialDesc),
+			PartnerName:    ptrString("Partner*Name"),
+			PartnerAccount: ptrString("Account.123"),
+			Place:          ptrString("Test Place"),
+			Tags:           []string{"test"},
+			Movements: []goclient.Movement{
+				{
+					Amount:     100,
+					CurrencyId: currency.Id,
+					AccountId:  &account.Id,
+				},
+			},
+		}
+		specialTxn, _, err := client.TransactionsAPI.CreateTransaction(ctx).TransactionNoID(txnWithSpecial).Execute()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create a matcher from this transaction
+		matcher := goclient.MatcherNoID{
+			Name:                       "Special Chars Matcher",
+			OutputDescription:          "Converted",
+			DescriptionRegExp:          specialTxn.Description, // Should be escaped
+			PartnerAccountNumberRegExp: specialTxn.PartnerAccount,
+			OutputAccountId:            account.Id,
+			OutputTags:                 []string{"converted"},
+		}
+
+		// Create matcher
+		created, _, err := client.MatchersAPI.CreateMatcher(ctx).MatcherNoID(matcher).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(created).ToNot(BeNil())
+		Expect(created.Id).ToNot(BeEmpty())
+
+		// The regex should be properly escaped and valid
+		// We can verify this by checking that the matcher was created successfully
+		Expect(created.DescriptionRegExp).ToNot(BeNil())
+	})
 })

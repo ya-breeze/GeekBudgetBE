@@ -125,6 +125,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkBtn = document.getElementById('checkBtn');
     if (!checkBtn) return;
 
+    // Parse transaction data from the page
+    const transactionData = {{ if ne .Transaction.ID "" }}{{ .Transaction | toJSON }}{{ else }}null{{ end }};
+
     checkBtn.addEventListener('click', async function() {
         // Collect matcher form data
         const form = document.getElementById('matcherForm');
@@ -139,12 +142,25 @@ document.addEventListener('DOMContentLoaded', function() {
             outputAccountId: formData.get('account'),
         };
 
-        const transactionId = formData.get('transaction_id');
-
-        if (!transactionId) {
-            alert('Transaction ID is missing');
+        if (!transactionData) {
+            alert('Transaction data is missing');
             return;
         }
+
+        // Convert WebTransaction to TransactionNoID format expected by the API
+        const transaction = {
+            date: transactionData.date,
+            description: transactionData.description || '',
+            place: transactionData.place || '',
+            tags: transactionData.tags || [],
+            partnerName: transactionData.partnerName || '',
+            partnerAccount: transactionData.partnerAccount || '',
+            movements: transactionData.movements.map(m => ({
+                amount: m.amount,
+                currencyId: m.currencyID,
+                accountId: m.accountID
+            }))
+        };
 
         // Show loading state
         const resultDiv = document.getElementById('checkResult');
@@ -161,9 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     matcher: matcher,
-                    transaction: {
-                        id: transactionId,
-                    }
+                    transaction: transaction
                 })
             });
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -136,9 +137,9 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		matcher = goserver.Matcher{
 			Name:                       transaction.Description,
 			OutputDescription:          transaction.Description,
-			DescriptionRegExp:          transaction.Description,
-			PartnerAccountNumberRegExp: transaction.PartnerAccount,
-			PartnerNameRegExp:          transaction.PartnerName,
+			DescriptionRegExp:          escapeRegexSpecialChars(transaction.Description),
+			PartnerAccountNumberRegExp: escapeRegexSpecialChars(transaction.PartnerAccount),
+			PartnerNameRegExp:          escapeRegexSpecialChars(transaction.PartnerName),
 		}
 	}
 
@@ -266,4 +267,10 @@ func (r *WebAppRouter) matcherDeleteHandler(w http.ResponseWriter, req *http.Req
 	}
 
 	http.Redirect(w, req, "/web/matchers", http.StatusFound)
+}
+
+// escapeRegexSpecialChars escapes all regex special characters in a string
+// so they are treated as literal characters in a regex pattern.
+func escapeRegexSpecialChars(s string) string {
+	return regexp.QuoteMeta(s)
 }

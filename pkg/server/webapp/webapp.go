@@ -1,6 +1,7 @@
 package webapp
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -171,6 +172,13 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 			return time.Date(t.Year(), t.Month()+time.Month(num), 1, 0, 0, 0, 0, t.Location())
 		},
 		"join": strings.Join,
+		"toJSON": func(v interface{}) template.JS {
+			b, err := json.Marshal(v)
+			if err != nil {
+				return template.JS("{}")
+			}
+			return template.JS(b)
+		},
 		"addQueryParam": func(rawURL string, key string, value any) (string, error) {
 			u, err := url.Parse(rawURL)
 			if err != nil {
