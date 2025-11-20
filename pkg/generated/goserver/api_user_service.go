@@ -21,6 +21,8 @@ import (
 type UserAPIService interface {
 	// GetUser - return user object
 	GetUser(ctx context.Context) (ImplResponse, error)
+	// UpdateUserFavoriteCurrency - update user&#39;s favorite currency
+	UpdateUserFavoriteCurrency(ctx context.Context, userPatchBody UserPatchBody) (ImplResponse, error)
 }
 
 // UserAPIService is a service that implements the logic for the UserAPIServicer
@@ -43,4 +45,15 @@ func (s *UserAPIServiceImpl) GetUser(ctx context.Context) (ImplResponse, error) 
 	// return Response(200, User{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("GetUser method not implemented")
+}
+
+// UpdateUserFavoriteCurrency - update user&#39;s favorite currency
+func (s *UserAPIServiceImpl) UpdateUserFavoriteCurrency(ctx context.Context, userPatchBody UserPatchBody) (ImplResponse, error) {
+	// TODO - update UpdateUserFavoriteCurrency with the required logic for this service method.
+	// Add api_user_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, User{}) or use other options such as http.Ok ...
+	// return Response(200, User{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("UpdateUserFavoriteCurrency method not implemented")
 }

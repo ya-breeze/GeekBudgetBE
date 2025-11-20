@@ -55,6 +55,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+    patch:
+      tags:
+        - user
+      summary: update user's favorite currency
+      operationId: updateUserFavoriteCurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserPatchBody"
+      responses:
+        "200":
+          description: updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
 
   /v1/accounts/{accountId}/history:
     get:
@@ -1019,11 +1037,23 @@ components:
         startDate:
           type: string
           format: date-time
+        favoriteCurrencyId:
+          type: string
+          format: uuid
+          description: ID of the user's favorite currency. By default this currency will be used to convert other currencies.
       required:
         - email
         - startDate
       allOf:
         - $ref: "#/components/schemas/Entity"
+
+    UserPatchBody:
+      type: object
+      properties:
+        favoriteCurrencyId:
+          type: string
+          format: uuid
+          description: ID of the user's favorite currency. By default this currency will be used to convert other currencies.
 
     BankAccountInfo:
       type: object

@@ -21,12 +21,16 @@ type User struct {
 	Email string `json:"email"`
 
 	StartDate time.Time `json:"startDate"`
+
+	// ID of the user's favorite currency. By default this currency will be used to convert other currencies.
+	FavoriteCurrencyId string `json:"favoriteCurrencyId,omitempty"`
 }
 
 type UserInterface interface {
 	GetId() string
 	GetEmail() string
 	GetStartDate() time.Time
+	GetFavoriteCurrencyId() string
 }
 
 func (c *User) GetId() string {
@@ -37,6 +41,9 @@ func (c *User) GetEmail() string {
 }
 func (c *User) GetStartDate() time.Time {
 	return c.StartDate
+}
+func (c *User) GetFavoriteCurrencyId() string {
+	return c.FavoriteCurrencyId
 }
 
 // AssertUserRequired checks if the required fields are not zero-ed

@@ -121,6 +121,7 @@ Class | Method | HTTP request | Description
 *UnprocessedTransactionsAPI* | [**DeleteUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#deleteunprocessedtransaction) | **Delete** /v1/unprocessedTransactions/{id} | delete unprocessed transaction
 *UnprocessedTransactionsAPI* | [**GetUnprocessedTransactions**](docs/UnprocessedTransactionsAPI.md#getunprocessedtransactions) | **Get** /v1/unprocessedTransactions | get all unprocessed transactions
 *UserAPI* | [**GetUser**](docs/UserAPI.md#getuser) | **Get** /v1/user | return user object
+*UserAPI* | [**UpdateUserFavoriteCurrency**](docs/UserAPI.md#updateuserfavoritecurrency) | **Patch** /v1/user | update user&#39;s favorite currency
 
 
 ## Documentation For Models
@@ -154,6 +155,7 @@ Class | Method | HTTP request | Description
  - [TransactionNoID](docs/TransactionNoID.md)
  - [UnprocessedTransaction](docs/UnprocessedTransaction.md)
  - [User](docs/User.md)
+ - [UserPatchBody](docs/UserPatchBody.md)
  - [WholeUserData](docs/WholeUserData.md)
 
 

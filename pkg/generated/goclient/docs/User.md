@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **Id** | **string** |  | 
 **Email** | **string** |  | 
 **StartDate** | **time.Time** |  | 
+**FavoriteCurrencyId** | Pointer to **string** | ID of the user&#39;s favorite currency. By default this currency will be used to convert other currencies. | [optional] 
 
 ## Methods
 
@@ -86,6 +87,31 @@ and a boolean to check if the value has been set.
 
 SetStartDate sets StartDate field to given value.
 
+
+### GetFavoriteCurrencyId
+
+`func (o *User) GetFavoriteCurrencyId() string`
+
+GetFavoriteCurrencyId returns the FavoriteCurrencyId field if non-nil, zero value otherwise.
+
+### GetFavoriteCurrencyIdOk
+
+`func (o *User) GetFavoriteCurrencyIdOk() (*string, bool)`
+
+GetFavoriteCurrencyIdOk returns a tuple with the FavoriteCurrencyId field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetFavoriteCurrencyId
+
+`func (o *User) SetFavoriteCurrencyId(v string)`
+
+SetFavoriteCurrencyId sets FavoriteCurrencyId field to given value.
+
+### HasFavoriteCurrencyId
+
+`func (o *User) HasFavoriteCurrencyId() bool`
+
+HasFavoriteCurrencyId returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -119,3 +119,112 @@ func (a *UserAPIService) GetUserExecute(r ApiGetUserRequest) (*User, *http.Respo
 
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
+
+type ApiUpdateUserFavoriteCurrencyRequest struct {
+	ctx           context.Context
+	ApiService    *UserAPIService
+	userPatchBody *UserPatchBody
+}
+
+func (r ApiUpdateUserFavoriteCurrencyRequest) UserPatchBody(userPatchBody UserPatchBody) ApiUpdateUserFavoriteCurrencyRequest {
+	r.userPatchBody = &userPatchBody
+	return r
+}
+
+func (r ApiUpdateUserFavoriteCurrencyRequest) Execute() (*User, *http.Response, error) {
+	return r.ApiService.UpdateUserFavoriteCurrencyExecute(r)
+}
+
+/*
+UpdateUserFavoriteCurrency update user's favorite currency
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiUpdateUserFavoriteCurrencyRequest
+*/
+func (a *UserAPIService) UpdateUserFavoriteCurrency(ctx context.Context) ApiUpdateUserFavoriteCurrencyRequest {
+	return ApiUpdateUserFavoriteCurrencyRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return User
+func (a *UserAPIService) UpdateUserFavoriteCurrencyExecute(r ApiUpdateUserFavoriteCurrencyRequest) (*User, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *User
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UserAPIService.UpdateUserFavoriteCurrency")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/v1/user"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.userPatchBody == nil {
+		return localVarReturnValue, nil, reportError("userPatchBody is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.userPatchBody
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}

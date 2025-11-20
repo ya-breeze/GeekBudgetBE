@@ -26,6 +26,8 @@ type User struct {
 	Id        string    `json:"id"`
 	Email     string    `json:"email"`
 	StartDate time.Time `json:"startDate"`
+	// ID of the user's favorite currency. By default this currency will be used to convert other currencies.
+	FavoriteCurrencyId *string `json:"favoriteCurrencyId,omitempty"`
 }
 
 type _User User
@@ -122,6 +124,38 @@ func (o *User) SetStartDate(v time.Time) {
 	o.StartDate = v
 }
 
+// GetFavoriteCurrencyId returns the FavoriteCurrencyId field value if set, zero value otherwise.
+func (o *User) GetFavoriteCurrencyId() string {
+	if o == nil || IsNil(o.FavoriteCurrencyId) {
+		var ret string
+		return ret
+	}
+	return *o.FavoriteCurrencyId
+}
+
+// GetFavoriteCurrencyIdOk returns a tuple with the FavoriteCurrencyId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *User) GetFavoriteCurrencyIdOk() (*string, bool) {
+	if o == nil || IsNil(o.FavoriteCurrencyId) {
+		return nil, false
+	}
+	return o.FavoriteCurrencyId, true
+}
+
+// HasFavoriteCurrencyId returns a boolean if a field has been set.
+func (o *User) HasFavoriteCurrencyId() bool {
+	if o != nil && !IsNil(o.FavoriteCurrencyId) {
+		return true
+	}
+
+	return false
+}
+
+// SetFavoriteCurrencyId gets a reference to the given string and assigns it to the FavoriteCurrencyId field.
+func (o *User) SetFavoriteCurrencyId(v string) {
+	o.FavoriteCurrencyId = &v
+}
+
 func (o User) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -135,6 +169,9 @@ func (o User) ToMap() (map[string]interface{}, error) {
 	toSerialize["id"] = o.Id
 	toSerialize["email"] = o.Email
 	toSerialize["startDate"] = o.StartDate
+	if !IsNil(o.FavoriteCurrencyId) {
+		toSerialize["favoriteCurrencyId"] = o.FavoriteCurrencyId
+	}
 	return toSerialize, nil
 }
 

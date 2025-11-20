@@ -39,3 +39,35 @@ func (s *UserAPIServiceImpl) GetUser(ctx context.Context) (goserver.ImplResponse
 
 	return goserver.Response(200, user.FromDB()), nil
 }
+
+// UpdateUserFavoriteCurrency - update user's favorite currency
+func (s *UserAPIServiceImpl) UpdateUserFavoriteCurrency(
+	ctx context.Context, body goserver.UserPatchBody,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	user, err := s.db.GetUser(userID)
+	if err != nil {
+		if errors.Is(err, database.ErrNotFound) {
+			return goserver.Response(404, nil), nil
+		}
+
+		s.logger.With("error", err).Error("Failed to get user")
+		return goserver.Response(500, nil), nil
+	}
+
+	// Standard PATCH logic: take the value from the request body as-is.
+	// Sending a non-empty favoriteCurrencyId sets the favorite currency;
+	// sending an empty string clears it.
+	user.FavoriteCurrencyID = body.FavoriteCurrencyId
+
+	if err := s.db.PutUser(user); err != nil {
+		s.logger.With("error", err).Error("Failed to update user")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, user.FromDB()), nil
+}

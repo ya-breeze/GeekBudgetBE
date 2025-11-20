@@ -12,6 +12,7 @@
 package goserver
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 )
@@ -54,12 +55,44 @@ func (c *UserAPIController) Routes() Routes {
 			"/v1/user",
 			c.GetUser,
 		},
+		"UpdateUserFavoriteCurrency": Route{
+			strings.ToUpper("Patch"),
+			"/v1/user",
+			c.UpdateUserFavoriteCurrency,
+		},
 	}
 }
 
 // GetUser - return user object
 func (c *UserAPIController) GetUser(w http.ResponseWriter, r *http.Request) {
 	result, err := c.service.GetUser(r.Context())
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// UpdateUserFavoriteCurrency - update user's favorite currency
+func (c *UserAPIController) UpdateUserFavoriteCurrency(w http.ResponseWriter, r *http.Request) {
+	userPatchBodyParam := UserPatchBody{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&userPatchBodyParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertUserPatchBodyRequired(userPatchBodyParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertUserPatchBodyConstraints(userPatchBodyParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.UpdateUserFavoriteCurrency(r.Context(), userPatchBodyParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

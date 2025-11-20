@@ -11,15 +11,17 @@ import (
 type User struct {
 	gorm.Model
 
-	ID             uuid.UUID `gorm:"type:uuid;primaryKey"`
-	StartDate      time.Time
-	Login          string `gorm:"unique"`
-	HashedPassword string
+	ID                 uuid.UUID `gorm:"type:uuid;primaryKey"`
+	StartDate          time.Time
+	Login              string `gorm:"unique"`
+	HashedPassword     string
+	FavoriteCurrencyID string
 }
 
 func (u User) FromDB() goserver.User {
 	return goserver.User{
-		Email:     u.Login,
-		StartDate: u.StartDate,
+		Email:              u.Login,
+		StartDate:          u.StartDate,
+		FavoriteCurrencyId: u.FavoriteCurrencyID,
 	}
 }

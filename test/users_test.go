@@ -94,6 +94,96 @@ var _ = Describe("User API", func() {
 		Expect(user).ToNot(BeNil())
 		Expect(user.Email).To(Equal(User1))
 	})
+	It("updates user's favorite currency when field is present and non-empty", func() {
+		accessToken := getAccessToken(client, ctx)
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+
+		currencyReq := goclient.CurrencyNoID{
+			Name: "USD",
+		}
+		createdCurrency, httpResp, err := client.CurrenciesAPI.
+			CreateCurrency(ctx).
+			CurrencyNoID(currencyReq).
+			Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+		Expect(createdCurrency).ToNot(BeNil())
+
+		favoriteID := createdCurrency.Id
+
+		patch := goclient.UserPatchBody{}
+		patch.SetFavoriteCurrencyId(favoriteID)
+
+		user, httpResp, err := client.UserAPI.UpdateUserFavoriteCurrency(ctx).
+			UserPatchBody(patch).
+			Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+		Expect(user).ToNot(BeNil())
+		Expect(user.FavoriteCurrencyId).ToNot(BeNil())
+		Expect(*user.FavoriteCurrencyId).To(Equal(favoriteID))
+
+		// verify via GetUser as well
+		user2, httpResp, err := client.UserAPI.GetUser(ctx).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+		Expect(user2).ToNot(BeNil())
+		Expect(user2.FavoriteCurrencyId).ToNot(BeNil())
+		Expect(*user2.FavoriteCurrencyId).To(Equal(favoriteID))
+	})
+
+	It("resets user's favorite currency when field is empty string", func() {
+		accessToken := getAccessToken(client, ctx)
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+
+		currencyReq := goclient.CurrencyNoID{
+			Name: "CZK",
+		}
+		createdCurrency, httpResp, err := client.CurrenciesAPI.
+			CreateCurrency(ctx).
+			CurrencyNoID(currencyReq).
+			Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+		Expect(createdCurrency).ToNot(BeNil())
+
+		favoriteID := createdCurrency.Id
+
+		// First set the favorite currency
+		patchSet := goclient.UserPatchBody{}
+		patchSet.SetFavoriteCurrencyId(favoriteID)
+
+		_, httpResp, err = client.UserAPI.UpdateUserFavoriteCurrency(ctx).
+			UserPatchBody(patchSet).
+			Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+
+		// Now reset by sending empty string
+		patchReset := goclient.UserPatchBody{}
+		patchReset.SetFavoriteCurrencyId("")
+
+		user, httpResp, err := client.UserAPI.UpdateUserFavoriteCurrency(ctx).
+			UserPatchBody(patchReset).
+			Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+		Expect(user).ToNot(BeNil())
+		Expect(user.FavoriteCurrencyId).To(BeNil())
+
+		user2, httpResp, err := client.UserAPI.GetUser(ctx).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(200))
+		Expect(user2).ToNot(BeNil())
+		Expect(user2.FavoriteCurrencyId).To(BeNil())
+	})
 })
 
 func getAccessToken(client *goclient.APIClient, ctx context.Context) string {

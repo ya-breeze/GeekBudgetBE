@@ -60,6 +60,7 @@ docs/UnprocessedTransaction.md
 docs/UnprocessedTransactionsAPI.md
 docs/User.md
 docs/UserAPI.md
+docs/UserPatchBody.md
 docs/WholeUserData.md
 git_push.sh
 model_account.go
@@ -91,6 +92,7 @@ model_transaction.go
 model_transaction_no_id.go
 model_unprocessed_transaction.go
 model_user.go
+model_user_patch_body.go
 model_whole_user_data.go
 response.go
 test/api_accounts_test.go

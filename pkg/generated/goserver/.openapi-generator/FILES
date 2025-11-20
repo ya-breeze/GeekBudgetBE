@@ -63,6 +63,7 @@ go/model_transaction.go
 go/model_transaction_no_id.go
 go/model_unprocessed_transaction.go
 go/model_user.go
+go/model_user_patch_body.go
 go/model_whole_user_data.go
 go/routers.go
 main.go

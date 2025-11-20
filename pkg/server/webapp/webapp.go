@@ -175,8 +175,9 @@ func (r *WebAppRouter) loadTemplates() (*template.Template, error) {
 		"toJSON": func(v interface{}) template.JS {
 			b, err := json.Marshal(v)
 			if err != nil {
-				return template.JS("{}")
+				return template.JS("{}") // #nosec G203 -- JSON marshaling ensures safe output
 			}
+			// #nosec G203 -- JSON marshaling ensures safe output for JavaScript context
 			return template.JS(b)
 		},
 		"addQueryParam": func(rawURL string, key string, value any) (string, error) {

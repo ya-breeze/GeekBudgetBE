@@ -15,7 +15,7 @@ build:
 .PHONY: run
 run: build
 	@echo "🚀 Running..."
-	@GB_USERS=test:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
+	@GB_USERS=test@example.com:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
 	GB_PREFILL=true \
 	GB_DISABLEIMPORTERS=true \
 	GB_DBPATH=$(ROOT_DIR)geekbudget.db \
@@ -96,8 +96,8 @@ validate:
 .PHONY: lint
 lint:
 	@echo "🚀 Linting..."
+	@go tool mvdan.cc/gofumpt -w .
 	@go tool github.com/golangci/golangci-lint/cmd/golangci-lint run
-	@go tool mvdan.cc/gofumpt -l -d .
 	@echo "✅ Lint complete"
 
 .PHONY: test
