@@ -1,0 +1,35 @@
+.matchers-container {
+  padding: 24px;
+}
+.header {
+  margin-bottom: 24px;
+  h1 {
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+.table-container {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.matchers-table {
+  width: 100%;
+  th {
+    font-weight: 600;
+  }
+  .mat-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+

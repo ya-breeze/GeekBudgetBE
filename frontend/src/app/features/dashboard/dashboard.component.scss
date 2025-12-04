@@ -1,0 +1,251 @@
+.dashboard-container {
+  padding: 24px;
+}
+
+.subtitle {
+  margin: 0 0 24px 0;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.stat-card {
+  mat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  &.balance {
+    mat-icon {
+      color: #2196f3;
+    }
+  }
+
+  &.income {
+    mat-icon {
+      color: #4caf50;
+    }
+  }
+
+  &.expenses {
+    mat-icon {
+      color: #f44336;
+    }
+  }
+}
+
+mat-card {
+  margin-bottom: 1rem;
+}
+
+// Expense Table Styles
+.expense-table-section {
+  margin-top: 48px;
+
+  h2 {
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+.table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  padding: 16px;
+}
+
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead {
+    tr {
+      border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+    }
+
+    th {
+      padding: 16px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: rgba(0, 0, 0, 0.87);
+      background-color: rgba(0, 0, 0, 0.02);
+      white-space: nowrap;
+
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .sort-indicator {
+          margin-left: 4px;
+          font-size: 12px;
+          opacity: 0.7;
+        }
+      }
+
+      &.account-header {
+        min-width: 112px;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background-color: rgba(0, 0, 0, 0.02);
+
+        &.sortable:hover {
+          background-color: rgba(0, 0, 0, 0.08);
+        }
+      }
+
+      &.month-header {
+        min-width: 96px;
+        text-align: right;
+      }
+
+      &.total-header {
+        min-width: 112px;
+        text-align: right;
+        font-weight: 700;
+        background-color: rgba(0, 0, 0, 0.05);
+
+        &.sortable:hover {
+          background-color: rgba(0, 0, 0, 0.12);
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      transition: background-color 0.2s ease;
+
+      &:hover:not(.total-row) {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+
+      &.total-row {
+        border-top: 2px solid rgba(0, 0, 0, 0.12);
+        font-weight: 600;
+
+        td {
+          padding-top: 20px;
+          padding-bottom: 20px;
+        }
+      }
+    }
+
+    td {
+      padding: 12px;
+      text-align: right;
+
+      &.account-cell {
+        text-align: left;
+        font-weight: 500;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background-color: white;
+        white-space: nowrap;
+
+        &.total-label {
+          font-weight: 700;
+          font-size: 15px;
+        }
+      }
+
+      &.expense-cell {
+        font-family: 'Roboto Mono', monospace;
+        transition: all 0.2s ease;
+        border-left: 1px solid rgba(0, 0, 0, 0.04);
+
+        &:hover {
+          box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      &.total-cell {
+        font-weight: 600;
+        border-left: 2px solid rgba(0, 0, 0, 0.12);
+
+        &.grand-total {
+          font-weight: 700;
+          font-size: 15px;
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .expense-table-section {
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .table-container {
+    padding: 8px;
+  }
+
+  .expense-table {
+    font-size: 12px;
+
+    thead th {
+      padding: 12px 8px;
+      min-width: 100px;
+
+      &.month-header {
+        min-width: 90px;
+      }
+    }
+
+    tbody td {
+      padding: 10px 8px;
+    }
+  }
+}
+
+ul {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+li {
+  margin: 0.5rem 0;
+}
+

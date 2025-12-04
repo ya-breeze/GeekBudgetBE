@@ -1,0 +1,37 @@
+.settings-container {
+  padding: 24px;
+}
+
+.subtitle {
+  margin: 0 0 24px 0;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.settings-card {
+  max-width: 600px;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+

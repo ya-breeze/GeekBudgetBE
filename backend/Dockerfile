@@ -1,9 +1,9 @@
 FROM golang:alpine AS builder
 RUN apk add --no-cache gcc musl-dev sqlite-dev
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY backend/go.mod backend/go.sum ./
 RUN go mod download
-COPY . .
+COPY backend/ ./
 ENV CGO_ENABLED=1
 RUN cd cmd && go build -o geekbudget .
 

@@ -1,0 +1,20 @@
+.sidebar-nav {
+  height: 100%;
+  padding: 8px 8px 8px 8px;
+  box-sizing: border-box;
+}
+
+.nav-item {
+  margin: 4px 0;
+  border-radius: 4px;
+
+  &.active {
+    background-color: rgba(0, 0, 0, 0.04);
+    font-weight: 500;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+

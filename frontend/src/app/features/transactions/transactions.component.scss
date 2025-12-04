@@ -1,0 +1,73 @@
+.transactions-container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    h1 {
+      margin: 0;
+    }
+
+    .month-navigation {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .current-month {
+        font-size: 16px;
+        font-weight: 500;
+        min-width: 150px;
+        text-align: center;
+        color: rgba(0, 0, 0, 0.87);
+      }
+
+      button {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+      }
+    }
+  }
+
+  > button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.table-container {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.transactions-table {
+  width: 100%;
+
+  th {
+    font-weight: 600;
+  }
+
+  .mat-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+

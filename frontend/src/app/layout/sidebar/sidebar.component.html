@@ -1,0 +1,16 @@
+<nav class="sidebar-nav">
+  <mat-nav-list>
+    @for (item of menuItems(); track item.route) {
+      <a
+        mat-list-item
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
+      </a>
+    }
+  </mat-nav-list>
+</nav>
+

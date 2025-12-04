@@ -1,0 +1,82 @@
+<div class="transactions-container">
+  <div class="header">
+    <div class="title-section">
+      <h1>Transactions</h1>
+      <div class="month-navigation">
+        <button mat-icon-button (click)="goToPreviousMonth()" aria-label="Previous month">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="current-month">{{ currentMonthDisplay() }}</span>
+        <button mat-icon-button (click)="goToNextMonth()" aria-label="Next month">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+    <button mat-raised-button color="primary" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Add Transaction
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table mat-table [dataSource]="transactions()" class="transactions-table">
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.date | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.description || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="movements">
+          <th mat-header-cell *matHeaderCellDef>Movements</th>
+          <td mat-cell *matCellDef="let transaction">
+            {{ formatMovements(transaction) }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="tags">
+          <th mat-header-cell *matHeaderCellDef>Tags</th>
+          <td mat-cell *matCellDef="let transaction">
+            @if (transaction.tags && transaction.tags.length > 0) {
+              @for (tag of transaction.tags; track tag) {
+                <mat-chip>{{ tag }}</mat-chip>
+              }
+            } @else {
+              -
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let transaction">
+            <button mat-icon-button (click)="openEditDialog(transaction)" aria-label="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteTransaction(transaction)" aria-label="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns().length">
+            No transactions found. Click "Add Transaction" to create one.
+          </td>
+        </tr>
+      </table>
+    </div>
+  }
+</div>
+
