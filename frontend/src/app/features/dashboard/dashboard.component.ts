@@ -104,20 +104,17 @@ export class DashboardComponent implements OnInit {
     data.currencies.forEach((currencyAgg) => {
       const allValues: number[] = [];
 
-      // Collect all values for color calculation for this currency
-      currencyAgg.accounts.forEach((account) => {
-        account.amounts.forEach((amount) => {
-          if (amount !== undefined) {
-            allValues.push(amount);
-          }
-        });
-      });
-
-      const rows: ExpenseTableRow[] = [];
+      // PHASE 1: Collect all values first (month cells, row totals, month totals, grand total)
+      const rowsData: Array<{
+        accountId: string;
+        accountName: string;
+        monthValues: Map<string, number>;
+        rowTotal: number;
+      }> = [];
 
       // Build rows for each expense account for this currency
       expenseAccounts.forEach((account) => {
-        const monthCells = new Map<string, ExpenseTableCell>();
+        const monthValues = new Map<string, number>();
         let rowTotal = 0;
 
         const accountData = currencyAgg.accounts.find((acc) => acc.accountId === account.id);
@@ -129,72 +126,87 @@ export class DashboardComponent implements OnInit {
             cellValue = accountData.amounts[intervalIndex];
           }
 
-          monthCells.set(interval, {
-            value: cellValue,
-            color: this.calculateColor(cellValue, allValues),
-          });
-
+          monthValues.set(interval, cellValue);
+          allValues.push(cellValue);
           rowTotal += cellValue;
         });
 
         if (rowTotal > 0) {
           allValues.push(rowTotal);
 
-          rows.push({
+          rowsData.push({
             accountId: account.id!,
             accountName: account.name,
-            monthCells,
-            total: {
-              value: rowTotal,
-              color: this.calculateColor(rowTotal, allValues),
-            },
+            monthValues,
+            rowTotal,
           });
         }
       });
 
-      if (!rows.length) {
+      if (!rowsData.length) {
         return;
       }
 
-      const sortedRows = this.sortRows(rows);
-
-      // Build total row for this currency
-      const monthCells = new Map<string, ExpenseTableCell>();
+      // Calculate total row values and add to allValues
+      const monthTotals = new Map<string, number>();
       let grandTotal = 0;
-      const totalValues: number[] = [];
-
-      sortedRows.forEach((row) => {
-        row.monthCells.forEach((cell) => totalValues.push(cell.value));
-        totalValues.push(row.total.value);
-      });
 
       data.intervals.forEach((interval) => {
         let monthTotal = 0;
 
-        sortedRows.forEach((row) => {
-          const cell = row.monthCells.get(interval);
-          if (cell) {
-            monthTotal += cell.value;
-          }
+        rowsData.forEach((rowData) => {
+          const cellValue = rowData.monthValues.get(interval) ?? 0;
+          monthTotal += cellValue;
         });
 
-        monthCells.set(interval, {
-          value: monthTotal,
-          color: this.calculateColor(monthTotal, totalValues),
-        });
-
+        monthTotals.set(interval, monthTotal);
+        allValues.push(monthTotal);
         grandTotal += monthTotal;
       });
 
-      totalValues.push(grandTotal);
+      // Note: grandTotal is NOT added to allValues - it will always be white
+
+      // PHASE 2: Now create the actual rows with colors calculated from the complete allValues array
+      const rows: ExpenseTableRow[] = rowsData.map((rowData) => {
+        const monthCells = new Map<string, ExpenseTableCell>();
+
+        rowData.monthValues.forEach((value, interval) => {
+          monthCells.set(interval, {
+            value,
+            color: this.calculateColor(value, allValues),
+          });
+        });
+
+        return {
+          accountId: rowData.accountId,
+          accountName: rowData.accountName,
+          monthCells,
+          total: {
+            value: rowData.rowTotal,
+            color: this.calculateColor(rowData.rowTotal, allValues),
+          },
+        };
+      });
+
+      const sortedRows = this.sortRows(rows);
+
+      // Build total row with colors
+      const totalRowMonthCells = new Map<string, ExpenseTableCell>();
+
+      monthTotals.forEach((value, interval) => {
+        totalRowMonthCells.set(interval, {
+          value,
+          color: this.calculateColor(value, allValues),
+        });
+      });
 
       const totalRow: ExpenseTableRow = {
         accountId: 'total',
         accountName: 'Total',
-        monthCells,
+        monthCells: totalRowMonthCells,
         total: {
           value: grandTotal,
-          color: this.calculateColor(grandTotal, totalValues),
+          color: 'rgb(255, 255, 255)', // Grand total is always white
         },
       };
 
@@ -277,12 +289,16 @@ export class DashboardComponent implements OnInit {
   }
 
   private calculateColor(value: number, allValues: number[]): string {
-    if (allValues.length === 0 || value === 0) {
+    if (allValues.length === 0 || value <= 0) {
       return 'rgb(255, 255, 255)';
     }
 
     const min = Math.min(...allValues);
-    const max = Math.max(...allValues);
+
+    // Use 99th percentile instead of max to avoid outliers skewing the color scale
+    const sortedValues = [...allValues].sort((a, b) => a - b);
+    const percentile99Index = Math.floor(sortedValues.length * 0.99);
+    const max = sortedValues[percentile99Index];
 
     if (min === max) {
       return 'rgb(255, 255, 200)';
@@ -312,7 +328,7 @@ export class DashboardComponent implements OnInit {
       b = 200;
     }
 
-    return `rgb(${r}, ${g}, ${b})`;
+    return `rgb(${r}, ${g}, ${b}, 0.3)`;
   }
 
   protected formatMonth(dateString: string): string {
