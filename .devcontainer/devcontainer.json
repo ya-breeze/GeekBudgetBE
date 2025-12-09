@@ -1,41 +1,84 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/go
+// Multi-language development environment for Angular (TypeScript/Node.js) and Golang
 {
-	"name": "Go",
+	"name": "GeekBudget - Angular & Go",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
 	"features": {
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"moby": false
+		}
 	},
 	"mounts": [
-		"source=projectname-bashhistory,target=/command_history,type=volume"
+		"source=geekbudget-bashhistory,target=/command_history,type=volume"
 	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				// Common extensions
 				"streetsidesoftware.code-spell-checker",
 				"ms-vscode.makefile-tools",
 				"42Crunch.vscode-openapi",
 				"redhat.vscode-yaml",
 				"qwtel.sqlite-viewer",
-				"streetsidesoftware.code-spell-checker-czech",
 				"ms-vscode.copilot-mermaid-diagram",
-				"casualjim.gotemplate",
 				"eamodio.gitlens",
-				"GitHub.vscode-pull-request-github"
+				"GitHub.vscode-pull-request-github",
+				// Go development extensions
+				"golang.go",
+				"casualjim.gotemplate",
+				// Angular/TypeScript development extensions
+				"Angular.ng-template",
+				"ms-vscode.vscode-typescript-next",
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
+				"johnpapa.Angular2"
 			],
 			"settings": {
-				"go.formatTool": "gofumpt",
+				// Editor settings
 				"editor.formatOnSave": true,
 				"editor.rulers": [
 					100,
 					140
-				]
+				],
+				"editor.defaultFormatter": "esbenp.prettier-vscode",
+				// Go settings
+				"go.formatTool": "gofumpt",
+				"go.lintTool": "golangci-lint",
+				"go.lintOnSave": "package",
+				"go.useLanguageServer": true,
+				"go.languageServerFlags": [
+					"-rpc.trace"
+				],
+				// TypeScript/Angular settings
+				"typescript.tsdk": "node_modules/typescript/lib",
+				"typescript.enablePromptUseWorkspaceTsdk": true,
+				"[typescript]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode",
+					"editor.formatOnSave": true
+				},
+				"[html]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode",
+					"editor.formatOnSave": true
+				},
+				"[json]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode",
+					"editor.formatOnSave": true
+				},
+				// Angular specific settings
+				"angular.enable-strict-mode-prompt": false,
+				"files.exclude": {
+					"**/node_modules": true,
+					"**/.angular": true
+				}
 			}
 		}
 	},
 	"containerEnv": {
 		"HOST_PWD": "${localWorkspaceFolder}"
-	}
+	},
+	"postCreateCommand": "npm install --prefix frontend && go mod download",
+	"remoteUser": "vscode"
 }
