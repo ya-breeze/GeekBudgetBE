@@ -45,7 +45,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyName string,
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
@@ -74,7 +74,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		ctx, accounts, transactions,
 		dateFrom, dateTo,
 		utils.GranularityMonth,
-		outputCurrencyName, currenciesRatesFetcher,
+		outputCurrencyID, currenciesRatesFetcher,
 		currencyMap,
 		s.logger)
 
@@ -95,18 +95,6 @@ func buildCurrencyMap(logger *slog.Logger, storage database.Storage, userID stri
 
 	logger.Debug("Built currency map", "userID", userID, "currencyCount", len(currencyMap))
 	return currencyMap
-}
-
-func findCurrencyID(currencyName string, currencyMap map[string]string) string {
-	if currencyName == "" {
-		return ""
-	}
-	for id, name := range currencyMap {
-		if name == currencyName {
-			return id
-		}
-	}
-	return ""
 }
 
 func processMovements(
@@ -152,7 +140,7 @@ func processMovements(
 func Aggregate(
 	ctx context.Context, accounts []goserver.Account, transactions []goserver.Transaction,
 	dateFrom, dateTo time.Time, granularity utils.Granularity,
-	outputCurrencyName string, currenciesRatesFetcher *common.CurrenciesRatesFetcher,
+	outputCurrencyID string, currenciesRatesFetcher *common.CurrenciesRatesFetcher,
 	currencyMap map[string]string,
 	log *slog.Logger,
 ) goserver.Aggregation {
@@ -162,8 +150,11 @@ func Aggregate(
 	}
 	res.Intervals = getIntervals(res.From, res.To, granularity)
 
-	// find ID of outputCurrencyMap
-	outputCurrencyID := findCurrencyID(outputCurrencyName, currencyMap)
+	// Get the output currency name from the map if outputCurrencyID is provided
+	outputCurrencyName := ""
+	if outputCurrencyID != "" {
+		outputCurrencyName = currencyMap[outputCurrencyID]
+	}
 
 	res.Currencies = []goserver.CurrencyAggregation{}
 	for _, t := range transactions {

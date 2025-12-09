@@ -51,8 +51,19 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	dateFrom = dateFrom.AddDate(0, -12, 0)
 
+	// Convert currency name to ID if provided
 	outputCurrencyName := req.URL.Query().Get("currency")
-	expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, outputCurrencyName)
+	outputCurrencyID := ""
+	if outputCurrencyName != "" {
+		for _, currency := range currencies {
+			if currency.Name == outputCurrencyName {
+				outputCurrencyID = currency.Id
+				break
+			}
+		}
+	}
+
+	expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, outputCurrencyID)
 	if err != nil {
 		r.logger.Error("Failed to get aggregated expenses", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -117,7 +117,7 @@ test:
 		go tool github.com/onsi/ginkgo/v2/ginkgo -r
 	@echo "🚀 Running frontend tests..."
 	@cd ${ROOT_DIR}/frontend; \
-		CHROME_BIN=chromium npm run test -- --watch=false --browsers=ChromeHeadless
+		npm run test -- --watch=false --browsers=ChromeHeadless
 	@echo "✅ Tests complete"
 
 .PHONY: watch

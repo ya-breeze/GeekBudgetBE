@@ -61,17 +61,17 @@ var _ = Describe("Aggregation API", func() {
 		// Test with nil currenciesRatesFetcher - should use original currencies
 		sut := api.Aggregate(
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
-			currencies[1].Name, nil, currencyMap, // outputCurrencyName="EUR", but nil fetcher
+			currencies[1].Id, nil, currencyMap, // outputCurrencyID="1" (EUR), but nil fetcher
 			log)
 
 		// Should still group by original currency (USD = "0") since conversion fails
 		Expect(sut.Currencies).To(HaveLen(1))
 		Expect(sut.Currencies[0].CurrencyId).To(Equal(currencies[0].Id)) // Still USD
 
-		// Test with empty outputCurrencyName - should use original currencies
+		// Test with empty outputCurrencyID - should use original currencies
 		sut2 := api.Aggregate(
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
-			"", nil, currencyMap, // empty outputCurrencyName
+			"", nil, currencyMap, // empty outputCurrencyID
 			log)
 
 		// Should group by original currency
@@ -81,7 +81,7 @@ var _ = Describe("Aggregation API", func() {
 		// Test with same currency but nil fetcher - should still warn about nil fetcher
 		sut3 := api.Aggregate(
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
-			currencies[0].Name, nil, currencyMap, // same currency as transactions (USD), but nil fetcher
+			currencies[0].Id, nil, currencyMap, // same currency as transactions (USD), but nil fetcher
 			log)
 
 		// Should group by original currency since fetcher is nil
@@ -120,7 +120,7 @@ var _ = Describe("Aggregation API", func() {
 
 		sut := api.Aggregate(
 			ctx, accounts, mixedTransactions, dateFrom, dateTo, utils.GranularityMonth,
-			currencies[2].Name, // Convert everything to CZK
+			currencies[2].Id, // Convert everything to CZK (use ID, not Name)
 			fetcher, currencyMap,
 			log)
 
