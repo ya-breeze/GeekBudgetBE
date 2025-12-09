@@ -165,21 +165,21 @@ describe('DashboardComponent', () => {
   });
 
   it('should update screen size based on window width and sidenav state', () => {
-    // Set initial window width to 1500
-    component['windowWidth'].set(1500);
+    // Set initial window width to 2000
+    component['windowWidth'].set(2000);
     fixture.detectChanges();
 
-    // With sidenav open (250px), effective width = 1500 - 250 = 1250 > 1024 (not small)
+    // With sidenav open (250px), effective width = 2000 - 250 = 1750 > 1500 (not small)
     expect(component['isSmallScreen']()).toBe(false);
 
-    // Change window width to 1200px
-    // With sidenav open (250px), effective width = 1200 - 250 = 950 <= 1024 (small)
-    component['windowWidth'].set(1200);
+    // Change window width to 1600px
+    // With sidenav open (250px), effective width = 1600 - 250 = 1350 <= 1500 (small)
+    component['windowWidth'].set(1600);
     fixture.detectChanges();
     expect(component['isSmallScreen']()).toBe(true);
 
     // Test sidenav toggle: close sidenav
-    // With sidenav closed (0px), effective width = 1200 - 0 = 1200 > 1024 (not small)
+    // With sidenav closed (0px), effective width = 1600 - 0 = 1600 > 1500 (not small)
     layoutService.sidenavOpened.set(false);
     fixture.detectChanges();
     expect(component['isSmallScreen']()).toBe(false);
