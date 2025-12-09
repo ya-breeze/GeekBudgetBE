@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -6,8 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DecimalPipe, JsonPipe } from '@angular/common';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { map, forkJoin } from 'rxjs';
+import { map, forkJoin, fromEvent } from 'rxjs';
 import { ApiConfiguration } from '../../core/api/api-configuration';
 import { getExpenses } from '../../core/api/fn/aggregations/get-expenses';
 import { Aggregation } from '../../core/api/models/aggregation';
@@ -15,6 +14,7 @@ import { Currency } from '../../core/api/models/currency';
 import { AccountService } from '../accounts/services/account.service';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { UserService } from '../../core/services/user.service';
+import { LayoutService } from '../../layout/services/layout.service';
 
 interface ExpenseTableCell {
   value: number;
@@ -55,13 +55,24 @@ export class DashboardComponent implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly currencyService = inject(CurrencyService);
   private readonly userService = inject(UserService);
-  private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly layoutService = inject(LayoutService);
 
   protected readonly loading = signal(true);
   protected readonly expenseData = signal<Aggregation | null>(null);
   protected readonly accounts = this.accountService.accounts;
   protected readonly selectedOutputCurrencyId = signal<string | null>(null);
   protected readonly isSmallScreen = signal(false);
+  private readonly windowWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  constructor() {
+    // Use effect to react to sidenav state changes
+    effect(() => {
+      const sidenavWidth = this.layoutService.sidenavOpened() ? this.layoutService.sidenavWidth : 0;
+      const effectiveWidth = this.windowWidth() - sidenavWidth;
+      console.log('Effective width:', effectiveWidth);
+      this.isSmallScreen.set(effectiveWidth <= 1500);
+    });
+  }
 
   // Sorting state
   protected readonly sortColumn = signal<string>('accountName');
@@ -227,9 +238,9 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.currencyService.loadCurrencies().subscribe();
 
-    // Set up breakpoint observer to detect screen size
-    this.breakpointObserver.observe(['(max-width: 768px)']).subscribe(result => {
-      this.isSmallScreen.set(result.matches);
+    // Listen to window resize events
+    fromEvent(window, 'resize').subscribe(() => {
+      this.windowWidth.set(window.innerWidth);
     });
 
     // Load user data and set default currency

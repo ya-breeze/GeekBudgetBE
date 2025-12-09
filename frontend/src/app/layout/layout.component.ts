@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { FooterComponent } from './footer/footer.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { LayoutService } from './services/layout.service';
 
 @Component({
   selector: 'app-layout',
@@ -18,10 +19,11 @@ import { MatSidenavModule } from '@angular/material/sidenav';
   styleUrl: './layout.component.scss',
 })
 export class LayoutComponent {
-  protected readonly sidenavOpened = signal(true);
+  private readonly layoutService = inject(LayoutService);
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   toggleSidenav(): void {
-    this.sidenavOpened.update((value) => !value);
+    this.layoutService.toggleSidenav();
   }
 }
 

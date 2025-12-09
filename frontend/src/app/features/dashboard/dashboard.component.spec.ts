@@ -5,8 +5,9 @@ import { ApiConfiguration } from '../../core/api/api-configuration';
 import { AccountService } from '../accounts/services/account.service';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { UserService } from '../../core/services/user.service';
-import { BreakpointObserver } from '@angular/cdk/layout';
+import { LayoutService } from '../../layout/services/layout.service';
 import { of } from 'rxjs';
+import { signal } from '@angular/core';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
@@ -15,7 +16,7 @@ describe('DashboardComponent', () => {
   let accountService: jasmine.SpyObj<AccountService>;
   let currencyService: jasmine.SpyObj<CurrencyService>;
   let userService: jasmine.SpyObj<UserService>;
-  let breakpointObserver: jasmine.SpyObj<BreakpointObserver>;
+  let layoutService: jasmine.SpyObj<LayoutService>;
 
   beforeEach(async () => {
     const httpClientSpy = jasmine.createSpyObj('HttpClient', ['request']);
@@ -38,11 +39,10 @@ describe('DashboardComponent', () => {
     });
     userServiceSpy.loadUser.and.returnValue(of({ favoriteCurrencyId: null } as any));
 
-    const breakpointObserverSpy = jasmine.createSpyObj('BreakpointObserver', ['observe']);
-    breakpointObserverSpy.observe.and.returnValue(of({
-      matches: false,
-      breakpoints: { '(max-width: 768px)': false }
-    }));
+    const sidenavOpenedSignal = signal(true);
+    const layoutServiceSpy = jasmine.createSpyObj('LayoutService', ['toggleSidenav']);
+    layoutServiceSpy.sidenavOpened = sidenavOpenedSignal;
+    layoutServiceSpy.sidenavWidth = 250;
 
     const apiConfigMock = { rootUrl: 'http://localhost:8080/api/v1' };
 
@@ -54,7 +54,7 @@ describe('DashboardComponent', () => {
         { provide: AccountService, useValue: accountServiceSpy },
         { provide: CurrencyService, useValue: currencyServiceSpy },
         { provide: UserService, useValue: userServiceSpy },
-        { provide: BreakpointObserver, useValue: breakpointObserverSpy },
+        { provide: LayoutService, useValue: layoutServiceSpy },
       ],
     }).compileComponents();
 
@@ -62,7 +62,7 @@ describe('DashboardComponent', () => {
     accountService = TestBed.inject(AccountService) as jasmine.SpyObj<AccountService>;
     currencyService = TestBed.inject(CurrencyService) as jasmine.SpyObj<CurrencyService>;
     userService = TestBed.inject(UserService) as jasmine.SpyObj<UserService>;
-    breakpointObserver = TestBed.inject(BreakpointObserver) as jasmine.SpyObj<BreakpointObserver>;
+    layoutService = TestBed.inject(LayoutService) as jasmine.SpyObj<LayoutService>;
 
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
@@ -164,24 +164,24 @@ describe('DashboardComponent', () => {
     ]);
   });
 
-  it('should update screen size when breakpoint changes', () => {
-    // Initially set to large screen
-    breakpointObserver.observe.and.returnValue(of({
-      matches: false,
-      breakpoints: { '(max-width: 768px)': false }
-    }));
+  it('should update screen size based on window width and sidenav state', () => {
+    // Set initial window width to 1500
+    component['windowWidth'].set(1500);
+    fixture.detectChanges();
 
-    component.ngOnInit();
+    // With sidenav open (250px), effective width = 1500 - 250 = 1250 > 1024 (not small)
     expect(component['isSmallScreen']()).toBe(false);
 
-    // Change to small screen
-    breakpointObserver.observe.and.returnValue(of({
-      matches: true,
-      breakpoints: { '(max-width: 768px)': true }
-    }));
-
-    // Trigger the observable again
-    component.ngOnInit();
+    // Change window width to 1200px
+    // With sidenav open (250px), effective width = 1200 - 250 = 950 <= 1024 (small)
+    component['windowWidth'].set(1200);
+    fixture.detectChanges();
     expect(component['isSmallScreen']()).toBe(true);
+
+    // Test sidenav toggle: close sidenav
+    // With sidenav closed (0px), effective width = 1200 - 0 = 1200 > 1024 (not small)
+    layoutService.sidenavOpened.set(false);
+    fixture.detectChanges();
+    expect(component['isSmallScreen']()).toBe(false);
   });
 });
