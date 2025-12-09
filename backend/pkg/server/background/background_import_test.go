@@ -12,6 +12,18 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 )
 
+// TestFixture holds commonly created entities for tests
+type TestFixture struct {
+	Storage             database.Storage
+	Logger              *slog.Logger
+	UserID              string
+	Currency            goserver.Currency
+	Account             goserver.Account
+	UnprocessedService  *api.UnprocessedTransactionsAPIServiceImpl
+	OriginalTransaction *goserver.TransactionNoId
+	CreatedTransaction  goserver.Transaction
+}
+
 // mustOpenTestStorage creates and opens an in-memory storage for tests and fails
 // the test on error.
 func mustOpenTestStorage(t *testing.T, logger *slog.Logger) database.Storage {
@@ -24,23 +36,20 @@ func mustOpenTestStorage(t *testing.T, logger *slog.Logger) database.Storage {
 	return storage
 }
 
-//nolint:cyclop,funlen
-func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
-	logger := slog.Default()
+// setupTestFixture creates a test fixture with common entities (user, currency, account, etc.)
+func setupTestFixture(t *testing.T, logger *slog.Logger, username string) *TestFixture {
+	t.Helper()
 	storage := mustOpenTestStorage(t, logger)
-	defer storage.Close()
 
 	// Create a user
-	createdUser, err := storage.CreateUser("testuser", "password123")
+	createdUser, err := storage.CreateUser(username, "password123")
 	if err != nil {
 		t.Fatalf("failed to create user: %v", err)
 	}
 	userID := createdUser.ID.String()
 
 	// Create a currency
-	currency := &goserver.CurrencyNoId{
-		Name: "USD",
-	}
+	currency := &goserver.CurrencyNoId{Name: "USD"}
 	createdCurrency, err := storage.CreateCurrency(userID, currency)
 	if err != nil {
 		t.Fatalf("failed to create currency: %v", err)
@@ -49,122 +58,154 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 	// Create an account
 	account := &goserver.AccountNoId{
 		Name:        "Test Account",
-		Description: "Test account for auto-conversion",
+		Description: "Test account",
 	}
 	createdAccount, err := storage.CreateAccount(userID, account)
 	if err != nil {
 		t.Fatalf("failed to create account: %v", err)
 	}
 
-	// Create a matcher with perfect success history (all true confirmations)
-	matcher := &goserver.MatcherNoId{
-		Name:                "Perfect Matcher",
-		OutputDescription:   "Auto-converted transaction",
-		OutputAccountId:     createdAccount.Id,
-		OutputTags:          []string{"auto-converted"},
-		DescriptionRegExp:   `(?i)test`,
-		ConfirmationHistory: []bool{true, true, true}, // Perfect success history
+	// Create unprocessed service
+	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, storage)
+
+	return &TestFixture{
+		Storage:            storage,
+		Logger:             logger,
+		UserID:             userID,
+		Currency:           createdCurrency,
+		Account:            createdAccount,
+		UnprocessedService: unprocessedService,
 	}
-	createdMatcher, err := storage.CreateMatcher(userID, matcher)
+}
+
+// createMatcher creates a matcher with the given configuration
+func (f *TestFixture) createMatcher(t *testing.T, name, description string, tags []string, history []bool) goserver.Matcher {
+	t.Helper()
+	matcher := &goserver.MatcherNoId{
+		Name:                name,
+		OutputDescription:   description,
+		OutputAccountId:     f.Account.Id,
+		OutputTags:          tags,
+		DescriptionRegExp:   `(?i)test`,
+		ConfirmationHistory: history,
+	}
+	createdMatcher, err := f.Storage.CreateMatcher(f.UserID, matcher)
 	if err != nil {
 		t.Fatalf("failed to create matcher: %v", err)
 	}
+	return createdMatcher
+}
 
-	// Create another matcher with mixed history
-	mixedMatcher := &goserver.MatcherNoId{
-		Name:                "Mixed Matcher",
-		OutputDescription:   "Mixed transaction",
-		OutputAccountId:     createdAccount.Id,
-		OutputTags:          []string{"mixed"},
-		DescriptionRegExp:   `(?i)test`,
-		ConfirmationHistory: []bool{true, false, true}, // Mixed history
-	}
-	_, err = storage.CreateMatcher(userID, mixedMatcher)
-	if err != nil {
-		t.Fatalf("failed to create mixed matcher: %v", err)
-	}
-
-	// Create an unprocessed transaction that should match both matchers
+// createTransaction creates an unprocessed transaction
+func (f *TestFixture) createTransaction(t *testing.T, description string) goserver.Transaction {
+	t.Helper()
 	transaction := &goserver.TransactionNoId{
 		Date:        time.Now(),
-		Description: "Test transaction for auto-conversion",
+		Description: description,
 		Tags:        []string{"unprocessed"},
 		Movements: []goserver.Movement{
-			{AccountId: "", CurrencyId: createdCurrency.Id, Amount: -100.0}, // Empty account - should be filled by matcher
-			{AccountId: createdAccount.Id, CurrencyId: createdCurrency.Id, Amount: 100.0},
+			{AccountId: "", CurrencyId: f.Currency.Id, Amount: -100.0},
+			{AccountId: f.Account.Id, CurrencyId: f.Currency.Id, Amount: 100.0},
 		},
 	}
-	createdTransaction, err := storage.CreateTransaction(userID, transaction)
+	createdTransaction, err := f.Storage.CreateTransaction(f.UserID, transaction)
 	if err != nil {
 		t.Fatalf("failed to create transaction: %v", err)
 	}
+	f.OriginalTransaction = transaction
+	f.CreatedTransaction = createdTransaction
+	return createdTransaction
+}
 
-	// Create a bank importer to ensure the user is included in getAllUsers
+// createBankImporter creates a bank importer to ensure the user is included in getAllUsers
+func (f *TestFixture) createBankImporter(t *testing.T) {
+	t.Helper()
 	bankImporter := &goserver.BankImporterNoId{
 		Name:        "Test Importer",
 		Description: "Test bank importer",
 		Type:        "fio",
 	}
-	_, err = storage.CreateBankImporter(userID, bankImporter)
+	_, err := f.Storage.CreateBankImporter(f.UserID, bankImporter)
 	if err != nil {
 		t.Fatalf("failed to create bank importer: %v", err)
 	}
+}
 
-	// Before auto-conversion: verify transaction exists and is unprocessed
-	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, storage)
-	unprocessedBefore, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		t.Context(), userID, false, "",
+// getUnprocessedTransactions retrieves unprocessed transactions for the user
+func (f *TestFixture) getUnprocessedTransactions(t *testing.T) []goserver.UnprocessedTransaction {
+	t.Helper()
+	unprocessed, _, err := f.UnprocessedService.PrepareUnprocessedTransactions(
+		t.Context(), f.UserID, false, "",
 	)
 	if err != nil {
-		t.Fatalf("failed to get unprocessed transactions before: %v", err)
+		t.Fatalf("failed to get unprocessed transactions: %v", err)
 	}
+	return unprocessed
+}
+
+//nolint:cyclop,funlen
+func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
+	// Test scenario: Single perfect matcher (≥10 confirmations) → Transaction is auto-converted
+	logger := slog.Default()
+	fixture := setupTestFixture(t, logger, "testuser")
+	defer fixture.Storage.Close()
+
+	// Create matchers with specific confirmation histories
+	perfectMatcher := fixture.createMatcher(t,
+		"Perfect Matcher",
+		"Auto-converted transaction",
+		[]string{"auto-converted"},
+		[]bool{true, true, true, true, true, true, true, true, true, true}, // 10 perfect confirmations
+	)
+
+	fixture.createMatcher(t,
+		"Mixed Matcher",
+		"Mixed transaction",
+		[]string{"mixed"},
+		[]bool{true, false, true}, // Mixed history - insufficient
+	)
+
+	// Create transaction and bank importer
+	createdTransaction := fixture.createTransaction(t, "Test transaction for auto-conversion")
+	fixture.createBankImporter(t)
+
+	// Verify initial state: transaction is unprocessed with 2 matchers
+	unprocessedBefore := fixture.getUnprocessedTransactions(t)
 	if len(unprocessedBefore) != 1 {
 		t.Fatalf("expected 1 unprocessed transaction before auto-conversion, got %d", len(unprocessedBefore))
 	}
 	if unprocessedBefore[0].Transaction.Id != createdTransaction.Id {
 		t.Fatalf("unexpected transaction ID before auto-conversion")
 	}
-
-	// Verify that the unprocessed transaction has 2 matchers (perfect and mixed)
 	if len(unprocessedBefore[0].Matched) != 2 {
 		t.Fatalf("expected 2 matched matchers, got %d", len(unprocessedBefore[0].Matched))
 	}
 
 	// Run the auto-conversion process
-	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, storage)
+	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, fixture.Storage)
 
-	// After auto-conversion: verify transaction was converted using the perfect matcher
-	unprocessedAfter, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		t.Context(), userID, false, "",
-	)
-	if err != nil {
-		t.Fatalf("failed to get unprocessed transactions after: %v", err)
-	}
-
-	// The transaction should be converted (no longer unprocessed)
+	// Verify transaction was auto-converted
+	unprocessedAfter := fixture.getUnprocessedTransactions(t)
 	if len(unprocessedAfter) != 0 {
 		t.Fatalf("expected 0 unprocessed transactions after auto-conversion, got %d", len(unprocessedAfter))
 	}
 
-	// Verify the transaction was actually converted with the correct properties
-	convertedTransaction, err := storage.GetTransaction(userID, createdTransaction.Id)
+	// Verify transaction properties were updated correctly
+	convertedTransaction, err := fixture.Storage.GetTransaction(fixture.UserID, createdTransaction.Id)
 	if err != nil {
 		t.Fatalf("failed to get converted transaction: %v", err)
 	}
 
-	// Check that the transaction was updated with matcher's output
-	if convertedTransaction.Description != createdMatcher.OutputDescription {
+	if convertedTransaction.Description != perfectMatcher.OutputDescription {
 		t.Fatalf("expected description '%s', got '%s'",
-			createdMatcher.OutputDescription, convertedTransaction.Description)
+			perfectMatcher.OutputDescription, convertedTransaction.Description)
 	}
 
-	// Check that the empty account was filled
-	if convertedTransaction.Movements[0].AccountId != createdMatcher.OutputAccountId {
+	if convertedTransaction.Movements[0].AccountId != perfectMatcher.OutputAccountId {
 		t.Fatalf("expected account ID '%s', got '%s'",
-			createdMatcher.OutputAccountId, convertedTransaction.Movements[0].AccountId)
+			perfectMatcher.OutputAccountId, convertedTransaction.Movements[0].AccountId)
 	}
 
-	// Check that output tags were added
 	found := false
 	for _, tag := range convertedTransaction.Tags {
 		if tag == "auto-converted" {
@@ -176,15 +217,15 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 		t.Fatalf("expected tag 'auto-converted' to be added to converted transaction")
 	}
 
-	// Verify that the matcher's confirmation history was updated
-	updatedMatcher, err := storage.GetMatcher(userID, createdMatcher.Id)
+	// Verify matcher's confirmation history was updated
+	updatedMatcher, err := fixture.Storage.GetMatcher(fixture.UserID, perfectMatcher.Id)
 	if err != nil {
 		t.Fatalf("failed to get updated matcher: %v", err)
 	}
 
 	history := updatedMatcher.GetConfirmationHistory()
-	if len(history) != 4 { // Original 3 + 1 new confirmation
-		t.Fatalf("expected 4 confirmations in history, got %d", len(history))
+	if len(history) != 10 { // History is capped at 10 (MatcherConfirmationHistoryMax)
+		t.Fatalf("expected 10 confirmations in history, got %d", len(history))
 	}
 	if !history[len(history)-1] {
 		t.Fatalf("expected last confirmation to be true (successful auto-conversion)")
@@ -193,119 +234,41 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 
 //nolint:cyclop,funlen
 func TestProcessUnprocessedTransactionsMultiplePerfectMatchers(t *testing.T) {
-	// Create in-memory database for testing
+	// Test scenario: Multiple perfect matchers → Transaction remains unprocessed (ambiguous)
 	logger := slog.Default()
-	cfg := &config.Config{DBPath: ":memory:", Verbose: false, MatcherConfirmationHistoryMax: 10}
-	storage := database.NewStorage(logger, cfg)
-	if err := storage.Open(); err != nil {
-		t.Fatalf("failed to open storage: %v", err)
-	}
-	defer storage.Close()
-
-	// Create a user
-	createdUser, err := storage.CreateUser("testuser2", "password123")
-	if err != nil {
-		t.Fatalf("failed to create user: %v", err)
-	}
-	userID := createdUser.ID.String()
-
-	// Create a currency
-	currency := &goserver.CurrencyNoId{
-		Name: "USD",
-	}
-	createdCurrency, err := storage.CreateCurrency(userID, currency)
-	if err != nil {
-		t.Fatalf("failed to create currency: %v", err)
-	}
-
-	// Create an account
-	account := &goserver.AccountNoId{
-		Name:        "Test Account",
-		Description: "Test account for multiple perfect matchers",
-	}
-	createdAccount, err := storage.CreateAccount(userID, account)
-	if err != nil {
-		t.Fatalf("failed to create account: %v", err)
-	}
+	fixture := setupTestFixture(t, logger, "testuser2")
+	defer fixture.Storage.Close()
 
 	// Create two matchers with perfect success history
-	matcher1 := &goserver.MatcherNoId{
-		Name:                "Perfect Matcher 1",
-		OutputDescription:   "Auto-converted by matcher 1",
-		OutputAccountId:     createdAccount.Id,
-		OutputTags:          []string{"matcher1"},
-		DescriptionRegExp:   `(?i)test`,
-		ConfirmationHistory: []bool{true, true, true}, // Perfect success history
-	}
-	_, err = storage.CreateMatcher(userID, matcher1)
-	if err != nil {
-		t.Fatalf("failed to create matcher1: %v", err)
-	}
-
-	matcher2 := &goserver.MatcherNoId{
-		Name:                "Perfect Matcher 2",
-		OutputDescription:   "Auto-converted by matcher 2",
-		OutputAccountId:     createdAccount.Id,
-		OutputTags:          []string{"matcher2"},
-		DescriptionRegExp:   `(?i)test`,
-		ConfirmationHistory: []bool{true, true}, // Perfect success history
-	}
-	_, err = storage.CreateMatcher(userID, matcher2)
-	if err != nil {
-		t.Fatalf("failed to create matcher2: %v", err)
-	}
-
-	// Create an unprocessed transaction that should match both perfect matchers
-	transaction := &goserver.TransactionNoId{
-		Date:        time.Now(),
-		Description: "Test transaction with multiple perfect matchers",
-		Tags:        []string{"unprocessed"},
-		Movements: []goserver.Movement{
-			{AccountId: "", CurrencyId: createdCurrency.Id, Amount: -100.0},
-			{AccountId: createdAccount.Id, CurrencyId: createdCurrency.Id, Amount: 100.0},
-		},
-	}
-	createdTransaction, err := storage.CreateTransaction(userID, transaction)
-	if err != nil {
-		t.Fatalf("failed to create transaction: %v", err)
-	}
-
-	// Create a bank importer to ensure the user is included in getAllUsers
-	bankImporter := &goserver.BankImporterNoId{
-		Name:        "Test Importer",
-		Description: "Test bank importer",
-		Type:        "fio",
-	}
-	_, err = storage.CreateBankImporter(userID, bankImporter)
-	if err != nil {
-		t.Fatalf("failed to create bank importer: %v", err)
-	}
-
-	// Before auto-conversion: verify transaction exists and is unprocessed
-	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, storage)
-	unprocessedBefore, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		t.Context(), userID, false, "",
+	fixture.createMatcher(t,
+		"Perfect Matcher 1",
+		"Auto-converted by matcher 1",
+		[]string{"matcher1"},
+		[]bool{true, true, true, true, true, true, true, true, true, true}, // 10 perfect confirmations
 	)
-	if err != nil {
-		t.Fatalf("failed to get unprocessed transactions before: %v", err)
-	}
+
+	fixture.createMatcher(t,
+		"Perfect Matcher 2",
+		"Auto-converted by matcher 2",
+		[]string{"matcher2"},
+		[]bool{true, true, true, true, true, true, true, true, true, true}, // 10 perfect confirmations
+	)
+
+	// Create transaction and bank importer
+	createdTransaction := fixture.createTransaction(t, "Test transaction with multiple perfect matchers")
+	fixture.createBankImporter(t)
+
+	// Verify initial state: transaction is unprocessed
+	unprocessedBefore := fixture.getUnprocessedTransactions(t)
 	if len(unprocessedBefore) != 1 {
 		t.Fatalf("expected 1 unprocessed transaction before auto-conversion, got %d", len(unprocessedBefore))
 	}
 
 	// Run the auto-conversion process
-	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, storage)
+	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, fixture.Storage)
 
-	// After auto-conversion: verify transaction is still unprocessed
-	// (because there are multiple perfect matchers)
-	unprocessedAfter, _, err := unprocessedService.PrepareUnprocessedTransactions(
-		t.Context(), userID, false, "",
-	)
-	if err != nil {
-		t.Fatalf("failed to get unprocessed transactions after: %v", err)
-	}
-
-	// The transaction should still be unprocessed due to multiple perfect matchers
+	// Verify transaction is still unprocessed (multiple perfect matchers = ambiguous)
+	unprocessedAfter := fixture.getUnprocessedTransactions(t)
 	if len(unprocessedAfter) != 1 {
 		t.Fatalf(
 			"expected 1 unprocessed transaction after auto-conversion (multiple perfect matchers), got %d",
@@ -313,14 +276,72 @@ func TestProcessUnprocessedTransactionsMultiplePerfectMatchers(t *testing.T) {
 		)
 	}
 
-	// Verify the transaction was not modified
-	unchangedTransaction, err := storage.GetTransaction(userID, createdTransaction.Id)
+	// Verify transaction was not modified
+	unchangedTransaction, err := fixture.Storage.GetTransaction(fixture.UserID, createdTransaction.Id)
 	if err != nil {
 		t.Fatalf("failed to get unchanged transaction: %v", err)
 	}
 
-	// Transaction should remain unchanged
-	if unchangedTransaction.Description != transaction.Description {
+	if unchangedTransaction.Description != fixture.OriginalTransaction.Description {
 		t.Fatalf("transaction description was unexpectedly changed")
+	}
+}
+
+//nolint:cyclop,funlen
+func TestProcessUnprocessedTransactionsInsufficientConfirmationHistory(t *testing.T) {
+	// Test scenario: Matcher with <10 confirmations → Transaction remains unprocessed (insufficient history)
+	logger := slog.Default()
+	fixture := setupTestFixture(t, logger, "testuser3")
+	defer fixture.Storage.Close()
+
+	// Create a matcher with perfect success history but insufficient confirmations (< 10)
+	insufficientMatcher := fixture.createMatcher(t,
+		"Insufficient History Matcher",
+		"Should not auto-convert",
+		[]string{"insufficient"},
+		[]bool{true, true, true, true, true, true, true, true, true}, // Only 9 confirmations
+	)
+
+	// Create transaction and bank importer
+	createdTransaction := fixture.createTransaction(t, "Test transaction with insufficient matcher history")
+	fixture.createBankImporter(t)
+
+	// Verify initial state: transaction is unprocessed
+	unprocessedBefore := fixture.getUnprocessedTransactions(t)
+	if len(unprocessedBefore) != 1 {
+		t.Fatalf("expected 1 unprocessed transaction before auto-conversion, got %d", len(unprocessedBefore))
+	}
+
+	// Run the auto-conversion process
+	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, fixture.Storage)
+
+	// Verify transaction is still unprocessed (insufficient confirmation history)
+	unprocessedAfter := fixture.getUnprocessedTransactions(t)
+	if len(unprocessedAfter) != 1 {
+		t.Fatalf(
+			"expected 1 unprocessed transaction after auto-conversion (insufficient history), got %d",
+			len(unprocessedAfter),
+		)
+	}
+
+	// Verify transaction was not modified
+	unchangedTransaction, err := fixture.Storage.GetTransaction(fixture.UserID, createdTransaction.Id)
+	if err != nil {
+		t.Fatalf("failed to get unchanged transaction: %v", err)
+	}
+
+	if unchangedTransaction.Description != fixture.OriginalTransaction.Description {
+		t.Fatalf("transaction description was unexpectedly changed")
+	}
+
+	// Verify matcher's confirmation history was NOT updated (transaction not auto-converted)
+	updatedMatcher, err := fixture.Storage.GetMatcher(fixture.UserID, insufficientMatcher.Id)
+	if err != nil {
+		t.Fatalf("failed to get updated matcher: %v", err)
+	}
+
+	history := updatedMatcher.GetConfirmationHistory()
+	if len(history) != 9 { // Should remain at 9 confirmations
+		t.Fatalf("expected 9 confirmations in history (unchanged), got %d", len(history))
 	}
 }

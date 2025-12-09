@@ -231,6 +231,13 @@ func findPerfectMatchers(
 			}
 		}
 
+		if len(history) < 10 {
+			logger.Info("Matcher has insufficient confirmation history",
+				"matcherID", matched.MatcherId, "userID", userID,
+				"historyLength", len(history))
+			continue
+		}
+
 		if allSuccessful {
 			perfect = append(perfect, matched)
 			logger.Info("Found matcher with 100% success history",
