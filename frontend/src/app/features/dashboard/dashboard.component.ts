@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DecimalPipe, JsonPipe } from '@angular/common';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { map, forkJoin } from 'rxjs';
 import { ApiConfiguration } from '../../core/api/api-configuration';
 import { getExpenses } from '../../core/api/fn/aggregations/get-expenses';
@@ -54,11 +55,13 @@ export class DashboardComponent implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly currencyService = inject(CurrencyService);
   private readonly userService = inject(UserService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
 
   protected readonly loading = signal(true);
   protected readonly expenseData = signal<Aggregation | null>(null);
   protected readonly accounts = this.accountService.accounts;
   protected readonly selectedOutputCurrencyId = signal<string | null>(null);
+  protected readonly isSmallScreen = signal(false);
 
   // Sorting state
   protected readonly sortColumn = signal<string>('accountName');
@@ -71,7 +74,16 @@ export class DashboardComponent implements OnInit {
 
   protected readonly monthColumns = computed(() => {
     const data = this.expenseData();
-    return data?.intervals || [];
+    const allIntervals = data?.intervals || [];
+
+    // Show different number of months based on screen size
+    if (this.isSmallScreen()) {
+      // On small screens (< 768px), show only the last 6 months
+      return allIntervals.slice(-6);
+    } else {
+      // On larger screens (>= 768px), show all 12 months
+      return allIntervals;
+    }
   });
 
   protected readonly currencyTables = computed<CurrencyTable[]>(() => {
@@ -202,6 +214,11 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.currencyService.loadCurrencies().subscribe();
+
+    // Set up breakpoint observer to detect screen size
+    this.breakpointObserver.observe(['(max-width: 768px)']).subscribe(result => {
+      this.isSmallScreen.set(result.matches);
+    });
 
     // Load user data and set default currency
     this.userService.loadUser().subscribe({

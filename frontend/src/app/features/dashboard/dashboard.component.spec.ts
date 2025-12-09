@@ -4,6 +4,8 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { ApiConfiguration } from '../../core/api/api-configuration';
 import { AccountService } from '../accounts/services/account.service';
 import { CurrencyService } from '../currencies/services/currency.service';
+import { UserService } from '../../core/services/user.service';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { of } from 'rxjs';
 
 describe('DashboardComponent', () => {
@@ -12,6 +14,8 @@ describe('DashboardComponent', () => {
   let httpClient: jasmine.SpyObj<HttpClient>;
   let accountService: jasmine.SpyObj<AccountService>;
   let currencyService: jasmine.SpyObj<CurrencyService>;
+  let userService: jasmine.SpyObj<UserService>;
+  let breakpointObserver: jasmine.SpyObj<BreakpointObserver>;
 
   beforeEach(async () => {
     const httpClientSpy = jasmine.createSpyObj('HttpClient', ['request']);
@@ -29,6 +33,17 @@ describe('DashboardComponent', () => {
     });
     currencyServiceSpy.loadCurrencies.and.returnValue(of([]));
 
+    const userServiceSpy = jasmine.createSpyObj('UserService', ['loadUser'], {
+      user: jasmine.createSpy('user').and.returnValue(null),
+    });
+    userServiceSpy.loadUser.and.returnValue(of({ favoriteCurrencyId: null } as any));
+
+    const breakpointObserverSpy = jasmine.createSpyObj('BreakpointObserver', ['observe']);
+    breakpointObserverSpy.observe.and.returnValue(of({
+      matches: false,
+      breakpoints: { '(max-width: 768px)': false }
+    }));
+
     const apiConfigMock = { rootUrl: 'http://localhost:8080/api/v1' };
 
     await TestBed.configureTestingModule({
@@ -38,12 +53,16 @@ describe('DashboardComponent', () => {
         { provide: ApiConfiguration, useValue: apiConfigMock },
         { provide: AccountService, useValue: accountServiceSpy },
         { provide: CurrencyService, useValue: currencyServiceSpy },
+        { provide: UserService, useValue: userServiceSpy },
+        { provide: BreakpointObserver, useValue: breakpointObserverSpy },
       ],
     }).compileComponents();
 
     httpClient = TestBed.inject(HttpClient) as jasmine.SpyObj<HttpClient>;
     accountService = TestBed.inject(AccountService) as jasmine.SpyObj<AccountService>;
     currencyService = TestBed.inject(CurrencyService) as jasmine.SpyObj<CurrencyService>;
+    userService = TestBed.inject(UserService) as jasmine.SpyObj<UserService>;
+    breakpointObserver = TestBed.inject(BreakpointObserver) as jasmine.SpyObj<BreakpointObserver>;
 
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
@@ -99,5 +118,70 @@ describe('DashboardComponent', () => {
     const compiled = fixture.nativeElement;
     const spinner = compiled.querySelector('mat-spinner');
     expect(spinner).toBeTruthy();
+  });
+
+  it('should show all 12 months on large screens', () => {
+    // Mock 12 months of data
+    const mockData = {
+      intervals: [
+        '2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01',
+        '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01',
+        '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01'
+      ],
+      currencies: []
+    };
+
+    // Set up large screen (not small screen)
+    component['isSmallScreen'].set(false);
+    component['expenseData'].set(mockData as any);
+
+    const monthColumns = component['monthColumns']();
+    expect(monthColumns.length).toBe(12);
+    expect(monthColumns).toEqual(mockData.intervals);
+  });
+
+  it('should show only 6 months on small screens', () => {
+    // Mock 12 months of data
+    const mockData = {
+      intervals: [
+        '2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01',
+        '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01',
+        '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01'
+      ],
+      currencies: []
+    };
+
+    // Set up small screen
+    component['isSmallScreen'].set(true);
+    component['expenseData'].set(mockData as any);
+
+    const monthColumns = component['monthColumns']();
+    expect(monthColumns.length).toBe(6);
+    // Should show the last 6 months
+    expect(monthColumns).toEqual([
+      '2024-07-01', '2024-08-01', '2024-09-01',
+      '2024-10-01', '2024-11-01', '2024-12-01'
+    ]);
+  });
+
+  it('should update screen size when breakpoint changes', () => {
+    // Initially set to large screen
+    breakpointObserver.observe.and.returnValue(of({
+      matches: false,
+      breakpoints: { '(max-width: 768px)': false }
+    }));
+
+    component.ngOnInit();
+    expect(component['isSmallScreen']()).toBe(false);
+
+    // Change to small screen
+    breakpointObserver.observe.and.returnValue(of({
+      matches: true,
+      breakpoints: { '(max-width: 768px)': true }
+    }));
+
+    // Trigger the observable again
+    component.ngOnInit();
+    expect(component['isSmallScreen']()).toBe(true);
   });
 });

@@ -80,14 +80,24 @@ mat-card {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow-x: auto;
   padding: 16px;
+
+  // Only allow horizontal scroll on small screens
+  @media (max-width: 768px) {
+    overflow-x: auto;
+  }
+
+  // Prevent horizontal scroll on larger screens
+  @media (min-width: 769px) {
+    overflow-x: hidden;
+  }
 }
 
 .expense-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  table-layout: fixed; // Use fixed layout for better control over column widths
 
   thead {
     tr {
@@ -119,7 +129,6 @@ mat-card {
       }
 
       &.account-header {
-        min-width: 112px;
         position: sticky;
         left: 0;
         z-index: 2;
@@ -128,21 +137,53 @@ mat-card {
         &.sortable:hover {
           background-color: rgba(0, 0, 0, 0.08);
         }
+
+        // Responsive width for account column
+        @media (max-width: 768px) {
+          min-width: 112px;
+          width: 112px;
+        }
+
+        @media (min-width: 769px) {
+          width: 15%; // Fixed percentage for account column on larger screens
+          min-width: 120px;
+        }
       }
 
       &.month-header {
-        min-width: 96px;
         text-align: right;
+
+        // Responsive width for month columns
+        @media (max-width: 768px) {
+          min-width: 96px;
+        }
+
+        @media (min-width: 769px) {
+          // On larger screens, distribute remaining 75% among month columns
+          // With 12 months, each gets approximately 6.25% (75% / 12)
+          width: 6.25%;
+          min-width: 70px;
+        }
       }
 
       &.total-header {
-        min-width: 112px;
         text-align: right;
         font-weight: 700;
         background-color: rgba(0, 0, 0, 0.05);
 
         &.sortable:hover {
           background-color: rgba(0, 0, 0, 0.12);
+        }
+
+        // Responsive width for total column
+        @media (max-width: 768px) {
+          min-width: 112px;
+          width: 112px;
+        }
+
+        @media (min-width: 769px) {
+          width: 10%; // Fixed percentage for total column on larger screens
+          min-width: 100px;
         }
       }
     }
