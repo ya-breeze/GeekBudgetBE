@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
+import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -25,6 +26,7 @@ import { TransactionUtils } from './utils/transaction.utils';
   selector: 'app-transactions',
   imports: [
     MatTableModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -82,6 +84,10 @@ export class TransactionsComponent implements OnInit {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   });
 
+  // Sorting state
+  protected readonly sortActive = signal<string | null>(null);
+  protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
+
   // Filter state - public for testing
   readonly selectedAccountIds = signal<string[]>([]);
   readonly selectedTags = signal<string[]>([]);
@@ -138,6 +144,21 @@ export class TransactionsComponent implements OnInit {
     }
 
     return filtered;
+  });
+
+  // Computed property for sorted and filtered transactions
+  protected readonly sortedAndFilteredTransactions = computed(() => {
+    const data = this.filteredTransactions();
+    const columns = this.displayedColumns();
+
+    if (!columns.length) {
+      return data;
+    }
+
+    const active = this.sortActive() ?? columns[0];
+    const direction = this.sortDirection();
+
+    return [...data].sort((a, b) => this.compareTransactions(a, b, active, direction));
   });
 
   // Computed property to check if any filters are active - public for testing
@@ -306,6 +327,17 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
+  protected onSortChange(sort: Sort): void {
+    if (!sort.direction) {
+      this.sortActive.set(null);
+      this.sortDirection.set('asc');
+      return;
+    }
+
+    this.sortActive.set(sort.active);
+    this.sortDirection.set(sort.direction);
+  }
+
   /**
    * Format the effective amounts for a transaction
    * @param transaction The transaction to format
@@ -327,5 +359,63 @@ export class TransactionsComponent implements OnInit {
         return `${ea.amount.toFixed(2)} ${currencyName}`;
       })
       .join(', ');
+  }
+
+  private compareTransactions(
+    a: Transaction,
+    b: Transaction,
+    active: string,
+    direction: 'asc' | 'desc'
+  ): number {
+    const valueA = this.getTransactionSortValue(a, active);
+    const valueB = this.getTransactionSortValue(b, active);
+    return this.comparePrimitiveValues(valueA, valueB, direction);
+  }
+
+  private getTransactionSortValue(transaction: Transaction, active: string): string | number | null {
+    switch (active) {
+      case 'date':
+        return transaction.date || '';
+      case 'description':
+        return transaction.description?.toLowerCase() || '';
+      case 'effectiveAmount': {
+        // Sort by the first effective amount value
+        const effectiveAmounts = TransactionUtils.getEffectiveAmounts(transaction);
+        return effectiveAmounts.length > 0 ? effectiveAmounts[0].amount : 0;
+      }
+      case 'movements': {
+        // Sort by formatted movements string
+        return this.formatMovements(transaction).toLowerCase();
+      }
+      case 'tags': {
+        // Sort by first tag alphabetically
+        if (transaction.tags && transaction.tags.length > 0) {
+          return transaction.tags.sort()[0].toLowerCase();
+        }
+        return '';
+      }
+      default:
+        return null;
+    }
+  }
+
+  private comparePrimitiveValues(
+    a: string | number | null,
+    b: string | number | null,
+    direction: 'asc' | 'desc'
+  ): number {
+    const factor = direction === 'asc' ? 1 : -1;
+
+    if (a === null && b === null) return 0;
+    if (a === null) return factor;
+    if (b === null) return -factor;
+
+    if (typeof a === 'number' && typeof b === 'number') {
+      return (a - b) * factor;
+    }
+
+    const strA = String(a);
+    const strB = String(b);
+    return strA.localeCompare(strB) * factor;
   }
 }

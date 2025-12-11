@@ -425,6 +425,83 @@ describe('TransactionsComponent', () => {
       expect(result).toBe('100.00 USD');
     });
   });
+
+  describe('Sorting', () => {
+    it('should initialize with no active sort', () => {
+      expect(component['sortActive']()).toBeNull();
+      expect(component['sortDirection']()).toBe('asc');
+    });
+
+    it('should update sort state when onSortChange is called', () => {
+      component['onSortChange']({ active: 'date', direction: 'desc' });
+      expect(component['sortActive']()).toBe('date');
+      expect(component['sortDirection']()).toBe('desc');
+    });
+
+    it('should reset sort when direction is empty', () => {
+      component['onSortChange']({ active: 'date', direction: 'desc' });
+      component['onSortChange']({ active: 'date', direction: '' });
+      expect(component['sortActive']()).toBeNull();
+      expect(component['sortDirection']()).toBe('asc');
+    });
+
+    it('should sort transactions by date ascending', () => {
+      component['onSortChange']({ active: 'date', direction: 'asc' });
+      const sorted = component['sortedAndFilteredTransactions']();
+      expect(sorted[0].id).toBe('1'); // 2024-01-15
+      expect(sorted[1].id).toBe('2'); // 2024-01-16
+      expect(sorted[2].id).toBe('3'); // 2024-01-17
+      expect(sorted[3].id).toBe('4'); // 2024-01-18
+    });
+
+    it('should sort transactions by date descending', () => {
+      component['onSortChange']({ active: 'date', direction: 'desc' });
+      const sorted = component['sortedAndFilteredTransactions']();
+      expect(sorted[0].id).toBe('4'); // 2024-01-18
+      expect(sorted[1].id).toBe('3'); // 2024-01-17
+      expect(sorted[2].id).toBe('2'); // 2024-01-16
+      expect(sorted[3].id).toBe('1'); // 2024-01-15
+    });
+
+    it('should sort transactions by description ascending', () => {
+      component['onSortChange']({ active: 'description', direction: 'asc' });
+      const sorted = component['sortedAndFilteredTransactions']();
+      expect(sorted[0].id).toBe('2'); // Gas station
+      expect(sorted[1].id).toBe('1'); // Grocery shopping
+      expect(sorted[2].id).toBe('4'); // Online shopping
+      expect(sorted[3].id).toBe('3'); // Restaurant dinner
+    });
+
+    it('should sort transactions by description descending', () => {
+      component['onSortChange']({ active: 'description', direction: 'desc' });
+      const sorted = component['sortedAndFilteredTransactions']();
+      expect(sorted[0].id).toBe('3'); // Restaurant dinner
+      expect(sorted[1].id).toBe('4'); // Online shopping
+      expect(sorted[2].id).toBe('1'); // Grocery shopping
+      expect(sorted[3].id).toBe('2'); // Gas station
+    });
+
+    it('should sort transactions by effective amount', () => {
+      component['onSortChange']({ active: 'effectiveAmount', direction: 'asc' });
+      const sorted = component['sortedAndFilteredTransactions']();
+      // All have same amount (50, 75, 100, 200), so check ascending order
+      expect(sorted[0].id).toBe('2'); // 50
+      expect(sorted[1].id).toBe('3'); // 75
+      expect(sorted[2].id).toBe('1'); // 100
+      expect(sorted[3].id).toBe('4'); // 200
+    });
+
+    it('should apply sorting after filtering', () => {
+      component.selectedAccountIds.set(['acc1']);
+      component['onSortChange']({ active: 'date', direction: 'desc' });
+      const sorted = component['sortedAndFilteredTransactions']();
+      // Should have transactions 1, 2, 4 (all with acc1), sorted by date desc
+      expect(sorted.length).toBe(3);
+      expect(sorted[0].id).toBe('4'); // 2024-01-18
+      expect(sorted[1].id).toBe('2'); // 2024-01-16
+      expect(sorted[2].id).toBe('1'); // 2024-01-15
+    });
+  });
 });
 
 
