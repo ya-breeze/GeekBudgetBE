@@ -6,7 +6,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TransactionService } from './services/transaction.service';
 import { Transaction } from '../../core/api/models/transaction';
 import { TransactionFormDialogComponent } from './transaction-form-dialog/transaction-form-dialog.component';
@@ -24,7 +28,11 @@ import { forkJoin, Observable } from 'rxjs';
     MatDialogModule,
     MatSnackBarModule,
     MatChipsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
     DatePipe,
+    FormsModule,
   ],
   templateUrl: './transactions.component.html',
   styleUrl: './transactions.component.scss',
@@ -62,6 +70,73 @@ export class TransactionsComponent implements OnInit {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   });
 
+  // Filter state - public for testing
+  readonly selectedAccountIds = signal<string[]>([]);
+  readonly selectedTags = signal<string[]>([]);
+  readonly descriptionFilter = signal<string>('');
+
+  // Computed property for all unique tags from transactions - public for testing
+  readonly availableTags = computed(() => {
+    const tagsSet = new Set<string>();
+    this.transactions().forEach((transaction) => {
+      if (transaction.tags) {
+        transaction.tags.forEach((tag) => tagsSet.add(tag));
+      }
+    });
+    return Array.from(tagsSet).sort();
+  });
+
+  // Computed property for filtered transactions - public for testing
+  readonly filteredTransactions = computed(() => {
+    let filtered = this.transactions();
+
+    // Filter by accounts
+    const accountIds = this.selectedAccountIds();
+    if (accountIds.length > 0) {
+      filtered = filtered.filter((transaction) => {
+        if (!transaction.movements || transaction.movements.length === 0) {
+          return false;
+        }
+        // Check if any movement's accountId is in the selected accounts
+        return transaction.movements.some((movement) =>
+          movement.accountId && accountIds.includes(movement.accountId)
+        );
+      });
+    }
+
+    // Filter by tags
+    const tags = this.selectedTags();
+    if (tags.length > 0) {
+      filtered = filtered.filter((transaction) => {
+        if (!transaction.tags || transaction.tags.length === 0) {
+          return false;
+        }
+        // Check if transaction has any of the selected tags
+        return transaction.tags.some((tag) => tags.includes(tag));
+      });
+    }
+
+    // Filter by description
+    const descFilter = this.descriptionFilter().toLowerCase().trim();
+    if (descFilter) {
+      filtered = filtered.filter((transaction) => {
+        const description = transaction.description?.toLowerCase() || '';
+        return description.includes(descFilter);
+      });
+    }
+
+    return filtered;
+  });
+
+  // Computed property to check if any filters are active - public for testing
+  readonly hasActiveFilters = computed(() => {
+    return (
+      this.selectedAccountIds().length > 0 ||
+      this.selectedTags().length > 0 ||
+      this.descriptionFilter().trim() !== ''
+    );
+  });
+
   ngOnInit(): void {
     this.loadData();
   }
@@ -72,6 +147,12 @@ export class TransactionsComponent implements OnInit {
       next: () => this.loading.set(false),
       error: () => this.loading.set(false),
     });
+  }
+
+  clearFilters(): void {
+    this.selectedAccountIds.set([]);
+    this.selectedTags.set([]);
+    this.descriptionFilter.set('');
   }
 
   loadTransactions(): Observable<any> {
