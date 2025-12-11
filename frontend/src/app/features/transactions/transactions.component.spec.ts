@@ -2,11 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TransactionsComponent } from './transactions.component';
 import { TransactionService } from './services/transaction.service';
 import { AccountService } from '../accounts/services/account.service';
+import { CurrencyService } from '../currencies/services/currency.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { signal } from '@angular/core';
 import { Transaction } from '../../core/api/models/transaction';
 import { Account } from '../../core/api/models/account';
+import { Currency } from '../../core/api/models/currency';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -15,6 +17,7 @@ describe('TransactionsComponent', () => {
   let fixture: ComponentFixture<TransactionsComponent>;
   let mockTransactionService: jasmine.SpyObj<TransactionService>;
   let mockAccountService: jasmine.SpyObj<AccountService>;
+  let mockCurrencyService: jasmine.SpyObj<CurrencyService>;
   let mockDialog: jasmine.SpyObj<MatDialog>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
 
@@ -66,6 +69,12 @@ describe('TransactionsComponent', () => {
     { id: 'acc3', name: 'Expense Account', type: 'expense' },
   ];
 
+  const mockCurrencies: Currency[] = [
+    { id: 'usd', name: 'USD', description: 'US Dollar' },
+    { id: 'eur', name: 'EUR', description: 'Euro' },
+    { id: 'gbp', name: 'GBP', description: 'British Pound' },
+  ];
+
   beforeEach(async () => {
     mockTransactionService = jasmine.createSpyObj('TransactionService', ['loadTransactions', 'create', 'update', 'delete'], {
       transactions: signal<Transaction[]>([]),
@@ -77,17 +86,23 @@ describe('TransactionsComponent', () => {
       accounts: signal<Account[]>([]),
     });
 
+    mockCurrencyService = jasmine.createSpyObj('CurrencyService', ['loadCurrencies'], {
+      currencies: signal<Currency[]>([]),
+    });
+
     mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     mockTransactionService.loadTransactions.and.returnValue(of(mockTransactions));
     mockAccountService.loadAccounts.and.returnValue(of(mockAccounts));
+    mockCurrencyService.loadCurrencies.and.returnValue(of(mockCurrencies));
 
     await TestBed.configureTestingModule({
       imports: [TransactionsComponent, NoopAnimationsModule],
       providers: [
         { provide: TransactionService, useValue: mockTransactionService },
         { provide: AccountService, useValue: mockAccountService },
+        { provide: CurrencyService, useValue: mockCurrencyService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
       ],
@@ -99,6 +114,7 @@ describe('TransactionsComponent', () => {
     // Set up initial data
     mockTransactionService.transactions.set(mockTransactions);
     mockAccountService.accounts.set(mockAccounts);
+    mockCurrencyService.currencies.set(mockCurrencies);
 
     fixture.detectChanges();
   });
@@ -316,6 +332,97 @@ describe('TransactionsComponent', () => {
       component.selectedTags.set(['food']);
       component.descriptionFilter.set('test');
       expect(component.hasActiveFilters()).toBe(true);
+    });
+  });
+
+  describe('Format Effective Amounts', () => {
+    it('should format effective amount for single currency transaction', () => {
+      const transaction: Transaction = {
+        id: '1',
+        date: '2024-01-01',
+        movements: [
+          { accountId: 'acc1', amount: -100, currencyId: 'usd' },
+          { accountId: 'acc2', amount: 100, currencyId: 'usd' },
+        ],
+      };
+
+      const result = component.formatEffectiveAmounts(transaction);
+      expect(result).toBe('100.00 USD');
+    });
+
+    it('should format effective amounts for multi-currency transaction', () => {
+      const transaction: Transaction = {
+        id: '1',
+        date: '2024-01-01',
+        movements: [
+          { accountId: 'acc1', amount: -100, currencyId: 'usd' },
+          { accountId: 'acc2', amount: 100, currencyId: 'usd' },
+          { accountId: 'acc3', amount: -50, currencyId: 'eur' },
+          { accountId: 'acc4', amount: 50, currencyId: 'eur' },
+        ],
+      };
+
+      const result = component.formatEffectiveAmounts(transaction);
+      // Result should contain both currencies
+      expect(result).toContain('USD');
+      expect(result).toContain('EUR');
+      expect(result).toContain('100.00');
+      expect(result).toContain('50.00');
+    });
+
+    it('should return N/A for transaction with no movements', () => {
+      const transaction: Transaction = {
+        id: '1',
+        date: '2024-01-01',
+        movements: [],
+      };
+
+      const result = component.formatEffectiveAmounts(transaction);
+      expect(result).toBe('N/A');
+    });
+
+    it('should use currency ID when currency not found in map', () => {
+      const transaction: Transaction = {
+        id: '1',
+        date: '2024-01-01',
+        movements: [
+          { accountId: 'acc1', amount: -100, currencyId: 'unknown-currency' },
+          { accountId: 'acc2', amount: 100, currencyId: 'unknown-currency' },
+        ],
+      };
+
+      const result = component.formatEffectiveAmounts(transaction);
+      expect(result).toBe('100.00 unknown-currency');
+    });
+
+    it('should format decimal amounts with 2 decimal places', () => {
+      const transaction: Transaction = {
+        id: '1',
+        date: '2024-01-01',
+        movements: [
+          { accountId: 'acc1', amount: -123.456, currencyId: 'usd' },
+          { accountId: 'acc2', amount: 123.456, currencyId: 'usd' },
+        ],
+      };
+
+      const result = component.formatEffectiveAmounts(transaction);
+      expect(result).toBe('123.46 USD');
+    });
+
+    it('should calculate effective amount correctly for complex transaction', () => {
+      // +100 USD, -50 USD, -30 USD => max(100, 80) = 100
+      const transaction: Transaction = {
+        id: '1',
+        date: '2024-01-01',
+        movements: [
+          { accountId: 'acc1', amount: 100, currencyId: 'usd' },
+          { accountId: 'acc2', amount: -50, currencyId: 'usd' },
+          { accountId: 'acc3', amount: -30, currencyId: 'usd' },
+        ],
+      };
+
+      const result = component.formatEffectiveAmounts(transaction);
+      expect(result).toBe('100.00 USD');
     });
   });
 });

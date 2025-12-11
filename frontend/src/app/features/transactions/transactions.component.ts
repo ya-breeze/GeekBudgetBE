@@ -16,7 +16,10 @@ import { Transaction } from '../../core/api/models/transaction';
 import { TransactionFormDialogComponent } from './transaction-form-dialog/transaction-form-dialog.component';
 import { AccountService } from '../accounts/services/account.service';
 import { Account } from '../../core/api/models/account';
+import { CurrencyService } from '../currencies/services/currency.service';
+import { Currency } from '../../core/api/models/currency';
 import { forkJoin, Observable } from 'rxjs';
+import { TransactionUtils } from './utils/transaction.utils';
 
 @Component({
   selector: 'app-transactions',
@@ -40,14 +43,16 @@ import { forkJoin, Observable } from 'rxjs';
 export class TransactionsComponent implements OnInit {
   private readonly transactionService = inject(TransactionService);
   private readonly accountService = inject(AccountService);
+  private readonly currencyService = inject(CurrencyService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly transactions = this.transactionService.transactions;
-  protected readonly loading = signal(false); // Combined loading for transactions and accounts
+  protected readonly loading = signal(false); // Combined loading for transactions, accounts, and currencies
   protected readonly displayedColumns = signal([
     'date',
     'description',
+    'effectiveAmount',
     'movements',
     'tags',
     'actions',
@@ -57,6 +62,13 @@ export class TransactionsComponent implements OnInit {
   protected readonly accountMap = computed<Map<string, Account>>(() => {
     const map = new Map<string, Account>();
     this.accounts().forEach((account) => map.set(account.id!, account));
+    return map;
+  });
+
+  protected readonly currencies = this.currencyService.currencies;
+  protected readonly currencyMap = computed<Map<string, Currency>>(() => {
+    const map = new Map<string, Currency>();
+    this.currencies().forEach((currency) => map.set(currency.id!, currency));
     return map;
   });
 
@@ -143,7 +155,11 @@ export class TransactionsComponent implements OnInit {
 
   loadData(): void {
     this.loading.set(true);
-    forkJoin([this.accountService.loadAccounts(), this.loadTransactions()]).subscribe({
+    forkJoin([
+      this.accountService.loadAccounts(),
+      this.currencyService.loadCurrencies(),
+      this.loadTransactions()
+    ]).subscribe({
       next: () => this.loading.set(false),
       error: () => this.loading.set(false),
     });
@@ -288,5 +304,28 @@ export class TransactionsComponent implements OnInit {
       const outputPart = outputAccountNames.join(', ');
       return `${inputPart} => ${outputPart}`;
     }
+  }
+
+  /**
+   * Format the effective amounts for a transaction
+   * @param transaction The transaction to format
+   * @returns A formatted string showing effective amounts per currency
+   */
+  formatEffectiveAmounts(transaction: Transaction): string {
+    const effectiveAmounts = TransactionUtils.getEffectiveAmounts(transaction);
+
+    if (effectiveAmounts.length === 0) {
+      return 'N/A';
+    }
+
+    const currencyMap = this.currencyMap();
+
+    return effectiveAmounts
+      .map(ea => {
+        const currency = currencyMap.get(ea.currencyId);
+        const currencyName = currency?.name || ea.currencyId;
+        return `${ea.amount.toFixed(2)} ${currencyName}`;
+      })
+      .join(', ');
   }
 }
