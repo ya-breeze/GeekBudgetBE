@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserService } from '../../core/services/user.service';
 import { CurrencyService } from '../currencies/services/currency.service';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-settings',
@@ -28,6 +29,9 @@ export class SettingsComponent implements OnInit {
   protected readonly userService = inject(UserService);
   private readonly currencyService = inject(CurrencyService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly settingsForm: FormGroup;
   protected readonly user = this.userService.user;

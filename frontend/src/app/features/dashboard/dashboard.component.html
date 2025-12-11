@@ -1,6 +1,7 @@
 <div class="dashboard-container">
-  <h1>Dashboard</h1>
-  <p class="subtitle">Expense Breakdown by Month and Account</p>
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Dashboard</h1>
+  }
 
   @if (loading()) {
   <div class="loading-container">

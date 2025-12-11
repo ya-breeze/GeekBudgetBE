@@ -9,6 +9,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CurrencyService } from './services/currency.service';
 import { Currency } from '../../core/api/models/currency';
 import { CurrencyFormDialogComponent } from './currency-form-dialog/currency-form-dialog.component';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-currencies',
@@ -28,6 +29,9 @@ export class CurrenciesComponent implements OnInit {
   private readonly currencyService = inject(CurrencyService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly sortActive = signal<string | null>(null);
   protected readonly sortDirection = signal<'asc' | 'desc'>('asc');

@@ -8,6 +8,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { NotificationService } from './services/notification.service';
 import { Notification } from '../../core/api/models/notification';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-notifications',
@@ -22,8 +23,9 @@ import { Notification } from '../../core/api/models/notification';
   ],
   template: `
     <div class="notifications-container">
-      <h1>Notifications</h1>
-      <p class="subtitle">System notifications and alerts</p>
+      @if (!sidenavOpened()) {
+        <h1 class="page-title">Notifications</h1>
+      }
 
       @if (loading()) {
       <div class="loading-container">
@@ -55,11 +57,12 @@ import { Notification } from '../../core/api/models/notification';
   `,
   styles: `
     .notifications-container {
-      padding: 24px;
+      padding: 0;
     }
-    .subtitle {
-      margin: 0 0 24px 0;
-      color: rgba(0, 0, 0, 0.6);
+    .page-title {
+      margin: 0 0 16px 0;
+      font-size: 24px;
+      font-weight: 500;
     }
     .loading-container {
       display: flex;
@@ -85,6 +88,9 @@ import { Notification } from '../../core/api/models/notification';
 export class NotificationsComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly notifications = this.notificationService.notifications;
   protected readonly loading = this.notificationService.loading;

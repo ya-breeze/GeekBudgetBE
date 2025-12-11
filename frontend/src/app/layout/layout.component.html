@@ -5,7 +5,7 @@
     mode="side"
     class="layout-sidenav"
   >
-    <app-sidebar />
+    <app-sidebar (menuToggle)="toggleSidenav()" />
   </mat-sidenav>
 
   <mat-sidenav-content class="layout-content">

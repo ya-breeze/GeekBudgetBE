@@ -4,16 +4,18 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { filter } from 'rxjs';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-reports',
   imports: [RouterOutlet, RouterLink, MatCardModule, MatButtonModule, MatIconModule],
   template: `
     <div class="reports-container">
-      @if (showCards()) {
-      <h1>Reports & Analytics</h1>
-      <p class="subtitle">Financial reports and insights</p>
+      @if (!sidenavOpened()) {
+        <h1 class="page-title">Reports & Analytics</h1>
+      }
 
+      @if (showCards()) {
       <div class="reports-grid">
         <mat-card>
           <mat-card-header>
@@ -74,11 +76,12 @@ import { filter } from 'rxjs';
   `,
   styles: `
     .reports-container {
-      padding: 24px;
+      padding: 0;
     }
-    .subtitle {
-      margin: 0 0 24px 0;
-      color: rgba(0, 0, 0, 0.6);
+    .page-title {
+      margin: 0 0 16px 0;
+      font-size: 24px;
+      font-weight: 500;
     }
     .reports-grid {
       display: grid;
@@ -100,7 +103,10 @@ import { filter } from 'rxjs';
 })
 export class ReportsComponent {
   private readonly router = inject(Router);
+  private readonly layoutService = inject(LayoutService);
+
   protected readonly showCards = signal(true);
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   constructor() {
     this.router.events

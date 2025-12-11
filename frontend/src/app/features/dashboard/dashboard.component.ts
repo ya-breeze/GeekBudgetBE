@@ -57,6 +57,7 @@ export class DashboardComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly layoutService = inject(LayoutService);
 
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
   protected readonly loading = signal(true);
   protected readonly expenseData = signal<Aggregation | null>(null);
   protected readonly accounts = this.accountService.accounts;

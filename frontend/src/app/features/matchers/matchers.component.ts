@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatcherService } from './services/matcher.service';
 import { Matcher } from '../../core/api/models/matcher';
 import { AccountService } from '../accounts/services/account.service';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-matchers',
@@ -23,6 +24,9 @@ import { AccountService } from '../accounts/services/account.service';
 export class MatchersComponent implements OnInit {
   private readonly matcherService = inject(MatcherService);
   private readonly accountService = inject(AccountService);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly loading = this.matcherService.loading;
   protected readonly displayedColumns = signal(['name', 'outputAccount', 'outputDescription']);

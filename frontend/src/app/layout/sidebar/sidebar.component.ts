@@ -1,7 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, output, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { AuthService } from '../../core/auth/services/auth.service';
 
 interface MenuItem {
   label: string;
@@ -11,13 +14,21 @@ interface MenuItem {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, MatListModule, MatIconModule],
+  imports: [RouterLink, RouterLinkActive, MatListModule, MatIconModule, MatButtonModule, MatMenuModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
+  private readonly authService = inject(AuthService);
+
+  menuToggle = output<void>();
+
   protected readonly currentYear = signal(new Date().getFullYear());
   protected readonly version = signal('0.0.1');
+
+  onMenuToggle(): void {
+    this.menuToggle.emit();
+  }
 
   protected readonly menuItems = signal<MenuItem[]>([
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
@@ -32,4 +43,8 @@ export class SidebarComponent {
     { label: 'Notifications', icon: 'notifications', route: '/notifications' },
     { label: 'Settings', icon: 'settings', route: '/settings' },
   ]);
+
+  logout(): void {
+    this.authService.logout();
+  }
 }

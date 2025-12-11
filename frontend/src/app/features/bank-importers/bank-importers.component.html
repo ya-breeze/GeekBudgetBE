@@ -1,6 +1,9 @@
 <div class="bank-importers-container">
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Bank Importers</h1>
+  }
+
   <div class="header">
-    <h1>Bank Importers</h1>
     <button mat-raised-button color="primary" (click)="openCreateDialog()">
       <mat-icon>add</mat-icon>
       Add Bank Importer

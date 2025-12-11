@@ -8,6 +8,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { BudgetItemService } from './services/budget-item.service';
 import { BudgetItem } from '../../core/api/models/budget-item';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-budget-items',
@@ -22,10 +23,9 @@ import { BudgetItem } from '../../core/api/models/budget-item';
   ],
   template: `
     <div class="budget-items-container">
-      <div class="header">
-        <h1>Budget Items</h1>
-        <p class="subtitle">Planned budget allocations</p>
-      </div>
+      @if (!sidenavOpened()) {
+        <h1 class="page-title">Budget Items</h1>
+      }
 
       @if (loading()) {
       <div class="loading-container">
@@ -77,17 +77,12 @@ import { BudgetItem } from '../../core/api/models/budget-item';
   `,
   styles: `
     .budget-items-container {
-      padding: 24px;
+      padding: 0;
     }
-    .header {
-      margin-bottom: 24px;
-      h1 {
-        margin: 0 0 8px 0;
-      }
-      .subtitle {
-        margin: 0;
-        color: rgba(0, 0, 0, 0.6);
-      }
+    .page-title {
+      margin: 0 0 16px 0;
+      font-size: 24px;
+      font-weight: 500;
     }
     .loading-container {
       display: flex;
@@ -115,6 +110,9 @@ import { BudgetItem } from '../../core/api/models/budget-item';
 export class BudgetItemsComponent implements OnInit {
   private readonly budgetItemService = inject(BudgetItemService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly budgetItems = this.budgetItemService.budgetItems;
   protected readonly loading = this.budgetItemService.loading;

@@ -11,6 +11,7 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { AccountService } from './services/account.service';
 import { Account } from '../../core/api/models/account';
 import { AccountFormDialogComponent } from './account-form-dialog/account-form-dialog.component';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-accounts',
@@ -31,6 +32,9 @@ export class AccountsComponent implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly sortActive = signal<string | null>(null);
   protected readonly sortDirection = signal<'asc' | 'desc'>('asc');

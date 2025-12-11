@@ -1,16 +1,17 @@
 <div class="transactions-container">
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Transactions</h1>
+  }
+
   <div class="header">
-    <div class="title-section">
-      <h1>Transactions</h1>
-      <div class="month-navigation">
-        <button mat-icon-button (click)="goToPreviousMonth()" aria-label="Previous month">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        <span class="current-month">{{ currentMonthDisplay() }}</span>
-        <button mat-icon-button (click)="goToNextMonth()" aria-label="Next month">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
-      </div>
+    <div class="month-navigation">
+      <button mat-icon-button (click)="goToPreviousMonth()" aria-label="Previous month">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <span class="current-month">{{ currentMonthDisplay() }}</span>
+      <button mat-icon-button (click)="goToNextMonth()" aria-label="Next month">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
     </div>
     <button mat-raised-button color="primary" (click)="openCreateDialog()">
       <mat-icon>add</mat-icon>

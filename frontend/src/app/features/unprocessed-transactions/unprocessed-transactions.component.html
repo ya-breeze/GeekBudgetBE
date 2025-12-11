@@ -1,8 +1,7 @@
 <div class="unprocessed-transactions-container">
-  <div class="header">
-    <h1>Unprocessed Transactions</h1>
-    <p class="subtitle">Review and process imported transactions</p>
-  </div>
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Unprocessed Transactions</h1>
+  }
 
   @if (loading()) {
     <div class="loading-container">

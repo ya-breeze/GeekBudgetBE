@@ -1,4 +1,11 @@
 <nav class="sidebar-nav">
+  <div class="sidebar-header">
+    <button mat-icon-button (click)="onMenuToggle()" aria-label="Toggle menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span class="sidebar-title">Geek Budget</span>
+  </div>
+
   <mat-nav-list class="nav-list">
     @for (item of menuItems(); track item.route) {
       <a
@@ -13,8 +20,23 @@
     }
   </mat-nav-list>
   <div class="sidebar-footer">
-    <span class="copyright">© {{ currentYear() }} Geek Budget. All rights reserved.</span>
-    <span class="version">Version {{ version() }}</span>
+    <div class="user-section">
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </div>
+
+    <div class="footer-info">
+      <span class="copyright">© {{ currentYear() }} Geek Budget. All rights reserved.</span>
+      <span class="version">Version {{ version() }}</span>
+    </div>
   </div>
 </nav>
 

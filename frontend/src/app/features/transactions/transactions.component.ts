@@ -21,6 +21,7 @@ import { CurrencyService } from '../currencies/services/currency.service';
 import { Currency } from '../../core/api/models/currency';
 import { forkJoin, Observable } from 'rxjs';
 import { TransactionUtils } from './utils/transaction.utils';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-transactions',
@@ -48,6 +49,9 @@ export class TransactionsComponent implements OnInit {
   private readonly currencyService = inject(CurrencyService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly transactions = this.transactionService.transactions;
   protected readonly loading = signal(false); // Combined loading for transactions, accounts, and currencies

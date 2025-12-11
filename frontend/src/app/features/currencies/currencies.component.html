@@ -1,6 +1,9 @@
 <div class="currencies-container">
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Currencies</h1>
+  }
+
   <div class="header">
-    <h1>Currencies</h1>
     <button mat-raised-button color="primary" (click)="openCreateDialog()">
       <mat-icon>add</mat-icon>
       Add Currency

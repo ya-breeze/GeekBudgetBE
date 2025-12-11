@@ -12,6 +12,7 @@ import { BankImporterService } from './services/bank-importer.service';
 import { BankImporter } from '../../core/api/models/bank-importer';
 import { BankImporterFormDialogComponent } from './bank-importer-form-dialog/bank-importer-form-dialog.component';
 import { AccountService } from '../accounts/services/account.service';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-bank-importers',
@@ -34,6 +35,9 @@ export class BankImportersComponent implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly loading = this.bankImporterService.loading;
   protected readonly displayedColumns = signal([

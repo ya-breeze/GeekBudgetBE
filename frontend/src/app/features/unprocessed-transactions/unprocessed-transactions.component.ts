@@ -8,6 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { DatePipe } from '@angular/common';
 import { UnprocessedTransactionService } from './services/unprocessed-transaction.service';
 import { UnprocessedTransaction } from '../../core/api/models/unprocessed-transaction';
+import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
   selector: 'app-unprocessed-transactions',
@@ -26,6 +27,9 @@ import { UnprocessedTransaction } from '../../core/api/models/unprocessed-transa
 export class UnprocessedTransactionsComponent implements OnInit {
   private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly layoutService = inject(LayoutService);
+
+  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly unprocessedTransactions =
     this.unprocessedTransactionService.unprocessedTransactions;

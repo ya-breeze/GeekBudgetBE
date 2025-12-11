@@ -1,6 +1,7 @@
 <div class="settings-container">
-  <h1>Settings</h1>
-  <p class="subtitle">Manage your preferences</p>
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Settings</h1>
+  }
 
   @if (loading()) {
   <div class="loading-container">
