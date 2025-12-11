@@ -16,6 +16,9 @@ interface MenuItem {
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
+  protected readonly currentYear = signal(new Date().getFullYear());
+  protected readonly version = signal('0.0.1');
+
   protected readonly menuItems = signal<MenuItem[]>([
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
     { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },

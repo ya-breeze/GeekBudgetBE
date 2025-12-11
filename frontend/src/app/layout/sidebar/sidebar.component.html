@@ -1,5 +1,5 @@
 <nav class="sidebar-nav">
-  <mat-nav-list>
+  <mat-nav-list class="nav-list">
     @for (item of menuItems(); track item.route) {
       <a
         mat-list-item
@@ -12,5 +12,9 @@
       </a>
     }
   </mat-nav-list>
+  <div class="sidebar-footer">
+    <span class="copyright">© {{ currentYear() }} Geek Budget. All rights reserved.</span>
+    <span class="version">Version {{ version() }}</span>
+  </div>
 </nav>
 

@@ -2,21 +2,6 @@
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   padding: 16px 24px;
   background-color: #fafafa;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.copyright {
-  font-weight: 400;
-}
-
-.version {
-  font-weight: 300;
+  min-height: 0;
 }
 
