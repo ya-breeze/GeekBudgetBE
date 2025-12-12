@@ -4,22 +4,26 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../core/auth/services/auth.service';
+import { UnprocessedTransactionService } from '../../features/unprocessed-transactions/services/unprocessed-transaction.service';
 
 interface MenuItem {
   label: string;
   icon: string;
   route: string;
+  badge?: () => number;
 }
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, MatListModule, MatIconModule, MatButtonModule, MatMenuModule],
+  imports: [RouterLink, RouterLinkActive, MatListModule, MatIconModule, MatButtonModule, MatMenuModule, MatBadgeModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
   private readonly authService = inject(AuthService);
+  private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
 
   menuToggle = output<void>();
 
@@ -32,7 +36,12 @@ export class SidebarComponent {
 
   protected readonly menuItems = signal<MenuItem[]>([
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-    { label: 'Unprocessed', icon: 'pending_actions', route: '/unprocessed' },
+    {
+      label: 'Unprocessed',
+      icon: 'pending_actions',
+      route: '/unprocessed',
+      badge: () => this.unprocessedTransactionService.unprocessedTransactions().length
+    },
     { label: 'Budget', icon: 'savings', route: '/budget' },
     { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },
 
@@ -43,7 +52,7 @@ export class SidebarComponent {
 
     { label: 'Matchers', icon: 'rule', route: '/matchers' },
     { label: 'Reports', icon: 'assessment', route: '/reports' },
-    
+
     { label: 'Notifications', icon: 'notifications', route: '/notifications' },
   ]);
 
