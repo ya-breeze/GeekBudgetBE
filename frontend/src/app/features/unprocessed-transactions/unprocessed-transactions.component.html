@@ -9,23 +9,36 @@
     </div>
   } @else {
     <div class="table-container">
-      <table mat-table [dataSource]="unprocessedTransactions()" class="unprocessed-transactions-table">
+      <table mat-table [dataSource]="getSortedData()" matSort #sort="matSort" class="unprocessed-transactions-table">
         <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
           <td mat-cell *matCellDef="let item">
             {{ item.transaction.date | date: 'short' }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
           <td mat-cell *matCellDef="let item">
             {{ item.transaction.description || '-' }}
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="effectiveAmount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+          <td mat-cell *matCellDef="let item">
+            @if (getUnknownAccountMovements(item.transaction).length > 0) {
+              @for (movement of getUnknownAccountMovements(item.transaction); track movement.currencyId) {
+                <div>{{ movement.amount }} {{ getCurrencyName(movement.currencyId) }}</div>
+              }
+            } @else {
+              <span>-</span>
+            }
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="matches">
-          <th mat-header-cell *matHeaderCellDef>Matches</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Matches</th>
           <td mat-cell *matCellDef="let item">
             @if (item.matched.length > 0) {
               <mat-chip color="accent">{{ item.matched.length }} match(es)</mat-chip>
@@ -36,7 +49,7 @@
         </ng-container>
 
         <ng-container matColumnDef="duplicates">
-          <th mat-header-cell *matHeaderCellDef>Duplicates</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Duplicates</th>
           <td mat-cell *matCellDef="let item">
             @if (item.duplicates.length > 0) {
               <mat-chip color="warn">{{ item.duplicates.length }} duplicate(s)</mat-chip>
