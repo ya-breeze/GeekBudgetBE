@@ -324,7 +324,7 @@ export class DashboardComponent implements OnInit {
     // Yellow: rgb(255, 255, 200)
     // Red: rgb(255, 200, 200)
 
-    let r: number, g: number, b: number;
+    let r: number, g: number, b: number, a: number;
 
     if (normalized < 0.5) {
       // Green to Yellow
@@ -332,15 +332,17 @@ export class DashboardComponent implements OnInit {
       r = Math.round(200 + 55 * t);
       g = 255;
       b = 200;
+      a = 0.3;
     } else {
       // Yellow to Red
       const t = (normalized - 0.5) * 2;
       r = 255;
       g = Math.round(255 - 55 * t);
       b = 200;
+      a = 0.9;
     }
 
-    return `rgb(${r}, ${g}, ${b}, 0.3)`;
+    return `rgb(${r}, ${g}, ${b}, ${a})`;
   }
 
   protected formatMonth(dateString: string): string {
