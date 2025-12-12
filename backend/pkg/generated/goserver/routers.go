@@ -23,7 +23,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -53,7 +52,6 @@ func NewRouter(routers ...Router) *mux.Router {
 		for name, route := range api.Routes() {
 			var handler http.Handler = route.HandlerFunc
 			handler = Logger(handler, name)
-			handler = handlers.CORS()(handler)
 
 			router.
 				Methods(route.Method).
@@ -62,6 +60,19 @@ func NewRouter(routers ...Router) *mux.Router {
 				Handler(handler)
 		}
 	}
+
+	// Handle OPTIONS requests for CORS preflight
+	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+			w.Header().Set("Access-Control-Max-Age", "86400")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	})
 
 	return router
 }

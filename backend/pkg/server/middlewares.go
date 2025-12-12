@@ -16,6 +16,12 @@ import (
 func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+			// Skip authorization for OPTIONS requests (CORS preflight)
+			if req.Method == "OPTIONS" {
+				next.ServeHTTP(writer, req)
+				return
+			}
+
 			// Skip authorization for the root endpoint
 			if req.URL.Path == "/" || strings.HasPrefix(req.URL.Path, "/web/") {
 				next.ServeHTTP(writer, req)
@@ -61,6 +67,26 @@ func checkToken(
 
 	req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
 	next.ServeHTTP(writer, req)
+}
+
+func CORSMiddleware() mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+			// Add CORS headers to all responses
+			writer.Header().Set("Access-Control-Allow-Origin", "*")
+			writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+			writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+
+			// Handle OPTIONS requests for CORS preflight
+			if req.Method == "OPTIONS" {
+				writer.Header().Set("Access-Control-Max-Age", "86400")
+				writer.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(writer, req)
+		})
+	}
 }
 
 func ForcedImportMiddleware(logger *slog.Logger, forcedImports chan<- background.ForcedImport) mux.MiddlewareFunc {

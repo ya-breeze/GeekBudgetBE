@@ -565,6 +565,7 @@ func createMiddlewares(
 	logger *slog.Logger, cfg *config.Config, forcedImports chan<- background.ForcedImport,
 ) []mux.MiddlewareFunc {
 	return []mux.MiddlewareFunc{
+		CORSMiddleware(),
 		AuthMiddleware(logger, cfg),
 		ForcedImportMiddleware(logger, forcedImports),
 	}

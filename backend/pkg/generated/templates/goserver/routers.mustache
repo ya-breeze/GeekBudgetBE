@@ -8,9 +8,6 @@ import (
 {{#routers}}
 	{{#mux}}
 	"github.com/gorilla/mux"
-	{{#featureCORS}}
-	"github.com/gorilla/handlers"
-	{{/featureCORS}}
 	{{/mux}}
 	{{#chi}}
 	"github.com/go-chi/chi/v5"
@@ -68,9 +65,6 @@ func NewRouter(routers ...Router) {{#routers}}{{#mux}}*mux.Router{{/mux}}{{#chi}
 {{#routers}}
 	{{#mux}}
 			handler = Logger(handler, name)
-			{{#featureCORS}}
-			handler = handlers.CORS()(handler)
-			{{/featureCORS}}
 
 			router.
 				Methods(route.Method).
@@ -84,6 +78,23 @@ func NewRouter(routers ...Router) {{#routers}}{{#mux}}*mux.Router{{/mux}}{{#chi}
 {{/routers}}
 		}
 	}
+
+{{#routers}}
+	{{#mux}}
+	// Handle OPTIONS requests for CORS preflight
+	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+			w.Header().Set("Access-Control-Max-Age", "86400")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	})
+	{{/mux}}
+{{/routers}}
 
 	return router
 }
