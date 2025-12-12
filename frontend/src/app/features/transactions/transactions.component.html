@@ -132,9 +132,9 @@
         </ng-container>
 
         <ng-container matColumnDef="movements">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Movements</th>
-          <td mat-cell *matCellDef="let transaction">
-            {{ formatMovements(transaction) }}
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Accounts</th>
+          <td mat-cell *matCellDef="let transaction" [title]="formatMovements(transaction)">
+            {{ getTargetAccounts(transaction) }}
           </td>
         </ng-container>
 

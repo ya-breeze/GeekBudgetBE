@@ -57,9 +57,9 @@ export class TransactionsComponent implements OnInit {
   protected readonly loading = signal(false); // Combined loading for transactions, accounts, and currencies
   protected readonly displayedColumns = signal([
     'date',
+    'movements',
     'description',
     'effectiveAmount',
-    'movements',
     'tags',
     'actions',
   ]);
@@ -329,6 +329,34 @@ export class TransactionsComponent implements OnInit {
       const outputPart = outputAccountNames.join(', ');
       return `${inputPart} => ${outputPart}`;
     }
+  }
+
+  /**
+   * Get target accounts (positive amounts) for display in the Accounts column
+   * @param transaction The transaction to get target accounts from
+   * @returns A formatted string showing only target accounts
+   */
+  getTargetAccounts(transaction: Transaction): string {
+    if (!transaction.movements || transaction.movements.length === 0) {
+      return '-';
+    }
+
+    const accountMap = this.accountMap();
+
+    // Get output movements (destinations of money - positive amounts)
+    const outputMovements = transaction.movements.filter((movement) => movement.amount > 0);
+    const outputAccountNames = outputMovements.map((movement) => {
+      if (!movement.accountId) {
+        return 'Undefined';
+      }
+      return accountMap.get(movement.accountId)?.name || movement.accountId;
+    });
+
+    if (outputAccountNames.length === 0) {
+      return '-';
+    }
+
+    return outputAccountNames.join(', ');
   }
 
   protected onSortChange(sort: Sort): void {

@@ -426,6 +426,82 @@ describe('TransactionsComponent', () => {
     });
   });
 
+  describe('Get Target Accounts', () => {
+    it('should return target account for simple transaction', () => {
+      const transaction = mockTransactions[0]; // acc1 => acc2
+      const result = component.getTargetAccounts(transaction);
+      expect(result).toBe('Savings Account');
+    });
+
+    it('should return multiple target accounts joined by comma', () => {
+      const transaction: Transaction = {
+        id: '5',
+        date: '2024-01-19',
+        description: 'Multi-target transaction',
+        movements: [
+          { accountId: 'acc1', amount: -100, currencyId: 'usd' },
+          { accountId: 'acc2', amount: 50, currencyId: 'usd' },
+          { accountId: 'acc3', amount: 50, currencyId: 'usd' },
+        ],
+      };
+      const result = component.getTargetAccounts(transaction);
+      expect(result).toBe('Savings Account, Expense Account');
+    });
+
+    it('should return dash when no movements', () => {
+      const transaction: Transaction = {
+        id: '6',
+        date: '2024-01-20',
+        description: 'No movements',
+        movements: [],
+      };
+      const result = component.getTargetAccounts(transaction);
+      expect(result).toBe('-');
+    });
+
+    it('should return dash when no positive movements (no target accounts)', () => {
+      const transaction: Transaction = {
+        id: '7',
+        date: '2024-01-21',
+        description: 'Only negative movements',
+        movements: [
+          { accountId: 'acc1', amount: -100, currencyId: 'usd' },
+          { accountId: 'acc2', amount: -50, currencyId: 'usd' },
+        ],
+      };
+      const result = component.getTargetAccounts(transaction);
+      expect(result).toBe('-');
+    });
+
+    it('should use account ID when account not found in map', () => {
+      const transaction: Transaction = {
+        id: '8',
+        date: '2024-01-22',
+        description: 'Unknown account',
+        movements: [
+          { accountId: 'acc1', amount: -100, currencyId: 'usd' },
+          { accountId: 'unknown-acc', amount: 100, currencyId: 'usd' },
+        ],
+      };
+      const result = component.getTargetAccounts(transaction);
+      expect(result).toBe('unknown-acc');
+    });
+
+    it('should handle undefined accountId', () => {
+      const transaction: Transaction = {
+        id: '9',
+        date: '2024-01-23',
+        description: 'Undefined account',
+        movements: [
+          { accountId: 'acc1', amount: -100, currencyId: 'usd' },
+          { accountId: undefined, amount: 100, currencyId: 'usd' },
+        ],
+      };
+      const result = component.getTargetAccounts(transaction);
+      expect(result).toBe('Undefined');
+    });
+  });
+
   describe('Sorting', () => {
     it('should initialize with no active sort', () => {
       expect(component['sortActive']()).toBeNull();
