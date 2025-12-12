@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +17,7 @@ import { LayoutService } from '../../layout/services/layout.service';
 @Component({
   selector: 'app-accounts',
   imports: [
+    NgClass,
     MatTableModule,
     MatSortModule,
     MatButtonModule,
@@ -182,19 +184,6 @@ export class AccountsComponent implements OnInit {
           },
         });
       }
-    }
-  }
-
-  getAccountTypeColor(type: string): string {
-    switch (type) {
-      case 'expense':
-        return 'warn';
-      case 'income':
-        return 'accent';
-      case 'asset':
-        return 'primary';
-      default:
-        return '';
     }
   }
 }
