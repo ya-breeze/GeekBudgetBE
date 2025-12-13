@@ -1,0 +1,135 @@
+.expense-report-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.subtitle {
+  margin: 0 0 24px 0;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.filter-card {
+  margin-bottom: 24px;
+}
+
+.filter-form {
+  .filter-fields {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    mat-form-field {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    button {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  .chart-container {
+    height: 400px;
+    position: relative;
+  }
+}
+
+.summary-card,
+.details-card {
+  margin-bottom: 24px;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.summary-table,
+.details-table {
+  width: 100%;
+
+  th {
+    font-weight: 600;
+    background-color: rgba(0, 0, 0, 0.04);
+
+    &.sortable {
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.08);
+      }
+
+      .sort-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        vertical-align: middle;
+        margin-left: 4px;
+      }
+    }
+  }
+
+  .amount-cell {
+    text-align: right;
+  }
+
+  .total-row {
+    font-weight: 600;
+    background-color: rgba(33, 150, 243, 0.1);
+
+    .total-label {
+      font-weight: 700;
+    }
+
+    .total-amount {
+      font-weight: 700;
+      font-size: 1.1em;
+      color: #1976d2;
+    }
+  }
+}
+
+.no-data-card {
+  margin-top: 24px;
+  text-align: center;
+  padding: 48px 24px;
+
+  p {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 1.1em;
+  }
+}
+
+mat-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+

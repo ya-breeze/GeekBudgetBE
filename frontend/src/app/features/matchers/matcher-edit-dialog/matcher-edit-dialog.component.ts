@@ -1,0 +1,260 @@
+import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
+import { FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CommonModule } from '@angular/common';
+import { MatcherService } from '../services/matcher.service';
+import { AccountService } from '../../accounts/services/account.service';
+import { Matcher } from '../../../core/api/models/matcher';
+import { MatcherNoId } from '../../../core/api/models/matcher-no-id';
+import { Transaction } from '../../../core/api/models/transaction';
+
+@Component({
+    selector: 'app-matcher-edit-dialog',
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        FormsModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatIconModule,
+        MatChipsModule,
+        MatProgressSpinnerModule,
+        MatCheckboxModule
+    ],
+    templateUrl: './matcher-edit-dialog.component.html',
+    styleUrls: ['./matcher-edit-dialog.component.scss']
+})
+export class MatcherEditDialogComponent implements OnInit {
+    private readonly fb = inject(FormBuilder);
+    private readonly dialogRef = inject(MatDialogRef<MatcherEditDialogComponent>);
+    private readonly matcherService = inject(MatcherService);
+    private readonly accountService = inject(AccountService);
+    readonly data = inject<{ matcher?: Matcher; transaction?: Transaction } | undefined>(MAT_DIALOG_DATA);
+
+    protected readonly accounts = this.accountService.accounts;
+    protected readonly loading = signal(false);
+
+    // Regex/Matcher Testing Signals
+    protected readonly testString = signal('');
+    protected readonly matchResult = signal<{ result?: boolean, reason?: string } | null>(null);
+    protected readonly regexResult = signal<{ isValid: boolean, isMatch: boolean, error?: string } | null>(null);
+    protected readonly testingMatch = signal(false);
+    protected readonly testingRegex = signal(false);
+
+    checkMatch(): void {
+        if (!this.data?.transaction) return;
+
+        this.testingMatch.set(true);
+        const formValue = this.form.value;
+
+        // Construct matcher object from form (excluding output fields which don't affect matching)
+        // We need to be careful to constructing it correctly for the backend check
+        const matcherToCheck: MatcherNoId = {
+
+            descriptionRegExp: formValue.descriptionRegExp || undefined,
+            partnerNameRegExp: formValue.partnerNameRegExp || undefined,
+            partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,
+            currencyRegExp: formValue.currencyRegExp || undefined,
+            extraRegExp: formValue.extraRegExp || undefined,
+            outputAccountId: 'temp', // Not relevant for matching check
+            outputDescription: 'temp',
+            outputTags: []
+        };
+
+        const t = this.data.transaction;
+        const transactionToCheck: any = {
+            date: t.date,
+            description: t.description,
+            externalIds: t.externalIds,
+            extra: t.extra,
+            movements: t.movements,
+            partnerAccount: t.partnerAccount,
+            partnerInternalId: t.partnerInternalId,
+            partnerName: t.partnerName,
+            place: t.place,
+            tags: t.tags,
+            unprocessedSources: t.unprocessedSources
+        };
+
+        this.matcherService.checkMatcher(matcherToCheck, transactionToCheck).subscribe({
+            next: (result) => {
+                this.matchResult.set(result);
+                this.testingMatch.set(false);
+            },
+            error: () => {
+                this.matchResult.set({ result: false, reason: 'Network error checking match' });
+                this.testingMatch.set(false);
+            }
+        });
+    }
+
+    testRegex(): void {
+        const pattern = this.form.controls.descriptionRegExp.value;
+        const test = this.testString();
+
+        if (!pattern || !test) {
+            this.regexResult.set(null);
+            return;
+        }
+
+        this.testingMatch.set(true); // Re-use same loading signal
+        this.matcherService.checkRegex(pattern, test).subscribe({
+            next: (result) => {
+                this.regexResult.set(result);
+                this.testingMatch.set(false);
+            },
+            error: () => {
+                this.regexResult.set({ isValid: false, isMatch: false, error: 'Network error' });
+                this.testingMatch.set(false);
+            }
+        });
+    }
+
+    protected readonly form = this.fb.group({
+
+        descriptionRegExp: [''],
+        partnerNameRegExp: [''],
+        partnerAccountNumberRegExp: [''],
+        currencyRegExp: [''],
+        extraRegExp: [''],
+        outputAccountId: ['', Validators.required],
+        outputDescription: ['', Validators.required],
+        outputTags: [''] // Comma separated for simplicity initially
+    });
+
+    ngOnInit(): void {
+        this.accountService.loadAccounts().subscribe();
+
+        if (this.data?.matcher) {
+            this.form.patchValue({
+
+                descriptionRegExp: this.data.matcher.descriptionRegExp,
+                partnerNameRegExp: this.data.matcher.partnerNameRegExp,
+                partnerAccountNumberRegExp: this.data.matcher.partnerAccountNumberRegExp,
+                currencyRegExp: this.data.matcher.currencyRegExp,
+                extraRegExp: this.data.matcher.extraRegExp,
+                outputAccountId: this.data.matcher.outputAccountId,
+                outputDescription: this.data.matcher.outputDescription,
+                outputTags: this.data.matcher.outputTags?.join(', ')
+            });
+        } else if (this.data?.transaction) {
+            // Pre-fill from transaction
+            const t = this.data.transaction;
+            this.form.patchValue({
+                // Suggest name from description/partner
+
+                // Pre-fill regexps with exact matches or simplistic logic (user will edit)
+                descriptionRegExp: this.escapeRegExp(t.description || ''),
+                partnerNameRegExp: t.partnerName ? this.escapeRegExp(t.partnerName) : '',
+                partnerAccountNumberRegExp: t.partnerAccount ? this.escapeRegExp(t.partnerAccount) : '',
+                outputDescription: t.description // Suggest keeping description or edit
+            });
+        }
+    }
+
+    get isCaseInsensitive(): boolean {
+        const val = this.form.controls.descriptionRegExp.value || '';
+        return val.startsWith('(?i)');
+    }
+
+    toggleCaseInsensitive(checked: boolean): void {
+        let val = this.form.controls.descriptionRegExp.value || '';
+        if (checked) {
+            if (!val.startsWith('(?i)')) {
+                this.form.controls.descriptionRegExp.setValue('(?i)' + val);
+            }
+        } else {
+            if (val.startsWith('(?i)')) {
+                this.form.controls.descriptionRegExp.setValue(val.substring(4));
+            }
+        }
+    }
+
+    get isWholeWord(): boolean {
+        let val = this.form.controls.descriptionRegExp.value || '';
+        if (val.startsWith('(?i)')) {
+            val = val.substring(4);
+        }
+        return val.startsWith('\\b') && val.endsWith('\\b');
+    }
+
+    toggleWholeWord(checked: boolean): void {
+        let val = this.form.controls.descriptionRegExp.value || '';
+        let prefix = '';
+        if (val.startsWith('(?i)')) {
+            prefix = '(?i)';
+            val = val.substring(4);
+        }
+
+        if (checked) {
+            if (!val.startsWith('\\b')) val = '\\b' + val;
+            if (!val.endsWith('\\b')) val = val + '\\b';
+        } else {
+            if (val.startsWith('\\b')) val = val.substring(2);
+            if (val.endsWith('\\b')) val = val.substring(0, val.length - 2);
+        }
+
+        this.form.controls.descriptionRegExp.setValue(prefix + val);
+    }
+
+    private escapeRegExp(string: string): string {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    save(): void {
+        if (this.form.invalid) return;
+
+        this.loading.set(true);
+        const formValue = this.form.value;
+
+        const matcherData: MatcherNoId = {
+
+            descriptionRegExp: formValue.descriptionRegExp || undefined,
+            partnerNameRegExp: formValue.partnerNameRegExp || undefined,
+            partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,
+            currencyRegExp: formValue.currencyRegExp || undefined,
+            extraRegExp: formValue.extraRegExp || undefined,
+            outputAccountId: formValue.outputAccountId!,
+            outputDescription: formValue.outputDescription!,
+            outputTags: formValue.outputTags ? formValue.outputTags.split(',').map(t => t.trim()).filter(t => !!t) : []
+        };
+
+        const request = this.data?.matcher
+            ? this.matcherService.update(this.data.matcher.id, matcherData)
+            : this.matcherService.create(matcherData);
+
+        request.subscribe({
+            next: () => {
+                this.loading.set(false);
+                this.dialogRef.close(true);
+            },
+            error: () => {
+                this.loading.set(false);
+                // Error handling usually done in service via snackbar or global handler?
+                // If not, we should show message here. Service has error signal.
+            }
+        });
+    }
+
+    close(): void {
+        this.dialogRef.close();
+    }
+    @HostListener('window:keydown.esc')
+    onEsc(): void {
+        if (!this.loading()) {
+            this.close();
+        }
+    }
+}

@@ -1,0 +1,256 @@
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 10px;
+}
+
+.section-container {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #fafafa;
+
+  &.has-content {
+    background-color: #fff;
+    border-color: #d0d0d0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  }
+
+  &.matches-section.has-content {
+    border-left: 4px solid #3f51b5; // Primary color accent
+  }
+
+  &.duplicates-section.has-content {
+    border-left: 4px solid #f44336; // Warn color accent
+  }
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #424242;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: #e0e0e0;
+  color: #616161;
+  font-weight: normal;
+
+  &.warn {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed #eee;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.highlight {
+      margin-top: 8px;
+      padding: 8px;
+      background-color: #e8f5e9;
+      border-radius: 4px;
+      border-bottom: none;
+    }
+
+    .label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .value {
+      text-align: right;
+      font-weight: 400;
+      color: #333;
+
+      &.amount {
+        font-weight: 600;
+        font-size: 1.1em;
+        color: #2e7d32;
+      }
+    }
+  }
+}
+
+.empty-state {
+  color: #9e9e9e;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.section-separator {
+  display: none; // Using gaps instead now
+}
+
+.custom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-list-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #fff;
+  border-radius: 4px;
+  border: 1px solid #eee;
+  /* Light border definition */
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+
+
+  .item-content {
+    flex: 1;
+    overflow: hidden;
+
+    .item-title {
+      font-weight: 500;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-subtitle {
+      font-size: 0.85em;
+      color: #757575;
+    }
+  }
+}
+
+.confidence-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 600;
+  margin-right: 8px;
+
+  &.badge-perfect {
+    background-color: #a5d6a7;
+    /* Green 200 */
+    color: #1b5e20;
+    /* Green 900 */
+  }
+
+  &.badge-success {
+    background-color: #e8f5e9;
+    /* Green 50 */
+    color: #2e7d32;
+    /* Green 800 */
+  }
+
+  &.badge-warning {
+    background-color: #fff3e0;
+    /* Orange 50 */
+    color: #ef6c00;
+    /* Orange 800 */
+  }
+
+  &.badge-danger {
+    background-color: #ffebee;
+    /* Red 50 */
+    color: #c62828;
+    /* Red 800 */
+  }
+
+  &.badge-secondary {
+    background-color: #f5f5f5;
+    /* Grey 100 */
+    color: #616161;
+    /* Grey 700 */
+  }
+}
+
+.section-container.manual-section {
+  border-left: 4px solid #4caf50; // Green for 'new' action
+}
+
+.manual-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.manual-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .label {
+    font-weight: 500;
+    color: #666;
+  }
+
+  .value {
+    font-weight: 500;
+  }
+}
+
+.manual-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.dialog-container {
+  position: relative;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.no-matches-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+
+  .empty-state {
+    margin: 0;
+    color: #757575;
+    font-style: italic;
+  }
+}

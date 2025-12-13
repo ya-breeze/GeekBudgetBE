@@ -1,0 +1,51 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Account' : 'Create Account' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="account-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g., Cash, Bank Account" required />
+      @if (form.get('name')?.hasError('required')) {
+      <mat-error>Name is required</mat-error>
+      }
+      @if (form.get('name')?.hasError('maxlength')) {
+      <mat-error>Name must be at most 100 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Type</mat-label>
+      <mat-select formControlName="type" required>
+        @for (type of accountTypes; track type.value) {
+        <mat-option [value]="type.value">{{ type.label }}</mat-option>
+        }
+      </mat-select>
+      @if (form.get('type')?.hasError('required')) {
+      <mat-error>Type is required</mat-error>
+      }
+    </mat-form-field>
+
+    @if (form.get('type')?.value === 'asset') {
+    <div class="full-width mb-2">
+      <mat-slide-toggle formControlName="showInDashboardSummary">
+        Show in Dashboard Summary
+      </mat-slide-toggle>
+    </div>
+    }
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" placeholder="Optional description" rows="3"></textarea>
+      @if (form.get('description')?.hasError('maxlength')) {
+      <mat-error>Description must be at most 500 characters</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!form.valid">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>

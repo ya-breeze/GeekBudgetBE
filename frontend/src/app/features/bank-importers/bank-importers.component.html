@@ -1,0 +1,84 @@
+<div class="bank-importers-container">
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Bank Importers</h1>
+  }
+
+  <div class="header">
+    <button mat-raised-button color="primary" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Add Bank Importer
+    </button>
+  </div>
+
+  @if (loading()) {
+  <div class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+  } @else {
+  <div class="table-container">
+    <table
+      mat-table
+      [dataSource]="bankImporters()"
+      matSort
+      (matSortChange)="onSortChange($event)"
+      [matSortActive]="sortActive() ?? displayedColumns()[0]"
+      [matSortDirection]="sortDirection()"
+      class="bank-importers-table"
+    >
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+        <td mat-cell *matCellDef="let importer">{{ importer.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+        <td mat-cell *matCellDef="let importer">
+          <mat-chip color="primary">{{ getBankTypeLabel(importer.type) }}</mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="account">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Account</th>
+        <td mat-cell *matCellDef="let importer">
+          {{ importer.accountName || importer.accountId }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="lastImport">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Import</th>
+        <td mat-cell *matCellDef="let importer">
+          {{
+            importer.lastSuccessfulImport ? (importer.lastSuccessfulImport | date : 'short') : '-'
+          }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let importer">
+          <button mat-icon-button (click)="openEditDialog(importer)" aria-label="Edit">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="deleteBankImporter(importer)"
+            aria-label="Delete"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns().length">
+          No bank importers found. Click "Add Bank Importer" to create one.
+        </td>
+      </tr>
+    </table>
+  </div>
+  }
+</div>

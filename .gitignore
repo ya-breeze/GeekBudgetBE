@@ -1,6 +1,4 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
+### Backend
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -14,17 +12,23 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
 # Go workspace file
-go.work
-*.db
-bin/geekbudget
-bin/geekbudget
-bin/geekbudget
-pkg/generated/angular/
-token
-transactions.json
-*.xlsx
-*.csv
+backend/go.work
+backend/bin/geekbudget
+backend/pkg/generated/angular/
+backend/token
+backend/transactions.json
+backend/*.xlsx
+backend/*.csv
+geekbudget.db
+
+### Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+frontend/.ng
+frontend/.nyc_output/
+frontend/coverage/
+frontend/tmp/
+frontend/*.log

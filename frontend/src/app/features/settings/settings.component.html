@@ -1,0 +1,41 @@
+<div class="settings-container">
+  @if (!sidenavOpened()) {
+    <h1 class="page-title">Settings</h1>
+  }
+
+  @if (loading()) {
+  <div class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+  } @else {
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-card-title>Currency Preferences</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="settingsForm" (ngSubmit)="onSave()" class="settings-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Favorite Currency</mat-label>
+          <mat-select formControlName="favoriteCurrencyId">
+            <mat-option [value]="''">None</mat-option>
+            @for (currency of currencies(); track currency.id) {
+            <mat-option [value]="currency.id">{{ currency.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint
+            >This currency will be used as the default for currency conversion on the dashboard and
+            reports</mat-hint
+          >
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="userService.loading()">
+            Save
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  }
+</div>
+
