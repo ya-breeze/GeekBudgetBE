@@ -9,12 +9,13 @@ Name | Type | Description | Notes
 **Description** | Pointer to **string** |  | [optional] 
 **Type** | **string** |  | 
 **BankInfo** | Pointer to [**BankAccountInfo**](BankAccountInfo.md) |  | [optional] 
+**ShowInDashboardSummary** | **bool** | If true, show this account in dashboard summary. | [default to true]
 
 ## Methods
 
 ### NewAccount
 
-`func NewAccount(id string, name string, type_ string, ) *Account`
+`func NewAccount(id string, name string, type_ string, showInDashboardSummary bool, ) *Account`
 
 NewAccount instantiates a new Account object
 This constructor will assign default values to properties that have it defined,
@@ -138,6 +139,26 @@ SetBankInfo sets BankInfo field to given value.
 `func (o *Account) HasBankInfo() bool`
 
 HasBankInfo returns a boolean if a field has been set.
+
+### GetShowInDashboardSummary
+
+`func (o *Account) GetShowInDashboardSummary() bool`
+
+GetShowInDashboardSummary returns the ShowInDashboardSummary field if non-nil, zero value otherwise.
+
+### GetShowInDashboardSummaryOk
+
+`func (o *Account) GetShowInDashboardSummaryOk() (*bool, bool)`
+
+GetShowInDashboardSummaryOk returns a tuple with the ShowInDashboardSummary field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetShowInDashboardSummary
+
+`func (o *Account) SetShowInDashboardSummary(v bool)`
+
+SetShowInDashboardSummary sets ShowInDashboardSummary field to given value.
+
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

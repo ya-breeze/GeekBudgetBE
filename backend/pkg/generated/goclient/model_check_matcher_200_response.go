@@ -20,8 +20,7 @@ var _ MappedNullable = &CheckMatcher200Response{}
 
 // CheckMatcher200Response struct for CheckMatcher200Response
 type CheckMatcher200Response struct {
-	Result *bool `json:"result,omitempty"`
-	// Reason why the matcher did or did not match
+	Result *bool   `json:"result,omitempty"`
 	Reason *string `json:"reason,omitempty"`
 }
 

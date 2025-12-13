@@ -8,6 +8,7 @@ import { getMatchers } from '../../../core/api/fn/matchers/get-matchers';
 import { createMatcher } from '../../../core/api/fn/matchers/create-matcher';
 import { updateMatcher } from '../../../core/api/fn/matchers/update-matcher';
 import { deleteMatcher } from '../../../core/api/fn/matchers/delete-matcher';
+import { checkRegex } from '../../../core/api/fn/matchers/check-regex';
 
 @Injectable({
   providedIn: 'root',
@@ -95,6 +96,11 @@ export class MatcherService {
           this.loading.set(false);
         },
       })
+    );
+  }
+  checkRegex(regex: string, testString: string): Observable<{ isValid: boolean; isMatch: boolean; error?: string }> {
+    return checkRegex(this.http, this.apiConfig.rootUrl, { body: { regex, testString } }).pipe(
+      map((response) => response.body)
     );
   }
 }

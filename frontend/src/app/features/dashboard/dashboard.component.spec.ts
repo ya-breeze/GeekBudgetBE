@@ -1,3 +1,4 @@
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DashboardComponent } from './dashboard.component';
 import { HttpClient, HttpResponse } from '@angular/common/http';
@@ -17,6 +18,7 @@ describe('DashboardComponent', () => {
   let currencyService: jasmine.SpyObj<CurrencyService>;
   let userService: jasmine.SpyObj<UserService>;
   let layoutService: jasmine.SpyObj<LayoutService>;
+  let dialogSpy: jasmine.SpyObj<MatDialog>;
 
   beforeEach(async () => {
     const httpClientSpy = jasmine.createSpyObj('HttpClient', ['request']);
@@ -24,7 +26,7 @@ describe('DashboardComponent', () => {
       of(new HttpResponse({ body: { intervals: [], currencies: [] } as any }))
     );
 
-    const accountServiceSpy = jasmine.createSpyObj('AccountService', ['loadAccounts'], {
+    const accountServiceSpy = jasmine.createSpyObj('AccountService', ['loadAccounts', 'update'], {
       accounts: jasmine.createSpy('accounts').and.returnValue([]),
     });
     accountServiceSpy.loadAccounts.and.returnValue(of([]));
@@ -46,6 +48,8 @@ describe('DashboardComponent', () => {
 
     const apiConfigMock = { rootUrl: 'http://localhost:8080/api/v1' };
 
+    dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
@@ -55,8 +59,14 @@ describe('DashboardComponent', () => {
         { provide: CurrencyService, useValue: currencyServiceSpy },
         { provide: UserService, useValue: userServiceSpy },
         { provide: LayoutService, useValue: layoutServiceSpy },
+        { provide: MatDialog, useValue: dialogSpy },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(DashboardComponent, {
+        remove: { imports: [MatDialogModule] },
+        add: { providers: [{ provide: MatDialog, useValue: dialogSpy }] }
+      })
+      .compileComponents();
 
     httpClient = TestBed.inject(HttpClient) as jasmine.SpyObj<HttpClient>;
     accountService = TestBed.inject(AccountService) as jasmine.SpyObj<AccountService>;
@@ -260,5 +270,67 @@ describe('DashboardComponent', () => {
 
       done();
     }, 100);
+  });
+
+  it('should filter out asset accounts when showInDashboardSummary is false', (done) => {
+    const mockAssets = {
+      from: '2023-01-01',
+      to: '2023-02-01',
+      granularity: 'month',
+      intervals: ['2023-01-01'],
+      currencies: [
+        {
+          currencyId: 'usd',
+          accounts: [
+            { accountId: 'visible', amounts: [100] },
+            { accountId: 'hidden', amounts: [200] },
+            { accountId: 'default', amounts: [300] }
+          ]
+        }
+      ]
+    };
+
+    const mockAccounts = [
+      { id: 'visible', name: 'Visible Asset', type: 'asset', showInDashboardSummary: true },
+      { id: 'hidden', name: 'Hidden Asset', type: 'asset', showInDashboardSummary: false },
+      { id: 'default', name: 'Default Asset', type: 'asset' } // formatted as default=true
+    ];
+
+    accountService.loadAccounts.and.returnValue(of(mockAccounts as any));
+    httpClient.request.and.returnValue(of(new HttpResponse({ body: mockAssets } as any)));
+    currencyService.loadCurrencies.and.returnValue(of([{ id: 'usd', name: 'USD' } as any]));
+    (accountService.accounts as unknown as jasmine.Spy).and.returnValue(mockAccounts);
+
+    component.ngOnInit();
+
+    setTimeout(() => {
+      const cards = component['assetCards']();
+      expect(cards.length).toBe(2);
+      expect(cards.find((c: any) => c.accountId === 'visible')).toBeTruthy();
+      expect(cards.find((c: any) => c.accountId === 'default')).toBeTruthy();
+      expect(cards.find((c: any) => c.accountId === 'hidden')).toBeFalsy();
+      done();
+    }, 100);
+  });
+
+  it('should call accountService.update when onHideAccount is called and dialog is confirmed', () => {
+    const dialogRefSpy = jasmine.createSpyObj({ afterClosed: of(true) });
+    dialogSpy.open.and.returnValue(dialogRefSpy);
+
+    const mockAccounts = [
+      { id: 'acc1', name: 'Test Asset', type: 'asset', showInDashboardSummary: true }
+    ];
+    // Force replace the accounts signal with a new spy that returns our mock data
+    const accountsSignalSpy = jasmine.createSpy('accountsSignal').and.returnValue(mockAccounts);
+    Object.defineProperty(component, 'accounts', { value: accountsSignalSpy });
+
+    accountService.update.and.returnValue(of({} as any));
+
+    component['onHideAccount']('acc1');
+
+    expect(dialogSpy.open).toHaveBeenCalled();
+    expect(accountService.update).toHaveBeenCalledWith('acc1', jasmine.objectContaining({
+      showInDashboardSummary: false
+    }));
   });
 });

@@ -6,5 +6,10 @@ export interface AccountNoId {
   bankInfo?: BankAccountInfo;
   description?: string;
   name: string;
+
+  /**
+   * If true, show this account in dashboard summary.
+   */
+  showInDashboardSummary?: boolean;
   type: 'expense' | 'income' | 'asset';
 }

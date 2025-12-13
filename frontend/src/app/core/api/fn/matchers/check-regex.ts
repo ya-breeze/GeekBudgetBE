@@ -7,21 +7,20 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { MatcherNoId } from '../../models/matcher-no-id';
-import { TransactionNoId } from '../../models/transaction-no-id';
 
-export interface CheckMatcher$Params {
+export interface CheckRegex$Params {
       body: {
-'matcher': MatcherNoId;
-'transaction': TransactionNoId;
+'regex': string;
+'testString': string;
 }
 }
 
-export function checkMatcher(http: HttpClient, rootUrl: string, params: CheckMatcher$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-'result'?: boolean;
-'reason'?: string;
+export function checkRegex(http: HttpClient, rootUrl: string, params: CheckRegex$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+'isValid': boolean;
+'isMatch': boolean;
+'error'?: string;
 }>> {
-  const rb = new RequestBuilder(rootUrl, checkMatcher.PATH, 'post');
+  const rb = new RequestBuilder(rootUrl, checkRegex.PATH, 'post');
   if (params) {
     rb.body(params.body, 'application/json');
   }
@@ -32,11 +31,12 @@ export function checkMatcher(http: HttpClient, rootUrl: string, params: CheckMat
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
       return r as StrictHttpResponse<{
-      'result'?: boolean;
-      'reason'?: string;
+      'isValid': boolean;
+      'isMatch': boolean;
+      'error'?: string;
       }>;
     })
   );
 }
 
-checkMatcher.PATH = '/v1/matchers/check';
+checkRegex.PATH = '/v1/matchers/check-regex';

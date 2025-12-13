@@ -1099,6 +1099,9 @@ components:
             - asset
         bankInfo:
           $ref: "#/components/schemas/BankAccountInfo"
+        showInDashboardSummary:
+          type: boolean
+          description: "If true, show this account in dashboard summary."
       required:
         - name
         - type

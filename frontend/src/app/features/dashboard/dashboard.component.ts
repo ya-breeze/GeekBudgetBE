@@ -5,6 +5,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DecimalPipe, JsonPipe } from '@angular/common';
 import { map, forkJoin, fromEvent } from 'rxjs';
 import { ApiConfiguration } from '../../core/api/api-configuration';
@@ -16,6 +18,9 @@ import { getBalances } from '../../core/api/fn/aggregations/get-balances';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { UserService } from '../../core/services/user.service';
 import { LayoutService } from '../../layout/services/layout.service';
+import { AccountNoId } from '../../core/api/models/account-no-id';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 interface ExpenseTableCell {
   value: number;
@@ -44,6 +49,9 @@ interface CurrencyTable {
     MatIconModule,
     MatTableModule,
     MatButtonToggleModule,
+    MatButtonModule,
+    MatSnackBarModule,
+    MatDialogModule,
     DecimalPipe,
     JsonPipe,
   ],
@@ -57,6 +65,8 @@ export class DashboardComponent implements OnInit {
   private readonly currencyService = inject(CurrencyService);
   private readonly userService = inject(UserService);
   private readonly layoutService = inject(LayoutService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
   protected readonly loading = signal(true);
@@ -246,7 +256,7 @@ export class DashboardComponent implements OnInit {
       return [];
     }
 
-    const assetAccounts = accounts.filter(acc => acc.type === 'asset');
+    const assetAccounts = accounts.filter(acc => acc.type === 'asset' && acc.showInDashboardSummary !== false);
     if (!assetAccounts.length) {
       return [];
     }
@@ -321,6 +331,43 @@ export class DashboardComponent implements OnInit {
         // If user loading fails, still load dashboard data
         this.loadDashboardData();
       },
+    });
+  }
+
+  protected onHideAccount(accountId: string): void {
+    const account = this.accounts().find((a) => a.id === accountId);
+    if (!account || !account.id) return;
+
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Hide Account',
+        message: `Are you sure you want to hide "${account.name}" from the dashboard summary?`,
+        confirmText: 'Hide',
+        cancelText: 'Cancel'
+      }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        const update: AccountNoId = {
+          name: account.name!,
+          type: account.type,
+          description: account.description,
+          bankInfo: account.bankInfo,
+          showInDashboardSummary: false,
+        };
+
+        this.accountService.update(account.id!, update).subscribe({
+          next: () => {
+            this.snackBar.open('Account hidden from dashboard', 'Undo', { duration: 3000 })
+              .onAction().subscribe(() => {
+                // Undo action
+                this.accountService.update(account.id!, { ...update, showInDashboardSummary: true }).subscribe();
+              });
+          },
+          error: () => {
+            this.snackBar.open('Failed to hide account', 'Close', { duration: 3000 });
+          },
+        });
+      }
     });
   }
 

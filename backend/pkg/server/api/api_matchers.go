@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"log/slog"
+	"regexp"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -61,6 +62,28 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.Ch
 		With("reason", matchDetails.FailureReason).Info("CheckMatcher result")
 
 	return goserver.Response(200, response), nil
+}
+
+func (s *MatchersAPIServiceImpl) CheckRegex(ctx context.Context, r goserver.CheckRegexRequest,
+) (goserver.ImplResponse, error) {
+	regexStr := r.GetRegex()
+	testStr := r.GetTestString()
+
+	re, err := regexp.Compile(regexStr)
+	if err != nil {
+		return goserver.Response(200, goserver.CheckRegex200Response{
+			IsValid: false,
+			IsMatch: false,
+			Error:   err.Error(),
+		}), nil
+	}
+
+	match := re.MatchString(testStr)
+
+	return goserver.Response(200, goserver.CheckRegex200Response{
+		IsValid: true,
+		IsMatch: match,
+	}), nil
 }
 
 func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.ImplResponse, error) {

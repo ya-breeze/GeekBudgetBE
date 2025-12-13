@@ -106,6 +106,7 @@ Class | Method | HTTP request | Description
 *ExportAPI* | [**Export**](docs/ExportAPI.md#export) | **Post** /v1/export | Download full user&#39;s data
 *ImportAPI* | [**CallImport**](docs/ImportAPI.md#callimport) | **Post** /v1/import | Upload and import full user&#39;s data
 *MatchersAPI* | [**CheckMatcher**](docs/MatchersAPI.md#checkmatcher) | **Post** /v1/matchers/check | check if passed matcher matches given transaction
+*MatchersAPI* | [**CheckRegex**](docs/MatchersAPI.md#checkregex) | **Post** /v1/matchers/check-regex | check if regex is valid and matches string (using backend&#39;s regex engine)
 *MatchersAPI* | [**CreateMatcher**](docs/MatchersAPI.md#creatematcher) | **Post** /v1/matchers | create new matcher
 *MatchersAPI* | [**DeleteMatcher**](docs/MatchersAPI.md#deletematcher) | **Delete** /v1/matchers/{id} | delete matcher
 *MatchersAPI* | [**GetMatchers**](docs/MatchersAPI.md#getmatchers) | **Get** /v1/matchers | get all matchers
@@ -141,6 +142,8 @@ Class | Method | HTTP request | Description
  - [BudgetItemNoID](docs/BudgetItemNoID.md)
  - [CheckMatcher200Response](docs/CheckMatcher200Response.md)
  - [CheckMatcherRequest](docs/CheckMatcherRequest.md)
+ - [CheckRegex200Response](docs/CheckRegex200Response.md)
+ - [CheckRegexRequest](docs/CheckRegexRequest.md)
  - [Currency](docs/Currency.md)
  - [CurrencyAggregation](docs/CurrencyAggregation.md)
  - [CurrencyNoID](docs/CurrencyNoID.md)

@@ -14,9 +14,10 @@
     <mat-card class="asset-card">
       <mat-card-header>
         <mat-card-title>{{ card.accountName }}</mat-card-title>
-        <div class="icon-container">
-          <mat-icon>account_balance_wallet</mat-icon>
-        </div>
+        <button mat-icon-button class="hide-button" (click)="onHideAccount(card.accountId)"
+          aria-label="Hide account from summary">
+          <mat-icon>close</mat-icon>
+        </button>
       </mat-card-header>
       <mat-card-content>
         <div class="balance-container">

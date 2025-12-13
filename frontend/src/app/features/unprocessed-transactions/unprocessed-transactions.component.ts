@@ -124,82 +124,97 @@ export class UnprocessedTransactionsComponent implements OnInit {
       autoFocus: false,
     });
 
-    dialogRef.afterClosed().subscribe((result: UnprocessedTransactionDialogResult | undefined) => {
-      if (result) {
-        if (result.action === 'convert') {
-          // The dialog returns MatcherAndTransaction, but convert expects UnprocessedTransaction
-          // and assumes we are converting THE transaction. MatcherAndTransaction contains the suggested
-          // transaction data (TransactionNoId).
-          // We need to call convert with the ID of the unprocessed transaction, and the body from the match.
-          // Wait, the service convert method takes UnprocessedTransaction object which contains the ORIGINAL transaction.
-          // BUT, looking at service implementation:
-          /*
-            const body = {
-              date: transaction.transaction.date,
-              ...
-            };
-          */
-          // It uses the passed transaction object to construct body.
-          // If we want to apply a match, we probably want to use the matched data.
-          // However, the requirement says "Applying match should finish with calling '/v1/unprocessedTransactions/{id}/convert'".
-          // The API convert endpoint takes TransactionNoID as body.
-          // The service implementation CURRENTLY takes UnprocessedTransaction and extracts data from it.
-          // If I want to apply a match, I should probably update the service to accept specific body or
-          // I should construct a "fake" UnprocessedTransaction with the matched data?
-          // Or better, I should use the `convertUnprocessedTransaction` fn directly or update service.
-          // Let's look at the MatcherAndTransaction model again. It has `transaction: TransactionNoId`.
-          // So I should probably update the service to allow passing a body, OR overload it.
-          // For now, let's assume the match just means "convert this transaction using the matcher's suggestion".
-          // If the service logic is hardcoded to use `transaction.transaction`, I might need to update the service.
-          // Let's re-read the service convert method.
+    const componentInstance = dialogRef.componentInstance;
 
-          this.processMatch(transaction, result.match);
+    // Handle actions from the dialog
+    componentInstance.action.subscribe((result: UnprocessedTransactionDialogResult) => {
+      const currentTransaction = componentInstance.transactionData();
 
-        } else if (result.action === 'delete') {
-          this.deleteTransaction(transaction, result.duplicateOf.id);
-        }
+      if (result.action === 'convert') {
+        this.processMatch(currentTransaction, result.match, dialogRef);
+      } else if (result.action === 'delete') {
+        this.deleteTransaction(currentTransaction, result.duplicateOf.id, dialogRef);
+      } else if (result.action === 'manual') {
+        this.processManual(currentTransaction, result.accountId, dialogRef);
       }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.loadUnprocessedTransactions();
     });
   }
 
-  private processMatch(original: UnprocessedTransaction, match: any) { // using any for now to avoid import loop or lengthy type
-    // We need to call the API with the body from the match.
-    // The current service.convert method fetches data from the passed UnprocessedTransaction.
-    // We should probably modify the service to be more flexible, but for now I will try to patch it here
-    // OR I can modifying the 'transaction' part of the UnprocessedTransaction object before passing it to service.
-
+  private processMatch(original: UnprocessedTransaction, match: any, dialogRef?: any) {
     const transactionToConvert = { ...original };
     transactionToConvert.transaction = {
       ...original.transaction,
-      ...match.transaction // Override with matched data
+      ...match.transaction
     };
 
     this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert).subscribe({
       next: () => {
         this.snackBar.open('Transaction processed (match applied)', 'Close', { duration: 3000 });
+        if (dialogRef) {
+          this.handleSuccess(original.transaction.id!, dialogRef);
+        }
       },
       error: () => {
         this.snackBar.open('Failed to process transaction', 'Close', { duration: 3000 });
+        if (dialogRef) dialogRef.componentInstance.setLoading(false);
       }
     });
   }
 
-  deleteTransaction(transaction: UnprocessedTransaction, duplicateOfId?: string): void {
-    const message = duplicateOfId
-      ? 'Are you sure you want to delete this transaction as a duplicate?'
-      : 'Are you sure you want to delete this transaction?';
+  private processManual(original: UnprocessedTransaction, accountId: string, dialogRef?: any) {
+    const transactionToConvert = JSON.parse(JSON.stringify(original));
+    const movements = transactionToConvert.transaction.movements || [];
 
-    if (confirm(message)) {
-      if (transaction.transaction.id) {
-        this.unprocessedTransactionService.delete(transaction.transaction.id, duplicateOfId).subscribe({
-          next: () => {
-            this.snackBar.open('Transaction deleted successfully', 'Close', { duration: 3000 });
-          },
-          error: () => {
-            this.snackBar.open('Failed to delete transaction', 'Close', { duration: 3000 });
-          },
-        });
+    const targetMovement = movements.find((m: any) => !m.accountId);
+    if (targetMovement) {
+      targetMovement.accountId = accountId;
+    }
+
+    this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert).subscribe({
+      next: () => {
+        this.snackBar.open('Transaction processed (account assigned)', 'Close', { duration: 3000 });
+        if (dialogRef) {
+          this.handleSuccess(original.transaction.id!, dialogRef);
+        }
+      },
+      error: () => {
+        this.snackBar.open('Failed to process transaction', 'Close', { duration: 3000 });
+        if (dialogRef) dialogRef.componentInstance.setLoading(false);
       }
+    });
+  }
+
+  deleteTransaction(transaction: UnprocessedTransaction, duplicateOfId?: string, dialogRef?: any): void {
+    this.unprocessedTransactionService.delete(transaction.transaction.id!, duplicateOfId).subscribe({
+      next: () => {
+        this.snackBar.open('Transaction deleted', 'Close', { duration: 3000 });
+        if (dialogRef) {
+          this.handleSuccess(transaction.transaction.id!, dialogRef);
+        } else {
+          this.loadUnprocessedTransactions();
+        }
+      },
+      error: () => {
+        this.snackBar.open('Failed to delete transaction', 'Close', { duration: 3000 });
+        if (dialogRef) dialogRef.componentInstance.setLoading(false);
+      }
+    });
+  }
+
+  private handleSuccess(processedId: string, dialogRef: any) {
+    const currentList = this.unprocessedTransactionService.unprocessedTransactions();
+    const nextTransaction = currentList.find(t => t.transaction.id !== processedId);
+
+    if (nextTransaction) {
+      dialogRef.componentInstance.updateTransaction(nextTransaction);
+      this.loadUnprocessedTransactions();
+    } else {
+      dialogRef.close();
+      this.loadUnprocessedTransactions();
     }
   }
 }

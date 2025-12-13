@@ -48,42 +48,27 @@
     }
   }
 
-  .icon-container {
-    background-color: #e8f0fe;
-    /* Light blue background for icon */
-    color: #1a73e8;
-    /* Blue icon logic */
-    border-radius: 12px;
-    padding: 8px;
+  .hide-button {
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0; // Reset padding just in case
 
     mat-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px; // Ensure icon itself is centered in its box
+    }
+
+    &:hover {
+      color: #5f6368; // Darker on hover
+      background-color: rgba(0, 0, 0, 0.04);
     }
   }
 
-  /* Variations for icon colors based on currency or generic */
-  &:nth-child(2n) .icon-container {
-    background-color: #e6f4ea;
-    /* Light green */
-    color: #1e8e3e;
-  }
-
-  &:nth-child(3n) .icon-container {
-    background-color: #fce8e6;
-    /* Light red */
-    color: #d93025;
-  }
-
-  &:nth-child(4n) .icon-container {
-    background-color: #fef7e0;
-    /* Light yellow */
-    color: #f9ab00;
-  }
 
   mat-card-content {
     padding: 0;

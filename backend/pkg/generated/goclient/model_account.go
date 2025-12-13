@@ -27,6 +27,8 @@ type Account struct {
 	Description *string          `json:"description,omitempty"`
 	Type        string           `json:"type"`
 	BankInfo    *BankAccountInfo `json:"bankInfo,omitempty"`
+	// If true, show this account in dashboard summary.
+	ShowInDashboardSummary bool `json:"showInDashboardSummary"`
 }
 
 type _Account Account
@@ -35,11 +37,12 @@ type _Account Account
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewAccount(id string, name string, type_ string) *Account {
+func NewAccount(id string, name string, type_ string, showInDashboardSummary bool) *Account {
 	this := Account{}
 	this.Id = id
 	this.Name = name
 	this.Type = type_
+	this.ShowInDashboardSummary = showInDashboardSummary
 	return &this
 }
 
@@ -48,6 +51,8 @@ func NewAccount(id string, name string, type_ string) *Account {
 // but it doesn't guarantee that properties required by API are set
 func NewAccountWithDefaults() *Account {
 	this := Account{}
+	var showInDashboardSummary bool = true
+	this.ShowInDashboardSummary = showInDashboardSummary
 	return &this
 }
 
@@ -187,6 +192,30 @@ func (o *Account) SetBankInfo(v BankAccountInfo) {
 	o.BankInfo = &v
 }
 
+// GetShowInDashboardSummary returns the ShowInDashboardSummary field value
+func (o *Account) GetShowInDashboardSummary() bool {
+	if o == nil {
+		var ret bool
+		return ret
+	}
+
+	return o.ShowInDashboardSummary
+}
+
+// GetShowInDashboardSummaryOk returns a tuple with the ShowInDashboardSummary field value
+// and a boolean to check if the value has been set.
+func (o *Account) GetShowInDashboardSummaryOk() (*bool, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.ShowInDashboardSummary, true
+}
+
+// SetShowInDashboardSummary sets field value
+func (o *Account) SetShowInDashboardSummary(v bool) {
+	o.ShowInDashboardSummary = v
+}
+
 func (o Account) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -206,6 +235,7 @@ func (o Account) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.BankInfo) {
 		toSerialize["bankInfo"] = o.BankInfo
 	}
+	toSerialize["showInDashboardSummary"] = o.ShowInDashboardSummary
 	return toSerialize, nil
 }
 
@@ -217,6 +247,7 @@ func (o *Account) UnmarshalJSON(data []byte) (err error) {
 		"id",
 		"name",
 		"type",
+		"showInDashboardSummary",
 	}
 
 	allProperties := make(map[string]interface{})

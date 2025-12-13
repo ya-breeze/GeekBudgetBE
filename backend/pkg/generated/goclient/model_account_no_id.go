@@ -26,6 +26,8 @@ type AccountNoID struct {
 	Description *string          `json:"description,omitempty"`
 	Type        string           `json:"type"`
 	BankInfo    *BankAccountInfo `json:"bankInfo,omitempty"`
+	// If true, show this account in dashboard summary.
+	ShowInDashboardSummary *bool `json:"showInDashboardSummary,omitempty"`
 }
 
 type _AccountNoID AccountNoID
@@ -38,6 +40,8 @@ func NewAccountNoID(name string, type_ string) *AccountNoID {
 	this := AccountNoID{}
 	this.Name = name
 	this.Type = type_
+	var showInDashboardSummary bool = true
+	this.ShowInDashboardSummary = &showInDashboardSummary
 	return &this
 }
 
@@ -46,6 +50,8 @@ func NewAccountNoID(name string, type_ string) *AccountNoID {
 // but it doesn't guarantee that properties required by API are set
 func NewAccountNoIDWithDefaults() *AccountNoID {
 	this := AccountNoID{}
+	var showInDashboardSummary bool = true
+	this.ShowInDashboardSummary = &showInDashboardSummary
 	return &this
 }
 
@@ -161,6 +167,38 @@ func (o *AccountNoID) SetBankInfo(v BankAccountInfo) {
 	o.BankInfo = &v
 }
 
+// GetShowInDashboardSummary returns the ShowInDashboardSummary field value if set, zero value otherwise.
+func (o *AccountNoID) GetShowInDashboardSummary() bool {
+	if o == nil || IsNil(o.ShowInDashboardSummary) {
+		var ret bool
+		return ret
+	}
+	return *o.ShowInDashboardSummary
+}
+
+// GetShowInDashboardSummaryOk returns a tuple with the ShowInDashboardSummary field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountNoID) GetShowInDashboardSummaryOk() (*bool, bool) {
+	if o == nil || IsNil(o.ShowInDashboardSummary) {
+		return nil, false
+	}
+	return o.ShowInDashboardSummary, true
+}
+
+// HasShowInDashboardSummary returns a boolean if a field has been set.
+func (o *AccountNoID) HasShowInDashboardSummary() bool {
+	if o != nil && !IsNil(o.ShowInDashboardSummary) {
+		return true
+	}
+
+	return false
+}
+
+// SetShowInDashboardSummary gets a reference to the given bool and assigns it to the ShowInDashboardSummary field.
+func (o *AccountNoID) SetShowInDashboardSummary(v bool) {
+	o.ShowInDashboardSummary = &v
+}
+
 func (o AccountNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -178,6 +216,9 @@ func (o AccountNoID) ToMap() (map[string]interface{}, error) {
 	toSerialize["type"] = o.Type
 	if !IsNil(o.BankInfo) {
 		toSerialize["bankInfo"] = o.BankInfo
+	}
+	if !IsNil(o.ShowInDashboardSummary) {
+		toSerialize["showInDashboardSummary"] = o.ShowInDashboardSummary
 	}
 	return toSerialize, nil
 }

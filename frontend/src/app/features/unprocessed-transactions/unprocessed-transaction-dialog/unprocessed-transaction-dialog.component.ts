@@ -1,9 +1,14 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
 import { DatePipe, CurrencyPipe } from '@angular/common';
 import { UnprocessedTransaction } from '../../../core/api/models/unprocessed-transaction';
 import { MatcherAndTransaction } from '../../../core/api/models/matcher-and-transaction';
@@ -13,7 +18,8 @@ import { CurrencyService } from '../../currencies/services/currency.service';
 
 export type UnprocessedTransactionDialogResult =
     | { action: 'convert'; match: MatcherAndTransaction }
-    | { action: 'delete'; duplicateOf: Transaction };
+    | { action: 'delete'; duplicateOf: Transaction }
+    | { action: 'manual'; accountId: string };
 
 @Component({
     selector: 'app-unprocessed-transaction-dialog',
@@ -24,8 +30,13 @@ export type UnprocessedTransactionDialogResult =
         MatIconModule,
         MatListModule,
         MatCardModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatProgressSpinnerModule,
+        FormsModule,
         DatePipe,
-        CurrencyPipe
+        CurrencyPipe,
+        CommonModule
     ],
     templateUrl: './unprocessed-transaction-dialog.component.html',
     styleUrl: './unprocessed-transaction-dialog.component.scss'
@@ -34,14 +45,33 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     private readonly dialogRef = inject(MatDialogRef<UnprocessedTransactionDialogComponent>);
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
-    readonly data = inject<UnprocessedTransaction>(MAT_DIALOG_DATA);
+    private readonly initialData = inject<UnprocessedTransaction>(MAT_DIALOG_DATA);
 
     protected readonly accounts = this.accountService.accounts;
     protected readonly currencies = this.currencyService.currencies;
 
+    // Reactive state for the current transaction being processed
+    readonly transactionData = signal<UnprocessedTransaction>(this.initialData);
+    readonly loading = signal<boolean>(false);
+
+    // Output event for parent component
+    readonly action = new EventEmitter<UnprocessedTransactionDialogResult>();
+
+    protected selectedAccountId = signal<string | null>(null);
+
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
+    }
+
+    updateTransaction(transaction: UnprocessedTransaction) {
+        this.loading.set(false);
+        this.selectedAccountId.set(null);
+        this.transactionData.set(transaction);
+    }
+
+    setLoading(isLoading: boolean) {
+        this.loading.set(isLoading);
     }
 
     getAccountName(accountId: string | undefined): string {
@@ -56,43 +86,52 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     }
 
     get shouldShowEffectiveAmount(): boolean {
-        return (this.data.transaction.movements || []).length === 2;
+        return (this.transactionData().transaction.movements || []).length === 2;
     }
 
-    get effectiveAmount(): { amount: number, currencyName: string } | null {
+    get effectiveAmount(): { amount: number, currencyName: string, knownAccountId?: string } | null {
         if (!this.shouldShowEffectiveAmount) return null;
-        // Typically in unprocessed transaction logic, we might want to show the 'unknown' amount or just the positive one?
-        // Let's assume we want to show the non-primary amount? Or just the first one?
-        // Requirement just says "effective amount should be shown".
-        // In the table component, it calculates effective amount by summing unknown account movements.
-        // If we have 2 movements, and one is 'known' (imported), likely the other is the effective impact on the user's budget.
-        // Let's look for the movement that DOES NOT have accountId matching the bank importer?
-        // But the unprocessed transaction doesn't explicitly link to bank importer here easily without context.
-        // However, usually one movement has accountId (the bank account) and one is empty (the one to be assigned).
-        // Let's check movements without accountId.
 
-        const movements = this.data.transaction.movements || [];
+        const movements = this.transactionData().transaction.movements || [];
         const unknownAccountMovement = movements.find(m => !m.accountId);
+        const knownAccountMovement = movements.find(m => !!m.accountId);
 
         if (unknownAccountMovement) {
             return {
                 amount: unknownAccountMovement.amount,
-                currencyName: this.getCurrencyName(unknownAccountMovement.currencyId)
+                currencyName: this.getCurrencyName(unknownAccountMovement.currencyId),
+                knownAccountId: knownAccountMovement?.accountId
             };
         }
 
-        // If both have account IDs (unlikely for unprocessed) or none, just return the first one?
-        // Let's fallback to the first movement.
         const m = movements[0];
-        return { amount: m.amount, currencyName: this.getCurrencyName(m.currencyId) };
+        return { amount: m.amount, currencyName: this.getCurrencyName(m.currencyId), knownAccountId: movements.find(mov => mov !== m)?.accountId };
+    }
+
+    get knownAccountName(): string | null {
+        const amountData = this.effectiveAmount;
+        if (amountData?.knownAccountId) {
+            return this.getAccountName(amountData.knownAccountId);
+        }
+        return null;
     }
 
     applyMatch(match: MatcherAndTransaction): void {
-        this.dialogRef.close({ action: 'convert', match });
+        this.loading.set(true);
+        this.action.emit({ action: 'convert', match });
     }
 
     applyDuplicate(duplicate: Transaction): void {
-        this.dialogRef.close({ action: 'delete', duplicateOf: duplicate });
+        this.loading.set(true);
+        this.action.emit({ action: 'delete', duplicateOf: duplicate });
+    }
+
+    processManual(): void {
+        const accountId = this.selectedAccountId();
+        if (accountId) {
+            this.loading.set(true);
+            this.action.emit({ action: 'manual', accountId });
+        }
     }
 
     close(): void {

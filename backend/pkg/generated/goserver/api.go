@@ -101,6 +101,7 @@ type MatchersAPIRouter interface {
 	CreateMatcher(http.ResponseWriter, *http.Request)
 	UpdateMatcher(http.ResponseWriter, *http.Request)
 	DeleteMatcher(http.ResponseWriter, *http.Request)
+	CheckRegex(http.ResponseWriter, *http.Request)
 	CheckMatcher(http.ResponseWriter, *http.Request)
 }
 
@@ -232,6 +233,7 @@ type MatchersAPIServicer interface {
 	CreateMatcher(context.Context, MatcherNoId) (ImplResponse, error)
 	UpdateMatcher(context.Context, string, MatcherNoId) (ImplResponse, error)
 	DeleteMatcher(context.Context, string) (ImplResponse, error)
+	CheckRegex(context.Context, CheckRegexRequest) (ImplResponse, error)
 	CheckMatcher(context.Context, CheckMatcherRequest) (ImplResponse, error)
 }
 

@@ -1,93 +1,129 @@
-<h2 mat-dialog-title>Process Transaction</h2>
-<mat-dialog-content>
-  <div class="section-container transaction-details">
-    <h3 class="section-title">Transaction Details</h3>
-    <div class="details-grid">
-      <div class="detail-item">
-        <span class="label">Date:</span>
-        <span class="value">{{ data.transaction.date | date:'medium' }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="label">Description:</span>
-        <span class="value">{{ data.transaction.description }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="label">Tags:</span>
-        <span class="value">{{ data.transaction.tags?.join(', ') || '-' }}</span>
-      </div>
+<div class="dialog-container" [class.loading]="loading()">
+  @if (loading()) {
+  <div class="loading-overlay">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+  }
 
-      @if (shouldShowEffectiveAmount) {
-      <div class="detail-item highlight">
-        <span class="label">Amount:</span>
-        <span class="value amount">{{ effectiveAmount?.amount }} {{ effectiveAmount?.currencyName }}</span>
-      </div>
-      }
-    </div>
+  <h2 mat-dialog-title>Process Transaction</h2>
+  <mat-dialog-content>
+    <div class="section-container transaction-details">
+      <h3 class="section-title">Transaction Details</h3>
+      <div class="details-grid">
+        <div class="detail-item">
+          <span class="label">Date:</span>
+          <span class="value">{{ transactionData().transaction.date | date:'medium' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Description:</span>
+          <span class="value">{{ transactionData().transaction.description }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Tags:</span>
+          <span class="value">{{ transactionData().transaction.tags?.join(', ') || '-' }}</span>
+        </div>
 
-    @if (!shouldShowEffectiveAmount) {
-    <div class="sub-section">
-      <h4>Movements</h4>
-      <mat-list>
-        @for (movement of data.transaction.movements; track $index) {
-        <mat-list-item>
-          <span matListItemTitle>{{ movement.amount }} {{ getCurrencyName(movement.currencyId) }}</span>
-          <span matListItemLine>{{ getAccountName(movement.accountId) }}</span>
-          <span matListItemLine>{{ movement.description || 'No description' }}</span>
-        </mat-list-item>
+        @if (shouldShowEffectiveAmount) {
+        <div class="detail-item highlight">
+          <span class="label">Amount:</span>
+          <span class="value amount">{{ effectiveAmount?.amount }} {{ effectiveAmount?.currencyName }}</span>
+        </div>
         }
-      </mat-list>
-    </div>
-    }
-  </div>
+      </div>
 
-  <div class="section-separator"></div>
-
-  <div class="section-container matches-section" [class.has-content]="data.matched.length > 0">
-    <h3 class="section-title">Matches <span class="badge">{{ data.matched.length }}</span></h3>
-    @if (data.matched.length > 0) {
-    <div class="custom-list">
-      @for (match of data.matched; track match.matcherId) {
-      <div class="custom-list-item">
-        <div class="item-content">
-          <div class="item-title">{{ match.transaction.description }}</div>
-          <div class="item-subtitle">{{ match.transaction.date | date:'shortDate' }}</div>
-        </div>
-        <button mat-icon-button (click)="applyMatch(match)" color="primary" aria-label="Apply Match"
-          matTooltip="Apply Match">
-          <mat-icon>check_circle</mat-icon>
-        </button>
+      @if (!shouldShowEffectiveAmount) {
+      <div class="sub-section">
+        <h4>Movements</h4>
+        <mat-list>
+          @for (movement of transactionData().transaction.movements; track $index) {
+          <mat-list-item>
+            <span matListItemTitle>{{ movement.amount }} {{ getCurrencyName(movement.currencyId) }}</span>
+            <span matListItemLine>{{ getAccountName(movement.accountId) }}</span>
+            <span matListItemLine>{{ movement.description || 'No description' }}</span>
+          </mat-list-item>
+          }
+        </mat-list>
       </div>
       }
     </div>
-    } @else {
-    <p class="empty-state">No matches found.</p>
-    }
-  </div>
 
-  <div class="section-separator"></div>
-
-  <div class="section-container duplicates-section" [class.has-content]="data.duplicates.length > 0">
-    <h3 class="section-title">Potential Duplicates <span class="badge warn">{{ data.duplicates.length }}</span></h3>
-    @if (data.duplicates.length > 0) {
-    <div class="custom-list">
-      @for (duplicate of data.duplicates; track duplicate.id) {
-      <div class="custom-list-item">
-        <div class="item-content">
-          <div class="item-title">{{ duplicate.description }}</div>
-          <div class="item-subtitle">{{ duplicate.date | date:'medium' }}</div>
+    <div class="section-container manual-section">
+      <h3 class="section-title">Manual Processing</h3>
+      <div class="manual-grid">
+        @if (knownAccountName) {
+        <div class="manual-item">
+          <span class="label">Source:</span>
+          <span class="value">{{ knownAccountName }}</span>
         </div>
-        <button mat-icon-button (click)="applyDuplicate(duplicate)" color="warn" aria-label="Confirm Duplicate"
-          matTooltip="Merge/Delete Duplicate">
-          <mat-icon>delete</mat-icon>
-        </button>
+        }
+
+        <div class="manual-controls">
+          <mat-form-field appearance="outline" class="account-select">
+            <mat-label>Select Target</mat-label>
+            <mat-select [ngModel]="selectedAccountId()" (ngModelChange)="selectedAccountId.set($event)">
+              @for (account of accounts(); track account.id) {
+              <mat-option [value]="account.id">{{ account.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" [disabled]="!selectedAccountId()" (click)="processManual()">
+            Save
+          </button>
+        </div>
       </div>
+    </div>
+
+    <div class="section-separator"></div>
+
+    <div class="section-container matches-section" [class.has-content]="transactionData().matched.length > 0">
+      <h3 class="section-title">Matches <span class="badge">{{ transactionData().matched.length }}</span></h3>
+      @if (transactionData().matched.length > 0) {
+      <div class="custom-list">
+        @for (match of transactionData().matched; track match.matcherId) {
+        <div class="custom-list-item">
+          <div class="item-content">
+            <div class="item-title">{{ match.transaction.description }}</div>
+            <div class="item-subtitle">{{ match.transaction.date | date:'shortDate' }}</div>
+          </div>
+          <button mat-icon-button (click)="applyMatch(match)" color="primary" aria-label="Apply Match"
+            matTooltip="Apply Match">
+            <mat-icon>check_circle</mat-icon>
+          </button>
+        </div>
+        }
+      </div>
+      } @else {
+      <p class="empty-state">No matches found.</p>
       }
     </div>
-    } @else {
-    <p class="empty-state">No duplicates found.</p>
-    }
-  </div>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button (click)="close()">Close</button>
-</mat-dialog-actions>
+
+    <div class="section-separator"></div>
+
+    <div class="section-container duplicates-section" [class.has-content]="transactionData().duplicates.length > 0">
+      <h3 class="section-title">Potential Duplicates <span class="badge warn">{{ transactionData().duplicates.length
+          }}</span></h3>
+      @if (transactionData().duplicates.length > 0) {
+      <div class="custom-list">
+        @for (duplicate of transactionData().duplicates; track duplicate.id) {
+        <div class="custom-list-item">
+          <div class="item-content">
+            <div class="item-title">{{ duplicate.description }}</div>
+            <div class="item-subtitle">{{ duplicate.date | date:'medium' }}</div>
+          </div>
+          <button mat-icon-button (click)="applyDuplicate(duplicate)" color="warn" aria-label="Confirm Duplicate"
+            matTooltip="Merge/Delete Duplicate">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+        }
+      </div>
+      } @else {
+      <p class="empty-state">No duplicates found.</p>
+      }
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>

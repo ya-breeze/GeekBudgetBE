@@ -14,7 +14,6 @@ package goserver
 type CheckMatcher200Response struct {
 	Result bool `json:"result,omitempty"`
 
-	// Reason why the matcher did or did not match
 	Reason string `json:"reason,omitempty"`
 }
 

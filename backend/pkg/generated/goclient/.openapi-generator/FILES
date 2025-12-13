@@ -38,6 +38,8 @@ docs/BudgetItemNoID.md
 docs/BudgetItemsAPI.md
 docs/CheckMatcher200Response.md
 docs/CheckMatcherRequest.md
+docs/CheckRegex200Response.md
+docs/CheckRegexRequest.md
 docs/CurrenciesAPI.md
 docs/Currency.md
 docs/CurrencyAggregation.md
@@ -78,6 +80,8 @@ model_budget_item.go
 model_budget_item_no_id.go
 model_check_matcher_200_response.go
 model_check_matcher_request.go
+model_check_regex_200_response.go
+model_check_regex_request.go
 model_currency.go
 model_currency_aggregation.go
 model_currency_no_id.go

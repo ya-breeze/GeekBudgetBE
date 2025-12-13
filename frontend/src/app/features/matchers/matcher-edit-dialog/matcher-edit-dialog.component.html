@@ -1,0 +1,129 @@
+<h2 mat-dialog-title>{{ data ? 'Edit Matcher' : 'New Matcher' }}</h2>
+
+<mat-dialog-content [class.loading]="loading()">
+    @if (loading()) {
+    <div class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+    </div>
+    }
+
+    <form [formGroup]="form" class="edit-form">
+        <!-- General Section -->
+        <h3 class="section-title">General</h3>
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" placeholder="E.g. Uber Rides">
+            @if (form.controls.name.hasError('required')) {
+            <mat-error>Name is required</mat-error>
+            }
+        </mat-form-field>
+
+        <!-- Conditions Section -->
+        <h3 class="section-title">Conditions</h3>
+
+        <div class="regex-test-container">
+            <mat-form-field appearance="outline" class="regex-input">
+                <mat-label>Description RegExp</mat-label>
+                <input matInput formControlName="descriptionRegExp" placeholder="^UBER.*">
+            </mat-form-field>
+
+            <!-- Regexp Tester -->
+            <div class="regexp-tester">
+                <h3>Regexp Tester (Backend)</h3>
+                <div class="tester-controls">
+                    <mat-form-field appearance="outline" class="test-string-input">
+                        <mat-label>Test String</mat-label>
+                        <input matInput [ngModel]="testString()" (ngModelChange)="testString.set($event)"
+                            [ngModelOptions]="{standalone: true}">
+                    </mat-form-field>
+                    <button mat-stroked-button color="accent" (click)="testRegex()"
+                        [disabled]="testingRegex() || !testString() || !form.controls.descriptionRegExp.value"
+                        class="test-button">
+                        @if (testingRegex()) {
+                        <mat-spinner diameter="20"></mat-spinner>
+                        } @else {
+                        <mat-icon>play_arrow</mat-icon>
+                        }
+                        Test
+                    </button>
+                </div>
+
+                @if (regexResult()) {
+                <div class="test-result">
+                    @if (!regexResult()?.isValid) {
+                    <span class="error"><mat-icon>error</mat-icon> Invalid: {{regexResult()?.error}}</span>
+                    }
+                    @if (regexResult()?.isValid) {
+                    @if (regexResult()?.isMatch) {
+                    <span class="match"><mat-icon>check_circle</mat-icon> Match</span>
+                    } @else {
+                    <span class="no-match"><mat-icon>cancel</mat-icon> No Match</span>
+                    }
+                    }
+                </div>
+                }
+            </div>
+        </div>
+
+        <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Partner Name RegExp</mat-label>
+                <input matInput formControlName="partnerNameRegExp">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Partner Account RegExp</mat-label>
+                <input matInput formControlName="partnerAccountNumberRegExp">
+            </mat-form-field>
+        </div>
+
+        <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Currency RegExp</mat-label>
+                <input matInput formControlName="currencyRegExp">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Extra RegExp</mat-label>
+                <input matInput formControlName="extraRegExp">
+            </mat-form-field>
+        </div>
+
+        <!-- Output Section -->
+        <h3 class="section-title">Output</h3>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Output Account</mat-label>
+            <mat-select formControlName="outputAccountId">
+                @for (account of accounts(); track account.id) {
+                <mat-option [value]="account.id">{{ account.name }}</mat-option>
+                }
+            </mat-select>
+            @if (form.controls.outputAccountId.hasError('required')) {
+            <mat-error>Output Account is required</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Output Description</mat-label>
+            <input matInput formControlName="outputDescription" placeholder="Description to apply">
+            @if (form.controls.outputDescription.hasError('required')) {
+            <mat-error>Output Description is required</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Output Tags</mat-label>
+            <input matInput formControlName="outputTags" placeholder="Comma separated tags (e.g. food, transport)">
+            <mat-hint>Separate tags with commas</mat-hint>
+        </mat-form-field>
+
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid || loading()">
+        Save
+    </button>
+</mat-dialog-actions>

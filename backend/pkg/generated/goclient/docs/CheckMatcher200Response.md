@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Result** | Pointer to **bool** |  | [optional] 
-**Reason** | Pointer to **string** | Reason why the matcher did or did not match | [optional] 
+**Reason** | Pointer to **string** |  | [optional] 
 
 ## Methods
 

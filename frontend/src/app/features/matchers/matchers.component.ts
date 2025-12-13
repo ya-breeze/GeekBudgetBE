@@ -4,19 +4,23 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatcherService } from './services/matcher.service';
 import { Matcher } from '../../core/api/models/matcher';
 import { AccountService } from '../accounts/services/account.service';
 import { LayoutService } from '../../layout/services/layout.service';
+import { MatcherEditDialogComponent } from './matcher-edit-dialog/matcher-edit-dialog.component';
 
 @Component({
   selector: 'app-matchers',
+  standalone: true,
   imports: [
     MatTableModule,
     MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatDialogModule
   ],
   templateUrl: './matchers.component.html',
   styleUrl: './matchers.component.css',
@@ -25,11 +29,12 @@ export class MatchersComponent implements OnInit {
   private readonly matcherService = inject(MatcherService);
   private readonly accountService = inject(AccountService);
   private readonly layoutService = inject(LayoutService);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly loading = this.matcherService.loading;
-  protected readonly displayedColumns = signal(['name', 'outputAccount', 'outputDescription']);
+  protected readonly displayedColumns = signal(['name', 'outputAccount', 'outputDescription', 'actions']);
 
   protected readonly sortActive = signal<string | null>(null);
   protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
@@ -74,6 +79,26 @@ export class MatchersComponent implements OnInit {
 
     this.sortActive.set(sort.active);
     this.sortDirection.set(sort.direction);
+  }
+
+  protected openMatcherDialog(matcher?: Matcher): void {
+    const dialogRef = this.dialog.open(MatcherEditDialogComponent, {
+      data: matcher,
+      width: '600px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // List automatically updates via signals in service
+      }
+    });
+  }
+
+  protected deleteMatcher(matcher: Matcher): void {
+    if (confirm(`Are you sure you want to delete matcher "${matcher.name}"?`)) {
+      this.matcherService.delete(matcher.id).subscribe();
+    }
   }
 
   private compareMatchers(

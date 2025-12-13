@@ -72,6 +72,11 @@ func (c *MatchersAPIController) Routes() Routes {
 			"/v1/matchers/{id}",
 			c.DeleteMatcher,
 		},
+		"CheckRegex": Route{
+			strings.ToUpper("Post"),
+			"/v1/matchers/check-regex",
+			c.CheckRegex,
+		},
 		"CheckMatcher": Route{
 			strings.ToUpper("Post"),
 			"/v1/matchers/check",
@@ -161,6 +166,33 @@ func (c *MatchersAPIController) DeleteMatcher(w http.ResponseWriter, r *http.Req
 		return
 	}
 	result, err := c.service.DeleteMatcher(r.Context(), idParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// CheckRegex - check if regex is valid and matches string (using backend's regex engine)
+func (c *MatchersAPIController) CheckRegex(w http.ResponseWriter, r *http.Request) {
+	checkRegexRequestParam := CheckRegexRequest{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&checkRegexRequestParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertCheckRegexRequestRequired(checkRegexRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertCheckRegexRequestConstraints(checkRegexRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.CheckRegex(r.Context(), checkRegexRequestParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

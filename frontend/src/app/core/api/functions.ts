@@ -73,6 +73,8 @@ export type { UpdateMatcher$Params } from './fn/matchers/update-matcher';
 export { updateMatcher } from './fn/matchers/update-matcher';
 export type { DeleteMatcher$Params } from './fn/matchers/delete-matcher';
 export { deleteMatcher } from './fn/matchers/delete-matcher';
+export type { CheckRegex$Params } from './fn/matchers/check-regex';
+export { checkRegex } from './fn/matchers/check-regex';
 export type { CheckMatcher$Params } from './fn/matchers/check-matcher';
 export { checkMatcher } from './fn/matchers/check-matcher';
 export type { Import$Params } from './fn/import/import';

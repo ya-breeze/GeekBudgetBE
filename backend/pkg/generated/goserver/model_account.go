@@ -21,6 +21,9 @@ type Account struct {
 	Type string `json:"type"`
 
 	BankInfo BankAccountInfo `json:"bankInfo,omitempty"`
+
+	// If true, show this account in dashboard summary.
+	ShowInDashboardSummary bool `json:"showInDashboardSummary"`
 }
 
 type AccountInterface interface {
@@ -29,6 +32,7 @@ type AccountInterface interface {
 	GetDescription() string
 	GetType() string
 	GetBankInfo() BankAccountInfo
+	GetShowInDashboardSummary() bool
 }
 
 func (c *Account) GetId() string {
@@ -46,13 +50,17 @@ func (c *Account) GetType() string {
 func (c *Account) GetBankInfo() BankAccountInfo {
 	return c.BankInfo
 }
+func (c *Account) GetShowInDashboardSummary() bool {
+	return c.ShowInDashboardSummary
+}
 
 // AssertAccountRequired checks if the required fields are not zero-ed
 func AssertAccountRequired(obj Account) error {
 	elements := map[string]interface{}{
-		"id":   obj.Id,
-		"name": obj.Name,
-		"type": obj.Type,
+		"id":                     obj.Id,
+		"name":                   obj.Name,
+		"type":                   obj.Type,
+		"showInDashboardSummary": obj.ShowInDashboardSummary,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

@@ -49,6 +49,8 @@ go/model_budget_item.go
 go/model_budget_item_no_id.go
 go/model_check_matcher_200_response.go
 go/model_check_matcher_request.go
+go/model_check_regex_200_response.go
+go/model_check_regex_request.go
 go/model_currency.go
 go/model_currency_aggregation.go
 go/model_currency_no_id.go

@@ -1139,7 +1139,6 @@ components:
         showInDashboardSummary:
           type: boolean
           description: "If true, show this account in dashboard summary."
-          default: true
       required:
         - name
         - type
@@ -1149,8 +1148,6 @@ components:
       allOf:
         - $ref: "#/components/schemas/Entity"
         - $ref: "#/components/schemas/AccountNoID"
-      required:
-        - showInDashboardSummary
 
     Notification:
       allOf:

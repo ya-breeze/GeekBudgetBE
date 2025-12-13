@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Account } from '../../../core/api/models/account';
 import { AccountNoId } from '../../../core/api/models/account-no-id';
 
@@ -22,6 +23,7 @@ export interface AccountFormDialogData {
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './account-form-dialog.component.html',
   styleUrl: './account-form-dialog.component.scss',
@@ -44,6 +46,7 @@ export class AccountFormDialogComponent {
       name: [this.data.account?.name || '', [Validators.required, Validators.maxLength(100)]],
       type: [this.data.account?.type || 'expense', [Validators.required]],
       description: [this.data.account?.description || '', [Validators.maxLength(500)]],
+      showInDashboardSummary: [this.data.account?.showInDashboardSummary ?? true],
     });
   }
 

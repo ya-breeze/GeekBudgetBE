@@ -27,6 +27,8 @@ type MatchersAPIService interface {
 	UpdateMatcher(ctx context.Context, id string, matcherNoId MatcherNoId) (ImplResponse, error)
 	// DeleteMatcher - delete matcher
 	DeleteMatcher(ctx context.Context, id string) (ImplResponse, error)
+	// CheckRegex - check if regex is valid and matches string (using backend&#39;s regex engine)
+	CheckRegex(ctx context.Context, checkRegexRequest CheckRegexRequest) (ImplResponse, error)
 	// CheckMatcher - check if passed matcher matches given transaction
 	CheckMatcher(ctx context.Context, checkMatcherRequest CheckMatcherRequest) (ImplResponse, error)
 }
@@ -86,6 +88,20 @@ func (s *MatchersAPIServiceImpl) DeleteMatcher(ctx context.Context, id string) (
 	return Response(http.StatusNotImplemented, nil), errors.New("DeleteMatcher method not implemented")
 }
 
+// CheckRegex - check if regex is valid and matches string (using backend&#39;s regex engine)
+func (s *MatchersAPIServiceImpl) CheckRegex(ctx context.Context, checkRegexRequest CheckRegexRequest) (ImplResponse, error) {
+	// TODO - update CheckRegex with the required logic for this service method.
+	// Add api_matchers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, CheckRegex200Response{}) or use other options such as http.Ok ...
+	// return Response(200, CheckRegex200Response{}), nil
+
+	// TODO: Uncomment the next line to return response Response(400, {}) or use other options such as http.Ok ...
+	// return Response(400, nil),nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("CheckRegex method not implemented")
+}
+
 // CheckMatcher - check if passed matcher matches given transaction
 func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, checkMatcherRequest CheckMatcherRequest) (ImplResponse, error) {
 	// TODO - update CheckMatcher with the required logic for this service method.
@@ -93,9 +109,6 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, checkMatcherR
 
 	// TODO: Uncomment the next line to return response Response(200, CheckMatcher200Response{}) or use other options such as http.Ok ...
 	// return Response(200, CheckMatcher200Response{}), nil
-
-	// TODO: Uncomment the next line to return response Response(400, {}) or use other options such as http.Ok ...
-	// return Response(400, nil),nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("CheckMatcher method not implemented")
 }

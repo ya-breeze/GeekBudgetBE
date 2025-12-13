@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**CheckMatcher**](MatchersAPI.md#CheckMatcher) | **Post** /v1/matchers/check | check if passed matcher matches given transaction
+[**CheckRegex**](MatchersAPI.md#CheckRegex) | **Post** /v1/matchers/check-regex | check if regex is valid and matches string (using backend&#39;s regex engine)
 [**CreateMatcher**](MatchersAPI.md#CreateMatcher) | **Post** /v1/matchers | create new matcher
 [**DeleteMatcher**](MatchersAPI.md#DeleteMatcher) | **Delete** /v1/matchers/{id} | delete matcher
 [**GetMatchers**](MatchersAPI.md#GetMatchers) | **Get** /v1/matchers | get all matchers
@@ -62,6 +63,70 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**CheckMatcher200Response**](CheckMatcher200Response.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## CheckRegex
+
+> CheckRegex200Response CheckRegex(ctx).CheckRegexRequest(checkRegexRequest).Execute()
+
+check if regex is valid and matches string (using backend's regex engine)
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	checkRegexRequest := *openapiclient.NewCheckRegexRequest("Regex_example", "TestString_example") // CheckRegexRequest | 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.MatchersAPI.CheckRegex(context.Background()).CheckRegexRequest(checkRegexRequest).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `MatchersAPI.CheckRegex``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `CheckRegex`: CheckRegex200Response
+	fmt.Fprintf(os.Stdout, "Response from `MatchersAPI.CheckRegex`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiCheckRegexRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **checkRegexRequest** | [**CheckRegexRequest**](CheckRegexRequest.md) |  | 
+
+### Return type
+
+[**CheckRegex200Response**](CheckRegex200Response.md)
 
 ### Authorization
 
