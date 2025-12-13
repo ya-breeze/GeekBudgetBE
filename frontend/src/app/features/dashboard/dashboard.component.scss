@@ -1,293 +1,254 @@
+@use '@angular/material' as mat;
+
 .dashboard-container {
-  padding: 0;
+  padding: 24px;
+  max-width: 1400px;
+  /* Limit max width for better readability on large screens */
+  margin: 0 auto;
 }
 
 .page-title {
-  margin: 0 0 16px 0;
-  font-size: 24px;
-  font-weight: 500;
+  margin-bottom: 24px;
 }
 
 .loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 300px;
+  height: 300px;
 }
 
-.stats-grid {
+/* Assets Section */
+.assets-section {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 24px;
-  margin-top: 24px;
+  margin-bottom: 32px;
 }
 
-.stat-card {
+.asset-card {
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  /* Ensure white background */
+
   mat-card-header {
     display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0;
+    margin-bottom: 8px;
+
+    mat-card-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .icon-container {
+    background-color: #e8f0fe;
+    /* Light blue background for icon */
+    color: #1a73e8;
+    /* Blue icon logic */
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
+    justify-content: center;
 
     mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  /* Variations for icon colors based on currency or generic */
+  &:nth-child(2n) .icon-container {
+    background-color: #e6f4ea;
+    /* Light green */
+    color: #1e8e3e;
+  }
+
+  &:nth-child(3n) .icon-container {
+    background-color: #fce8e6;
+    /* Light red */
+    color: #d93025;
+  }
+
+  &:nth-child(4n) .icon-container {
+    background-color: #fef7e0;
+    /* Light yellow */
+    color: #f9ab00;
+  }
+
+  mat-card-content {
+    padding: 0;
+  }
+
+  .balance-container {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 12px;
+
+    .balance {
       font-size: 32px;
-      width: 32px;
-      height: 32px;
+      font-weight: 700;
+      color: #202124;
+      margin-right: 8px;
+    }
+
+    .currency {
+      font-size: 16px;
+      font-weight: 500;
+      color: #9aa0a6;
     }
   }
 
-  .stat-value {
-    font-size: 28px;
-    font-weight: 600;
-    margin-top: 8px;
-  }
-
-  &.balance {
-    mat-icon {
-      color: #2196f3;
-    }
-  }
-
-  &.income {
-    mat-icon {
-      color: #4caf50;
-    }
-  }
-
-  &.expenses {
-    mat-icon {
-      color: #f44336;
-    }
-  }
-}
-
-mat-card {
-  margin-bottom: 1rem;
-}
-
-// Expense Table Styles
-.expense-table-section {
-  margin-top: 48px;
-
-  h2 {
-    margin-bottom: 24px;
-    font-size: 24px;
+  .trend-container {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.87);
+    color: #5f6368;
+    /* Default neutral color */
+
+    &.positive {
+      color: #188038;
+      /* Green */
+    }
+
+    &.negative {
+      color: #d93025;
+      /* Red */
+    }
+
+    .trend-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+
+    .trend-value {
+      margin-right: 6px;
+    }
+
+    .trend-label {
+      font-weight: 400;
+      color: #5f6368;
+    }
+  }
+}
+
+/* Expense Table Section */
+.expense-table-section {
+  margin-top: 24px;
+
+  .currency-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: #3c4043;
+
+    .currency-toggle {
+      transform: scale(0.9);
+    }
   }
 }
 
 .table-container {
+  overflow-x: auto;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-
-  // Only allow horizontal scroll on small screens
-  @media (max-width: 768px) {
-    overflow-x: auto;
-  }
-
-  // Prevent horizontal scroll on larger screens
-  @media (min-width: 769px) {
-    overflow-x: hidden;
-  }
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 .expense-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  table-layout: fixed; // Use fixed layout for better control over column widths
 
-  thead {
-    tr {
-      border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: right;
+    border-bottom: 1px solid #f1f3f4;
+    white-space: nowrap;
+  }
+
+  th {
+    background-color: #f8f9fa;
+    color: #5f6368;
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    &.sortable {
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        background-color: #e8f0fe;
+      }
     }
 
-    th {
-      padding: 16px 12px;
-      text-align: left;
-      font-weight: 600;
-      color: rgba(0, 0, 0, 0.87);
-      background-color: rgba(0, 0, 0, 0.02);
-      white-space: nowrap;
-
-      &.sortable {
-        cursor: pointer;
-        user-select: none;
-        transition: background-color 0.2s ease;
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.08);
-        }
-
-        .sort-indicator {
-          margin-left: 4px;
-          font-size: 12px;
-          opacity: 0.7;
-        }
-      }
-
-      &.account-header {
-        position: sticky;
-        left: 0;
-        z-index: 2;
-        background-color: rgba(0, 0, 0, 0.02);
-
-        &.sortable:hover {
-          background-color: rgba(0, 0, 0, 0.08);
-        }
-
-        // Responsive width for account column
-        @media (max-width: 768px) {
-          min-width: 112px;
-          width: 112px;
-        }
-
-        @media (min-width: 769px) {
-          width: 15%; // Fixed percentage for account column on larger screens
-          min-width: 120px;
-        }
-      }
-
-      &.month-header {
-        text-align: right;
-
-        // Responsive width for month columns
-        @media (max-width: 768px) {
-          min-width: 96px;
-        }
-
-        @media (min-width: 769px) {
-          // On larger screens, distribute remaining 75% among month columns
-          // With 12 months, each gets approximately 6.25% (75% / 12)
-          width: 6.25%;
-          min-width: 70px;
-        }
-      }
-
-      &.total-header {
-        text-align: right;
-        font-weight: 700;
-        background-color: rgba(0, 0, 0, 0.05);
-
-        &.sortable:hover {
-          background-color: rgba(0, 0, 0, 0.12);
-        }
-
-        // Responsive width for total column
-        @media (max-width: 768px) {
-          min-width: 112px;
-          width: 112px;
-        }
-
-        @media (min-width: 769px) {
-          width: 10%; // Fixed percentage for total column on larger screens
-          min-width: 100px;
-        }
-      }
+    .sort-indicator {
+      font-size: 10px;
+      margin-left: 4px;
+      vertical-align: middle;
     }
   }
 
-  tbody {
-    tr {
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      transition: background-color 0.2s ease;
+  .account-header,
+  .account-cell {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background-color: inherit;
+    z-index: 2;
+    min-width: 150px;
+  }
 
-      &:hover:not(.total-row) {
-        background-color: rgba(0, 0, 0, 0.02);
-      }
+  tbody tr:hover td {
+    filter: brightness(0.98);
+  }
 
-      &.total-row {
-        border-top: 2px solid rgba(0, 0, 0, 0.12);
-        font-weight: 600;
+  .account-cell {
+    font-weight: 500;
+    color: #202124;
+    background-color: white;
+    /* Ensure sticky column has background */
+  }
 
-        td {
-          padding-top: 20px;
-          padding-bottom: 20px;
-        }
-      }
+  .total-header,
+  .total-cell {
+    font-weight: 700;
+  }
+
+  .total-row {
+    background-color: #f8f9fa;
+
+    .account-cell {
+      background-color: #f8f9fa;
     }
+  }
 
-    td {
-      padding: 12px;
-      text-align: right;
-
-      &.account-cell {
-        text-align: left;
-        font-weight: 500;
-        position: sticky;
-        left: 0;
-        z-index: 1;
-        background-color: white;
-        white-space: nowrap;
-
-        &.total-label {
-          font-weight: 700;
-          font-size: 15px;
-        }
-      }
-
-      &.expense-cell {
-        font-family: 'Roboto Mono', monospace;
-        transition: all 0.2s ease;
-        border-left: 1px solid rgba(0, 0, 0, 0.04);
-
-        &:hover {
-          box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.1);
-        }
-      }
-
-      &.total-cell {
-        font-weight: 600;
-        border-left: 2px solid rgba(0, 0, 0, 0.12);
-
-        &.grand-total {
-          font-weight: 700;
-          font-size: 15px;
-        }
-      }
-    }
+  .grand-total {
+    color: #1a73e8;
   }
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .expense-table-section {
-    h2 {
-      font-size: 20px;
-    }
-  }
-
-  .table-container {
-    padding: 8px;
-  }
-
-  .expense-table {
-    font-size: 12px;
-
-    thead th {
-      padding: 12px 8px;
-      min-width: 100px;
-
-      &.month-header {
-        min-width: 90px;
-      }
-    }
-
-    tbody td {
-      padding: 10px 8px;
-    }
-  }
+.error-container {
+  color: #d93025;
+  padding: 24px;
+  text-align: center;
+  background-color: #fce8e6;
+  border-radius: 8px;
 }
-
-ul {
-  margin: 1rem 0;
-  padding-left: 2rem;
-}
-
-li {
-  margin: 0.5rem 0;
-}
-

@@ -12,6 +12,7 @@ import { getExpenses } from '../../core/api/fn/aggregations/get-expenses';
 import { Aggregation } from '../../core/api/models/aggregation';
 import { Currency } from '../../core/api/models/currency';
 import { AccountService } from '../accounts/services/account.service';
+import { getBalances } from '../../core/api/fn/aggregations/get-balances';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { UserService } from '../../core/services/user.service';
 import { LayoutService } from '../../layout/services/layout.service';
@@ -236,6 +237,70 @@ export class DashboardComponent implements OnInit {
     return tables;
   });
 
+  protected readonly assetData = signal<Aggregation | null>(null);
+
+  protected readonly assetCards = computed(() => {
+    const data = this.assetData();
+    const accounts = this.accounts();
+    if (!data || !accounts.length) {
+      return [];
+    }
+
+    const assetAccounts = accounts.filter(acc => acc.type === 'asset');
+    if (!assetAccounts.length) {
+      return [];
+    }
+
+    // Map currency ID to symbol/name if needed (or just use code)
+    const cards: any[] = [];
+
+    // Group data by currency, but we need to extract account data
+    data.currencies.forEach(currencyAgg => {
+      currencyAgg.accounts.forEach(accAgg => {
+        const account = assetAccounts.find(a => a.id === accAgg.accountId);
+        if (!account) return;
+
+        // Calculate balances
+        // Amounts are net changes per interval. Sum them up for total balance.
+        const totalBalance = accAgg.amounts.reduce((sum, val) => sum + val, 0);
+
+        // Calculate last month balance (total minus last interval)
+        // Check if we have at least 1 interval
+        let trendPercent = 0;
+        let trendDirection: 'up' | 'down' | 'neutral' = 'neutral';
+
+        if (accAgg.amounts.length > 0) {
+          // Assuming the last interval is the current partially complete month or just the last month
+          const lastAmount = accAgg.amounts[accAgg.amounts.length - 1];
+          const previousBalance = totalBalance - lastAmount;
+
+          if (previousBalance !== 0) {
+            trendPercent = (lastAmount / Math.abs(previousBalance)) * 100;
+          } else if (lastAmount !== 0) {
+            trendPercent = 100; // From 0 to something
+          }
+
+          if (trendPercent > 0) trendDirection = 'up';
+          else if (trendPercent < 0) trendDirection = 'down';
+        }
+
+        const currency = this.currencyService.currencies().find(c => c.id === currencyAgg.currencyId);
+
+        cards.push({
+          accountId: account.id,
+          accountName: account.name,
+          balance: totalBalance,
+          currencyId: currencyAgg.currencyId,
+          currencyName: currency?.name || currencyAgg.currencyId,
+          trendPercent: Math.abs(trendPercent),
+          trendDirection
+        });
+      });
+    });
+
+    return cards;
+  });
+
   ngOnInit(): void {
     this.currencyService.loadCurrencies().subscribe();
 
@@ -270,27 +335,37 @@ export class DashboardComponent implements OnInit {
     this.loading.set(true);
 
     const now = new Date();
-    // Get data for the last 12 months
+    // Get data for the last 12 months for expenses
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
     const outputCurrencyId = this.selectedOutputCurrencyId();
-    const params: { from: string; to: string; outputCurrencyId?: string } = {
+
+    const expenseParams: { from: string; to: string; outputCurrencyId?: string } = {
       from: twelveMonthsAgo.toISOString(),
       to: now.toISOString(),
     };
 
+    const balanceParams: { to: string; outputCurrencyId?: string } = {
+      to: now.toISOString(),
+    };
+
     if (outputCurrencyId) {
-      params.outputCurrencyId = outputCurrencyId;
+      expenseParams.outputCurrencyId = outputCurrencyId;
+      balanceParams.outputCurrencyId = outputCurrencyId;
     }
 
     forkJoin({
       accounts: this.accountService.loadAccounts(),
-      expenseData: getExpenses(this.http, this.apiConfig.rootUrl, params).pipe(
+      expenseData: getExpenses(this.http, this.apiConfig.rootUrl, expenseParams).pipe(
         map((response) => response.body)
       ),
+      assetData: getBalances(this.http, this.apiConfig.rootUrl, balanceParams).pipe(
+        map((response) => response.body)
+      )
     }).subscribe({
-      next: ({ expenseData }) => {
-        console.log('Dashboard data loaded:', { expenseData });
+      next: ({ expenseData, assetData }) => {
+        console.log('Dashboard data loaded:', { expenseData, assetData });
         this.expenseData.set(expenseData);
+        this.assetData.set(assetData);
         this.loading.set(false);
       },
       error: (error) => {
@@ -299,6 +374,7 @@ export class DashboardComponent implements OnInit {
       },
     });
   }
+
 
   private calculateColor(value: number, allValues: number[]): string {
     if (allValues.length === 0 || value <= 0) {

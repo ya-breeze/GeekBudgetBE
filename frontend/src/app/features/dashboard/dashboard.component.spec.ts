@@ -101,7 +101,7 @@ describe('DashboardComponent', () => {
 
     // Wait for async operations to complete
     setTimeout(() => {
-      expect(httpClient.request).toHaveBeenCalledTimes(1);
+      expect(httpClient.request).toHaveBeenCalledTimes(2);
       expect(component['expenseData']()).toBeTruthy();
       done();
     }, 100);
@@ -183,5 +183,82 @@ describe('DashboardComponent', () => {
     layoutService.sidenavOpened.set(false);
     fixture.detectChanges();
     expect(component['isSmallScreen']()).toBe(false);
+  });
+  it('should load asset data and create asset cards', (done) => {
+    const mockExpenses = {
+      intervals: ['2023-01-01'],
+      currencies: []
+    };
+
+    const mockAssets = {
+      from: '2023-01-01',
+      to: '2023-02-01',
+      granularity: 'month',
+      intervals: ['2023-01-01', '2023-02-01'],
+      currencies: [
+        {
+          currencyId: 'usd',
+          accounts: [
+            {
+              accountId: 'asset1',
+              amounts: [1000, 200] // Balance: 1200. Prev: 1000. Trend: +200 (+20%)
+            }
+          ]
+        }
+      ]
+    };
+
+    const mockAccounts = [
+      { id: 'asset1', name: 'My Asset', type: 'asset' },
+      { id: 'expense1', name: 'My Expense', type: 'expense' }
+    ];
+
+    accountService.loadAccounts.and.returnValue(of(mockAccounts as any));
+
+    // We need to differentiate the calls. 
+    // Since we can't easily differentiate by arguments in this simple spy setup without more complex logic,
+    // we can assume the first call is expenses and second is balances or vice versa depending on forkJoin order.
+    // However, forkJoin usually subscribes concurrently.
+    // Let's improve the spy to return based on URL or parameters if possible, 
+    // but the spy is on 'request' method of HttpClient.
+    // We can use `.and.callFake` to inspect arguments.
+
+    httpClient.request.and.callFake((first: any, second?: any, third?: any) => {
+      // Handle overloads
+      let url = '';
+      if (typeof first === 'string') {
+        url = second;
+      } else if (first && first.url) {
+        url = first.url;
+      }
+
+      // getExpenses calls /v1/expenses, getBalances calls /v1/balances
+      if (url && url.includes('/balances')) {
+        return of(new HttpResponse({ body: mockAssets })) as any;
+      }
+      return of(new HttpResponse({ body: mockExpenses })) as any;
+    });
+
+    currencyService.loadCurrencies.and.returnValue(of([
+      { id: 'usd', name: 'US Dollar', description: '' }
+    ] as any));
+
+    // Mock the accounts signal to return our mock accounts
+    (accountService.accounts as unknown as jasmine.Spy).and.returnValue(mockAccounts);
+
+    component.ngOnInit();
+
+    setTimeout(() => {
+      expect(component['assetData']()).toEqual(mockAssets as any);
+
+      const cards = component['assetCards']();
+      expect(cards.length).toBe(1);
+      expect(cards[0].accountName).toBe('My Asset');
+      expect(cards[0].balance).toBe(1200); // 1000 + 200
+      expect(cards[0].trendDirection).toBe('up');
+      expect(cards[0].trendPercent).toBe(20);
+
+      done();
+    }, 100);
   });
 });
