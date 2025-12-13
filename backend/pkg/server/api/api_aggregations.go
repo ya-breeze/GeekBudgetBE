@@ -23,11 +23,6 @@ func NewAggregationsAPIServiceImpl(logger *slog.Logger, db database.Storage,
 	return &AggregationsAPIServiceImpl{logger: logger, db: db}
 }
 
-func (s *AggregationsAPIServiceImpl) GetBalances(context.Context, time.Time, time.Time, string,
-) (goserver.ImplResponse, error) {
-	return goserver.Response(500, nil), nil
-}
-
 func (s *AggregationsAPIServiceImpl) GetExpenses(
 	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string,
 ) (goserver.ImplResponse, error) {
@@ -76,6 +71,69 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		utils.GranularityMonth,
 		outputCurrencyID, currenciesRatesFetcher,
 		currencyMap,
+		isExpenseAccount,
+		s.logger)
+
+	return &res, nil
+}
+
+func (s *AggregationsAPIServiceImpl) GetBalances(
+	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	aggregation, err := s.GetAggregatedBalances(ctx, userID, dateFrom, dateTo, outputCurrencyID)
+	if err != nil {
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, aggregation), nil
+}
+
+func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string,
+) (*goserver.Aggregation, error) {
+	// For balances, if dateFrom is zero, we want to start from the beginning to get full balance
+	// But Aggregation struct expects a specific range.
+	// If the user wants "current balance", they usually ask for a range up to now.
+	// However, to calculate the *cumulative* balance correctly, we strictly speaking need the opening balance
+	// plus all movements.
+	// But the Aggregation API returns *intervals*. The frontend sums them up.
+	// So if dateFrom is missing, we should probably set it to a reasonable start date (e.g. user start date)
+	// or 1970 equivalent.
+	if dateFrom.IsZero() {
+		// Use a very old date to capture all history
+		dateFrom = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+	if dateTo.IsZero() {
+		dateTo = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
+	}
+
+	accounts, err := s.db.GetAccounts(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get accounts")
+		return nil, nil
+	}
+
+	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get transactions")
+		return nil, nil
+	}
+
+	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
+
+	res := Aggregate(
+		ctx, accounts, transactions,
+		dateFrom, dateTo,
+		utils.GranularityMonth,
+		outputCurrencyID, currenciesRatesFetcher,
+		currencyMap,
+		isAssetAccount, // Filter for asset accounts
 		s.logger)
 
 	return &res, nil
@@ -137,11 +195,14 @@ func processMovements(
 	}
 }
 
+type AccountFilter func(goserver.Account) bool
+
 func Aggregate(
 	ctx context.Context, accounts []goserver.Account, transactions []goserver.Transaction,
 	dateFrom, dateTo time.Time, granularity utils.Granularity,
 	outputCurrencyID string, currenciesRatesFetcher *common.CurrenciesRatesFetcher,
 	currencyMap map[string]string,
+	accountFilter AccountFilter,
 	log *slog.Logger,
 ) goserver.Aggregation {
 	res := goserver.Aggregation{
@@ -173,7 +234,7 @@ func Aggregate(
 			intervalIdx = len(res.Intervals) - 1
 		}
 
-		movements := getExpenseMovements(accounts, t)
+		movements := getMovements(accounts, t, accountFilter)
 		processMovements(ctx, movements, t.Date, outputCurrencyID, outputCurrencyName,
 			currencyMap, currenciesRatesFetcher, intervalIdx, &res, log)
 	}
@@ -181,10 +242,10 @@ func Aggregate(
 	return res
 }
 
-func getExpenseMovements(accounts []goserver.Account, t goserver.Transaction) []goserver.Movement {
+func getMovements(accounts []goserver.Account, t goserver.Transaction, filter AccountFilter) []goserver.Movement {
 	movements := []goserver.Movement{}
 	for _, m := range t.Movements {
-		if m.AccountId == "" || isExpenseAccount(accounts, m.AccountId) {
+		if m.AccountId == "" || isAccountType(accounts, m.AccountId, filter) {
 			movements = append(movements, m)
 		}
 	}
@@ -192,16 +253,21 @@ func getExpenseMovements(accounts []goserver.Account, t goserver.Transaction) []
 	return movements
 }
 
-func isExpenseAccount(accounts []goserver.Account, accountID string) bool {
+func isAccountType(accounts []goserver.Account, accountID string, filter AccountFilter) bool {
 	for _, a := range accounts {
 		if a.Id == accountID {
-			if a.Type == constants.AccountExpense {
-				return true
-			}
+			return filter(a)
 		}
 	}
-
 	return false
+}
+
+func isExpenseAccount(a goserver.Account) bool {
+	return a.Type == constants.AccountExpense
+}
+
+func isAssetAccount(a goserver.Account) bool {
+	return a.Type == constants.AccountAsset
 }
 
 func getIntervals(dateFrom, dateTo time.Time, granularity utils.Granularity) []time.Time {
