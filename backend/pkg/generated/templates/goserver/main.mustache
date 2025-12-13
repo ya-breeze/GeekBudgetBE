@@ -35,7 +35,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	{{classname}}Controller := New{{classname}}Controller({{classname}}Service)
 {{/apis}}{{/apiInfo}}
     routers := append(extraRouters, {{#apiInfo}}{{#apis}}{{classname}}Controller{{^-last}}, {{/-last}}{{/apis}}{{/apiInfo}})
-	router := NewRouter(routers...)
+	router := NewRouter(logger, routers...)
 
 	router.Use(middlewares...)
 

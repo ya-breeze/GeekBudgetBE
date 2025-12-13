@@ -9,6 +9,8 @@ import { createMatcher } from '../../../core/api/fn/matchers/create-matcher';
 import { updateMatcher } from '../../../core/api/fn/matchers/update-matcher';
 import { deleteMatcher } from '../../../core/api/fn/matchers/delete-matcher';
 import { checkRegex } from '../../../core/api/fn/matchers/check-regex';
+import { checkMatcher } from '../../../core/api/fn/matchers/check-matcher';
+import { TransactionNoId } from '../../../core/api/models/transaction-no-id';
 
 @Injectable({
   providedIn: 'root',
@@ -100,6 +102,12 @@ export class MatcherService {
   }
   checkRegex(regex: string, testString: string): Observable<{ isValid: boolean; isMatch: boolean; error?: string }> {
     return checkRegex(this.http, this.apiConfig.rootUrl, { body: { regex, testString } }).pipe(
+      map((response) => response.body)
+    );
+  }
+
+  checkMatcher(matcher: MatcherNoId, transaction: TransactionNoId): Observable<{ result?: boolean; reason?: string }> {
+    return checkMatcher(this.http, this.apiConfig.rootUrl, { body: { matcher, transaction } }).pipe(
       map((response) => response.body)
     );
   }

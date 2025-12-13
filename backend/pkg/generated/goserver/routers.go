@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -46,12 +47,12 @@ const errMsgMinValueConstraint = "provided parameter is not respecting minimum v
 const errMsgMaxValueConstraint = "provided parameter is not respecting maximum value constraint"
 
 // NewRouter creates a new router for any number of api routers
-func NewRouter(routers ...Router) *mux.Router {
+func NewRouter(logger *slog.Logger, routers ...Router) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, api := range routers {
 		for name, route := range api.Routes() {
 			var handler http.Handler = route.HandlerFunc
-			handler = Logger(handler, name)
+			handler = Logger(logger, handler, name)
 
 			router.
 				Methods(route.Method).

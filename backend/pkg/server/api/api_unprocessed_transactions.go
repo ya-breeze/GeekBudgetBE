@@ -149,6 +149,55 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 	return goserver.Response(200, res), nil
 }
 
+func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
+	ctx context.Context, id string,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	transaction, err := s.db.GetTransaction(userID, id)
+	if err != nil {
+		if err == database.ErrNotFound {
+			return goserver.Response(404, nil), nil
+		}
+		s.logger.With("error", err).Error("Failed to get transaction")
+		return goserver.Response(500, nil), nil
+	}
+
+	matchers, err := s.db.GetMatchersRuntime(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get matchers")
+		return goserver.Response(500, nil), nil
+	}
+
+	m, err := s.matchUnprocessedTransactions(matchers, transaction)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to match unprocessed transaction")
+		return goserver.Response(500, nil), nil
+	}
+
+	// Optimize duplicate search by time window +/- 2 days
+	dateFrom := transaction.Date.Add(-48 * time.Hour)
+	dateTo := transaction.Date.Add(48 * time.Hour)
+	candidateTransactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get transactions for duplicate check")
+		return goserver.Response(500, nil), nil
+	}
+
+	duplicates := s.getDuplicateTransactions(candidateTransactions, transaction)
+
+	res := goserver.UnprocessedTransaction{
+		Transaction: transaction,
+		Matched:     m,
+		Duplicates:  duplicates,
+	}
+
+	return goserver.Response(200, res), nil
+}
+
 func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	ctx context.Context,
 	id string,

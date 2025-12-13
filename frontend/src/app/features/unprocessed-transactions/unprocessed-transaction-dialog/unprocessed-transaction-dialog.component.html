@@ -12,15 +12,15 @@
       <div class="details-grid">
         <div class="detail-item">
           <span class="label">Date:</span>
-          <span class="value">{{ transactionData().transaction.date | date:'medium' }}</span>
+          <span class="value">{{ transaction().transaction.date | date:'medium' }}</span>
         </div>
         <div class="detail-item">
           <span class="label">Description:</span>
-          <span class="value">{{ transactionData().transaction.description }}</span>
+          <span class="value">{{ transaction().transaction.description }}</span>
         </div>
         <div class="detail-item">
           <span class="label">Tags:</span>
-          <span class="value">{{ transactionData().transaction.tags?.join(', ') || '-' }}</span>
+          <span class="value">{{ transaction().transaction.tags?.join(', ') || '-' }}</span>
         </div>
 
         @if (shouldShowEffectiveAmount) {
@@ -35,7 +35,7 @@
       <div class="sub-section">
         <h4>Movements</h4>
         <mat-list>
-          @for (movement of transactionData().transaction.movements; track $index) {
+          @for (movement of transaction().transaction.movements; track $index) {
           <mat-list-item>
             <span matListItemTitle>{{ movement.amount }} {{ getCurrencyName(movement.currencyId) }}</span>
             <span matListItemLine>{{ getAccountName(movement.accountId) }}</span>
@@ -76,11 +76,11 @@
 
     <div class="section-separator"></div>
 
-    <div class="section-container matches-section" [class.has-content]="transactionData().matched.length > 0">
-      <h3 class="section-title">Matches <span class="badge">{{ transactionData().matched.length }}</span></h3>
-      @if (transactionData().matched.length > 0) {
+    <div class="section-container matches-section" [class.has-content]="transaction().matched.length > 0">
+      <h3 class="section-title">Matches <span class="badge">{{ transaction().matched.length }}</span></h3>
+      @if (transaction().matched.length > 0) {
       <div class="custom-list">
-        @for (match of transactionData().matched; track match.matcherId) {
+        @for (match of transaction().matched; track match.matcherId) {
         <div class="custom-list-item">
           <div class="item-content">
             <div class="item-title">{{ match.transaction.description }}</div>
@@ -94,18 +94,24 @@
         }
       </div>
       } @else {
-      <p class="empty-state">No matches found.</p>
+      <div class="no-matches-container">
+        <p class="empty-state">No matches found.</p>
+        <button mat-stroked-button color="primary" (click)="createMatcher()">
+          <mat-icon>add_circle_outline</mat-icon>
+          Create Matcher
+        </button>
+      </div>
       }
     </div>
 
     <div class="section-separator"></div>
 
-    <div class="section-container duplicates-section" [class.has-content]="transactionData().duplicates.length > 0">
-      <h3 class="section-title">Potential Duplicates <span class="badge warn">{{ transactionData().duplicates.length
+    <div class="section-container duplicates-section" [class.has-content]="transaction().duplicates.length > 0">
+      <h3 class="section-title">Potential Duplicates <span class="badge warn">{{ transaction().duplicates.length
           }}</span></h3>
-      @if (transactionData().duplicates.length > 0) {
+      @if (transaction().duplicates.length > 0) {
       <div class="custom-list">
-        @for (duplicate of transactionData().duplicates; track duplicate.id) {
+        @for (duplicate of transaction().duplicates; track duplicate.id) {
         <div class="custom-list-item">
           <div class="item-content">
             <div class="item-title">{{ duplicate.description }}</div>

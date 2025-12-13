@@ -594,6 +594,26 @@ paths:
                 $ref: "#/components/schemas/Transaction"
 
   /v1/unprocessedTransactions/{id}:
+    get:
+      tags:
+        - unprocessed transactions
+      summary: get unprocessed transaction
+      operationId: getUnprocessedTransaction
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: unprocessed transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnprocessedTransaction"
     delete:
       tags:
         - unprocessed transactions

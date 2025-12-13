@@ -127,7 +127,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	UserAPIController := NewUserAPIController(UserAPIService)
 
 	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
-	router := NewRouter(routers...)
+	router := NewRouter(logger, routers...)
 
 	router.Use(middlewares...)
 

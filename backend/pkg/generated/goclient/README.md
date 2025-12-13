@@ -120,6 +120,7 @@ Class | Method | HTTP request | Description
 *TransactionsAPI* | [**UpdateTransaction**](docs/TransactionsAPI.md#updatetransaction) | **Put** /v1/transactions/{id} | update transaction
 *UnprocessedTransactionsAPI* | [**ConvertUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#convertunprocessedtransaction) | **Post** /v1/unprocessedTransactions/{id}/convert | convert unprocessed transactions into normal transaction
 *UnprocessedTransactionsAPI* | [**DeleteUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#deleteunprocessedtransaction) | **Delete** /v1/unprocessedTransactions/{id} | delete unprocessed transaction
+*UnprocessedTransactionsAPI* | [**GetUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#getunprocessedtransaction) | **Get** /v1/unprocessedTransactions/{id} | get unprocessed transaction
 *UnprocessedTransactionsAPI* | [**GetUnprocessedTransactions**](docs/UnprocessedTransactionsAPI.md#getunprocessedtransactions) | **Get** /v1/unprocessedTransactions | get all unprocessed transactions
 *UserAPI* | [**GetUser**](docs/UserAPI.md#getuser) | **Get** /v1/user | return user object
 *UserAPI* | [**UpdateUserFavoriteCurrency**](docs/UserAPI.md#updateuserfavoritecurrency) | **Patch** /v1/user | update user&#39;s favorite currency

@@ -83,7 +83,7 @@ export class MatchersComponent implements OnInit {
 
   protected openMatcherDialog(matcher?: Matcher): void {
     const dialogRef = this.dialog.open(MatcherEditDialogComponent, {
-      data: matcher,
+      data: matcher ? { matcher } : undefined,
       width: '600px',
       disableClose: true
     });

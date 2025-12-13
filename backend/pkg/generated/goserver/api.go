@@ -130,6 +130,7 @@ type TransactionsAPIRouter interface {
 type UnprocessedTransactionsAPIRouter interface {
 	GetUnprocessedTransactions(http.ResponseWriter, *http.Request)
 	ConvertUnprocessedTransaction(http.ResponseWriter, *http.Request)
+	GetUnprocessedTransaction(http.ResponseWriter, *http.Request)
 	DeleteUnprocessedTransaction(http.ResponseWriter, *http.Request)
 }
 
@@ -265,6 +266,7 @@ type TransactionsAPIServicer interface {
 type UnprocessedTransactionsAPIServicer interface {
 	GetUnprocessedTransactions(context.Context) (ImplResponse, error)
 	ConvertUnprocessedTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)
+	GetUnprocessedTransaction(context.Context, string) (ImplResponse, error)
 	DeleteUnprocessedTransaction(context.Context, string, string) (ImplResponse, error)
 }
 

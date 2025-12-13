@@ -128,7 +128,8 @@ export class UnprocessedTransactionsComponent implements OnInit {
 
     // Handle actions from the dialog
     componentInstance.action.subscribe((result: UnprocessedTransactionDialogResult) => {
-      const currentTransaction = componentInstance.transactionData();
+      // Access the signal directly (using any cast to bypass protected visibility if needed)
+      const currentTransaction = (componentInstance as any).transaction();
 
       if (result.action === 'convert') {
         this.processMatch(currentTransaction, result.match, dialogRef);

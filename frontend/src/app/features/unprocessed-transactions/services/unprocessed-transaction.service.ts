@@ -6,6 +6,7 @@ import { UnprocessedTransaction } from '../../../core/api/models/unprocessed-tra
 import { getUnprocessedTransactions } from '../../../core/api/fn/unprocessed-transactions/get-unprocessed-transactions';
 import { deleteUnprocessedTransaction } from '../../../core/api/fn/unprocessed-transactions/delete-unprocessed-transaction';
 import { convertUnprocessedTransaction } from '../../../core/api/fn/unprocessed-transactions/convert-unprocessed-transaction';
+import { getUnprocessedTransaction } from '../../../core/api/fn/unprocessed-transactions/get-unprocessed-transaction';
 
 @Injectable({
   providedIn: 'root',
@@ -90,6 +91,12 @@ export class UnprocessedTransactionService {
           this.loading.set(false);
         },
       })
+    );
+  }
+
+  getUnprocessedTransaction(id: string): Observable<UnprocessedTransaction> {
+    return getUnprocessedTransaction(this.http, this.apiConfig.rootUrl, { id }).pipe(
+      map((response) => response.body)
     );
   }
 }

@@ -12,23 +12,109 @@
 package goserver
 
 import (
-	"log"
+	"bytes"
+	"context"
+	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-func Logger(inner http.Handler, name string) http.Handler {
+// contextKey is a custom type for context keys to avoid collisions
+type contextKey string
+
+const requestIDKey contextKey = "request_id"
+
+// loggingResponseWriter wraps http.ResponseWriter to capture the status code and response body.
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+	body       bytes.Buffer
+}
+
+// NewLoggingResponseWriter creates a new loggingResponseWriter.
+func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
+	return &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+}
+
+// WriteHeader captures the status code.
+func (lrw *loggingResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
+}
+
+// Write captures the response body.
+func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
+	// Capture the body if it's likely an error message (small enough)
+	if lrw.body.Len() < 1024 {
+		lrw.body.Write(b)
+	}
+	return lrw.ResponseWriter.Write(b)
+}
+
+// GetRequestID extracts request ID from the HTTP request.
+// It first checks for the X-Request-ID or Request-ID header, and generates a new UUID if not present.
+func GetRequestID(r *http.Request) string {
+	requestID := r.Header.Get("X-Request-ID")
+	if requestID == "" {
+		requestID = r.Header.Get("Request-ID")
+	}
+	if requestID == "" {
+		requestID = uuid.New().String()
+	}
+	return requestID
+}
+
+// GetRequestIDFromContext retrieves the request ID from the context.
+// Returns empty string if not found.
+func GetRequestIDFromContext(ctx context.Context) string {
+	if requestID, ok := ctx.Value(requestIDKey).(string); ok {
+		return requestID
+	}
+	return ""
+}
+
+func Logger(logger *slog.Logger, inner http.Handler, name string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		inner.ServeHTTP(w, r)
+		// Get or generate request ID
+		requestID := GetRequestID(r)
 
-		log.Printf(
-			"%s %s %s %s",
-			r.Method,
-			r.RequestURI,
-			name,
-			time.Since(start),
+		// Store request ID in context
+		ctx := context.WithValue(r.Context(), requestIDKey, requestID)
+		r = r.WithContext(ctx)
+
+		// Log request start
+		logger.Info("Request start",
+			"request_id", requestID,
+			"method", r.Method,
+			"path", r.RequestURI,
+			"handler", name,
 		)
+
+		lrw := NewLoggingResponseWriter(w)
+		inner.ServeHTTP(lrw, r)
+
+		duration := time.Since(start)
+
+		// Prepare log fields
+		logFields := []any{
+			"request_id", requestID,
+			"method", r.Method,
+			"path", r.RequestURI,
+			"handler", name,
+			"status", lrw.statusCode,
+			"duration", duration.String(),
+		}
+
+		// Add error body if status >= 400
+		if lrw.statusCode >= 400 && lrw.body.Len() > 0 {
+			logFields = append(logFields, "error", lrw.body.String())
+		}
+
+		// Log request end
+		logger.Info("Request end", logFields...)
 	})
 }
