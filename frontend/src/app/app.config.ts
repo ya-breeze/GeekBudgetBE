@@ -26,7 +26,7 @@ export const appConfig: ApplicationConfig = {
       provide: ApiConfiguration,
       useFactory: () => {
         const config = new ApiConfiguration();
-        config.rootUrl = `${environment.apiUrl}`;
+        config.rootUrl = environment.apiUrl;
         return config;
       },
     },

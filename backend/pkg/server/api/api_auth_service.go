@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -29,7 +30,13 @@ func NewAuthAPIService(logger *slog.Logger, db database.Storage, issuer, jwtSecr
 
 func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData) (goserver.ImplResponse, error) {
 	userID, err := s.db.GetUserID(authData.Email)
-	if err != nil && !errors.Is(err, database.ErrNotFound) {
+	if err != nil {
+		if errors.Is(err, database.ErrNotFound) {
+			// user not found - sleep for 1 second to prevent brute force
+			time.Sleep(1 * time.Second)
+			s.logger.Warn("user not found", "username", authData.Email)
+			return goserver.Response(401, nil), nil
+		}
 		s.logger.Warn("failed to get user ID", "username", authData.Email)
 		return goserver.Response(500, nil), nil // TODO internal error
 	}

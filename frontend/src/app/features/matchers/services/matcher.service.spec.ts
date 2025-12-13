@@ -33,7 +33,6 @@ describe('MatcherService', () => {
       const mockMatchers: Matcher[] = [
         {
           id: '1',
-          name: 'Grocery Matcher',
           descriptionRegExp: 'GROCERY.*',
           outputAccountId: 'acc1',
           outputDescription: 'Groceries',
@@ -59,7 +58,6 @@ describe('MatcherService', () => {
       const mockMatchers: Matcher[] = [
         {
           id: '1',
-          name: 'Grocery Matcher',
           descriptionRegExp: '^GROCERY.*$',
           outputAccountId: 'acc1',
           outputDescription: 'Groceries',
@@ -68,7 +66,6 @@ describe('MatcherService', () => {
         },
         {
           id: '2',
-          name: 'Salary Matcher',
           descriptionRegExp: 'SALARY',
           outputAccountId: 'acc2',
           outputDescription: 'Salary',
@@ -93,7 +90,6 @@ describe('MatcherService', () => {
       const mockMatchers: Matcher[] = [
         {
           id: '1',
-          name: 'Complex Matcher 1',
           descriptionRegExp: 'PATTERN1',
           partnerNameRegExp: 'PARTNER1',
           currencyRegExp: 'USD',
@@ -104,7 +100,6 @@ describe('MatcherService', () => {
         },
         {
           id: '2',
-          name: 'Complex Matcher 2',
           descriptionRegExp: 'PATTERN2',
           partnerAccountNumberRegExp: '123456',
           outputAccountId: 'acc2',
@@ -114,7 +109,6 @@ describe('MatcherService', () => {
         },
         {
           id: '3',
-          name: 'Complex Matcher 3',
           extraRegExp: 'EXTRA',
           outputAccountId: 'acc3',
           outputDescription: 'Output 3',
@@ -140,7 +134,6 @@ describe('MatcherService', () => {
   describe('create', () => {
     it('should create a matcher', (done) => {
       const newMatcher = {
-        name: 'New Matcher',
         descriptionRegExp: 'NEW_PATTERN',
         outputAccountId: 'acc1',
         outputDescription: 'New Output',
@@ -170,7 +163,6 @@ describe('MatcherService', () => {
     it('should update a matcher', (done) => {
       const updatedMatcher: Matcher = {
         id: '1',
-        name: 'Updated Matcher',
         descriptionRegExp: 'UPDATED_PATTERN',
         outputAccountId: 'acc2',
         outputDescription: 'Updated Output',

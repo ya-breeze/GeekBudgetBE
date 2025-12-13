@@ -83,6 +83,21 @@ var _ = Describe("User API", func() {
 		Expect(resp).To(BeNil())
 	})
 
+	It("does not authenticate client with unknown user", func() {
+		req := client.AuthAPI.Authorize(ctx).AuthData(goclient.AuthData{
+			Email:    "unknown@example.com",
+			Password: "password",
+		})
+		resp, httpResp, err := req.Execute()
+		if httpResp != nil {
+			defer func() { _ = httpResp.Body.Close() }()
+		}
+		Expect(err).To(HaveOccurred())
+		Expect(httpResp).ToNot(BeNil())
+		Expect(httpResp.StatusCode).To(Equal(401))
+		Expect(resp).To(BeNil())
+	})
+
 	It("returns known user object", func() {
 		accessToken := getAccessToken(client, ctx)
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
