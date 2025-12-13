@@ -72,11 +72,11 @@ export class UnprocessedTransactionService {
     );
   }
 
-  delete(id: string): Observable<void> {
+  delete(id: string, duplicateOf?: string): Observable<void> {
     this.loading.set(true);
     this.error.set(null);
 
-    return deleteUnprocessedTransaction(this.http, this.apiConfig.rootUrl, { id }).pipe(
+    return deleteUnprocessedTransaction(this.http, this.apiConfig.rootUrl, { id, duplicateOf }).pipe(
       map(() => undefined),
       tap({
         next: () => {

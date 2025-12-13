@@ -11,6 +11,8 @@ import { UnprocessedTransactionService } from './services/unprocessed-transactio
 import { UnprocessedTransaction } from '../../core/api/models/unprocessed-transaction';
 import { LayoutService } from '../../layout/services/layout.service';
 import { CurrencyService } from '../currencies/services/currency.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { UnprocessedTransactionDialogComponent, UnprocessedTransactionDialogResult } from './unprocessed-transaction-dialog/unprocessed-transaction-dialog.component';
 
 @Component({
   selector: 'app-unprocessed-transactions',
@@ -23,6 +25,7 @@ import { CurrencyService } from '../currencies/services/currency.service';
     MatSnackBarModule,
     MatChipsModule,
     DatePipe,
+    MatDialogModule,
   ],
   templateUrl: './unprocessed-transactions.component.html',
   styleUrl: './unprocessed-transactions.component.scss',
@@ -32,6 +35,7 @@ export class UnprocessedTransactionsComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly layoutService = inject(LayoutService);
   private readonly currencyService = inject(CurrencyService);
+  private readonly dialog = inject(MatDialog);
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -47,7 +51,6 @@ export class UnprocessedTransactionsComponent implements OnInit {
     'effectiveAmount',
     'matches',
     'duplicates',
-    'actions',
   ]);
   protected readonly sortedTransactions = signal<UnprocessedTransaction[]>([]);
 
@@ -114,25 +117,81 @@ export class UnprocessedTransactionsComponent implements OnInit {
     return this.getUnknownAccountMovements(transaction).reduce((sum: number, m: any) => sum + m.amount, 0);
   }
 
-  convertTransaction(transaction: UnprocessedTransaction): void {
-    if (transaction.transaction.id) {
-      this.unprocessedTransactionService
-        .convert(transaction.transaction.id, transaction)
-        .subscribe({
-          next: () => {
-            this.snackBar.open('Transaction converted successfully', 'Close', { duration: 3000 });
-          },
-          error: () => {
-            this.snackBar.open('Failed to convert transaction', 'Close', { duration: 3000 });
-          },
-        });
-    }
+  openProcessDialog(transaction: UnprocessedTransaction): void {
+    const dialogRef = this.dialog.open(UnprocessedTransactionDialogComponent, {
+      data: transaction,
+      width: '600px',
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result: UnprocessedTransactionDialogResult | undefined) => {
+      if (result) {
+        if (result.action === 'convert') {
+          // The dialog returns MatcherAndTransaction, but convert expects UnprocessedTransaction
+          // and assumes we are converting THE transaction. MatcherAndTransaction contains the suggested
+          // transaction data (TransactionNoId).
+          // We need to call convert with the ID of the unprocessed transaction, and the body from the match.
+          // Wait, the service convert method takes UnprocessedTransaction object which contains the ORIGINAL transaction.
+          // BUT, looking at service implementation:
+          /*
+            const body = {
+              date: transaction.transaction.date,
+              ...
+            };
+          */
+          // It uses the passed transaction object to construct body.
+          // If we want to apply a match, we probably want to use the matched data.
+          // However, the requirement says "Applying match should finish with calling '/v1/unprocessedTransactions/{id}/convert'".
+          // The API convert endpoint takes TransactionNoID as body.
+          // The service implementation CURRENTLY takes UnprocessedTransaction and extracts data from it.
+          // If I want to apply a match, I should probably update the service to accept specific body or
+          // I should construct a "fake" UnprocessedTransaction with the matched data?
+          // Or better, I should use the `convertUnprocessedTransaction` fn directly or update service.
+          // Let's look at the MatcherAndTransaction model again. It has `transaction: TransactionNoId`.
+          // So I should probably update the service to allow passing a body, OR overload it.
+          // For now, let's assume the match just means "convert this transaction using the matcher's suggestion".
+          // If the service logic is hardcoded to use `transaction.transaction`, I might need to update the service.
+          // Let's re-read the service convert method.
+
+          this.processMatch(transaction, result.match);
+
+        } else if (result.action === 'delete') {
+          this.deleteTransaction(transaction, result.duplicateOf.id);
+        }
+      }
+    });
   }
 
-  deleteTransaction(transaction: UnprocessedTransaction): void {
-    if (confirm('Are you sure you want to delete this transaction?')) {
+  private processMatch(original: UnprocessedTransaction, match: any) { // using any for now to avoid import loop or lengthy type
+    // We need to call the API with the body from the match.
+    // The current service.convert method fetches data from the passed UnprocessedTransaction.
+    // We should probably modify the service to be more flexible, but for now I will try to patch it here
+    // OR I can modifying the 'transaction' part of the UnprocessedTransaction object before passing it to service.
+
+    const transactionToConvert = { ...original };
+    transactionToConvert.transaction = {
+      ...original.transaction,
+      ...match.transaction // Override with matched data
+    };
+
+    this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert).subscribe({
+      next: () => {
+        this.snackBar.open('Transaction processed (match applied)', 'Close', { duration: 3000 });
+      },
+      error: () => {
+        this.snackBar.open('Failed to process transaction', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  deleteTransaction(transaction: UnprocessedTransaction, duplicateOfId?: string): void {
+    const message = duplicateOfId
+      ? 'Are you sure you want to delete this transaction as a duplicate?'
+      : 'Are you sure you want to delete this transaction?';
+
+    if (confirm(message)) {
       if (transaction.transaction.id) {
-        this.unprocessedTransactionService.delete(transaction.transaction.id).subscribe({
+        this.unprocessedTransactionService.delete(transaction.transaction.id, duplicateOfId).subscribe({
           next: () => {
             this.snackBar.open('Transaction deleted successfully', 'Close', { duration: 3000 });
           },
