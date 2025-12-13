@@ -14,8 +14,6 @@ package goserver
 type Matcher struct {
 	Id string `json:"id"`
 
-	Name string `json:"name"`
-
 	OutputDescription string `json:"outputDescription"`
 
 	OutputAccountId string `json:"outputAccountId"`
@@ -44,7 +42,6 @@ type Matcher struct {
 
 type MatcherInterface interface {
 	GetId() string
-	GetName() string
 	GetOutputDescription() string
 	GetOutputAccountId() string
 	GetOutputTags() []string
@@ -60,9 +57,6 @@ type MatcherInterface interface {
 
 func (c *Matcher) GetId() string {
 	return c.Id
-}
-func (c *Matcher) GetName() string {
-	return c.Name
 }
 func (c *Matcher) GetOutputDescription() string {
 	return c.OutputDescription
@@ -102,7 +96,6 @@ func (c *Matcher) GetConfirmationsTotal() int32 {
 func AssertMatcherRequired(obj Matcher) error {
 	elements := map[string]interface{}{
 		"id":                 obj.Id,
-		"name":               obj.Name,
 		"outputDescription":  obj.OutputDescription,
 		"outputAccountId":    obj.OutputAccountId,
 		"confirmationsCount": obj.ConfirmationsCount,

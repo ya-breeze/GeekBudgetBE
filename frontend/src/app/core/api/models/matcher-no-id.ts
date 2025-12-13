@@ -10,7 +10,6 @@ export interface MatcherNoId {
   currencyRegExp?: string;
   descriptionRegExp?: string;
   extraRegExp?: string;
-  name: string;
   outputAccountId: string;
   outputDescription: string;
   outputTags?: Array<string>;

@@ -203,8 +203,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
 func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	ctx context.Context,
 	id string,
-	matcherId *string,
 	transactionNoID goserver.TransactionNoId,
+	matcherId string,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
@@ -212,9 +212,9 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	}
 
 	// If a matcher ID is provided, record a confirmation
-	if matcherId != nil && *matcherId != "" {
-		if err := s.db.AddMatcherConfirmation(userID, *matcherId, true); err != nil {
-			s.logger.With("error", err, "matcherId", *matcherId).Error("Failed to add matcher confirmation")
+	if matcherId != "" {
+		if err := s.db.AddMatcherConfirmation(userID, matcherId, true); err != nil {
+			s.logger.With("error", err, "matcherId", matcherId).Error("Failed to add matcher confirmation")
 			// We continue even if confirmation stats fail, as the conversion is the primary action
 		}
 	}

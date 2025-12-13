@@ -623,7 +623,7 @@ func (s *storage) createMatcherRuntime(m goserver.Matcher) (MatcherRuntime, erro
 func (s *storage) CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) (MatcherRuntime, error) {
 	// Convert MatcherNoId to Matcher by creating a temporary matcher with empty ID
 	matcher := goserver.Matcher{
-		Name:                       m.GetName(),
+
 		OutputDescription:          m.GetOutputDescription(),
 		OutputAccountId:            m.GetOutputAccountId(),
 		OutputTags:                 m.GetOutputTags(),

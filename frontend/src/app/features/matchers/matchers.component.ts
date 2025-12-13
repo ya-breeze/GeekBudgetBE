@@ -36,7 +36,7 @@ export class MatchersComponent implements OnInit {
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly loading = this.matcherService.loading;
-  protected readonly displayedColumns = signal(['name', 'outputAccount', 'outputDescription', 'confidence', 'actions']);
+  protected readonly displayedColumns = signal(['outputAccount', 'outputDescription', 'confidence', 'actions']);
 
   protected readonly sortActive = signal<string | null>(null);
   protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
@@ -98,7 +98,7 @@ export class MatchersComponent implements OnInit {
   }
 
   protected deleteMatcher(matcher: Matcher): void {
-    if (confirm(`Are you sure you want to delete matcher "${matcher.name}"?`)) {
+    if (confirm(`Are you sure you want to delete matcher "${matcher.outputDescription}"?`)) {
       this.matcherService.delete(matcher.id).subscribe();
     }
   }
@@ -147,12 +147,11 @@ export class MatchersComponent implements OnInit {
     active: string
   ): string | number | null {
     switch (active) {
-      case 'name':
-        return this.removeLeadingEmoji(matcher.name ?? '');
+
       case 'outputAccount':
         return matcher.outputAccountName ?? matcher.outputAccountId ?? '';
       case 'outputDescription':
-        return matcher.outputDescription ?? '';
+        return this.removeLeadingEmoji(matcher.outputDescription ?? '');
       case 'confidence':
         const total = matcher.confirmationsTotal || 0;
         if (total === 0) return -1;

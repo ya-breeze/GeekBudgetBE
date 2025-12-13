@@ -500,7 +500,6 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 
 	matcher := &goserver.MatcherNoId{
-		Name: "Groceries: Billa",
 
 		OutputDescription: "Groceries: Billa",
 		OutputAccountId:   accGroceries.Id,
@@ -512,7 +511,6 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 
 	matcher = &goserver.MatcherNoId{
-		Name: "Groceries: Albert",
 
 		OutputDescription: "Groceries: Albert",
 		OutputAccountId:   accGroceries.Id,
@@ -524,7 +522,6 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 
 	matcher = &goserver.MatcherNoId{
-		Name: "Groceries: Makro",
 
 		OutputDescription: "Groceries: Makro",
 		OutputAccountId:   accGroceries.Id,
@@ -536,7 +533,6 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 
 	matcher = &goserver.MatcherNoId{
-		Name: "Groceries: Globus",
 
 		OutputDescription: "Groceries: Globus",
 		OutputAccountId:   accGroceries.Id,
@@ -548,7 +544,6 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 	}
 
 	matcher = &goserver.MatcherNoId{
-		Name: "Groceries: Kaufland",
 
 		OutputDescription: "Groceries: Kaufland",
 		OutputAccountId:   accGroceries.Id,

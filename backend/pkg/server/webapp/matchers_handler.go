@@ -135,7 +135,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		}
 	} else {
 		matcher = goserver.Matcher{
-			Name:                       transaction.Description,
+
 			OutputDescription:          transaction.Description,
 			DescriptionRegExp:          escapeRegexSpecialChars(transaction.Description),
 			PartnerAccountNumberRegExp: escapeRegexSpecialChars(transaction.PartnerAccount),
@@ -145,7 +145,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 
 	if req.Method == http.MethodPost {
 		matcher = goserver.Matcher{
-			Name:                       req.FormValue("name"),
+
 			OutputDescription:          req.FormValue("outputDescription"),
 			DescriptionRegExp:          req.FormValue("descriptionRegExp"),
 			OutputAccountId:            req.FormValue("account"),

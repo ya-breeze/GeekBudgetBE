@@ -22,7 +22,6 @@ var _ MappedNullable = &MatcherNoID{}
 
 // MatcherNoID struct for MatcherNoID
 type MatcherNoID struct {
-	Name                       string   `json:"name"`
 	OutputDescription          string   `json:"outputDescription"`
 	OutputAccountId            string   `json:"outputAccountId"`
 	OutputTags                 []string `json:"outputTags,omitempty"`
@@ -41,9 +40,8 @@ type _MatcherNoID MatcherNoID
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMatcherNoID(name string, outputDescription string, outputAccountId string) *MatcherNoID {
+func NewMatcherNoID(outputDescription string, outputAccountId string) *MatcherNoID {
 	this := MatcherNoID{}
-	this.Name = name
 	this.OutputDescription = outputDescription
 	this.OutputAccountId = outputAccountId
 	return &this
@@ -55,30 +53,6 @@ func NewMatcherNoID(name string, outputDescription string, outputAccountId strin
 func NewMatcherNoIDWithDefaults() *MatcherNoID {
 	this := MatcherNoID{}
 	return &this
-}
-
-// GetName returns the Name field value
-func (o *MatcherNoID) GetName() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.Name
-}
-
-// GetNameOk returns a tuple with the Name field value
-// and a boolean to check if the value has been set.
-func (o *MatcherNoID) GetNameOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Name, true
-}
-
-// SetName sets field value
-func (o *MatcherNoID) SetName(v string) {
-	o.Name = v
 }
 
 // GetOutputDescription returns the OutputDescription field value
@@ -363,7 +337,6 @@ func (o MatcherNoID) MarshalJSON() ([]byte, error) {
 
 func (o MatcherNoID) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["name"] = o.Name
 	toSerialize["outputDescription"] = o.OutputDescription
 	toSerialize["outputAccountId"] = o.OutputAccountId
 	if !IsNil(o.OutputTags) {
@@ -395,7 +368,6 @@ func (o *MatcherNoID) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"name",
 		"outputDescription",
 		"outputAccountId",
 	}

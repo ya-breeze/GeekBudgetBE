@@ -35,7 +35,6 @@ func (m *Matcher) FromDB() goserver.Matcher {
 
 	return goserver.Matcher{
 		Id:                         m.ID.String(),
-		Name:                       m.Name,
 		OutputDescription:          m.OutputDescription,
 		OutputAccountId:            m.OutputAccountID,
 		OutputTags:                 m.OutputTags,
@@ -59,7 +58,6 @@ func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
 
 	return &Matcher{
 		UserID:                     userID,
-		Name:                       m.GetName(),
 		OutputDescription:          m.GetOutputDescription(),
 		OutputAccountID:            m.GetOutputAccountId(),
 		OutputTags:                 m.GetOutputTags(),
@@ -74,7 +72,6 @@ func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
 
 func MatcherWithoutID(matcher *goserver.Matcher) *goserver.MatcherNoId {
 	return &goserver.MatcherNoId{
-		Name:                       matcher.Name,
 		OutputDescription:          matcher.OutputDescription,
 		OutputAccountId:            matcher.OutputAccountId,
 		OutputTags:                 matcher.OutputTags,

@@ -62,7 +62,7 @@ export class MatcherEditDialogComponent implements OnInit {
         // Construct matcher object from form (excluding output fields which don't affect matching)
         // We need to be careful to constructing it correctly for the backend check
         const matcherToCheck: MatcherNoId = {
-            name: formValue.name || 'Temp',
+
             descriptionRegExp: formValue.descriptionRegExp || undefined,
             partnerNameRegExp: formValue.partnerNameRegExp || undefined,
             partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,
@@ -123,7 +123,7 @@ export class MatcherEditDialogComponent implements OnInit {
     }
 
     protected readonly form = this.fb.group({
-        name: ['', Validators.required],
+
         descriptionRegExp: [''],
         partnerNameRegExp: [''],
         partnerAccountNumberRegExp: [''],
@@ -139,7 +139,7 @@ export class MatcherEditDialogComponent implements OnInit {
 
         if (this.data?.matcher) {
             this.form.patchValue({
-                name: this.data.matcher.name,
+
                 descriptionRegExp: this.data.matcher.descriptionRegExp,
                 partnerNameRegExp: this.data.matcher.partnerNameRegExp,
                 partnerAccountNumberRegExp: this.data.matcher.partnerAccountNumberRegExp,
@@ -154,7 +154,7 @@ export class MatcherEditDialogComponent implements OnInit {
             const t = this.data.transaction;
             this.form.patchValue({
                 // Suggest name from description/partner
-                name: (t.partnerName || t.description || '').substring(0, 30),
+
                 // Pre-fill regexps with exact matches or simplistic logic (user will edit)
                 descriptionRegExp: this.escapeRegExp(t.description || ''),
                 partnerNameRegExp: t.partnerName ? this.escapeRegExp(t.partnerName) : '',
@@ -220,7 +220,7 @@ export class MatcherEditDialogComponent implements OnInit {
         const formValue = this.form.value;
 
         const matcherData: MatcherNoId = {
-            name: formValue.name!,
+
             descriptionRegExp: formValue.descriptionRegExp || undefined,
             partnerNameRegExp: formValue.partnerNameRegExp || undefined,
             partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,

@@ -44,13 +44,7 @@
         <form [formGroup]="form" class="edit-form">
             <!-- General Section -->
             <h3 class="section-title">General</h3>
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Name</mat-label>
-                <input matInput formControlName="name" placeholder="E.g. Uber Rides">
-                @if (form.controls.name.hasError('required')) {
-                <mat-error>Name is required</mat-error>
-                }
-            </mat-form-field>
+
 
             <!-- Conditions Section -->
             <h3 class="section-title">Conditions</h3>

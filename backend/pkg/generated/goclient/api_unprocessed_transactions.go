@@ -28,10 +28,17 @@ type ApiConvertUnprocessedTransactionRequest struct {
 	ApiService      *UnprocessedTransactionsAPIService
 	id              string
 	transactionNoID *TransactionNoID
+	matcherId       *string
 }
 
 func (r ApiConvertUnprocessedTransactionRequest) TransactionNoID(transactionNoID TransactionNoID) ApiConvertUnprocessedTransactionRequest {
 	r.transactionNoID = &transactionNoID
+	return r
+}
+
+// ID of the matcher used for this conversion (if any)
+func (r ApiConvertUnprocessedTransactionRequest) MatcherId(matcherId string) ApiConvertUnprocessedTransactionRequest {
+	r.matcherId = &matcherId
 	return r
 }
 
@@ -80,6 +87,9 @@ func (a *UnprocessedTransactionsAPIService) ConvertUnprocessedTransactionExecute
 		return localVarReturnValue, nil, reportError("transactionNoID is required and must be specified")
 	}
 
+	if r.matcherId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "matcherId", r.matcherId, "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
 

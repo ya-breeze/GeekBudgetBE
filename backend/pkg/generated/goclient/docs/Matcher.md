@@ -5,7 +5,6 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | **string** |  | 
-**Name** | **string** |  | 
 **OutputDescription** | **string** |  | 
 **OutputAccountId** | **string** |  | 
 **OutputTags** | Pointer to **[]string** |  | [optional] 
@@ -22,7 +21,7 @@ Name | Type | Description | Notes
 
 ### NewMatcher
 
-`func NewMatcher(id string, name string, outputDescription string, outputAccountId string, confirmationsCount int32, confirmationsTotal int32, ) *Matcher`
+`func NewMatcher(id string, outputDescription string, outputAccountId string, confirmationsCount int32, confirmationsTotal int32, ) *Matcher`
 
 NewMatcher instantiates a new Matcher object
 This constructor will assign default values to properties that have it defined,
@@ -55,26 +54,6 @@ and a boolean to check if the value has been set.
 `func (o *Matcher) SetId(v string)`
 
 SetId sets Id field to given value.
-
-
-### GetName
-
-`func (o *Matcher) GetName() string`
-
-GetName returns the Name field if non-nil, zero value otherwise.
-
-### GetNameOk
-
-`func (o *Matcher) GetNameOk() (*string, bool)`
-
-GetNameOk returns a tuple with the Name field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetName
-
-`func (o *Matcher) SetName(v string)`
-
-SetName sets Name field to given value.
 
 
 ### GetOutputDescription

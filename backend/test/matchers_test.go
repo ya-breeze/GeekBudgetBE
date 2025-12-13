@@ -112,7 +112,7 @@ var _ = Describe("Matchers API", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
 		matcher := goclient.MatcherNoID{
-			Name:                       "Test Matcher",
+
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          ptrString("Test.*"),
 			PartnerAccountNumberRegExp: ptrString("123.*"),
@@ -135,7 +135,7 @@ var _ = Describe("Matchers API", func() {
 
 		// Note: The CheckMatcher endpoint is not exposed in the goclient yet
 		// This test demonstrates the expected behavior
-		Expect(checkRequest.Matcher.Name).To(Equal("Test Matcher"))
+
 		Expect(checkRequest.Transaction.Description).To(Equal(ptrString("Test transaction")))
 	})
 
@@ -143,7 +143,7 @@ var _ = Describe("Matchers API", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
 		matcher := goclient.MatcherNoID{
-			Name:                       "Test Matcher",
+
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          ptrString("NonMatching.*"),
 			PartnerAccountNumberRegExp: ptrString("999.*"),
@@ -166,7 +166,7 @@ var _ = Describe("Matchers API", func() {
 
 		// Note: The CheckMatcher endpoint is not exposed in the goclient yet
 		// This test demonstrates the expected behavior
-		Expect(checkRequest.Matcher.Name).To(Equal("Test Matcher"))
+
 		Expect(checkRequest.Transaction.Description).To(Equal(ptrString("Test transaction")))
 	})
 
@@ -174,7 +174,7 @@ var _ = Describe("Matchers API", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
 		matcher := goclient.MatcherNoID{
-			Name:                       "Test Matcher",
+
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          ptrString("Test.*"),
 			PartnerAccountNumberRegExp: ptrString("123.*"),
@@ -187,7 +187,6 @@ var _ = Describe("Matchers API", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(created).ToNot(BeNil())
 		Expect(created.Id).ToNot(BeEmpty())
-		Expect(created.Name).To(Equal(matcher.Name))
 
 		// Get matchers
 		matchers, _, err := client.MatchersAPI.GetMatchers(ctx).Execute()
@@ -222,7 +221,7 @@ var _ = Describe("Matchers API", func() {
 
 		// Create a matcher from this transaction
 		matcher := goclient.MatcherNoID{
-			Name:                       "Special Chars Matcher",
+
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          specialTxn.Description, // Should be escaped
 			PartnerAccountNumberRegExp: specialTxn.PartnerAccount,

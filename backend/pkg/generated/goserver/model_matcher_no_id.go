@@ -12,8 +12,6 @@
 package goserver
 
 type MatcherNoId struct {
-	Name string `json:"name"`
-
 	OutputDescription string `json:"outputDescription"`
 
 	OutputAccountId string `json:"outputAccountId"`
@@ -35,7 +33,6 @@ type MatcherNoId struct {
 }
 
 type MatcherNoIdInterface interface {
-	GetName() string
 	GetOutputDescription() string
 	GetOutputAccountId() string
 	GetOutputTags() []string
@@ -47,9 +44,6 @@ type MatcherNoIdInterface interface {
 	GetConfirmationHistory() []bool
 }
 
-func (c *MatcherNoId) GetName() string {
-	return c.Name
-}
 func (c *MatcherNoId) GetOutputDescription() string {
 	return c.OutputDescription
 }
@@ -81,7 +75,6 @@ func (c *MatcherNoId) GetConfirmationHistory() []bool {
 // AssertMatcherNoIdRequired checks if the required fields are not zero-ed
 func AssertMatcherNoIdRequired(obj MatcherNoId) error {
 	elements := map[string]interface{}{
-		"name":              obj.Name,
 		"outputDescription": obj.OutputDescription,
 		"outputAccountId":   obj.OutputAccountId,
 	}

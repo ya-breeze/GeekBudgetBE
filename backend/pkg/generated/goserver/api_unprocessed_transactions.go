@@ -90,6 +90,11 @@ func (c *UnprocessedTransactionsAPIController) GetUnprocessedTransactions(w http
 // ConvertUnprocessedTransaction - convert unprocessed transactions into normal transaction
 func (c *UnprocessedTransactionsAPIController) ConvertUnprocessedTransaction(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
+	query, err := parseQuery(r.URL.RawQuery)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
 	idParam := params["id"]
 	if idParam == "" {
 		c.errorHandler(w, r, &RequiredError{"id"}, nil)
@@ -110,17 +115,14 @@ func (c *UnprocessedTransactionsAPIController) ConvertUnprocessedTransaction(w h
 		c.errorHandler(w, r, err, nil)
 		return
 	}
-	query, err := parseQuery(r.URL.RawQuery)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	var matcherIdParam *string
+	var matcherIdParam string
 	if query.Has("matcherId") {
 		param := query.Get("matcherId")
-		matcherIdParam = &param
+
+		matcherIdParam = param
+	} else {
 	}
-	result, err := c.service.ConvertUnprocessedTransaction(r.Context(), idParam, matcherIdParam, transactionNoIdParam)
+	result, err := c.service.ConvertUnprocessedTransaction(r.Context(), idParam, transactionNoIdParam, matcherIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

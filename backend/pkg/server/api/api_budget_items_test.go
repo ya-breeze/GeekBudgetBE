@@ -11,12 +11,13 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
 var _ = Describe("BudgetItems API", func() {
 	log := test.CreateTestLogger()
-	ctx := context.WithValue(context.Background(), "userID", "user1")
+	ctx := context.WithValue(context.Background(), common.UserIDKey, "user1")
 
 	var (
 		ctrl        *gomock.Controller

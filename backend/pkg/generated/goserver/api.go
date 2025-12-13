@@ -269,7 +269,7 @@ type TransactionsAPIServicer interface {
 // and updated with the logic required for the API.
 type UnprocessedTransactionsAPIServicer interface {
 	GetUnprocessedTransactions(context.Context) (ImplResponse, error)
-	ConvertUnprocessedTransaction(context.Context, string, *string, TransactionNoId) (ImplResponse, error)
+	ConvertUnprocessedTransaction(context.Context, string, TransactionNoId, string) (ImplResponse, error)
 	GetUnprocessedTransaction(context.Context, string) (ImplResponse, error)
 	DeleteUnprocessedTransaction(context.Context, string, string) (ImplResponse, error)
 }

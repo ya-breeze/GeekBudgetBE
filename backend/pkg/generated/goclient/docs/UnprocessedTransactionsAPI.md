@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 ## ConvertUnprocessedTransaction
 
-> Transaction ConvertUnprocessedTransaction(ctx, id).TransactionNoID(transactionNoID).Execute()
+> Transaction ConvertUnprocessedTransaction(ctx, id).TransactionNoID(transactionNoID).MatcherId(matcherId).Execute()
 
 convert unprocessed transactions into normal transaction
 
@@ -33,10 +33,11 @@ import (
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | 
 	transactionNoID := *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyId_example")}) // TransactionNoID | 
+	matcherId := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | ID of the matcher used for this conversion (if any) (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.UnprocessedTransactionsAPI.ConvertUnprocessedTransaction(context.Background(), id).TransactionNoID(transactionNoID).Execute()
+	resp, r, err := apiClient.UnprocessedTransactionsAPI.ConvertUnprocessedTransaction(context.Background(), id).TransactionNoID(transactionNoID).MatcherId(matcherId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `UnprocessedTransactionsAPI.ConvertUnprocessedTransaction``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -63,6 +64,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
  **transactionNoID** | [**TransactionNoID**](TransactionNoID.md) |  | 
+ **matcherId** | **string** | ID of the matcher used for this conversion (if any) | 
 
 ### Return type
 

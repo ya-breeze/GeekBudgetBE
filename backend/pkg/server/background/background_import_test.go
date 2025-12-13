@@ -79,10 +79,9 @@ func setupTestFixture(t *testing.T, logger *slog.Logger, username string) *TestF
 }
 
 // createMatcher creates a matcher with the given configuration
-func (f *TestFixture) createMatcher(t *testing.T, name, description string, tags []string, history []bool) goserver.Matcher {
+func (f *TestFixture) createMatcher(t *testing.T, description string, tags []string, history []bool) goserver.Matcher {
 	t.Helper()
 	matcher := &goserver.MatcherNoId{
-		Name:                name,
 		OutputDescription:   description,
 		OutputAccountId:     f.Account.Id,
 		OutputTags:          tags,
@@ -152,14 +151,12 @@ func TestProcessUnprocessedTransactionsForAutoConversion(t *testing.T) {
 
 	// Create matchers with specific confirmation histories
 	perfectMatcher := fixture.createMatcher(t,
-		"Perfect Matcher",
 		"Auto-converted transaction",
 		[]string{"auto-converted"},
 		[]bool{true, true, true, true, true, true, true, true, true, true}, // 10 perfect confirmations
 	)
 
 	fixture.createMatcher(t,
-		"Mixed Matcher",
 		"Mixed transaction",
 		[]string{"mixed"},
 		[]bool{true, false, true}, // Mixed history - insufficient
@@ -241,14 +238,12 @@ func TestProcessUnprocessedTransactionsMultiplePerfectMatchers(t *testing.T) {
 
 	// Create two matchers with perfect success history
 	fixture.createMatcher(t,
-		"Perfect Matcher 1",
 		"Auto-converted by matcher 1",
 		[]string{"matcher1"},
 		[]bool{true, true, true, true, true, true, true, true, true, true}, // 10 perfect confirmations
 	)
 
 	fixture.createMatcher(t,
-		"Perfect Matcher 2",
 		"Auto-converted by matcher 2",
 		[]string{"matcher2"},
 		[]bool{true, true, true, true, true, true, true, true, true, true}, // 10 perfect confirmations
@@ -296,7 +291,6 @@ func TestProcessUnprocessedTransactionsInsufficientConfirmationHistory(t *testin
 
 	// Create a matcher with perfect success history but insufficient confirmations (< 10)
 	insufficientMatcher := fixture.createMatcher(t,
-		"Insufficient History Matcher",
 		"Should not auto-convert",
 		[]string{"insufficient"},
 		[]bool{true, true, true, true, true, true, true, true, true}, // Only 9 confirmations

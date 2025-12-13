@@ -1537,8 +1537,7 @@ components:
     MatcherNoID:
       type: object
       properties:
-        name:
-          type: string
+
 
         outputDescription:
           type: string
@@ -1569,7 +1568,7 @@ components:
             (true = confirmed, false = rejected). Server enforces maximum length
             configured via application config.
       required:
-        - name
+
         - outputDescription
         - outputAccountId
 
