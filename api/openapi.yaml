@@ -830,6 +830,46 @@ paths:
       responses:
         "200":
           description: no body
+  /v1/matchers/check-regex:
+    post:
+      tags:
+        - matchers
+      summary: check if regex is valid and matches string (using backend's regex engine)
+      operationId: checkRegex
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                regex:
+                  type: string
+                testString:
+                  type: string
+              required:
+                - regex
+                - testString
+      responses:
+        "200":
+          description: result of check
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isValid:
+                    type: boolean
+                  isMatch:
+                    type: boolean
+                  error:
+                    type: string
+                required:
+                  - isValid
+                  - isMatch
+        "400":
+          description: bad request
+
   /v1/matchers/check:
     post:
       tags:
@@ -862,9 +902,6 @@ paths:
                     type: boolean
                   reason:
                     type: string
-                    description: Reason why the matcher did or did not match
-        "400":
-          description: bad request
 
   /v1/import:
     post:
@@ -1102,9 +1139,11 @@ components:
         showInDashboardSummary:
           type: boolean
           description: "If true, show this account in dashboard summary."
+          default: true
       required:
         - name
         - type
+        - showInDashboardSummary
 
     Account:
       type: object

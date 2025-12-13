@@ -53,7 +53,7 @@ generate:
 		mkdir -p pkg/generated/goclient pkg/generated/goserver; \
 		docker run --rm -u 1000 -v ${HOST_PWD}:/local \
 			openapitools/openapi-generator-cli generate \
-			-i /local/backend/api/openapi.yaml \
+			-i /local/api/openapi.yaml \
 			-g go \
 			-t /local/backend/pkg/generated/templates/goclient \
 			-o /local/backend/pkg/generated/goclient \
@@ -68,7 +68,7 @@ generate:
 			pkg/generated/goclient/test; \
 		docker run --rm -u 1000 -v ${HOST_PWD}:/local \
 			openapitools/openapi-generator-cli generate \
-			-i /local/backend/api/openapi.yaml \
+			-i /local/api/openapi.yaml \
 			-g go-server \
 			-t /local/backend/pkg/generated/templates/goserver \
 			-o /local/backend/pkg/generated/goserver \
@@ -86,7 +86,7 @@ generate:
 	# Angular client
 	@docker run --rm -u 1000 -v ${HOST_PWD}:/local \
 		openapitools/openapi-generator-cli generate \
-		-i /local/backend/api/openapi.yaml \
+		-i /local/api/openapi.yaml \
 		-g typescript-angular \
 		-o /local/backend/pkg/generated/angular \
 		--additional-properties=apiModulePrefix=GeekbudgetClient,configurationPrefix=GeekbudgetClient
@@ -96,7 +96,7 @@ generate:
 .PHONY: validate
 validate:
 	@cd ${ROOT_DIR}/backend; \
-		docker run --rm -v ${HOST_PWD}:/local openapitools/openapi-generator-cli validate -i /local/backend/api/openapi.yaml
+		docker run --rm -v ${HOST_PWD}:/local openapitools/openapi-generator-cli validate -i /local/api/openapi.yaml
 	@echo "✅ Validation complete"
 
 .PHONY: lint
