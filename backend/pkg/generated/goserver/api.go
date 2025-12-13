@@ -64,6 +64,7 @@ type BankImportersAPIRouter interface {
 type BudgetItemsAPIRouter interface {
 	GetBudgetItems(http.ResponseWriter, *http.Request)
 	CreateBudgetItem(http.ResponseWriter, *http.Request)
+	GetBudgetStatus(http.ResponseWriter, *http.Request)
 	GetBudgetItem(http.ResponseWriter, *http.Request)
 	UpdateBudgetItem(http.ResponseWriter, *http.Request)
 	DeleteBudgetItem(http.ResponseWriter, *http.Request)
@@ -99,6 +100,7 @@ type ImportAPIRouter interface {
 type MatchersAPIRouter interface {
 	GetMatchers(http.ResponseWriter, *http.Request)
 	CreateMatcher(http.ResponseWriter, *http.Request)
+	GetMatcher(http.ResponseWriter, *http.Request)
 	UpdateMatcher(http.ResponseWriter, *http.Request)
 	DeleteMatcher(http.ResponseWriter, *http.Request)
 	CheckRegex(http.ResponseWriter, *http.Request)
@@ -193,6 +195,7 @@ type BankImportersAPIServicer interface {
 type BudgetItemsAPIServicer interface {
 	GetBudgetItems(context.Context) (ImplResponse, error)
 	CreateBudgetItem(context.Context, BudgetItemNoId) (ImplResponse, error)
+	GetBudgetStatus(context.Context, time.Time, time.Time) (ImplResponse, error)
 	GetBudgetItem(context.Context, string) (ImplResponse, error)
 	UpdateBudgetItem(context.Context, string, BudgetItemNoId) (ImplResponse, error)
 	DeleteBudgetItem(context.Context, string) (ImplResponse, error)
@@ -232,6 +235,7 @@ type ImportAPIServicer interface {
 type MatchersAPIServicer interface {
 	GetMatchers(context.Context) (ImplResponse, error)
 	CreateMatcher(context.Context, MatcherNoId) (ImplResponse, error)
+	GetMatcher(context.Context, string) (ImplResponse, error)
 	UpdateMatcher(context.Context, string, MatcherNoId) (ImplResponse, error)
 	DeleteMatcher(context.Context, string) (ImplResponse, error)
 	CheckRegex(context.Context, CheckRegexRequest) (ImplResponse, error)
@@ -265,7 +269,7 @@ type TransactionsAPIServicer interface {
 // and updated with the logic required for the API.
 type UnprocessedTransactionsAPIServicer interface {
 	GetUnprocessedTransactions(context.Context) (ImplResponse, error)
-	ConvertUnprocessedTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)
+	ConvertUnprocessedTransaction(context.Context, string, *string, TransactionNoId) (ImplResponse, error)
 	GetUnprocessedTransaction(context.Context, string) (ImplResponse, error)
 	DeleteUnprocessedTransaction(context.Context, string, string) (ImplResponse, error)
 }

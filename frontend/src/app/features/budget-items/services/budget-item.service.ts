@@ -7,7 +7,10 @@ import { BudgetItemNoId } from '../../../core/api/models/budget-item-no-id';
 import { getBudgetItems } from '../../../core/api/fn/budget-items/get-budget-items';
 import { createBudgetItem } from '../../../core/api/fn/budget-items/create-budget-item';
 import { updateBudgetItem } from '../../../core/api/fn/budget-items/update-budget-item';
+
 import { deleteBudgetItem } from '../../../core/api/fn/budget-items/delete-budget-item';
+import { getBudgetStatus } from '../../../core/api/fn/budget-items/get-budget-status';
+import { BudgetStatus } from '../../../core/api/models/budget-status';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +20,7 @@ export class BudgetItemService {
   private readonly apiConfig = inject(ApiConfiguration);
 
   readonly budgetItems = signal<BudgetItem[]>([]);
+  readonly budgetStatus = signal<BudgetStatus[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -92,6 +96,25 @@ export class BudgetItemService {
         },
         error: (err) => {
           this.error.set(err.message || 'Failed to delete budget item');
+          this.loading.set(false);
+        },
+      })
+    );
+  }
+
+  loadBudgetStatus(from?: string, to?: string): Observable<BudgetStatus[]> {
+    this.loading.set(true);
+    this.error.set(null);
+
+    return getBudgetStatus(this.http, this.apiConfig.rootUrl, { from, to }).pipe(
+      map((response) => response.body),
+      tap({
+        next: (status) => {
+          this.budgetStatus.set(status);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.message || 'Failed to load budget status');
           this.loading.set(false);
         },
       })

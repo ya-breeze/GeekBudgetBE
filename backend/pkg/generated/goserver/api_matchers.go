@@ -62,6 +62,11 @@ func (c *MatchersAPIController) Routes() Routes {
 			"/v1/matchers",
 			c.CreateMatcher,
 		},
+		"GetMatcher": Route{
+			strings.ToUpper("Get"),
+			"/v1/matchers/{id}",
+			c.GetMatcher,
+		},
 		"UpdateMatcher": Route{
 			strings.ToUpper("Put"),
 			"/v1/matchers/{id}",
@@ -115,6 +120,24 @@ func (c *MatchersAPIController) CreateMatcher(w http.ResponseWriter, r *http.Req
 		return
 	}
 	result, err := c.service.CreateMatcher(r.Context(), matcherNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// GetMatcher - get matcher
+func (c *MatchersAPIController) GetMatcher(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.GetMatcher(r.Context(), idParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

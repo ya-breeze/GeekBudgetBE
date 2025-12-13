@@ -8,6 +8,7 @@ Method | HTTP request | Description
 [**CheckRegex**](MatchersAPI.md#CheckRegex) | **Post** /v1/matchers/check-regex | check if regex is valid and matches string (using backend&#39;s regex engine)
 [**CreateMatcher**](MatchersAPI.md#CreateMatcher) | **Post** /v1/matchers | create new matcher
 [**DeleteMatcher**](MatchersAPI.md#DeleteMatcher) | **Delete** /v1/matchers/{id} | delete matcher
+[**GetMatcher**](MatchersAPI.md#GetMatcher) | **Get** /v1/matchers/{id} | get matcher
 [**GetMatchers**](MatchersAPI.md#GetMatchers) | **Get** /v1/matchers | get all matchers
 [**UpdateMatcher**](MatchersAPI.md#UpdateMatcher) | **Put** /v1/matchers/{id} | update matcher
 
@@ -266,6 +267,74 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: Not defined
 - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetMatcher
+
+> Matcher GetMatcher(ctx, id).Execute()
+
+get matcher
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the matcher
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.MatchersAPI.GetMatcher(context.Background(), id).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `MatchersAPI.GetMatcher``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetMatcher`: Matcher
+	fmt.Fprintf(os.Stdout, "Response from `MatchersAPI.GetMatcher`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** | ID of the matcher | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetMatcherRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**Matcher**](Matcher.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
 [[Back to Model list]](../README.md#documentation-for-models)

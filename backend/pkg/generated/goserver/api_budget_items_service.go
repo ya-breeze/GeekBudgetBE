@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 )
 
 // BudgetItemsAPIService is an interface that defines the logic for the BudgetItemsAPIServicer
@@ -23,6 +24,8 @@ type BudgetItemsAPIService interface {
 	GetBudgetItems(ctx context.Context) (ImplResponse, error)
 	// CreateBudgetItem - create new budgetItem
 	CreateBudgetItem(ctx context.Context, budgetItemNoId BudgetItemNoId) (ImplResponse, error)
+	// GetBudgetStatus - get budget status with rollover
+	GetBudgetStatus(ctx context.Context, from time.Time, to time.Time) (ImplResponse, error)
 	// GetBudgetItem - get budgetItem
 	GetBudgetItem(ctx context.Context, id string) (ImplResponse, error)
 	// UpdateBudgetItem - update budgetItem
@@ -62,6 +65,17 @@ func (s *BudgetItemsAPIServiceImpl) CreateBudgetItem(ctx context.Context, budget
 	// return Response(200, BudgetItem{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("CreateBudgetItem method not implemented")
+}
+
+// GetBudgetStatus - get budget status with rollover
+func (s *BudgetItemsAPIServiceImpl) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time) (ImplResponse, error) {
+	// TODO - update GetBudgetStatus with the required logic for this service method.
+	// Add api_budget_items_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, []BudgetStatus{}) or use other options such as http.Ok ...
+	// return Response(200, []BudgetStatus{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("GetBudgetStatus method not implemented")
 }
 
 // GetBudgetItem - get budgetItem

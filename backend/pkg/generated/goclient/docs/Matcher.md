@@ -15,12 +15,14 @@ Name | Type | Description | Notes
 **DescriptionRegExp** | Pointer to **string** |  | [optional] 
 **ExtraRegExp** | Pointer to **string** |  | [optional] 
 **ConfirmationHistory** | Pointer to **[]bool** | List of booleans representing manual confirmations for this matcher (true &#x3D; confirmed, false &#x3D; rejected). Server enforces maximum length configured via application config. | [optional] 
+**ConfirmationsCount** | **int32** | Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct. | 
+**ConfirmationsTotal** | **int32** | Total length of the confirmation history array. This is the total number of times this matcher has been evaluated. | 
 
 ## Methods
 
 ### NewMatcher
 
-`func NewMatcher(id string, name string, outputDescription string, outputAccountId string, ) *Matcher`
+`func NewMatcher(id string, name string, outputDescription string, outputAccountId string, confirmationsCount int32, confirmationsTotal int32, ) *Matcher`
 
 NewMatcher instantiates a new Matcher object
 This constructor will assign default values to properties that have it defined,
@@ -289,6 +291,46 @@ SetConfirmationHistory sets ConfirmationHistory field to given value.
 `func (o *Matcher) HasConfirmationHistory() bool`
 
 HasConfirmationHistory returns a boolean if a field has been set.
+
+### GetConfirmationsCount
+
+`func (o *Matcher) GetConfirmationsCount() int32`
+
+GetConfirmationsCount returns the ConfirmationsCount field if non-nil, zero value otherwise.
+
+### GetConfirmationsCountOk
+
+`func (o *Matcher) GetConfirmationsCountOk() (*int32, bool)`
+
+GetConfirmationsCountOk returns a tuple with the ConfirmationsCount field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetConfirmationsCount
+
+`func (o *Matcher) SetConfirmationsCount(v int32)`
+
+SetConfirmationsCount sets ConfirmationsCount field to given value.
+
+
+### GetConfirmationsTotal
+
+`func (o *Matcher) GetConfirmationsTotal() int32`
+
+GetConfirmationsTotal returns the ConfirmationsTotal field if non-nil, zero value otherwise.
+
+### GetConfirmationsTotalOk
+
+`func (o *Matcher) GetConfirmationsTotalOk() (*int32, bool)`
+
+GetConfirmationsTotalOk returns a tuple with the ConfirmationsTotal field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetConfirmationsTotal
+
+`func (o *Matcher) SetConfirmationsTotal(v int32)`
+
+SetConfirmationsTotal sets ConfirmationsTotal field to given value.
+
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

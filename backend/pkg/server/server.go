@@ -88,6 +88,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 		NotificationsAPIService:           api.NewNotificationsAPIServiceImpl(logger, db),
 		ImportAPIService:                  api.NewImportAPIServiceImpl(logger, db),
 		ExportAPIService:                  api.NewExportAPIServiceImpl(logger, db),
+		BudgetItemsAPIService:             api.NewBudgetItemsAPIService(logger, db),
 	}
 }
 

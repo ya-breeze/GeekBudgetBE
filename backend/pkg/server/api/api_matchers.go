@@ -101,6 +101,21 @@ func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.Impl
 	return goserver.Response(200, res), nil
 }
 
+func (s *MatchersAPIServiceImpl) GetMatcher(ctx context.Context, id string) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	res, err := s.db.GetMatcher(userID, id)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get matcher")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, res), nil
+}
+
 func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)

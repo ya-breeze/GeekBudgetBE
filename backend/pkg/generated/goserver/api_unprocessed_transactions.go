@@ -110,7 +110,17 @@ func (c *UnprocessedTransactionsAPIController) ConvertUnprocessedTransaction(w h
 		c.errorHandler(w, r, err, nil)
 		return
 	}
-	result, err := c.service.ConvertUnprocessedTransaction(r.Context(), idParam, transactionNoIdParam)
+	query, err := parseQuery(r.URL.RawQuery)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	var matcherIdParam *string
+	if query.Has("matcherId") {
+		param := query.Get("matcherId")
+		matcherIdParam = &param
+	}
+	result, err := c.service.ConvertUnprocessedTransaction(r.Context(), idParam, matcherIdParam, transactionNoIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

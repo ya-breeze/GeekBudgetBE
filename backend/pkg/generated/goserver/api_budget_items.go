@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -61,6 +62,11 @@ func (c *BudgetItemsAPIController) Routes() Routes {
 			strings.ToUpper("Post"),
 			"/v1/budgetItems",
 			c.CreateBudgetItem,
+		},
+		"GetBudgetStatus": Route{
+			strings.ToUpper("Get"),
+			"/v1/budgets/status",
+			c.GetBudgetStatus,
 		},
 		"GetBudgetItem": Route{
 			strings.ToUpper("Get"),
@@ -110,6 +116,45 @@ func (c *BudgetItemsAPIController) CreateBudgetItem(w http.ResponseWriter, r *ht
 		return
 	}
 	result, err := c.service.CreateBudgetItem(r.Context(), budgetItemNoIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// GetBudgetStatus - get budget status with rollover
+func (c *BudgetItemsAPIController) GetBudgetStatus(w http.ResponseWriter, r *http.Request) {
+	query, err := parseQuery(r.URL.RawQuery)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	var fromParam time.Time
+	if query.Has("from") {
+		param, err := parseTime(query.Get("from"))
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "from", Err: err}, nil)
+			return
+		}
+
+		fromParam = param
+	} else {
+	}
+	var toParam time.Time
+	if query.Has("to") {
+		param, err := parseTime(query.Get("to"))
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "to", Err: err}, nil)
+			return
+		}
+
+		toParam = param
+	} else {
+	}
+	result, err := c.service.GetBudgetStatus(r.Context(), fromParam, toParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

@@ -144,6 +144,50 @@ mat-dialog-content {
   }
 }
 
+.confidence-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 600;
+  margin-right: 8px;
+
+  &.badge-perfect {
+    background-color: #a5d6a7;
+    /* Green 200 */
+    color: #1b5e20;
+    /* Green 900 */
+  }
+
+  &.badge-success {
+    background-color: #e8f5e9;
+    /* Green 50 */
+    color: #2e7d32;
+    /* Green 800 */
+  }
+
+  &.badge-warning {
+    background-color: #fff3e0;
+    /* Orange 50 */
+    color: #ef6c00;
+    /* Orange 800 */
+  }
+
+  &.badge-danger {
+    background-color: #ffebee;
+    /* Red 50 */
+    color: #c62828;
+    /* Red 800 */
+  }
+
+  &.badge-secondary {
+    background-color: #f5f5f5;
+    /* Grey 100 */
+    color: #616161;
+    /* Grey 700 */
+  }
+}
+
 .section-container.manual-section {
   border-left: 4px solid #4caf50; // Green for 'new' action
 }

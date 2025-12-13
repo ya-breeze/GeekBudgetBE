@@ -47,6 +47,7 @@ go/model_bank_importer_no_id.go
 go/model_bank_importer_no_id_mappings_inner.go
 go/model_budget_item.go
 go/model_budget_item_no_id.go
+go/model_budget_status.go
 go/model_check_matcher_200_response.go
 go/model_check_matcher_request.go
 go/model_check_regex_200_response.go

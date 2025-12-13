@@ -22,7 +22,7 @@ type UnprocessedTransactionsAPIService interface {
 	// GetUnprocessedTransactions - get all unprocessed transactions
 	GetUnprocessedTransactions(ctx context.Context) (ImplResponse, error)
 	// ConvertUnprocessedTransaction - convert unprocessed transactions into normal transaction
-	ConvertUnprocessedTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error)
+	ConvertUnprocessedTransaction(ctx context.Context, id string, matcherId *string, transactionNoId TransactionNoId) (ImplResponse, error)
 	// GetUnprocessedTransaction - get unprocessed transaction
 	GetUnprocessedTransaction(ctx context.Context, id string) (ImplResponse, error)
 	// DeleteUnprocessedTransaction - delete unprocessed transaction
@@ -52,7 +52,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(ctx c
 }
 
 // ConvertUnprocessedTransaction - convert unprocessed transactions into normal transaction
-func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(ctx context.Context, id string, transactionNoId TransactionNoId) (ImplResponse, error) {
+func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(ctx context.Context, id string, matcherId *string, transactionNoId TransactionNoId) (ImplResponse, error) {
 	// TODO - update ConvertUnprocessedTransaction with the required logic for this service method.
 	// Add api_unprocessed_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

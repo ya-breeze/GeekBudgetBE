@@ -45,6 +45,7 @@ export class UnprocessedTransactionsComponent implements OnInit {
     this.unprocessedTransactionService.unprocessedTransactions;
   protected readonly loading = this.unprocessedTransactionService.loading;
   protected readonly currencies = this.currencyService.currencies;
+
   protected readonly displayedColumns = signal([
     'date',
     'description',
@@ -152,7 +153,7 @@ export class UnprocessedTransactionsComponent implements OnInit {
       ...match.transaction
     };
 
-    this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert).subscribe({
+    this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert, match.matcherId).subscribe({
       next: () => {
         this.snackBar.open('Transaction processed (match applied)', 'Close', { duration: 3000 });
         if (dialogRef) {

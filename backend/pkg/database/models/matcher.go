@@ -25,6 +25,14 @@ type Matcher struct {
 }
 
 func (m *Matcher) FromDB() goserver.Matcher {
+	count := int32(0)
+	for _, v := range m.ConfirmationHistory {
+		if v {
+			count++
+		}
+	}
+	total := int32(len(m.ConfirmationHistory))
+
 	return goserver.Matcher{
 		Id:                         m.ID.String(),
 		Name:                       m.Name,
@@ -37,6 +45,8 @@ func (m *Matcher) FromDB() goserver.Matcher {
 		DescriptionRegExp:          m.DescriptionRegExp,
 		ExtraRegExp:                m.ExtraRegExp,
 		ConfirmationHistory:        m.ConfirmationHistory,
+		ConfirmationsCount:         count,
+		ConfirmationsTotal:         total,
 	}
 }
 
@@ -106,4 +116,21 @@ func (m *Matcher) AddConfirmation(confirmed bool, maxLength int) {
 // GetConfirmationHistoryLength returns the current length of confirmation history
 func (m *Matcher) GetConfirmationHistoryLength() int {
 	return len(m.ConfirmationHistory)
+}
+
+// IsPerfectMatch returns true if the matcher qualifies as a "perfect match" for auto-conversion.
+// A perfect match requires: (1) at least 10 confirmations in history, and
+// (2) 100% success rate (all confirmations are true).
+func (m *Matcher) IsPerfectMatch() bool {
+	if len(m.ConfirmationHistory) < 10 {
+		return false
+	}
+
+	for _, confirmed := range m.ConfirmationHistory {
+		if !confirmed {
+			return false
+		}
+	}
+
+	return true
 }

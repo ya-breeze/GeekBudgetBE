@@ -38,7 +38,7 @@ export class UnprocessedTransactionService {
     );
   }
 
-  convert(id: string, transaction: UnprocessedTransaction): Observable<void> {
+  convert(id: string, transaction: UnprocessedTransaction, matcherId?: string): Observable<void> {
     this.loading.set(true);
     this.error.set(null);
 
@@ -56,7 +56,7 @@ export class UnprocessedTransactionService {
       unprocessedSources: transaction.transaction.unprocessedSources,
     };
 
-    return convertUnprocessedTransaction(this.http, this.apiConfig.rootUrl, { id, body }).pipe(
+    return convertUnprocessedTransaction(this.http, this.apiConfig.rootUrl, { id, body, matcherId }).pipe(
       map(() => undefined),
       tap({
         next: () => {

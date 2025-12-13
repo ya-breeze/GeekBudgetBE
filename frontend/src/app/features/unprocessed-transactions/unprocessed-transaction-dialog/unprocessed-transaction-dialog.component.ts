@@ -8,6 +8,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { UnprocessedTransaction } from '../../../core/api/models/unprocessed-transaction';
@@ -21,6 +22,10 @@ import { BudgetItemService } from '../../budget-items/services/budget-item.servi
 import { BudgetItem } from '../../../core/api/models/budget-item';
 import { Movement } from '../../../core/api/models/movement';
 import { MatInputModule } from '@angular/material/input';
+import { HttpClient } from '@angular/common/http';
+import { ApiConfiguration } from '../../../core/api/api-configuration';
+import { getMatcher } from '../../../core/api/fn/matchers/get-matcher';
+import { Matcher } from '../../../core/api/models/matcher';
 
 export type UnprocessedTransactionDialogResult =
     | { action: 'convert'; match: MatcherAndTransaction }
@@ -41,12 +46,16 @@ export type UnprocessedTransactionDialogResult =
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
+        MatTooltipModule,
         FormsModule,
         ReactiveFormsModule,
         DatePipe
     ],
     templateUrl: './unprocessed-transaction-dialog.component.html',
-    styleUrl: './unprocessed-transaction-dialog.component.scss'
+    styleUrl: './unprocessed-transaction-dialog.component.scss',
+    styles: [`
+        .badge-loading { opacity: 0.7; }
+    `]
 })
 export class UnprocessedTransactionDialogComponent implements OnInit {
     private readonly dialogRef = inject(MatDialogRef<UnprocessedTransactionDialogComponent>);
@@ -55,6 +64,8 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
     private readonly budgetItemService = inject(BudgetItemService);
+    private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject(ApiConfiguration);
 
     // Inject data but treat it as initial state
     readonly initialData = inject<UnprocessedTransaction>(MAT_DIALOG_DATA);
@@ -72,12 +83,34 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     readonly action = new EventEmitter<UnprocessedTransactionDialogResult>();
 
     protected selectedAccountId = signal<string | null>(null);
+    protected readonly matchersMap = signal<Map<string, Matcher>>(new Map());
 
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
         this.budgetItemService.loadBudgetItems().subscribe(items => {
             this.budgetItems.set(items);
+        });
+        this.loadMatchers();
+    }
+
+    private loadMatchers() {
+        const t = this.transaction();
+        const missingIds = t.matched
+            .map(m => m.matcherId)
+            .filter(id => !this.matchersMap().has(id));
+
+        new Set(missingIds).forEach(id => {
+            getMatcher(this.http, this.apiConfig.rootUrl, { id: id }).subscribe({
+                next: (response) => {
+                    this.matchersMap.update(map => {
+                        const newMap = new Map(map);
+                        newMap.set(id, response.body);
+                        return newMap;
+                    });
+                },
+                error: (err) => console.error('Failed to load matcher', id, err)
+            });
         });
     }
 
@@ -180,6 +213,40 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
             this.loading.set(true);
             this.action.emit({ action: 'manual', accountId });
         }
+    }
+
+    getConfidenceBadge(match: MatcherAndTransaction): { text: string; class: string; tooltip: string } {
+        const matcher = this.matchersMap().get(match.matcherId);
+
+        if (!matcher) {
+            return { text: '...', class: 'badge-secondary badge-loading', tooltip: 'Loading confirmation history...' };
+        }
+
+        const count = matcher.confirmationsCount || 0;
+        const total = matcher.confirmationsTotal || 0;
+
+        if (total === 0) {
+            return { text: 'New', class: 'badge-secondary', tooltip: 'No confirmation history' };
+        }
+
+        const percentage = (count / total) * 100;
+        const isPerfect = percentage === 100;
+        const isLargeSample = count >= 10;
+
+        let badgeClass = 'badge-danger'; // <40%
+        if (isPerfect && isLargeSample) {
+            badgeClass = 'badge-perfect';
+        } else if (percentage >= 70) {
+            badgeClass = 'badge-success';
+        } else if (percentage >= 40) {
+            badgeClass = 'badge-warning';
+        }
+
+        return {
+            text: `${count}/${total}`,
+            class: badgeClass,
+            tooltip: `${count} successful confirmations out of ${total} attempts (${percentage.toFixed(0)}%)`
+        };
     }
 
     close(): void {

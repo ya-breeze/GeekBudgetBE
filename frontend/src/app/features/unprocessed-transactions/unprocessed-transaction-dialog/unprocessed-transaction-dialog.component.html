@@ -83,8 +83,14 @@
         @for (match of transaction().matched; track match.matcherId) {
         <div class="custom-list-item">
           <div class="item-content">
-            <div class="item-title">{{ match.transaction.description }}</div>
-            <div class="item-subtitle">{{ match.transaction.date | date:'shortDate' }}</div>
+            <div class="item-title">
+              <span [class]="'confidence-badge ' + getConfidenceBadge(match).class" 
+                    [matTooltip]="getConfidenceBadge(match).tooltip">
+                {{ getConfidenceBadge(match).text }}
+              </span>
+              {{ match.transaction.description }}
+            </div>
+
           </div>
           <button mat-icon-button (click)="applyMatch(match)" color="primary" aria-label="Apply Match"
             matTooltip="Apply Match">

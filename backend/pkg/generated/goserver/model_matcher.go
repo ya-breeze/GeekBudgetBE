@@ -34,6 +34,12 @@ type Matcher struct {
 
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
+
+	// Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct.
+	ConfirmationsCount int32 `json:"confirmationsCount"`
+
+	// Total length of the confirmation history array. This is the total number of times this matcher has been evaluated.
+	ConfirmationsTotal int32 `json:"confirmationsTotal"`
 }
 
 type MatcherInterface interface {
@@ -48,6 +54,8 @@ type MatcherInterface interface {
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
 	GetConfirmationHistory() []bool
+	GetConfirmationsCount() int32
+	GetConfirmationsTotal() int32
 }
 
 func (c *Matcher) GetId() string {
@@ -83,14 +91,22 @@ func (c *Matcher) GetExtraRegExp() string {
 func (c *Matcher) GetConfirmationHistory() []bool {
 	return c.ConfirmationHistory
 }
+func (c *Matcher) GetConfirmationsCount() int32 {
+	return c.ConfirmationsCount
+}
+func (c *Matcher) GetConfirmationsTotal() int32 {
+	return c.ConfirmationsTotal
+}
 
 // AssertMatcherRequired checks if the required fields are not zero-ed
 func AssertMatcherRequired(obj Matcher) error {
 	elements := map[string]interface{}{
-		"id":                obj.Id,
-		"name":              obj.Name,
-		"outputDescription": obj.OutputDescription,
-		"outputAccountId":   obj.OutputAccountId,
+		"id":                 obj.Id,
+		"name":               obj.Name,
+		"outputDescription":  obj.OutputDescription,
+		"outputAccountId":    obj.OutputAccountId,
+		"confirmationsCount": obj.ConfirmationsCount,
+		"confirmationsTotal": obj.ConfirmationsTotal,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

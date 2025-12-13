@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatcherService } from './services/matcher.service';
 import { Matcher } from '../../core/api/models/matcher';
 import { AccountService } from '../accounts/services/account.service';
@@ -20,7 +21,8 @@ import { MatcherEditDialogComponent } from './matcher-edit-dialog/matcher-edit-d
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
   templateUrl: './matchers.component.html',
   styleUrl: './matchers.component.css',
@@ -34,7 +36,7 @@ export class MatchersComponent implements OnInit {
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
   protected readonly loading = this.matcherService.loading;
-  protected readonly displayedColumns = signal(['name', 'outputAccount', 'outputDescription', 'actions']);
+  protected readonly displayedColumns = signal(['name', 'outputAccount', 'outputDescription', 'confidence', 'actions']);
 
   protected readonly sortActive = signal<string | null>(null);
   protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
@@ -101,6 +103,34 @@ export class MatchersComponent implements OnInit {
     }
   }
 
+  protected getConfidenceBadge(matcher: Matcher): { text: string; class: string; tooltip: string } {
+    const count = matcher.confirmationsCount || 0;
+    const total = matcher.confirmationsTotal || 0;
+
+    if (total === 0) {
+      return { text: 'New', class: 'badge-secondary', tooltip: 'No confirmation history' };
+    }
+
+    const percentage = (count / total) * 100;
+    const isPerfect = percentage === 100;
+    const isLargeSample = count >= 10;
+
+    let badgeClass = 'badge-danger'; // <40%
+    if (isPerfect && isLargeSample) {
+      badgeClass = 'badge-perfect';
+    } else if (percentage >= 70) {
+      badgeClass = 'badge-success';
+    } else if (percentage >= 40) {
+      badgeClass = 'badge-warning';
+    }
+
+    return {
+      text: `${count}/${total}`,
+      class: badgeClass,
+      tooltip: `${count} successful confirmations out of ${total} attempts (${percentage.toFixed(0)}%)`
+    };
+  }
+
   private compareMatchers(
     a: Matcher & { outputAccountName?: string },
     b: Matcher & { outputAccountName?: string },
@@ -115,7 +145,7 @@ export class MatchersComponent implements OnInit {
   private getMatcherSortValue(
     matcher: Matcher & { outputAccountName?: string },
     active: string
-  ): string | null {
+  ): string | number | null {
     switch (active) {
       case 'name':
         return this.removeLeadingEmoji(matcher.name ?? '');
@@ -123,6 +153,29 @@ export class MatchersComponent implements OnInit {
         return matcher.outputAccountName ?? matcher.outputAccountId ?? '';
       case 'outputDescription':
         return matcher.outputDescription ?? '';
+      case 'confidence':
+        const total = matcher.confirmationsTotal || 0;
+        if (total === 0) return -1;
+
+        const count = matcher.confirmationsCount || 0;
+        let score = count / total;
+
+        // Boost score for proven perfect matches (>= 10 confirmations, 100%)
+        // or penalize small perfect matches.
+        // User wants: perfect (>=10) > perfect (<10)
+
+        if (score === 1.0) {
+          if (count >= 10) {
+            return 2.0; // Top tier
+          }
+          // Small sample perfect: 1.0 - penalty
+          // Map 1..9 to 0.91..0.99 (approx)
+          // 9/9 -> 1.0 - 0.001 = 0.999
+          // 1/1 -> 1.0 - 0.009 = 0.991
+          return 1.0 - (0.001 * (10 - count));
+        }
+
+        return score;
       default:
         return null;
     }

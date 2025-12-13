@@ -36,6 +36,7 @@ docs/BankImportersAPI.md
 docs/BudgetItem.md
 docs/BudgetItemNoID.md
 docs/BudgetItemsAPI.md
+docs/BudgetStatus.md
 docs/CheckMatcher200Response.md
 docs/CheckMatcherRequest.md
 docs/CheckRegex200Response.md
@@ -78,6 +79,7 @@ model_bank_importer_no_id.go
 model_bank_importer_no_id_mappings_inner.go
 model_budget_item.go
 model_budget_item_no_id.go
+model_budget_status.go
 model_check_matcher_200_response.go
 model_check_matcher_request.go
 model_check_regex_200_response.go

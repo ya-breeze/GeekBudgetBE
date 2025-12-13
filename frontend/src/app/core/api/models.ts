@@ -12,6 +12,7 @@ export type { BankImporter } from './models/bank-importer';
 export type { BankImporterNoId } from './models/bank-importer-no-id';
 export type { BudgetItem } from './models/budget-item';
 export type { BudgetItemNoId } from './models/budget-item-no-id';
+export type { BudgetStatus } from './models/budget-status';
 export type { Currency } from './models/currency';
 export type { CurrencyAggregation } from './models/currency-aggregation';
 export type { CurrencyNoId } from './models/currency-no-id';

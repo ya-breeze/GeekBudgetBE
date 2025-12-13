@@ -579,6 +579,13 @@ paths:
             type: "string"
             format: "uuid"
             example: "123e4567-e89b-12d3-a456-426614174000"
+        - name: "matcherId"
+          in: "query"
+          description: "ID of the matcher used for this conversion (if any)"
+          required: false
+          schema:
+            type: "string"
+            format: "uuid"
       requestBody:
         required: true
         content:
@@ -806,6 +813,27 @@ paths:
                   $ref: "#/components/schemas/Matcher"
 
   /v1/matchers/{id}:
+    get:
+      tags:
+        - matchers
+      summary: get matcher
+      operationId: getMatcher
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the matcher"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: matcher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matcher"
     put:
       tags:
         - matchers
@@ -985,6 +1013,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BudgetItem"
+
+  /v1/budgets/status:
+    get:
+      tags:
+        - budgetItems
+      summary: get budget status with rollover
+      operationId: getBudgetStatus
+      parameters:
+        - name: from
+          in: query
+          description: "Start date (inclusive)"
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: "End date (exclusive)"
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: budget status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BudgetStatus"
 
   /v1/budgetItems/{id}:
     get:
@@ -1406,6 +1463,7 @@ components:
       properties:
         matcherId:
           type: string
+          format: uuid
         transaction:
           $ref: "#/components/schemas/TransactionNoID"
       required:
@@ -1520,6 +1578,23 @@ components:
       allOf:
         - $ref: "#/components/schemas/Entity"
         - $ref: "#/components/schemas/MatcherNoID"
+        - type: object
+          properties:
+            confirmationsCount:
+              type: integer
+              description: >-
+                Number of successful confirmations (true values) in the confirmation history.
+                This shows how many times the matcher was confirmed as correct.
+              example: 9
+            confirmationsTotal:
+              type: integer
+              description: >-
+                Total length of the confirmation history array.
+                This is the total number of times this matcher has been evaluated.
+              example: 10
+          required:
+            - confirmationsCount
+            - confirmationsTotal
 
     WholeUserData:
       type: object
@@ -1571,3 +1646,32 @@ components:
       allOf:
         - $ref: "#/components/schemas/Entity"
         - $ref: "#/components/schemas/BudgetItemNoID"
+
+    BudgetStatus:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        accountId:
+          type: string
+          format: uuid
+        budgeted:
+          type: number
+          format: double
+        spent:
+          type: number
+          format: double
+        rollover:
+          type: number
+          format: double
+        available:
+          type: number
+          format: double
+      required:
+        - date
+        - accountId
+        - budgeted
+        - spent
+        - rollover
+        - available

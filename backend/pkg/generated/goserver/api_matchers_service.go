@@ -23,6 +23,8 @@ type MatchersAPIService interface {
 	GetMatchers(ctx context.Context) (ImplResponse, error)
 	// CreateMatcher - create new matcher
 	CreateMatcher(ctx context.Context, matcherNoId MatcherNoId) (ImplResponse, error)
+	// GetMatcher - get matcher
+	GetMatcher(ctx context.Context, id string) (ImplResponse, error)
 	// UpdateMatcher - update matcher
 	UpdateMatcher(ctx context.Context, id string, matcherNoId MatcherNoId) (ImplResponse, error)
 	// DeleteMatcher - delete matcher
@@ -64,6 +66,17 @@ func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, matcherNoId 
 	// return Response(200, Matcher{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("CreateMatcher method not implemented")
+}
+
+// GetMatcher - get matcher
+func (s *MatchersAPIServiceImpl) GetMatcher(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update GetMatcher with the required logic for this service method.
+	// Add api_matchers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Matcher{}) or use other options such as http.Ok ...
+	// return Response(200, Matcher{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("GetMatcher method not implemented")
 }
 
 // UpdateMatcher - update matcher

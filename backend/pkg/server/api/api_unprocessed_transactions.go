@@ -128,7 +128,9 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 		}
 		res = append(res, t)
 	}
-	s.logger.Info("Found duplicates", "transaction", transaction.Id, "duplicates", len(res))
+	if len(res) != 0 {
+		s.logger.Info("Found duplicates", "transaction", transaction.Id, "duplicates", len(res))
+	}
 
 	return res
 }
@@ -201,12 +203,22 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
 func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	ctx context.Context,
 	id string,
+	matcherId *string,
 	transactionNoID goserver.TransactionNoId,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
+
+	// If a matcher ID is provided, record a confirmation
+	if matcherId != nil && *matcherId != "" {
+		if err := s.db.AddMatcherConfirmation(userID, *matcherId, true); err != nil {
+			s.logger.With("error", err, "matcherId", *matcherId).Error("Failed to add matcher confirmation")
+			// We continue even if confirmation stats fail, as the conversion is the primary action
+		}
+	}
+
 	transaction, err := s.Convert(ctx, userID, id, &transactionNoID)
 	if err != nil {
 		return goserver.Response(500, nil), nil

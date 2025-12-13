@@ -12,6 +12,11 @@ import { TransactionNoId } from '../../models/transaction-no-id';
 
 export interface ConvertUnprocessedTransaction$Params {
   id: string;
+
+/**
+ * ID of the matcher used for this conversion (if any)
+ */
+  matcherId?: string;
       body: TransactionNoId
 }
 
@@ -19,6 +24,7 @@ export function convertUnprocessedTransaction(http: HttpClient, rootUrl: string,
   const rb = new RequestBuilder(rootUrl, convertUnprocessedTransaction.PATH, 'post');
   if (params) {
     rb.path('id', params.id, {});
+    rb.query('matcherId', params.matcherId, {});
     rb.body(params.body, 'application/json');
   }
 

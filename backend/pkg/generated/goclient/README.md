@@ -98,6 +98,7 @@ Class | Method | HTTP request | Description
 *BudgetItemsAPI* | [**DeleteBudgetItem**](docs/BudgetItemsAPI.md#deletebudgetitem) | **Delete** /v1/budgetItems/{id} | delete budgetItem
 *BudgetItemsAPI* | [**GetBudgetItem**](docs/BudgetItemsAPI.md#getbudgetitem) | **Get** /v1/budgetItems/{id} | get budgetItem
 *BudgetItemsAPI* | [**GetBudgetItems**](docs/BudgetItemsAPI.md#getbudgetitems) | **Get** /v1/budgetItems | get all budgetItems
+*BudgetItemsAPI* | [**GetBudgetStatus**](docs/BudgetItemsAPI.md#getbudgetstatus) | **Get** /v1/budgets/status | get budget status with rollover
 *BudgetItemsAPI* | [**UpdateBudgetItem**](docs/BudgetItemsAPI.md#updatebudgetitem) | **Put** /v1/budgetItems/{id} | update budgetItem
 *CurrenciesAPI* | [**CreateCurrency**](docs/CurrenciesAPI.md#createcurrency) | **Post** /v1/currencies | create new currency
 *CurrenciesAPI* | [**DeleteCurrency**](docs/CurrenciesAPI.md#deletecurrency) | **Delete** /v1/currencies/{id} | delete currency
@@ -109,6 +110,7 @@ Class | Method | HTTP request | Description
 *MatchersAPI* | [**CheckRegex**](docs/MatchersAPI.md#checkregex) | **Post** /v1/matchers/check-regex | check if regex is valid and matches string (using backend&#39;s regex engine)
 *MatchersAPI* | [**CreateMatcher**](docs/MatchersAPI.md#creatematcher) | **Post** /v1/matchers | create new matcher
 *MatchersAPI* | [**DeleteMatcher**](docs/MatchersAPI.md#deletematcher) | **Delete** /v1/matchers/{id} | delete matcher
+*MatchersAPI* | [**GetMatcher**](docs/MatchersAPI.md#getmatcher) | **Get** /v1/matchers/{id} | get matcher
 *MatchersAPI* | [**GetMatchers**](docs/MatchersAPI.md#getmatchers) | **Get** /v1/matchers | get all matchers
 *MatchersAPI* | [**UpdateMatcher**](docs/MatchersAPI.md#updatematcher) | **Put** /v1/matchers/{id} | update matcher
 *NotificationsAPI* | [**DeleteNotification**](docs/NotificationsAPI.md#deletenotification) | **Delete** /v1/notifications/{id} | delete notification
@@ -141,6 +143,7 @@ Class | Method | HTTP request | Description
  - [BankImporterNoIDMappingsInner](docs/BankImporterNoIDMappingsInner.md)
  - [BudgetItem](docs/BudgetItem.md)
  - [BudgetItemNoID](docs/BudgetItemNoID.md)
+ - [BudgetStatus](docs/BudgetStatus.md)
  - [CheckMatcher200Response](docs/CheckMatcher200Response.md)
  - [CheckMatcherRequest](docs/CheckMatcherRequest.md)
  - [CheckRegex200Response](docs/CheckRegex200Response.md)

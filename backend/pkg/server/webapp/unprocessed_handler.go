@@ -67,10 +67,13 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 				}
 			}
 
-			// Fetch matcher to obtain confirmation history
+			// Fetch matcher to obtain confirmation history (reverted to DB fetch)
 			confirmationsOK := 0
 			confirmationsTotal := 0
 			if matcher, err := r.db.GetMatcher(userID, m.MatcherId); err == nil {
+				// Use the new fields on the Matcher object or calculate from history
+				// faster to just use the fields if they are populated, or recalculate
+				// The retrieved matcher is models.Matcher
 				history := matcher.GetConfirmationHistory()
 				if history != nil {
 					for _, v := range history {

@@ -34,6 +34,10 @@ type Matcher struct {
 	ExtraRegExp                *string  `json:"extraRegExp,omitempty"`
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
+	// Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct.
+	ConfirmationsCount int32 `json:"confirmationsCount"`
+	// Total length of the confirmation history array. This is the total number of times this matcher has been evaluated.
+	ConfirmationsTotal int32 `json:"confirmationsTotal"`
 }
 
 type _Matcher Matcher
@@ -42,12 +46,14 @@ type _Matcher Matcher
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMatcher(id string, name string, outputDescription string, outputAccountId string) *Matcher {
+func NewMatcher(id string, name string, outputDescription string, outputAccountId string, confirmationsCount int32, confirmationsTotal int32) *Matcher {
 	this := Matcher{}
 	this.Id = id
 	this.Name = name
 	this.OutputDescription = outputDescription
 	this.OutputAccountId = outputAccountId
+	this.ConfirmationsCount = confirmationsCount
+	this.ConfirmationsTotal = confirmationsTotal
 	return &this
 }
 
@@ -379,6 +385,54 @@ func (o *Matcher) SetConfirmationHistory(v []bool) {
 	o.ConfirmationHistory = v
 }
 
+// GetConfirmationsCount returns the ConfirmationsCount field value
+func (o *Matcher) GetConfirmationsCount() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.ConfirmationsCount
+}
+
+// GetConfirmationsCountOk returns a tuple with the ConfirmationsCount field value
+// and a boolean to check if the value has been set.
+func (o *Matcher) GetConfirmationsCountOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.ConfirmationsCount, true
+}
+
+// SetConfirmationsCount sets field value
+func (o *Matcher) SetConfirmationsCount(v int32) {
+	o.ConfirmationsCount = v
+}
+
+// GetConfirmationsTotal returns the ConfirmationsTotal field value
+func (o *Matcher) GetConfirmationsTotal() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.ConfirmationsTotal
+}
+
+// GetConfirmationsTotalOk returns a tuple with the ConfirmationsTotal field value
+// and a boolean to check if the value has been set.
+func (o *Matcher) GetConfirmationsTotalOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.ConfirmationsTotal, true
+}
+
+// SetConfirmationsTotal sets field value
+func (o *Matcher) SetConfirmationsTotal(v int32) {
+	o.ConfirmationsTotal = v
+}
+
 func (o Matcher) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -414,6 +468,8 @@ func (o Matcher) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ConfirmationHistory) {
 		toSerialize["confirmationHistory"] = o.ConfirmationHistory
 	}
+	toSerialize["confirmationsCount"] = o.ConfirmationsCount
+	toSerialize["confirmationsTotal"] = o.ConfirmationsTotal
 	return toSerialize, nil
 }
 
@@ -426,6 +482,8 @@ func (o *Matcher) UnmarshalJSON(data []byte) (err error) {
 		"name",
 		"outputDescription",
 		"outputAccountId",
+		"confirmationsCount",
+		"confirmationsTotal",
 	}
 
 	allProperties := make(map[string]interface{})

@@ -8,6 +8,7 @@ Method | HTTP request | Description
 [**DeleteBudgetItem**](BudgetItemsAPI.md#DeleteBudgetItem) | **Delete** /v1/budgetItems/{id} | delete budgetItem
 [**GetBudgetItem**](BudgetItemsAPI.md#GetBudgetItem) | **Get** /v1/budgetItems/{id} | get budgetItem
 [**GetBudgetItems**](BudgetItemsAPI.md#GetBudgetItems) | **Get** /v1/budgetItems | get all budgetItems
+[**GetBudgetStatus**](BudgetItemsAPI.md#GetBudgetStatus) | **Get** /v1/budgets/status | get budget status with rollover
 [**UpdateBudgetItem**](BudgetItemsAPI.md#UpdateBudgetItem) | **Put** /v1/budgetItems/{id} | update budgetItem
 
 
@@ -255,6 +256,73 @@ Other parameters are passed through a pointer to a apiGetBudgetItemsRequest stru
 ### Return type
 
 [**[]BudgetItem**](BudgetItem.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetBudgetStatus
+
+> []BudgetStatus GetBudgetStatus(ctx).From(from).To(to).Execute()
+
+get budget status with rollover
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+    "time"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	from := time.Now() // time.Time | Start date (inclusive) (optional)
+	to := time.Now() // time.Time | End date (exclusive) (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.BudgetItemsAPI.GetBudgetStatus(context.Background()).From(from).To(to).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `BudgetItemsAPI.GetBudgetStatus``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetBudgetStatus`: []BudgetStatus
+	fmt.Fprintf(os.Stdout, "Response from `BudgetItemsAPI.GetBudgetStatus`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetBudgetStatusRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **from** | **time.Time** | Start date (inclusive) | 
+ **to** | **time.Time** | End date (exclusive) | 
+
+### Return type
+
+[**[]BudgetStatus**](BudgetStatus.md)
 
 ### Authorization
 
