@@ -1143,13 +1143,14 @@ components:
       required:
         - name
         - type
-        - showInDashboardSummary
 
     Account:
       type: object
       allOf:
         - $ref: "#/components/schemas/Entity"
         - $ref: "#/components/schemas/AccountNoID"
+      required:
+        - showInDashboardSummary
 
     Notification:
       allOf:
