@@ -18,6 +18,36 @@
           <span class="label">Description:</span>
           <span class="value">{{ transaction().transaction.description }}</span>
         </div>
+        @if (transaction().transaction.partnerName) {
+        <div class="detail-item">
+          <span class="label">Partner Name:</span>
+          <span class="value">{{ transaction().transaction.partnerName }}</span>
+        </div>
+        }
+        @if (transaction().transaction.partnerAccount) {
+        <div class="detail-item">
+          <span class="label">Partner Account:</span>
+          <span class="value">{{ transaction().transaction.partnerAccount }}</span>
+        </div>
+        }
+        @if (transaction().transaction.place) {
+        <div class="detail-item">
+          <span class="label">Place:</span>
+          <span class="value">{{ transaction().transaction.place }}</span>
+        </div>
+        }
+        @if (transaction().transaction.partnerInternalId) {
+        <div class="detail-item">
+          <span class="label">Partner ID:</span>
+          <span class="value">{{ transaction().transaction.partnerInternalId }}</span>
+        </div>
+        }
+        @if (transaction().transaction.extra) {
+        <div class="detail-item">
+          <span class="label">Extra:</span>
+          <span class="value">{{ transaction().transaction.extra }}</span>
+        </div>
+        }
         <div class="detail-item">
           <span class="label">Tags:</span>
           <span class="value">{{ transaction().transaction.tags?.join(', ') || '-' }}</span>
@@ -84,8 +114,8 @@
         <div class="custom-list-item">
           <div class="item-content">
             <div class="item-title">
-              <span [class]="'confidence-badge ' + getConfidenceBadge(match).class" 
-                    [matTooltip]="getConfidenceBadge(match).tooltip">
+              <span [class]="'confidence-badge ' + getConfidenceBadge(match).class"
+                [matTooltip]="getConfidenceBadge(match).tooltip">
                 {{ getConfidenceBadge(match).text }}
               </span>
               {{ match.transaction.description }}
