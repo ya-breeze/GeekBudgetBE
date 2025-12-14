@@ -11,6 +11,7 @@ import { Account } from '../../core/api/models/account';
 import { Currency } from '../../core/api/models/currency';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
 
 describe('TransactionsComponent', () => {
   let component: TransactionsComponent;
@@ -105,6 +106,7 @@ describe('TransactionsComponent', () => {
         { provide: CurrencyService, useValue: mockCurrencyService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        provideRouter([]),
       ],
     }).compileComponents();
 

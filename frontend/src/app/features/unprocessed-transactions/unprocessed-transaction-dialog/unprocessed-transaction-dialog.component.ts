@@ -39,7 +39,7 @@ export interface AccountGroup {
 export type UnprocessedTransactionDialogResult =
     | { action: 'convert'; match: MatcherAndTransaction }
     | { action: 'delete'; duplicateOf: Transaction }
-    | { action: 'manual'; accountId: string };
+    | { action: 'manual'; accountId: string; description?: string };
 
 @Component({
     selector: 'app-unprocessed-transaction-dialog',
@@ -80,6 +80,10 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     // Inject data but treat it as initial state
     readonly initialData = inject<UnprocessedTransaction>(MAT_DIALOG_DATA);
 
+    constructor() {
+        this.descriptionControl.setValue(this.initialData.transaction.description || '');
+    }
+
     // Signal for the current state of the transaction (can be refreshed)
     protected readonly transaction = signal<UnprocessedTransaction>(this.initialData);
 
@@ -93,6 +97,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     readonly action = new EventEmitter<UnprocessedTransactionDialogResult>();
 
     protected readonly accountSearchControl = new FormControl<string | Account>('');
+    protected readonly descriptionControl = new FormControl<string>('');
 
     protected readonly filterValue = toSignal(
         this.accountSearchControl.valueChanges.pipe(
@@ -168,11 +173,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     }
 
     // I will replace ngOnInit completely to include the effect/computed logic correctly
-    constructor() {
-        // Effect to update filtered groups
-        // Using effect around signals is cleaner for this specific case if I want to set a signal
-        // But computed is better.
-    }
+
 
     private loadMatchers() {
         const t = this.transaction();
@@ -198,6 +199,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.loading.set(false);
         this.accountSearchControl.setValue('');
         this.transaction.set(transaction);
+        this.descriptionControl.setValue(transaction.transaction.description || '');
     }
 
     setLoading(isLoading: boolean) {
@@ -293,7 +295,11 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
         if (accountId) {
             this.loading.set(true);
-            this.action.emit({ action: 'manual', accountId });
+            this.action.emit({
+                action: 'manual',
+                accountId,
+                description: this.descriptionControl.value || undefined
+            });
         }
     }
 

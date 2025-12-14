@@ -14,9 +14,11 @@
           <span class="label">Date:</span>
           <span class="value">{{ transaction().transaction.date | date:'medium' }}</span>
         </div>
-        <div class="detail-item">
-          <span class="label">Description:</span>
-          <span class="value">{{ transaction().transaction.description }}</span>
+        <div class="detail-item description-field">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width-input">
+            <mat-label>Description</mat-label>
+            <input matInput [formControl]="descriptionControl">
+          </mat-form-field>
         </div>
         @if (transaction().transaction.partnerName) {
         <div class="detail-item">

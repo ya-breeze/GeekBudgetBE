@@ -73,6 +73,16 @@ mat-dialog-content {
       border-bottom: none;
     }
 
+    &.description-field {
+      display: block; // Override flex for input
+      border-bottom: none;
+      padding: 8px 0 0 0;
+
+      .mat-mdc-form-field {
+        width: 100%;
+      }
+    }
+
     .label {
       font-weight: 500;
       color: #666;

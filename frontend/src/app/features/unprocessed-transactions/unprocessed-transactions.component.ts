@@ -139,7 +139,7 @@ export class UnprocessedTransactionsComponent implements OnInit {
       } else if (result.action === 'delete') {
         this.deleteTransaction(currentTransaction, result.duplicateOf.id, dialogRef);
       } else if (result.action === 'manual') {
-        this.processManual(currentTransaction, result.accountId, dialogRef);
+        this.processManual(currentTransaction, result.accountId, result.description, dialogRef);
       }
     });
 
@@ -169,13 +169,17 @@ export class UnprocessedTransactionsComponent implements OnInit {
     });
   }
 
-  private processManual(original: UnprocessedTransaction, accountId: string, dialogRef?: any) {
+  private processManual(original: UnprocessedTransaction, accountId: string, description?: string, dialogRef?: any) {
     const transactionToConvert = JSON.parse(JSON.stringify(original));
     const movements = transactionToConvert.transaction.movements || [];
 
     const targetMovement = movements.find((m: any) => !m.accountId);
     if (targetMovement) {
       targetMovement.accountId = accountId;
+    }
+
+    if (description) {
+      transactionToConvert.transaction.description = description;
     }
 
     this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert).subscribe({
