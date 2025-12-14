@@ -5,165 +5,171 @@
   </div>
   }
 
-  <h2 mat-dialog-title>Process Transaction</h2>
+  <div class="dialog-header" mat-dialog-title>
+    <h2>Process Transaction</h2>
+    <div class="header-actions">
+      <button mat-button (click)="skip()">Skip</button>
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
   <mat-dialog-content>
-    <div class="section-container transaction-details">
-      <h3 class="section-title">Transaction Details</h3>
-      <div class="details-grid">
-        <div class="detail-item">
-          <span class="label">Date:</span>
-          <span class="value">{{ transaction().transaction.date | date:'medium' }}</span>
-        </div>
-        <div class="detail-item description-field">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width-input">
-            <mat-label>Description</mat-label>
-            <input matInput [formControl]="descriptionControl">
-          </mat-form-field>
-        </div>
-        @if (transaction().transaction.partnerName) {
-        <div class="detail-item">
-          <span class="label">Partner Name:</span>
-          <span class="value">{{ transaction().transaction.partnerName }}</span>
-        </div>
-        }
-        @if (transaction().transaction.partnerAccount) {
-        <div class="detail-item">
-          <span class="label">Partner Account:</span>
-          <span class="value">{{ transaction().transaction.partnerAccount }}</span>
-        </div>
-        }
-        @if (transaction().transaction.place) {
-        <div class="detail-item">
-          <span class="label">Place:</span>
-          <span class="value">{{ transaction().transaction.place }}</span>
-        </div>
-        }
-        @if (transaction().transaction.partnerInternalId) {
-        <div class="detail-item">
-          <span class="label">Partner ID:</span>
-          <span class="value">{{ transaction().transaction.partnerInternalId }}</span>
-        </div>
-        }
-        @if (transaction().transaction.extra) {
-        <div class="detail-item">
-          <span class="label">Extra:</span>
-          <span class="value">{{ transaction().transaction.extra }}</span>
-        </div>
-        }
-        <div class="detail-item">
-          <span class="label">Tags:</span>
-          <span class="value">{{ transaction().transaction.tags?.join(', ') || '-' }}</span>
-        </div>
-
-        @if (shouldShowEffectiveAmount) {
-        <div class="detail-item highlight">
-          <span class="label">Amount:</span>
-          <span class="value amount">{{ effectiveAmount?.amount }} {{ effectiveAmount?.currencyName }}</span>
-        </div>
-        }
-      </div>
-
-      @if (!shouldShowEffectiveAmount) {
-      <div class="sub-section">
-        <h4>Movements</h4>
-        <mat-list>
-          @for (movement of transaction().transaction.movements; track $index) {
-          <mat-list-item>
-            <span matListItemTitle>{{ movement.amount }} {{ getCurrencyName(movement.currencyId) }}</span>
-            <span matListItemLine>{{ getAccountName(movement.accountId) }}</span>
-            <span matListItemLine>{{ movement.description || 'No description' }}</span>
-          </mat-list-item>
-          }
-        </mat-list>
-      </div>
-      }
-    </div>
-
-    <div class="section-container manual-section">
-      <h3 class="section-title">Manual Processing</h3>
-      <div class="manual-grid">
-        @if (knownAccountName) {
-        <div class="manual-item">
-          <span class="label">Source:</span>
-          <span class="value">{{ knownAccountName }}</span>
-        </div>
-        }
-
-        <div class="manual-controls">
-          <app-account-select [formControl]="accountControl" label="Select Target" [required]="true">
-          </app-account-select>
-
-          <button mat-raised-button color="primary" [disabled]="!accountControl.value || accountControl.invalid"
-            (click)="processManual()">
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-separator"></div>
-
-    <div class="section-container matches-section" [class.has-content]="transaction().matched.length > 0">
-      <h3 class="section-title">Matches <span class="badge">{{ transaction().matched.length }}</span></h3>
-      @if (transaction().matched.length > 0) {
-      <div class="custom-list">
-        @for (match of transaction().matched; track match.matcherId) {
-        <div class="custom-list-item">
-          <div class="item-content">
-            <div class="item-title">
-              <span [class]="'confidence-badge ' + getConfidenceBadge(match).class"
-                [matTooltip]="getConfidenceBadge(match).tooltip">
-                {{ getConfidenceBadge(match).text }}
-              </span>
-              {{ match.transaction.description }}
+    <div class="content-grid">
+      <div class="details-column">
+        <div class="section-container transaction-details">
+          <h3 class="section-title">Transaction Details</h3>
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="label">Date:</span>
+              <span class="value">{{ transaction().transaction.date | date:'medium' }}</span>
+            </div>
+            <div class="detail-item description-field">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width-input">
+                <mat-label>Description</mat-label>
+                <input matInput [formControl]="descriptionControl">
+              </mat-form-field>
+            </div>
+            @if (transaction().transaction.partnerName) {
+            <div class="detail-item">
+              <span class="label">Partner Name:</span>
+              <span class="value">{{ transaction().transaction.partnerName }}</span>
+            </div>
+            }
+            @if (transaction().transaction.partnerAccount) {
+            <div class="detail-item">
+              <span class="label">Partner Account:</span>
+              <span class="value">{{ transaction().transaction.partnerAccount }}</span>
+            </div>
+            }
+            @if (transaction().transaction.place) {
+            <div class="detail-item">
+              <span class="label">Place:</span>
+              <span class="value">{{ transaction().transaction.place }}</span>
+            </div>
+            }
+            @if (transaction().transaction.partnerInternalId) {
+            <div class="detail-item">
+              <span class="label">Partner ID:</span>
+              <span class="value">{{ transaction().transaction.partnerInternalId }}</span>
+            </div>
+            }
+            @if (transaction().transaction.extra) {
+            <div class="detail-item">
+              <span class="label">Extra:</span>
+              <span class="value">{{ transaction().transaction.extra }}</span>
+            </div>
+            }
+            <div class="detail-item">
+              <span class="label">Tags:</span>
+              <span class="value">{{ transaction().transaction.tags?.join(', ') || '-' }}</span>
             </div>
 
+            @if (shouldShowEffectiveAmount) {
+            <div class="detail-item highlight">
+              <span class="label">Amount:</span>
+              <span class="value amount">{{ effectiveAmount?.amount }} {{ effectiveAmount?.currencyName }}</span>
+            </div>
+            }
           </div>
-          <button mat-icon-button (click)="applyMatch(match)" color="primary" aria-label="Apply Match"
-            matTooltip="Apply Match">
-            <mat-icon>check_circle</mat-icon>
-          </button>
-        </div>
-        }
-      </div>
-      } @else {
-      <div class="no-matches-container">
-        <p class="empty-state">No matches found.</p>
-        <button mat-stroked-button color="primary" (click)="createMatcher()">
-          <mat-icon>add_circle_outline</mat-icon>
-          Create Matcher
-        </button>
-      </div>
-      }
-    </div>
 
-    <div class="section-separator"></div>
-
-    <div class="section-container duplicates-section" [class.has-content]="transaction().duplicates.length > 0">
-      <h3 class="section-title">Potential Duplicates <span class="badge warn">{{ transaction().duplicates.length
-          }}</span></h3>
-      @if (transaction().duplicates.length > 0) {
-      <div class="custom-list">
-        @for (duplicate of transaction().duplicates; track duplicate.id) {
-        <div class="custom-list-item">
-          <div class="item-content">
-            <div class="item-title">{{ duplicate.description }}</div>
-            <div class="item-subtitle">{{ duplicate.date | date:'medium' }}</div>
+          @if (!shouldShowEffectiveAmount) {
+          <div class="sub-section">
+            <h4>Movements</h4>
+            <mat-list>
+              @for (movement of transaction().transaction.movements; track $index) {
+              <mat-list-item>
+                <span matListItemTitle>{{ movement.amount }} {{ getCurrencyName(movement.currencyId) }}</span>
+                <span matListItemLine>{{ getAccountName(movement.accountId) }}</span>
+                <span matListItemLine>{{ movement.description || 'No description' }}</span>
+              </mat-list-item>
+              }
+            </mat-list>
           </div>
-          <button mat-icon-button (click)="applyDuplicate(duplicate)" color="warn" aria-label="Confirm Duplicate"
-            matTooltip="Merge/Delete Duplicate">
-            <mat-icon>delete</mat-icon>
-          </button>
+          }
         </div>
-        }
+
+        <div class="section-container manual-section">
+          <h3 class="section-title">Manual Processing</h3>
+          <div class="manual-grid">
+            @if (knownAccountName) {
+            <div class="manual-item">
+              <span class="label">Source:</span>
+              <span class="value">{{ knownAccountName }}</span>
+            </div>
+            }
+
+            <div class="manual-controls">
+              <app-account-select [formControl]="accountControl" label="Select Target" [required]="true">
+              </app-account-select>
+
+              <button mat-raised-button color="primary" [disabled]="!accountControl.value || accountControl.invalid"
+                (click)="processManual()">
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      } @else {
-      <p class="empty-state">No duplicates found.</p>
-      }
+
+      <div class="processing-column">
+        <div class="section-container matches-section" [class.has-content]="transaction().matched.length > 0">
+          <h3 class="section-title">Matches <span class="badge">{{ transaction().matched.length }}</span></h3>
+          @if (transaction().matched.length > 0) {
+          <div class="custom-list">
+            @for (match of transaction().matched; track match.matcherId) {
+            <div class="custom-list-item">
+              <div class="item-content">
+                <div class="item-title">
+                  <span [class]="'confidence-badge ' + getConfidenceBadge(match).class"
+                    [matTooltip]="getConfidenceBadge(match).tooltip">
+                    {{ getConfidenceBadge(match).text }}
+                  </span>
+                  {{ match.transaction.description }}
+                </div>
+
+              </div>
+              <button mat-icon-button (click)="applyMatch(match)" color="primary" aria-label="Apply Match"
+                matTooltip="Apply Match">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+            </div>
+            }
+          </div>
+          } @else {
+          <div class="no-matches-container">
+            <p class="empty-state">No matches found.</p>
+            <button mat-stroked-button color="primary" (click)="createMatcher()">
+              <mat-icon>add_circle_outline</mat-icon>
+              Create Matcher
+            </button>
+          </div>
+          }
+        </div>
+
+        <div class="section-container duplicates-section" [class.has-content]="transaction().duplicates.length > 0">
+          <h3 class="section-title">Potential Duplicates <span class="badge warn">{{ transaction().duplicates.length
+              }}</span></h3>
+          @if (transaction().duplicates.length > 0) {
+          <div class="custom-list">
+            @for (duplicate of transaction().duplicates; track duplicate.id) {
+            <div class="custom-list-item">
+              <div class="item-content">
+                <div class="item-title">{{ duplicate.description }}</div>
+                <div class="item-subtitle">{{ duplicate.date | date:'medium' }}</div>
+              </div>
+              <button mat-icon-button (click)="applyDuplicate(duplicate)" color="warn" aria-label="Confirm Duplicate"
+                matTooltip="Merge/Delete Duplicate">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+            }
+          </div>
+          } @else {
+          <p class="empty-state">No duplicates found.</p>
+          }
+        </div>
+      </div>
     </div>
   </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button (click)="skip()">Skip</button>
-    <button mat-button (click)="close()">Close</button>
-  </mat-dialog-actions>
 </div>

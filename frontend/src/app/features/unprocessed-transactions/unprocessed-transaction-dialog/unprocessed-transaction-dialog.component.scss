@@ -3,13 +3,53 @@
   height: 100%;
 }
 
+.dialog-header {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  border-bottom: 1px solid #eee;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
 mat-dialog-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
   padding-top: 10px;
-  flex: 1; // Take remaining space
-  overflow-y: auto; // Scroll internally
+  flex: 1;
+  overflow: hidden; // Prevent outer scroll, let grid handle it
+  display: flex; // Ensure child fills it
+  flex-direction: column;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  height: 100%;
+  overflow-y: auto; // Scroll normally on mobile
+
+  @media (min-width: 960px) {
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden; // content scrolls individually
+
+    .details-column,
+    .processing-column {
+      overflow-y: auto;
+      padding-right: 4px; // space for scrollbar
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
 }
 
 .section-container {
