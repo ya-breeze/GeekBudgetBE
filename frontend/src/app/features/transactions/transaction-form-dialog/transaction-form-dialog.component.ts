@@ -13,7 +13,9 @@ import { Transaction } from '../../../core/api/models/transaction';
 import { TransactionNoId } from '../../../core/api/models/transaction-no-id';
 import { Movement } from '../../../core/api/models/movement';
 import { AccountService } from '../../accounts/services/account.service';
+
 import { CurrencyService } from '../../currencies/services/currency.service';
+import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 
 export interface TransactionFormDialogData {
   mode: 'create' | 'edit';
@@ -33,6 +35,7 @@ export interface TransactionFormDialogData {
     MatNativeDateModule,
     MatIconModule,
     MatChipsModule,
+    AccountSelectComponent
   ],
   templateUrl: './transaction-form-dialog.component.html',
   styleUrl: './transaction-form-dialog.component.scss',

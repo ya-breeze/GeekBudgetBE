@@ -29,6 +29,7 @@ import { ApiConfiguration } from '../../../core/api/api-configuration';
 import { getMatcher } from '../../../core/api/fn/matchers/get-matcher';
 import { Matcher } from '../../../core/api/models/matcher';
 import { startWith, map, combineLatest } from 'rxjs';
+import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 export interface AccountGroup {
@@ -59,7 +60,8 @@ export type UnprocessedTransactionDialogResult =
         MatTooltipModule,
         FormsModule,
         ReactiveFormsModule,
-        DatePipe
+        DatePipe,
+        AccountSelectComponent
     ],
     templateUrl: './unprocessed-transaction-dialog.component.html',
     styleUrl: './unprocessed-transaction-dialog.component.scss',
@@ -96,72 +98,11 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     // Output event for parent component
     readonly action = new EventEmitter<UnprocessedTransactionDialogResult>();
 
-    protected readonly accountSearchControl = new FormControl<string | Account>('');
+    protected readonly accountControl = new FormControl<string | null>(null);
     protected readonly descriptionControl = new FormControl<string>('');
 
-    protected readonly filterValue = toSignal(
-        this.accountSearchControl.valueChanges.pipe(
-            startWith(''),
-            map(value => (typeof value === 'string' ? value : value?.name || ''))
-        ),
-        { initialValue: '' }
-    );
-
-    protected readonly filteredAccountGroups = computed(() => {
-        const accounts = this.accounts();
-        const filterValue = (this.filterValue() || '').toLowerCase();
-
-        // 1. Filter
-        const filtered = accounts.filter(account =>
-            account.name.toLowerCase().includes(filterValue)
-        );
-
-        // 2. Sort
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-
-        // 3. Group
-        const groups: AccountGroup[] = [];
-        const typeMap = new Map<string, Account[]>();
-
-        filtered.forEach(account => {
-            const type = account.type || 'Other';
-            if (!typeMap.has(type)) {
-                typeMap.set(type, []);
-            }
-            typeMap.get(type)!.push(account);
-        });
-
-        // Order of groups
-        const order = ['expense', 'income', 'asset', 'liability', 'equity'];
-        const pluralMap: Record<string, string> = {
-            'expense': 'Expenses',
-            'income': 'Incomes',
-            'asset': 'Assets',
-            'liability': 'Liabilities',
-            'equity': 'Equities'
-        };
-
-        const getGroupName = (type: string) => {
-            return pluralMap[type] || (type.charAt(0).toUpperCase() + type.slice(1) + 's');
-        };
-
-        // Add known types in order
-        order.forEach(type => {
-            if (typeMap.has(type)) {
-                groups.push({ name: getGroupName(type), accounts: typeMap.get(type)! });
-                typeMap.delete(type);
-            }
-        });
-
-        // Add remaining types
-        typeMap.forEach((accounts, type) => {
-            groups.push({ name: getGroupName(type), accounts: accounts });
-        });
-
-        return groups;
-    });
-
     protected readonly matchersMap = signal<Map<string, Matcher>>(new Map());
+
 
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
@@ -197,8 +138,9 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     updateTransaction(transaction: UnprocessedTransaction) {
         this.loading.set(false);
-        this.accountSearchControl.setValue('');
+        this.accountControl.setValue(null);
         this.transaction.set(transaction);
+
         this.descriptionControl.setValue(transaction.transaction.description || '');
     }
 
@@ -290,8 +232,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     }
 
     processManual(): void {
-        const value = this.accountSearchControl.value;
-        const accountId = typeof value === 'object' ? value?.id : null;
+        const accountId = this.accountControl.value;
 
         if (accountId) {
             this.loading.set(true);
@@ -303,9 +244,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         }
     }
 
-    displayAccountFn(account: Account): string {
-        return account && account.name ? account.name : '';
-    }
+
 
     getConfidenceBadge(match: MatcherAndTransaction): { text: string; class: string; tooltip: string } {
         const matcher = this.matchersMap().get(match.matcherId);

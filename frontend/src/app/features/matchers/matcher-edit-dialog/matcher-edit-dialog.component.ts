@@ -15,6 +15,7 @@ import { AccountService } from '../../accounts/services/account.service';
 import { Matcher } from '../../../core/api/models/matcher';
 import { MatcherNoId } from '../../../core/api/models/matcher-no-id';
 import { Transaction } from '../../../core/api/models/transaction';
+import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 
 @Component({
     selector: 'app-matcher-edit-dialog',
@@ -31,7 +32,9 @@ import { Transaction } from '../../../core/api/models/transaction';
         MatIconModule,
         MatChipsModule,
         MatProgressSpinnerModule,
-        MatCheckboxModule
+        MatProgressSpinnerModule,
+        MatCheckboxModule,
+        AccountSelectComponent
     ],
     templateUrl: './matcher-edit-dialog.component.html',
     styleUrls: ['./matcher-edit-dialog.component.scss']

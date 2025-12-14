@@ -9,6 +9,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BankImporter } from '../../../core/api/models/bank-importer';
 import { BankImporterNoId } from '../../../core/api/models/bank-importer-no-id';
 import { AccountService } from '../../accounts/services/account.service';
+import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 
 export interface BankImporterFormDialogData {
   mode: 'create' | 'edit';
@@ -25,6 +26,7 @@ export interface BankImporterFormDialogData {
     MatButtonModule,
     MatSelectModule,
     MatCheckboxModule,
+    AccountSelectComponent
   ],
   templateUrl: './bank-importer-form-dialog.component.html',
   styleUrl: './bank-importer-form-dialog.component.scss',

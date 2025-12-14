@@ -167,17 +167,8 @@
             <!-- Output Section -->
             <h3 class="section-title">Output</h3>
 
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Output Account</mat-label>
-                <mat-select formControlName="outputAccountId">
-                    @for (account of accounts(); track account.id) {
-                    <mat-option [value]="account.id">{{ account.name }}</mat-option>
-                    }
-                </mat-select>
-                @if (form.controls.outputAccountId.hasError('required')) {
-                <mat-error>Output Account is required</mat-error>
-                }
-            </mat-form-field>
+            <app-account-select formControlName="outputAccountId" label="Output Account"
+                [required]="true"></app-account-select>
 
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Output Description</mat-label>

@@ -90,22 +90,10 @@
         }
 
         <div class="manual-controls">
-          <mat-form-field appearance="outline" class="account-select">
-            <mat-label>Select Target</mat-label>
-            <input type="text" matInput [formControl]="accountSearchControl" [matAutocomplete]="auto">
-            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAccountFn">
-              @for (group of filteredAccountGroups(); track group.name) {
-              <mat-optgroup [label]="group.name">
-                @for (account of group.accounts; track account.id) {
-                <mat-option [value]="account">{{ account.name }}</mat-option>
-                }
-              </mat-optgroup>
-              }
-            </mat-autocomplete>
-          </mat-form-field>
+          <app-account-select [formControl]="accountControl" label="Select Target" [required]="true">
+          </app-account-select>
 
-          <button mat-raised-button color="primary"
-            [disabled]="!accountSearchControl.value || (accountSearchControl.value | json) === ('' | json) || accountSearchControl.invalid"
+          <button mat-raised-button color="primary" [disabled]="!accountControl.value || accountControl.invalid"
             (click)="processManual()">
             Save
           </button>

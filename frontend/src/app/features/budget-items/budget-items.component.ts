@@ -17,6 +17,7 @@ import { AccountService } from '../accounts/services/account.service';
 import { BudgetItem } from '../../core/api/models/budget-item';
 import { BudgetStatus } from '../../core/api/models/budget-status';
 import { LayoutService } from '../../layout/services/layout.service';
+import { AccountSelectComponent } from '../../shared/components/account-select/account-select.component';
 
 @Component({
   selector: 'app-budget-items',
@@ -35,6 +36,7 @@ import { LayoutService } from '../../layout/services/layout.service';
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    AccountSelectComponent
   ],
   template: `
     <div class="budget-items-container">
@@ -50,14 +52,7 @@ import { LayoutService } from '../../layout/services/layout.service';
       <div class="form-container">
         <h2>Add Budget Item</h2>
         <form [formGroup]="addBudgetForm" (ngSubmit)="addBudgetItem()" class="add-budget-form">
-          <mat-form-field appearance="outline">
-            <mat-label>Account</mat-label>
-            <mat-select formControlName="accountId">
-              @for (account of accounts(); track account.id) {
-                <mat-option [value]="account.id">{{ account.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+          <app-account-select formControlName="accountId" [required]="true"></app-account-select>
 
           <mat-form-field appearance="outline">
             <mat-label>Amount</mat-label>

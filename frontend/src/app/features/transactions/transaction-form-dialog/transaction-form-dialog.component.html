@@ -9,21 +9,16 @@
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
         @if (form.get('date')?.hasError('required')) {
-          <mat-error>Date is required</mat-error>
+        <mat-error>Date is required</mat-error>
         }
       </mat-form-field>
     </div>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Description</mat-label>
-      <textarea
-        matInput
-        formControlName="description"
-        placeholder="Optional description"
-        rows="2"
-      ></textarea>
+      <textarea matInput formControlName="description" placeholder="Optional description" rows="2"></textarea>
       @if (form.get('description')?.hasError('maxlength')) {
-        <mat-error>Description must be at most 500 characters</mat-error>
+      <mat-error>Description must be at most 500 characters</mat-error>
       }
     </mat-form-field>
 
@@ -37,46 +32,39 @@
 
       <div formArrayName="movements" class="movements-list">
         @for (movement of movements.controls; track $index; let i = $index) {
-          <div [formGroupName]="i" class="movement-item">
-            <div class="movement-header">
-              <span>Movement {{ i + 1 }}</span>
-              @if (movements.length > 1) {
-                <button mat-icon-button type="button" (click)="removeMovement(i)" color="warn">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              }
-            </div>
-
-            <div class="movement-fields">
-              <mat-form-field appearance="outline">
-                <mat-label>Account</mat-label>
-                <mat-select formControlName="accountId" required>
-                  @for (account of accounts(); track account.id) {
-                    <mat-option [value]="account.id">{{ account.name }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Currency</mat-label>
-                <mat-select formControlName="currencyId" required>
-                  @for (currency of currencies(); track currency.id) {
-                    <mat-option [value]="currency.id">{{ currency.name }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Amount</mat-label>
-                <input matInput type="number" formControlName="amount" required />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Description</mat-label>
-                <input matInput formControlName="description" placeholder="Optional" />
-              </mat-form-field>
-            </div>
+        <div [formGroupName]="i" class="movement-item">
+          <div class="movement-header">
+            <span>Movement {{ i + 1 }}</span>
+            @if (movements.length > 1) {
+            <button mat-icon-button type="button" (click)="removeMovement(i)" color="warn">
+              <mat-icon>delete</mat-icon>
+            </button>
+            }
           </div>
+
+          <div class="movement-fields">
+            <app-account-select formControlName="accountId" [required]="true"></app-account-select>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Currency</mat-label>
+              <mat-select formControlName="currencyId" required>
+                @for (currency of currencies(); track currency.id) {
+                <mat-option [value]="currency.id">{{ currency.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Amount</mat-label>
+              <input matInput type="number" formControlName="amount" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <input matInput formControlName="description" placeholder="Optional" />
+            </mat-form-field>
+          </div>
+        </div>
         }
       </div>
     </div>
@@ -102,12 +90,12 @@
       <mat-label>Tags</mat-label>
       <div class="tags-container">
         @for (tag of tags(); track tag) {
-          <mat-chip (removed)="removeTag(tag)">
-            {{ tag }}
-            <button matChipRemove>
-              <mat-icon>cancel</mat-icon>
-            </button>
-          </mat-chip>
+        <mat-chip (removed)="removeTag(tag)">
+          {{ tag }}
+          <button matChipRemove>
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
         }
       </div>
       <mat-form-field appearance="outline" class="full-width">
@@ -124,4 +112,3 @@
     {{ isEditMode ? 'Update' : 'Create' }}
   </button>
 </mat-dialog-actions>
-

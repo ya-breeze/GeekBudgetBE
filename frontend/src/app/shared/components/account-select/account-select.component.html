@@ -1,0 +1,19 @@
+<mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ label }}</mat-label>
+    <input type="text" matInput [formControl]="searchControl" [matAutocomplete]="auto" [placeholder]="placeholder"
+        [required]="required" (blur)="onBlur()">
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+        @for (group of filteredAccountGroups(); track group.name) {
+        <mat-optgroup [label]="group.name">
+            @for (account of group.accounts; track account.id) {
+            <mat-option [value]="account">
+                {{ account.name }}
+            </mat-option>
+            }
+        </mat-optgroup>
+        }
+    </mat-autocomplete>
+    @if (searchControl.hasError('required') || searchControl.hasError('invalidSelection')) {
+    <mat-error>Selection is required</mat-error>
+    }
+</mat-form-field>
