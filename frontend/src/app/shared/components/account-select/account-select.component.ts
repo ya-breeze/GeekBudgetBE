@@ -161,7 +161,7 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
                 // For now, assume loaded.
             }
         } else {
-            this.searchControl.setValue('', { emitEvent: false });
+            this.searchControl.reset(null);
         }
     }
 

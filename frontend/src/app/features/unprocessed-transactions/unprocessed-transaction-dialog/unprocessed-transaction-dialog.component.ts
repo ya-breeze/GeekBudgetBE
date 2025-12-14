@@ -139,7 +139,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     updateTransaction(transaction: UnprocessedTransaction) {
         this.loading.set(false);
-        this.accountControl.setValue(null);
+        this.accountControl.reset();
         this.transaction.set(transaction);
 
         this.descriptionControl.setValue(transaction.transaction.description || '');
