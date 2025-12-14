@@ -25,22 +25,14 @@
     }
   </mat-nav-list>
   <div class="sidebar-footer">
-    <div class="user-section">
-      <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-
-      <mat-menu #userMenu="matMenu">
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </mat-menu>
-    </div>
+    <button mat-button class="logout-button" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
 
     <div class="footer-info">
-      <span class="copyright">© {{ currentYear() }} Geek Budget. All rights reserved.</span>
-      <span class="version">Version {{ version() }}</span>
+      <span class="copyright">© {{ currentYear() }} Geek Budget</span>
+      <span class="version">v{{ version() }}</span>
     </div>
   </div>
 </nav>

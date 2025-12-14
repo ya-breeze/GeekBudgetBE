@@ -26,18 +26,21 @@ export class HeaderComponent {
 
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
-  protected readonly menuItems = signal<MenuItem[]>([
+  protected readonly mainMenuItems = signal<MenuItem[]>([
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+    { label: 'Unprocessed', icon: 'pending_actions', route: '/unprocessed' },
+    { label: 'Budget', icon: 'savings', route: '/budget' },
     { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },
+  ]);
+
+  protected readonly overflowMenuItems = signal<MenuItem[]>([
+    { label: 'Settings', icon: 'settings', route: '/settings' },
     { label: 'Accounts', icon: 'account_balance', route: '/accounts' },
     { label: 'Currencies', icon: 'currency_exchange', route: '/currencies' },
     { label: 'Bank Importers', icon: 'cloud_upload', route: '/bank-importers' },
-    { label: 'Unprocessed', icon: 'pending_actions', route: '/unprocessed' },
     { label: 'Matchers', icon: 'rule', route: '/matchers' },
-    { label: 'Budget', icon: 'savings', route: '/budget' },
     { label: 'Reports', icon: 'assessment', route: '/reports' },
     { label: 'Notifications', icon: 'notifications', route: '/notifications' },
-    { label: 'Settings', icon: 'settings', route: '/settings' },
   ]);
 
   onMenuToggle(): void {
