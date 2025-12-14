@@ -23,6 +23,7 @@ import { BudgetItemService } from '../../budget-items/services/budget-item.servi
 import { BudgetItem } from '../../../core/api/models/budget-item';
 import { Account } from '../../../core/api/models/account';
 import { Movement } from '../../../core/api/models/movement';
+import { MatcherService } from '../../matchers/services/matcher.service';
 import { MatInputModule } from '@angular/material/input';
 import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
@@ -31,6 +32,7 @@ import { Matcher } from '../../../core/api/models/matcher';
 import { startWith, map, combineLatest } from 'rxjs';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 export interface AccountGroup {
     name: string;
@@ -62,7 +64,8 @@ export type UnprocessedTransactionDialogResult =
         FormsModule,
         ReactiveFormsModule,
         DatePipe,
-        AccountSelectComponent
+        AccountSelectComponent,
+        OverlayModule
     ],
     templateUrl: './unprocessed-transaction-dialog.component.html',
     styleUrl: './unprocessed-transaction-dialog.component.scss',
@@ -77,6 +80,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
     private readonly budgetItemService = inject(BudgetItemService);
+    private readonly matcherService = inject(MatcherService);
     private readonly http = inject(HttpClient);
     private readonly apiConfig = inject(ApiConfiguration);
 
@@ -96,6 +100,25 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     protected readonly budgetItems = signal<BudgetItem[]>([]);
     protected readonly manualProcessing = signal(false);
 
+    protected readonly showEditPopover = signal(false);
+    protected readonly matcherSearchControl = new FormControl<string | Matcher>('');
+    protected readonly matcherSearchQuery = toSignal(this.matcherSearchControl.valueChanges.pipe(
+        startWith(''),
+        map(v => (typeof v === 'string' ? v : v?.outputDescription || ''))
+    ), { initialValue: '' });
+
+    protected readonly allMatchers = this.matcherService.matchers; // Signal from service
+    protected readonly filteredMatchers = computed(() => {
+        const query = this.matcherSearchQuery();
+        const matchers = this.allMatchers();
+        if (!query) return matchers;
+        const lowerQuery = query.toLowerCase();
+        return matchers.filter(m =>
+            (m.descriptionRegExp && m.descriptionRegExp.toLowerCase().includes(lowerQuery)) ||
+            (m.outputDescription && m.outputDescription.toLowerCase().includes(lowerQuery))
+        );
+    });
+
     // Output event for parent component
     readonly action = new EventEmitter<UnprocessedTransactionDialogResult>();
 
@@ -111,7 +134,8 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.budgetItemService.loadBudgetItems().subscribe(items => {
             this.budgetItems.set(items);
         });
-        this.loadMatchers();
+        this.matcherService.loadMatchers().subscribe(); // Load all matchers for the search
+        this.loadMatchers(); // Load specific matchers for this transaction matches (if any missing from global? logic slightly duplicative but okay)
     }
 
     // I will replace ngOnInit completely to include the effect/computed logic correctly
@@ -156,8 +180,19 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     }
 
     createMatcher(): void {
+        this.openMatcherDialog();
+    }
+
+    editMatcher(matcher: Matcher): void {
+        this.openMatcherDialog(matcher);
+    }
+
+    private openMatcherDialog(matcher?: Matcher): void {
         const dialogRef = this.dialog.open(MatcherEditDialogComponent, {
-            data: { transaction: this.transaction().transaction },
+            data: {
+                transaction: this.transaction().transaction,
+                matcher: matcher
+            },
             width: '98%',
             maxWidth: '98vw',
             height: '95%',
@@ -167,9 +202,30 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
+                // If we edited a matcher, we should refresh the transaction to see if it now matches
+                // Or if we created one.
                 this.refresh();
+                // Also reload matchers list to update the dropdown
+                this.matcherService.loadMatchers().subscribe();
             }
         });
+    }
+
+    toggleEditPopover(): void {
+        this.showEditPopover.update(v => !v);
+        if (this.showEditPopover()) {
+            this.matcherSearchControl.setValue('');
+        }
+    }
+
+    onMatcherSelected(event: any): void {
+        const matcher: Matcher = event.option.value;
+        this.editMatcher(matcher);
+        this.showEditPopover.set(false);
+    }
+
+    displayMatcherFn(matcher: Matcher): string {
+        return matcher && matcher.outputDescription ? matcher.outputDescription : '';
     }
 
     private refresh(): void {

@@ -114,7 +114,39 @@
 
       <div class="processing-column">
         <div class="section-container matches-section" [class.has-content]="transaction().matched.length > 0">
-          <h3 class="section-title">Matches <span class="badge">{{ transaction().matched.length }}</span></h3>
+          <h3 class="section-title">
+            Matches
+            <div class="header-actions-mini">
+              <button mat-icon-button class="small-icon-button" (click)="createMatcher()"
+                matTooltip="Create New Matcher">
+                <mat-icon>add</mat-icon>
+              </button>
+              <button mat-icon-button class="small-icon-button" (click)="toggleEditPopover()"
+                matTooltip="Find & Edit Matcher" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <span class="badge">{{ transaction().matched.length }}</span>
+            </div>
+          </h3>
+
+          <!-- Edit Popover -->
+          @if (showEditPopover()) {
+          <div class="edit-popover elevation-z4">
+            <mat-form-field appearance="outline" class="popover-search">
+              <mat-label>Select existing matcher...</mat-label>
+              <input matInput [formControl]="matcherSearchControl" [matAutocomplete]="auto">
+              <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayMatcherFn"
+                (optionSelected)="onMatcherSelected($event)">
+                @for (matcher of filteredMatchers(); track matcher.id) {
+                <mat-option [value]="matcher">
+                  {{ matcher.outputDescription }}
+                </mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+          }
+
           @if (transaction().matched.length > 0) {
           <div class="custom-list">
             @for (match of transaction().matched; track match.matcherId) {
@@ -139,10 +171,6 @@
           } @else {
           <div class="no-matches-container">
             <p class="empty-state">No matches found.</p>
-            <button mat-stroked-button color="primary" (click)="createMatcher()">
-              <mat-icon>add_circle_outline</mat-icon>
-              Create Matcher
-            </button>
           </div>
           }
         </div>
