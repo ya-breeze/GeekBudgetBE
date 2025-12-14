@@ -218,6 +218,10 @@ mat-dialog-content {
   display: flex;
   gap: 16px;
   align-items: center;
+
+  .account-select {
+    flex: 1;
+  }
 }
 
 .dialog-container {

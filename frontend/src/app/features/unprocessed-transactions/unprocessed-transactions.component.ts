@@ -121,7 +121,9 @@ export class UnprocessedTransactionsComponent implements OnInit {
   openProcessDialog(transaction: UnprocessedTransaction): void {
     const dialogRef = this.dialog.open(UnprocessedTransactionDialogComponent, {
       data: transaction,
-      width: '600px',
+      width: '95vw',
+      maxWidth: '1200px',
+      height: '90vh',
       autoFocus: false,
     });
 
