@@ -131,6 +131,7 @@
 
           <!-- Edit Popover -->
           @if (showEditPopover()) {
+          <div class="popover-backdrop" (click)="toggleEditPopover()"></div>
           <div class="edit-popover elevation-z4">
             <mat-form-field appearance="outline" class="popover-search">
               <mat-label>Select existing matcher...</mat-label>
@@ -139,7 +140,7 @@
                 (optionSelected)="onMatcherSelected($event)">
                 @for (matcher of filteredMatchers(); track matcher.id) {
                 <mat-option [value]="matcher">
-                  {{ matcher.outputDescription }}
+                  {{ getAccountName(matcher.outputAccountId) }}: {{ matcher.outputDescription }}
                 </mat-option>
                 }
               </mat-autocomplete>

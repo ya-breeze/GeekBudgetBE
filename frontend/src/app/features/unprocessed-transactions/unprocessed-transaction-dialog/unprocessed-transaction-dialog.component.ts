@@ -111,12 +111,25 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     protected readonly filteredMatchers = computed(() => {
         const query = this.matcherSearchQuery();
         const matchers = this.allMatchers();
-        if (!query) return matchers;
-        const lowerQuery = query.toLowerCase();
-        return matchers.filter(m =>
-            (m.descriptionRegExp && m.descriptionRegExp.toLowerCase().includes(lowerQuery)) ||
-            (m.outputDescription && m.outputDescription.toLowerCase().includes(lowerQuery))
-        );
+
+        let filtered = matchers;
+
+        if (query) {
+            const lowerQuery = query.toLowerCase();
+            filtered = matchers.filter(m => {
+                const accountName = this.getAccountName(m.outputAccountId).toLowerCase();
+                return (m.descriptionRegExp && m.descriptionRegExp.toLowerCase().includes(lowerQuery)) ||
+                    (m.outputDescription && m.outputDescription.toLowerCase().includes(lowerQuery)) ||
+                    (accountName.includes(lowerQuery));
+            });
+        }
+
+        // Return sorted
+        return filtered.sort((a, b) => {
+            const nameA = `${this.getAccountName(a.outputAccountId)}: ${a.outputDescription || ''}`.toLowerCase();
+            const nameB = `${this.getAccountName(b.outputAccountId)}: ${b.outputDescription || ''}`.toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
     });
 
     // Output event for parent component
@@ -224,8 +237,10 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.showEditPopover.set(false);
     }
 
-    displayMatcherFn(matcher: Matcher): string {
-        return matcher && matcher.outputDescription ? matcher.outputDescription : '';
+    displayMatcherFn = (matcher: Matcher): string => {
+        if (!matcher) return '';
+        const accountName = this.getAccountName(matcher.outputAccountId);
+        return `${accountName}: ${matcher.outputDescription || ''}`;
     }
 
     private refresh(): void {

@@ -151,6 +151,17 @@ mat-dialog-content {
   }
 }
 
+.popover-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 90; // Popover is 100
+  background: transparent;
+  cursor: default;
+}
+
 .details-grid {
   display: grid;
   grid-template-columns: 1fr;

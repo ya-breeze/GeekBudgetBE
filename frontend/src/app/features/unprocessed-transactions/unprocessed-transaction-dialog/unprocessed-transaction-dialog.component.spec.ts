@@ -87,31 +87,44 @@ describe('UnprocessedTransactionDialogComponent', () => {
         expect(component['showEditPopover']()).toBeFalse();
     });
 
-    it('should filter matchers', () => {
+    it('should filter matchers and sort them', () => {
         const matchers: Matcher[] = [
-            { id: '1', outputDescription: 'Netflix', descriptionRegExp: 'netflix' } as any,
-            { id: '2', outputDescription: 'Uber', descriptionRegExp: 'uber' } as any
+            { id: '1', outputDescription: 'Zebra Service', outputAccountId: 'acc1' } as any,
+            { id: '2', outputDescription: 'Banana Store', outputAccountId: 'acc2' } as any,
+            { id: '3', outputDescription: 'Apple Store', outputAccountId: 'acc1' } as any
         ];
 
-        // Update the signal
+        // Mock accounts
+        const accounts = [
+            { id: 'acc1', name: 'Expenses: Groceries' },
+            { id: 'acc2', name: 'Expenses: Entertainment' }
+        ];
+        // We can't easily mock the protected accounts signal directly if it's derived from service in the component constructor/field init
+        // But we mocked keys in LoadAccounts.
+        // Actually the component calls `this.accountService.accounts` which is a signal (mocked as spy signal above?)
+        // The spy set up `accountServiceSpy.accounts = signal([])`. Let's update that signal.
+
+        const accountServiceSpy = TestBed.inject(AccountService) as any;
+        accountServiceSpy.accounts.set(accounts);
+
         matcherServiceSpy.matchers.set(matchers);
+        fixture.detectChanges(); // Update computed
 
-        // Test empty search
-        component['matcherSearchControl'].setValue('');
-        expect(component['filteredMatchers']().length).toBe(2);
+        // 1. Test Sorting (Expected: "Expenses: Entertainment: Banana...", "Expenses: Groceries: Apple...", "Expenses: Groceries: Zebra...")
+        // Wait, "Expenses: Entertainment" comes before "Expenses: Groceries"
+        const filtered = component['filteredMatchers']();
+        expect(filtered.length).toBe(3);
+        expect(filtered[0].id).toBe('2'); // Ent: Banana
+        expect(filtered[1].id).toBe('3'); // Groc: Apple
+        expect(filtered[2].id).toBe('1'); // Groc: Zebra
 
-        // Test search "net"
-        component['matcherSearchControl'].setValue('net');
-        expect(component['filteredMatchers']().length).toBe(1);
-        expect(component['filteredMatchers']()[0].outputDescription).toBe('Netflix');
-
-        // Test search "Uber" (case insensitive check implied by implementation?)
-        // Implementation uses .toLowerCase()
-        component['matcherSearchControl'].setValue('UBER');
-        expect(component['filteredMatchers']().length).toBe(1);
-        expect(component['filteredMatchers']()[0].outputDescription).toBe('Uber');
+        // 2. Test Search by Account Name ("Entertain")
+        component['matcherSearchControl'].setValue('Entertain');
+        fixture.detectChanges();
+        const searched = component['filteredMatchers']();
+        expect(searched.length).toBe(1);
+        expect(searched[0].id).toBe('2');
     });
-
     it('should open edit dialog when matcher selected', () => {
         const dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
         dialogSpy.open.and.returnValue({ afterClosed: () => of(true) } as any);
