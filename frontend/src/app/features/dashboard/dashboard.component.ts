@@ -124,6 +124,7 @@ export class DashboardComponent implements OnInit {
       currencies.map((currency: Currency) => [currency.id, currency])
     );
 
+    const visibleMonths = new Set(this.monthColumns());
     const tables: CurrencyTable[] = [];
 
     data.currencies.forEach((currencyAgg) => {
@@ -152,11 +153,15 @@ export class DashboardComponent implements OnInit {
           }
 
           monthValues.set(interval, cellValue);
-          allValues.push(cellValue);
-          rowTotal += cellValue;
+
+          // Only sum visible months for total
+          if (visibleMonths.has(interval)) {
+            allValues.push(cellValue);
+            rowTotal += cellValue;
+          }
         });
 
-        if (rowTotal > 0) {
+        if (rowTotal > 0 || Array.from(monthValues.values()).some((v) => v > 0)) {
           allValues.push(rowTotal);
 
           rowsData.push({
@@ -185,8 +190,11 @@ export class DashboardComponent implements OnInit {
         });
 
         monthTotals.set(interval, monthTotal);
-        allValues.push(monthTotal);
-        grandTotal += monthTotal;
+
+        if (visibleMonths.has(interval)) {
+          allValues.push(monthTotal);
+          grandTotal += monthTotal;
+        }
       });
 
       // Note: grandTotal is NOT added to allValues - it will always be white
