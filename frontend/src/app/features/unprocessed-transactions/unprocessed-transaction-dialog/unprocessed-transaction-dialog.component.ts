@@ -40,7 +40,8 @@ export interface AccountGroup {
 export type UnprocessedTransactionDialogResult =
     | { action: 'convert'; match: MatcherAndTransaction }
     | { action: 'delete'; duplicateOf: Transaction }
-    | { action: 'manual'; accountId: string; description?: string };
+    | { action: 'manual'; accountId: string; description?: string }
+    | { action: 'skip' };
 
 @Component({
     selector: 'app-unprocessed-transaction-dialog',
@@ -242,6 +243,10 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
                 description: this.descriptionControl.value || undefined
             });
         }
+    }
+
+    skip(): void {
+        this.action.emit({ action: 'skip' });
     }
 
 

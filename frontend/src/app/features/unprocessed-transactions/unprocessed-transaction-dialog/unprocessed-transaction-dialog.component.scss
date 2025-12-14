@@ -1,8 +1,15 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
 mat-dialog-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding-top: 10px;
+  flex: 1; // Take remaining space
+  overflow-y: auto; // Scroll internally
 }
 
 .section-container {
@@ -236,9 +243,10 @@ mat-dialog-content {
 
 .dialog-container {
   position: relative;
-  max-height: 80vh;
+  height: 100%; // Fill the dialog panel
   display: flex;
   flex-direction: column;
+  overflow: hidden; // Prevent double scrollbars
 }
 
 .loading-overlay {

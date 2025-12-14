@@ -140,6 +140,8 @@ export class UnprocessedTransactionsComponent implements OnInit {
         this.deleteTransaction(currentTransaction, result.duplicateOf.id, dialogRef);
       } else if (result.action === 'manual') {
         this.processManual(currentTransaction, result.accountId, result.description, dialogRef);
+      } else if (result.action === 'skip') {
+        this.handleSkip(currentTransaction, dialogRef);
       }
     });
 
@@ -155,11 +157,13 @@ export class UnprocessedTransactionsComponent implements OnInit {
       ...match.transaction
     };
 
+    const index = this.getSortedData().findIndex(t => t.transaction.id === original.transaction.id);
+
     this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert, match.matcherId).subscribe({
       next: () => {
         this.snackBar.open('Transaction processed (match applied)', 'Close', { duration: 3000 });
         if (dialogRef) {
-          this.handleSuccess(original.transaction.id!, dialogRef);
+          this.handleSuccess(index, dialogRef);
         }
       },
       error: () => {
@@ -182,11 +186,13 @@ export class UnprocessedTransactionsComponent implements OnInit {
       transactionToConvert.transaction.description = description;
     }
 
+    const index = this.getSortedData().findIndex(t => t.transaction.id === original.transaction.id);
+
     this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert).subscribe({
       next: () => {
         this.snackBar.open('Transaction processed (account assigned)', 'Close', { duration: 3000 });
         if (dialogRef) {
-          this.handleSuccess(original.transaction.id!, dialogRef);
+          this.handleSuccess(index, dialogRef);
         }
       },
       error: () => {
@@ -197,11 +203,13 @@ export class UnprocessedTransactionsComponent implements OnInit {
   }
 
   deleteTransaction(transaction: UnprocessedTransaction, duplicateOfId?: string, dialogRef?: any): void {
+    const index = this.getSortedData().findIndex(t => t.transaction.id === transaction.transaction.id);
+
     this.unprocessedTransactionService.delete(transaction.transaction.id!, duplicateOfId).subscribe({
       next: () => {
         this.snackBar.open('Transaction deleted', 'Close', { duration: 3000 });
         if (dialogRef) {
-          this.handleSuccess(transaction.transaction.id!, dialogRef);
+          this.handleSuccess(index, dialogRef);
         } else {
           this.loadUnprocessedTransactions();
         }
@@ -213,16 +221,32 @@ export class UnprocessedTransactionsComponent implements OnInit {
     });
   }
 
-  private handleSuccess(processedId: string, dialogRef: any) {
-    const currentList = this.unprocessedTransactionService.unprocessedTransactions();
-    const nextTransaction = currentList.find(t => t.transaction.id !== processedId);
+  private handleSuccess(index: number, dialogRef: any) {
+    const currentList = this.getSortedData();
+    // The previously processed item is already removed from the list (by signal update).
+    // The item that was at 'index' + 1 has now shifted to 'index'.
+    // So to show the "next" item, we just access 'index'.
+    const nextTransaction = currentList[index];
 
     if (nextTransaction) {
       dialogRef.componentInstance.updateTransaction(nextTransaction);
       this.loadUnprocessedTransactions();
     } else {
+      // If we processed the last item, index is now out of bounds.
       dialogRef.close();
       this.loadUnprocessedTransactions();
+    }
+  }
+
+  private handleSkip(currentTransaction: UnprocessedTransaction, dialogRef: any) {
+    const currentList = this.getSortedData();
+    const index = currentList.findIndex(t => t.transaction.id === currentTransaction.transaction.id);
+    const nextTransaction = currentList[index + 1];
+
+    if (nextTransaction) {
+      dialogRef.componentInstance.updateTransaction(nextTransaction);
+    } else {
+      dialogRef.close();
     }
   }
 }
