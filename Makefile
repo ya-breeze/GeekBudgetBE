@@ -25,7 +25,7 @@ run-backend:
 
 .PHONY: run-frontend
 run-frontend:
-	@cd ${ROOT_DIR}/frontend && npm run start
+	@cd ${ROOT_DIR}/frontend && echo 'n' | npm run start
 
 .PHONY: replace-templates
 replace-templates:
