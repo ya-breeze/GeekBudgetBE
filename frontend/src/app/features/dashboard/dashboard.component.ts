@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -67,6 +68,7 @@ export class DashboardComponent implements OnInit {
   private readonly layoutService = inject(LayoutService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
 
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
   protected readonly loading = signal(true);
@@ -517,5 +519,16 @@ export class DashboardComponent implements OnInit {
     // Remove leading emoji characters for sorting purposes
     // This regex matches emoji at the start of the string and removes them
     return text.replace(/^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier_Base}\s]+/u, '').trim();
+  }
+
+  protected onCellClick(accountId: string, monthDateString: string): void {
+    const date = new Date(monthDateString);
+    this.router.navigate(['/transactions'], {
+      queryParams: {
+        accountId,
+        month: date.getMonth(),
+        year: date.getFullYear(),
+      },
+    });
   }
 }

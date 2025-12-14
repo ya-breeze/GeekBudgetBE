@@ -85,7 +85,8 @@
           <tr>
             <td class="account-cell">{{ row.accountName }}</td>
             @for (month of monthColumns(); track month) {
-            <td class="expense-cell" [style.background-color]="row.monthCells.get(month)?.color || 'white'">
+            <td class="expense-cell clickable" [style.background-color]="row.monthCells.get(month)?.color || 'white'"
+              (click)="onCellClick(row.accountId, month)">
               {{ row.monthCells.get(month)?.value || 0 | number : '1.2-2' }}
             </td>
             }

@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
@@ -50,6 +51,8 @@ export class TransactionsComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly layoutService = inject(LayoutService);
+
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
@@ -175,7 +178,26 @@ export class TransactionsComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadData();
+    // Read query parameters
+    this.route.queryParams.subscribe((params) => {
+      let dataReloadNeeded = false;
+
+      if (params['month'] && params['year']) {
+        const month = parseInt(params['month'], 10);
+        const year = parseInt(params['year'], 10);
+        if (!isNaN(month) && !isNaN(year)) {
+          this.currentMonth.set(month);
+          this.currentYear.set(year);
+          dataReloadNeeded = true;
+        }
+      }
+
+      if (params['accountId']) {
+        this.selectedAccountIds.set([params['accountId']]);
+      }
+
+      this.loadData();
+    });
   }
 
   loadData(): void {

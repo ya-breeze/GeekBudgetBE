@@ -165,6 +165,14 @@
     text-align: right;
     border-bottom: 1px solid #f1f3f4;
     white-space: nowrap;
+
+    &.clickable {
+      cursor: pointer;
+
+      &:hover {
+        filter: brightness(0.95);
+      }
+    }
   }
 
   th {
