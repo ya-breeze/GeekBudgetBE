@@ -1,7 +1,7 @@
-import { Component, computed, forwardRef, inject, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { Component, computed, forwardRef, inject, Input, OnChanges, SimpleChanges, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocomplete } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
@@ -45,6 +45,7 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
     @Input() required = false;
     @Input() placeholder = 'Select an account';
 
+    @ViewChild('auto') auto!: MatAutocomplete;
     readonly searchControl = new FormControl<string | Account>('');
 
     // Internal value tracking (Account ID)
@@ -186,13 +187,19 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
     }
 
     onBlur() {
+        // If the panel is open, we don't want to clear the value yet.
+        // We will validate when the panel closes.
+        if (this.auto && this.auto.isOpen) {
+            return;
+        }
+        this.validateSelection();
+    }
+
+    validateSelection() {
         this.onTouched();
-        // Validate selection on blur: if text doesn't match selected object
         const val = this.searchControl.value;
         if (typeof val === 'string' && val !== '') {
             // Invalid selection (text only)
-            // Reset to previous valid value or clear?
-            // Let's clear for safety if it's not a valid option
             this.searchControl.setValue(null);
             this.emitValue(null);
         }

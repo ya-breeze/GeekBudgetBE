@@ -2,7 +2,7 @@
     <mat-label>{{ label }}</mat-label>
     <input type="text" matInput [formControl]="searchControl" [matAutocomplete]="auto" [placeholder]="placeholder"
         [required]="required" (blur)="onBlur()">
-    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (closed)="validateSelection()">
         @for (group of filteredAccountGroups(); track group.name) {
         <mat-optgroup [label]="group.name">
             @for (account of group.accounts; track account.id) {
