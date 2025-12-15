@@ -102,11 +102,11 @@ export class BudgetItemService {
     );
   }
 
-  loadBudgetStatus(from?: string, to?: string): Observable<BudgetStatus[]> {
+  loadBudgetStatus(from?: string, to?: string, outputCurrencyId?: string): Observable<BudgetStatus[]> {
     this.loading.set(true);
     this.error.set(null);
 
-    return getBudgetStatus(this.http, this.apiConfig.rootUrl, { from, to }).pipe(
+    return getBudgetStatus(this.http, this.apiConfig.rootUrl, { from, to, outputCurrencyId }).pipe(
       map((response) => response.body),
       tap({
         next: (status) => {

@@ -1033,6 +1033,13 @@ paths:
           schema:
             type: string
             format: date-time
+        - name: outputCurrencyId
+          in: query
+          description: "Converts all amounts to this currency"
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
       responses:
         "200":
           description: budget status

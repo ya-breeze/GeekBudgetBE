@@ -195,7 +195,7 @@ type BankImportersAPIServicer interface {
 type BudgetItemsAPIServicer interface {
 	GetBudgetItems(context.Context) (ImplResponse, error)
 	CreateBudgetItem(context.Context, BudgetItemNoId) (ImplResponse, error)
-	GetBudgetStatus(context.Context, time.Time, time.Time) (ImplResponse, error)
+	GetBudgetStatus(context.Context, time.Time, time.Time, string) (ImplResponse, error)
 	GetBudgetItem(context.Context, string) (ImplResponse, error)
 	UpdateBudgetItem(context.Context, string, BudgetItemNoId) (ImplResponse, error)
 	DeleteBudgetItem(context.Context, string) (ImplResponse, error)

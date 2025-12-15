@@ -24,18 +24,40 @@ func NewBudgetItemsAPIService(logger *slog.Logger, db database.Storage) goserver
 }
 
 // GetBudgetStatus - get budget status with rollover
-func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time) (goserver.ImplResponse, error) {
+func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
 
-	// Fetch all budget items (could optimize to fetch up to 'to' date)
+	// Fetch all budget items
 	budgetItems, err := s.db.GetBudgetItems(userID)
 	if err != nil {
 		s.logger.Error("Failed to fetch budget items", "error", err)
 		return goserver.Response(http.StatusInternalServerError, nil), err
 	}
+
+	// Fetch all accounts to determine their primary currency
+	accounts, err := s.db.GetAccounts(userID)
+	if err != nil {
+		s.logger.Error("Failed to fetch accounts", "error", err)
+		return goserver.Response(http.StatusInternalServerError, nil), err
+	}
+	accountCurrencyMap := make(map[string]string) // AccountID -> CurrencyID
+	for _, acc := range accounts {
+		// Use first balance currency as "Account Currency" for budgeting purposes
+		if len(acc.BankInfo.Balances) > 0 {
+			accountCurrencyMap[acc.Id] = acc.BankInfo.Balances[0].CurrencyId
+		}
+	}
+
+	// Helpers for currency conversion
+	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+	outputCurrencyName := ""
+	if outputCurrencyId != "" {
+		outputCurrencyName = currencyMap[outputCurrencyId]
+	}
+	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
 
 	// Calculate start date for rollover calculation (find earliest budget item)
 	minDate := time.Now()
@@ -50,15 +72,6 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	// Align minDate to start of month
 	minDate = time.Date(minDate.Year(), minDate.Month(), 1, 0, 0, 0, 0, minDate.Location())
 
-	// Fetch expenses from minDate to 'to'
-	// We need all transactions to calculate actual spending
-	// Note: Expenses logic might be complex (which accounts are expenses?).
-	// Simplification: We look at transactions where money leaves a "budgeted" account (or matches category).
-	// In this app, it seems BudgetItem is linked to AccountID.
-	// So we check movements for that AccountID.
-	// But usually BudgetItem AccountID refers to a "Category" account (Expense type).
-	// Let's assume AccountID in BudgetItem is the Expense Account.
-
 	transactions, err := s.db.GetTransactions(userID, minDate, to)
 	if err != nil {
 		s.logger.Error("Failed to fetch transactions", "error", err)
@@ -66,9 +79,9 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	}
 
 	// Prepare data structures for calculation
-	// Map: Month -> AccountID -> BudgetedAmount
+	// Map: Month -> AccountID -> BudgetedAmount (Converted)
 	budgetMap := make(map[string]map[string]float64)
-	// Map: Month -> AccountID -> SpentAmount
+	// Map: Month -> AccountID -> SpentAmount (Converted)
 	spentMap := make(map[string]map[string]float64)
 
 	// Helper to keys
@@ -81,25 +94,44 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 		if _, ok := budgetMap[key]; !ok {
 			budgetMap[key] = make(map[string]float64)
 		}
-		// Sum in case multiple items for same month/account (though usually one)
-		budgetMap[key][b.AccountId] += b.Amount
+		
+		amount := b.Amount
+		// Convert if needed
+		accCurrencyId := accountCurrencyMap[b.AccountId]
+		if outputCurrencyId != "" && accCurrencyId != "" && accCurrencyId != outputCurrencyId {
+			// Find currency name
+			originalCurrencyName := currencyMap[accCurrencyId]
+			converted, err := currenciesRatesFetcher.Convert(ctx, b.Date, originalCurrencyName, outputCurrencyName, amount)
+			if err == nil {
+				amount = converted
+			} else {
+				s.logger.Warn("Failed to convert budget amount", "error", err, "from", originalCurrencyName, "to", outputCurrencyName)
+			}
+		}
+
+		budgetMap[key][b.AccountId] += amount
 	}
 
 	for _, t := range transactions {
 		tMonth := getMonthKey(t.Date)
 		for _, m := range t.Movements {
-			// If movement is positive -> Income or refund?
-			// If movement is negative -> Expense?
-			// Usually expenses are negative movements on Expense accounts?
-			// Or positive movements on Expense accounts (if Double Entry)?
-			// Let's check typical usage.
-			// In `prefillNewUser`: lunch is accGroceries (Amount 100), accCash (-100).
-			// So expense account receives positive amount.
 			if m.Amount > 0 {
 				if _, ok := spentMap[tMonth]; !ok {
 					spentMap[tMonth] = make(map[string]float64)
 				}
-				spentMap[tMonth][m.AccountId] += m.Amount
+
+				amount := m.Amount
+				if outputCurrencyId != "" && m.CurrencyId != outputCurrencyId {
+					originalCurrencyName := currencyMap[m.CurrencyId]
+					converted, err := currenciesRatesFetcher.Convert(ctx, t.Date, originalCurrencyName, outputCurrencyName, amount)
+					if err == nil {
+						amount = converted
+					} else {
+						s.logger.Warn("Failed to convert movement amount", "error", err)
+					}
+				}
+
+				spentMap[tMonth][m.AccountId] += amount
 			}
 		}
 	}
@@ -108,35 +140,27 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 
 	// Iterate months from minDate to 'to'
 	current := minDate
-
 	results := []goserver.BudgetStatus{}
 
-	// Ensure we cover up to 'to'
-	// to date is exclusive, but we might want to include the month if it's partial?
-	// The loop goes month by month.
 	for current.Before(to) {
 		monthKey := getMonthKey(current)
 
 		// Get unique accounts involved this month (budgeted or spent)
-		accounts := make(map[string]bool)
+		accountsSet := make(map[string]bool)
 		for acc := range budgetMap[monthKey] {
-			accounts[acc] = true
+			accountsSet[acc] = true
 		}
-		// We might want to track rollover for accounts even if no budget/spent this month?
-		// Yes, if there is previous rollover.
+		for acc := range spentMap[monthKey] {
+			accountsSet[acc] = true
+		}
 		for acc := range rolloverMap {
-			accounts[acc] = true
+			accountsSet[acc] = true
 		}
 
-		for accId := range accounts {
+		for accId := range accountsSet {
 			budgeted := budgetMap[monthKey][accId]
 			spent := spentMap[monthKey][accId]
 			previousRollover := rolloverMap[accId]
-
-			// Calculation
-			// Available = Budget + Rollover
-			// Remainder = Available - Spent
-			// New Rollover = Remainder
 
 			available := budgeted + previousRollover
 			remainder := available - spent
@@ -150,11 +174,8 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 					AccountId: accId,
 					Budgeted:  budgeted,
 					Spent:     spent,
-					Rollover:  previousRollover, // The rollover coming INTO this month
-					Available: remainder,        // Remaining available for next month (or remaining now?)
-					// Prompt: "visualize it comparing to the real expenses for this month"
-					// Spec: Available
-					// I'll return 'remainder' as available.
+					Rollover:  previousRollover, 
+					Available: remainder,        
 				})
 			}
 		}

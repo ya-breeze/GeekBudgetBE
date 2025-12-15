@@ -154,7 +154,14 @@ func (c *BudgetItemsAPIController) GetBudgetStatus(w http.ResponseWriter, r *htt
 		toParam = param
 	} else {
 	}
-	result, err := c.service.GetBudgetStatus(r.Context(), fromParam, toParam)
+	var outputCurrencyIdParam string
+	if query.Has("outputCurrencyId") {
+		param := query.Get("outputCurrencyId")
+
+		outputCurrencyIdParam = param
+	} else {
+	}
+	result, err := c.service.GetBudgetStatus(r.Context(), fromParam, toParam, outputCurrencyIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

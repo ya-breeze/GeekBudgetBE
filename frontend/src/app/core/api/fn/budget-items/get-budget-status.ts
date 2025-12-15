@@ -20,6 +20,11 @@ export interface GetBudgetStatus$Params {
  * End date (exclusive)
  */
   to?: string;
+
+/**
+ * Converts all amounts to this currency
+ */
+  outputCurrencyId?: string;
 }
 
 export function getBudgetStatus(http: HttpClient, rootUrl: string, params?: GetBudgetStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<BudgetStatus>>> {
@@ -27,6 +32,7 @@ export function getBudgetStatus(http: HttpClient, rootUrl: string, params?: GetB
   if (params) {
     rb.query('from', params.from, {});
     rb.query('to', params.to, {});
+    rb.query('outputCurrencyId', params.outputCurrencyId, {});
   }
 
   return http.request(

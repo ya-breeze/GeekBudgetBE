@@ -1,23 +1,44 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { DatePipe, DecimalPipe } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { DatePipe, DecimalPipe, CurrencyPipe, CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators, FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BudgetItemService } from './services/budget-item.service';
 import { AccountService } from '../accounts/services/account.service';
+import { UserService } from '../../core/services/user.service'; // Added
+import { CurrencyService } from '../currencies/services/currency.service'; // Added
 import { BudgetItem } from '../../core/api/models/budget-item';
 import { BudgetStatus } from '../../core/api/models/budget-status';
 import { LayoutService } from '../../layout/services/layout.service';
 import { AccountSelectComponent } from '../../shared/components/account-select/account-select.component';
+import { BudgetMatrixEditComponent } from './components/budget-matrix-edit/budget-matrix-edit.component';
+
+interface MatrixCell {
+  month: string; // YYYY-MM-01
+  amount: number; // Planned (Converted)
+  rawAmount: number; // For editing
+  spent: number; // (Converted)
+  budgetItemId?: string; // If exists for editing
+  calculatedAvailable?: number; // For styling
+  isVirtual?: boolean;
+}
+
+interface MatrixRow {
+  account: { id: string; name: string };
+  cells: MatrixCell[];
+  totalPlanned: number;
+  totalSpent: number;
+}
 
 @Component({
   selector: 'app-budget-items',
@@ -29,14 +50,15 @@ import { AccountSelectComponent } from '../../shared/components/account-select/a
     MatProgressSpinnerModule,
     MatSnackBarModule,
     DatePipe,
-    DecimalPipe,
+    CurrencyPipe,
+    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    AccountSelectComponent
+    MatDialogModule
   ],
   template: `
     <div class="budget-items-container">
@@ -49,179 +71,119 @@ import { AccountSelectComponent } from '../../shared/components/account-select/a
         <mat-spinner></mat-spinner>
       </div>
       } @else {
-      <div class="form-container">
-        <h2>Add Budget Item</h2>
-        <form [formGroup]="addBudgetForm" (ngSubmit)="addBudgetItem()" class="add-budget-form">
-          <app-account-select formControlName="accountId" [required]="true"></app-account-select>
+      
+      <div class="matrix-container">
+        
+        <div class="matrix-header" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #eee;">
+           <div class="title-row" style="display: flex; align-items: center; gap: 16px;">
+             <h2>Budget Matrix</h2>
+             <span class="currency-badge" style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;" *ngIf="targetCurrencySymbol() as curr">Currency: {{ curr }}</span>
+           </div>
+           
+           <div class="controls-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+             <div class="nav-controls" style="display: flex; align-items: center; gap: 8px;">
+                 <button mat-icon-button (click)="shiftMonths(-1)"><mat-icon>chevron_left</mat-icon></button>
+                 <div class="month-display" style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 14px; min-width: 150px; justify-content: center;">
+                    <span>{{ months()[0] | date:'MMM yyyy' }}</span>
+                    <span class="separator">-</span>
+                    <span>{{ months()[months().length-1] | date:'MMM yyyy' }}</span>
+                 </div>
+                 <button mat-icon-button (click)="shiftMonths(1)"><mat-icon>chevron_right</mat-icon></button>
+             </div>
+             
+             <div class="density-controls" style="display: flex; align-items: center; gap: 4px;">
+                 <button mat-icon-button (click)="changeMonthCount(-1)" [disabled]="monthCount() <= 1"><mat-icon>remove</mat-icon></button>
+                 <span style="font-size: 12px; color: #666; font-weight: 500;">{{ monthCount() }} Months</span>
+                 <button mat-icon-button (click)="changeMonthCount(1)" [disabled]="monthCount() >= 12"><mat-icon>add</mat-icon></button>
+             </div>
+           </div>
+        </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Amount</mat-label>
-            <input matInput type="number" formControlName="amount" min="0">
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Date</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="date">
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-
-          <button mat-flat-button color="primary" type="submit" [disabled]="addBudgetForm.invalid || creating()">
-            @if (creating()) {
-              <mat-spinner diameter="20"></mat-spinner>
-            } @else {
-              Add
-            }
-          </button>
-        </form>
+        <div class="grid-wrapper">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th class="sticky-col-header">Account</th>
+                @for (month of months(); track month) {
+                  <th>{{ month | date:'MMM yy' }}</th>
+                }
+                <th class="total-col-header">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of matrixData(); track row.account.id) {
+                <tr>
+                  <td class="sticky-col-header row-header">{{ row.account.name }}</td>
+                  @for (cell of row.cells; track cell.month) {
+                    <td 
+                      class="cell-interactive" 
+                      [class.status-ok]="!!cell.budgetItemId && (cell.calculatedAvailable || 0) >= 0"
+                      [class.status-over]="(cell.calculatedAvailable || 0) < 0"
+                      [class.status-virtual]="cell.isVirtual"
+                      (click)="editCell(row.account, cell)"
+                    >
+                      <div class="cell-content">
+                        <span class="planned">{{ cell.amount | currency: (preferredCurrency()?.name || '') }}</span>
+                        <span class="divider">/</span>
+                        <span class="spent">{{ cell.spent | currency: (preferredCurrency()?.name || '') }}</span>
+                      </div>
+                    </td>
+                  }
+                  <td class="total-cell" 
+                      [class.status-over]="(row.totalPlanned - row.totalSpent) < 0"
+                      [class.status-ok]="(row.totalPlanned - row.totalSpent) >= 0">
+                     <div class="cell-content">
+                        <span class="planned">{{ row.totalPlanned | currency: (preferredCurrency()?.name || '') }}</span>
+                        <span class="divider">/</span>
+                        <span class="spent">{{ row.totalSpent | currency: (preferredCurrency()?.name || '') }}</span>
+                      </div>
+                  </td>
+                </tr>
+              }
+              <!-- Grand Total Row -->
+              <tr class="total-row">
+                  <td class="sticky-col-header row-header">Total</td>
+                  @for (col of columnTotals(); track col.month) {
+                      <td 
+                          [class.status-over]="(col.planned - col.spent) < 0"
+                          [class.status-ok]="(col.planned - col.spent) >= 0"
+                      >
+                          <div class="cell-content">
+                            <span class="planned">{{ col.planned | currency: (preferredCurrency()?.name || '') }}</span>
+                            <span class="divider">/</span>
+                            <span class="spent">{{ col.spent | currency: (preferredCurrency()?.name || '') }}</span>
+                          </div>
+                      </td>
+                  }
+                  <td class="total-cell"
+                      [class.status-over]="(grandTotal().planned - grandTotal().spent) < 0"
+                      [class.status-ok]="(grandTotal().planned - grandTotal().spent) >= 0"
+                  >
+                      <div class="cell-content">
+                        <span class="planned">{{ grandTotal().planned | currency: (preferredCurrency()?.name || '') }}</span>
+                        <span class="divider">/</span>
+                        <span class="spent">{{ grandTotal().spent | currency: (preferredCurrency()?.name || '') }}</span>
+                      </div>
+                  </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="table-container">
-        <h2>Budget Configuration</h2>
-        <table
-          mat-table
-          [dataSource]="sortedBudgetItems()"
-          matSort
-          (matSortChange)="onSortChange($event)"
-          [matSortActive]="sortActive() ?? displayedColumns()[0]"
-          [matSortDirection]="sortDirection()"
-          class="budget-items-table"
-        >
-          <ng-container matColumnDef="date">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-            <td mat-cell *matCellDef="let item">{{ item.date | date : 'short' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="account">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Account</th>
-            <td mat-cell *matCellDef="let item">{{ item.accountId }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="amount">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-            <td mat-cell *matCellDef="let item">{{ item.amount }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="description">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
-            <td mat-cell *matCellDef="let item">{{ item.description || '-' }}</td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
-
-          <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell" [attr.colspan]="displayedColumns().length">
-              No budget items found.
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="table-container" style="margin-top: 20px;">
-        <h2>Budget Status (vs Actuals)</h2>
-        <table
-          mat-table
-          [dataSource]="budgetStatus()"
-          class="budget-items-table"
-        >
-          <ng-container matColumnDef="date">
-            <th mat-header-cell *matHeaderCellDef>Month</th>
-            <td mat-cell *matCellDef="let item">{{ item.date | date : 'MM/yyyy' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="account">
-            <th mat-header-cell *matHeaderCellDef>Account</th>
-            <td mat-cell *matCellDef="let item">{{ item.accountId }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="budgeted">
-            <th mat-header-cell *matHeaderCellDef>Budgeted</th>
-            <td mat-cell *matCellDef="let item">{{ item.budgeted | number:'1.2-2' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="spent">
-            <th mat-header-cell *matHeaderCellDef>Spent</th>
-            <td mat-cell *matCellDef="let item">{{ item.spent | number:'1.2-2' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="rollover">
-            <th mat-header-cell *matHeaderCellDef>Rollover</th>
-            <td mat-cell *matCellDef="let item">{{ item.rollover | number:'1.2-2' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="available">
-            <th mat-header-cell *matHeaderCellDef>Available</th>
-            <td mat-cell *matCellDef="let item" [style.color]="(item.available || 0) < 0 ? 'red' : 'green'">
-              {{ item.available | number:'1.2-2' }}
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="statusColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: statusColumns"></tr>
-          
-           <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell" [attr.colspan]="statusColumns.length">
-              No budget status data.
-            </td>
-          </tr>
-        </table>
-      </div>
       }
     </div>
   `,
-  styles: `
-    .budget-items-container {
-      padding: 0;
-    }
-    .page-title {
-      margin: 0 0 16px 0;
-      font-size: 24px;
-      font-weight: 500;
-    }
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 300px;
-    }
-    .form-container {
-      background: white;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      padding: 16px;
-      margin-bottom: 24px;
-
-      h2 {
-        margin-top: 0;
-        margin-bottom: 16px;
-        font-size: 18px;
-        font-weight: 500;
-      }
-    }
-    .add-budget-form {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-
-      mat-form-field {
-        flex: 1;
-        min-width: 200px;
-      }
-
-      button {
-        height: 56px;
-        min-width: 100px;
-      }
-    }
-  `,
+  styleUrl: './budget-items.component.scss'
 })
 export class BudgetItemsComponent implements OnInit {
   private readonly budgetItemService = inject(BudgetItemService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly layoutService = inject(LayoutService);
   private readonly accountService = inject(AccountService);
+  private readonly userService = inject(UserService);
+  private readonly currencyService = inject(CurrencyService);
+  private readonly dialog = inject(MatDialog);
   private readonly fb = inject(FormBuilder);
 
   protected readonly sidenavOpened = this.layoutService.sidenavOpened;
@@ -231,132 +193,296 @@ export class BudgetItemsComponent implements OnInit {
   protected readonly budgetStatus = this.budgetItemService.budgetStatus;
   protected readonly accounts = this.accountService.accounts;
   protected readonly loading = this.budgetItemService.loading;
-  protected readonly creating = this.budgetItemService.loading; // Re-use loading or create separate state? Re-using for now implicitly or create new one.
-  // Actually, let's use a local signal for creating state to avoid global loading spinner overlap if desired, 
-  // but budgetItemService has global loading. Ideally we separate list loading from create loading.
-  // inspecting service: 'create' sets 'loading' to true. So global spinner will show. 
-  // If we want inline spinner on button, we might want to check if data is empty. 
-  // But global loading hides ALL content when 'loading()' is true. This is UX issue for "Add".
-  // We should probably rely on 'loading' but maybe change template logic later.
-  // For now, let's just use it.
+  protected readonly currencies = this.currencyService.currencies;
+  protected readonly user = this.userService.user;
 
-  protected readonly displayedColumns = signal(['date', 'account', 'amount', 'description']);
+  // Configuration Signals
+  protected readonly startDate = signal(new Date()); // Start of the view
+  protected readonly monthCount = signal(3); // Number of months to show
 
-  protected readonly addBudgetForm = this.fb.group({
-    accountId: ['', Validators.required],
-    amount: ['', [Validators.required, Validators.min(0)]],
-    date: [new Date(), Validators.required],
-  });
-  protected readonly statusColumns = ['date', 'account', 'budgeted', 'spent', 'rollover', 'available'];
-
-  protected readonly sortActive = signal<string | null>(null);
-  protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
-  protected readonly sortedBudgetItems = computed(() => {
-    const data = this.budgetItems();
-    const columns = this.displayedColumns();
-
-    if (!columns.length) {
-      return data;
+  // Computed state
+  protected readonly preferredCurrency = computed(() => {
+    const user = this.user();
+    const currencies = this.currencies();
+    if (user?.favoriteCurrencyId) {
+      return currencies.find(c => c.id === user.favoriteCurrencyId);
     }
-
-    const active = this.sortActive() ?? columns[0];
-    const direction = this.sortDirection();
-
-    return [...data].sort((a, b) => this.compareBudgetItems(a, b, active, direction));
+    return currencies.length > 0 ? currencies[0] : null;
   });
 
-  ngOnInit(): void {
-    this.budgetItemService.loadBudgetItems().subscribe();
-    this.accountService.loadAccounts().subscribe();
-    // Load status for current year/month range ideally, but let's just load defaults (all)
-    // We pass empty strings to let backend decide defaults or load all if supported
-    this.budgetItemService.loadBudgetStatus(new Date(new Date().getFullYear(), 0, 1).toISOString(), new Date().toISOString()).subscribe();
-  }
+  protected readonly currencyMap = computed(() => {
+    const map = new Map<string, string>(); // Id -> Symbol/Name
+    this.currencies().forEach(c => map.set(c.id, c.name));
+    return map;
+  });
 
-  protected addBudgetItem(): void {
-    if (this.addBudgetForm.invalid) {
-      return;
+  protected readonly targetCurrencySymbol = computed(() => {
+    return this.preferredCurrency()?.name || '';
+  });
+
+  protected readonly months = computed(() => {
+    const anchor = this.startDate(); // This is now the END of the view (inclusive)
+    const count = this.monthCount();
+    const result: string[] = [];
+
+    // Use UTC to avoid timezone shifts when calling toISOString
+    const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
+
+    for (let i = -(count - 1); i <= 0; i++) {
+      const d = new Date(anchorMonth);
+      d.setUTCMonth(d.getUTCMonth() + i);
+      result.push(d.toISOString());
     }
+    return result;
+  });
 
-    const { accountId, amount, date } = this.addBudgetForm.value;
+  protected readonly matrixData = computed(() => {
+    // ... existing matrixData logic ...
+    const accs = this.accounts().filter(a => a.type === 'expense');
 
-    this.budgetItemService.create({
-      accountId: accountId!,
-      amount: Number(amount),
-      date: new Date(date!).toISOString(),
-      description: 'Budget Item', // Optional, maybe add field later
-    }).subscribe({
-      next: () => {
-        this.snackBar.open('Budget item added', 'Close', { duration: 3000 });
-        // Refresh status
-        this.budgetItemService.loadBudgetStatus(new Date(new Date().getFullYear(), 0, 1).toISOString(), new Date().toISOString()).subscribe();
-      },
-      error: (err) => {
-        this.snackBar.open('Failed to add budget item', 'Close', { duration: 3000 });
+    const items = this.budgetItems();
+    const status = this.budgetStatus();
+    const months = this.months();
+
+    // Maps
+    const itemMap = new Map<string, BudgetItem>();
+    items.forEach(i => {
+      const m = i.date ? i.date.substring(0, 7) : '';
+      itemMap.set(`${i.accountId}_${m}`, i);
+    });
+
+    const statusMap = new Map<string, BudgetStatus>();
+    status.forEach(s => {
+      const m = s.date.substring(0, 7);
+      statusMap.set(`${s.accountId}_${m}`, s);
+    });
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const rows: MatrixRow[] = accs.map(acc => {
+      let rowTotalPlanned = 0;
+      let rowTotalSpent = 0;
+
+      const cells: MatrixCell[] = months.map(mStr => {
+        const mKey = mStr.substring(0, 7);
+        const item = itemMap.get(`${acc.id}_${mKey}`);
+        const stat = statusMap.get(`${acc.id}_${mKey}`);
+
+        // Check if this cell is for the current month (Real World time)
+        const cellDate = new Date(mStr);
+        const isCurrentMonth = cellDate.getUTCFullYear() === currentYear && cellDate.getUTCMonth() === currentMonth;
+
+        const spentDisplay = stat?.spent ?? 0;
+
+        let amountDisplay = 0;
+        const rawAmount = item?.amount ?? 0;
+        let isVirtual = false;
+
+        if (item) {
+          // Explicit budget exists
+          amountDisplay = stat?.budgeted ?? item.amount;
+        } else {
+          // No explicit budget
+          if (isCurrentMonth) {
+            // Current month: No virtual budget. Strict.
+            amountDisplay = 0;
+          } else {
+            // Past/Future months: Virtual budget = Spent
+            amountDisplay = spentDisplay;
+            if (spentDisplay > 0) {
+              isVirtual = true;
+            }
+          }
+        }
+
+        const available = amountDisplay - spentDisplay;
+
+        rowTotalPlanned += amountDisplay;
+        rowTotalSpent += spentDisplay;
+
+        return {
+          month: mStr,
+          amount: amountDisplay,
+          rawAmount: rawAmount,
+          spent: spentDisplay,
+          budgetItemId: item?.id,
+          calculatedAvailable: available,
+          isVirtual: isVirtual
+        };
+      });
+
+      return {
+        account: { id: acc.id, name: acc.name },
+        cells,
+        totalPlanned: rowTotalPlanned,
+        totalSpent: rowTotalSpent
+      };
+    });
+
+    return rows;
+  });
+
+  protected readonly columnTotals = computed(() => {
+    const rows = this.matrixData();
+    const months = this.months();
+    if (rows.length === 0) return [];
+
+    // Init totals
+    const totals = months.map(m => ({ month: m, planned: 0, spent: 0 }));
+
+    rows.forEach(row => {
+      row.cells.forEach((cell, idx) => {
+        if (totals[idx]) {
+          totals[idx].planned += cell.amount;
+          totals[idx].spent += cell.spent;
+        }
+      });
+    });
+    return totals;
+  });
+
+  protected readonly grandTotal = computed(() => {
+    const cols = this.columnTotals();
+    return cols.reduce((acc, curr) => ({
+      planned: acc.planned + curr.planned,
+      spent: acc.spent + curr.spent
+    }), { planned: 0, spent: 0 });
+  });
+
+  // Effects
+  constructor() {
+    // Reload data when params change
+    effect(() => {
+      const anchor = this.startDate();
+      const count = this.monthCount();
+      const currency = this.preferredCurrency();
+
+      // Calculate query range
+      const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
+
+      // From: Anchor - (count-1) months
+      const fromDate = new Date(anchorMonth);
+      fromDate.setUTCMonth(fromDate.getUTCMonth() - (count - 1));
+
+      // To: Anchor + 1 month (exclusive)
+      const toDate = new Date(anchorMonth);
+      toDate.setUTCMonth(toDate.getUTCMonth() + 1);
+
+      const from = fromDate.toISOString();
+      const to = toDate.toISOString();
+
+      const currencyId = currency?.id;
+
+      // Load status with conversion
+      if (currencyId) {
+        this.budgetItemService.loadBudgetStatus(from, to, currencyId).subscribe();
+      } else {
+        this.budgetItemService.loadBudgetStatus(from, to).subscribe();
       }
     });
   }
 
-  protected onSortChange(sort: Sort): void {
-    if (!sort.direction) {
-      this.sortActive.set(null);
-      this.sortDirection.set('asc');
-      return;
-    }
-
-    this.sortActive.set(sort.active);
-    this.sortDirection.set(sort.direction);
+  ngOnInit(): void {
+    this.budgetItemService.loadBudgetItems().subscribe();
+    this.accountService.loadAccounts().subscribe();
+    this.currencyService.loadCurrencies().subscribe();
+    this.userService.loadUser().subscribe(); // Loads user -> triggers effect via preferredCurrency
   }
 
-  private compareBudgetItems(
-    a: BudgetItem,
-    b: BudgetItem,
-    active: string,
-    direction: 'asc' | 'desc'
-  ): number {
-    const valueA = this.getBudgetItemSortValue(a, active);
-    const valueB = this.getBudgetItemSortValue(b, active);
-    return this.comparePrimitiveValues(valueA, valueB, direction);
+  // Actions
+  protected shiftMonths(delta: number): void {
+    const current = this.startDate();
+    this.startDate.set(new Date(current.getFullYear(), current.getMonth() + delta, 1));
   }
 
-  private getBudgetItemSortValue(item: BudgetItem, active: string): string | number | Date | null {
-    switch (active) {
-      case 'date':
-        return item.date ? new Date(item.date) : null;
-      case 'account':
-        return item.accountId ?? '';
-      case 'amount':
-        return item.amount ?? 0;
-      case 'description':
-        return item.description ?? '';
-      default:
-        return null;
+  protected changeMonthCount(delta: number): void {
+    const current = this.monthCount();
+    const next = Math.max(1, Math.min(12, current + delta));
+    this.monthCount.set(next);
+  }
+
+  protected editCell(account: { id: string; name: string }, cell: MatrixCell): void {
+    // We pass the RAW amount for editing if we can find it?
+    // Wait, cell.amount is CONVERTED. cell.rawAmount is RAW.
+    // If we don't have a budget item yet, rawAmount is 0.
+    // The dialog should behave effectively.
+
+    // We need to tell the dialog what currency the Account checks? 
+    // The dialog just shows "Amount". 
+    // I added `rawAmount` to MatrixCell interface in computed above. I need to update interface def.
+
+    const dialogRef = this.dialog.open(BudgetMatrixEditComponent, {
+      data: {
+        accountId: account.id,
+        accountName: account.name,
+        month: cell.month,
+        currentAmount: cell.rawAmount ?? 0
+      },
+      width: '300px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        this.saveBudget(account.id, cell, Number(result));
+      }
+    });
+  }
+
+  private saveBudget(accountId: string, cell: MatrixCell, newAmount: number): void {
+    if (cell.budgetItemId) {
+      this.budgetItemService.update(cell.budgetItemId, {
+        accountId: accountId,
+        amount: newAmount,
+        date: cell.month,
+        description: 'Matrix Edit'
+      }).subscribe({
+        next: () => this.refreshData(),
+        error: () => this.snackBar.open('Failed to update', 'Close', { duration: 3000 })
+      });
+    } else {
+      this.budgetItemService.create({
+        accountId: accountId,
+        amount: newAmount,
+        date: cell.month,
+        description: 'Matrix Create'
+      }).subscribe({
+        next: () => this.refreshData(),
+        error: () => this.snackBar.open('Failed to create', 'Close', { duration: 3000 })
+      });
     }
   }
 
-  private comparePrimitiveValues(
-    a: string | number | Date | null | undefined,
-    b: string | number | Date | null | undefined,
-    direction: 'asc' | 'desc'
-  ): number {
-    const factor = direction === 'asc' ? 1 : -1;
+  private refreshData() {
+    this.snackBar.open('Budget saved', 'Close', { duration: 2000 });
+    this.budgetItemService.loadBudgetItems().subscribe();
 
-    if (a == null && b == null) return 0;
-    if (a == null) return 1 * factor;
-    if (b == null) return -1 * factor;
+    // We need to trigger re-fetch of status with current signals using correct view logic
+    const anchor = this.startDate();
+    const count = this.monthCount();
+    const currency = this.preferredCurrency();
 
-    if (typeof a === 'string' && typeof b === 'string') {
-      return a.localeCompare(b) * factor;
+    // Use UTC to avoid timezone shifts
+    const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
+
+    // From: Anchor - (count-1) months
+    const fromDate = new Date(anchorMonth);
+    fromDate.setUTCMonth(fromDate.getUTCMonth() - (count - 1));
+
+    // To: Anchor + 1 month (exclusive)
+    const toDate = new Date(anchorMonth);
+    toDate.setUTCMonth(toDate.getUTCMonth() + 1);
+
+    const from = fromDate.toISOString();
+    const to = toDate.toISOString();
+
+    const currencyId = currency?.id;
+
+    if (currencyId) {
+      this.budgetItemService.loadBudgetStatus(from, to, currencyId).subscribe();
+    } else {
+      this.budgetItemService.loadBudgetStatus(from, to).subscribe();
     }
-
-    if (typeof a === 'number' && typeof b === 'number') {
-      return (a - b) * factor;
-    }
-
-    if (a instanceof Date && b instanceof Date) {
-      return (a.getTime() - b.getTime()) * factor;
-    }
-
-    return `${a}`.localeCompare(`${b}`) * factor;
   }
 }

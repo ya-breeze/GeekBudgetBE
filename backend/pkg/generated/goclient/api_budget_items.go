@@ -424,10 +424,11 @@ func (a *BudgetItemsAPIService) GetBudgetItemsExecute(r ApiGetBudgetItemsRequest
 }
 
 type ApiGetBudgetStatusRequest struct {
-	ctx        context.Context
-	ApiService *BudgetItemsAPIService
-	from       *time.Time
-	to         *time.Time
+	ctx              context.Context
+	ApiService       *BudgetItemsAPIService
+	from             *time.Time
+	to               *time.Time
+	outputCurrencyId *string
 }
 
 // Start date (inclusive)
@@ -439,6 +440,12 @@ func (r ApiGetBudgetStatusRequest) From(from time.Time) ApiGetBudgetStatusReques
 // End date (exclusive)
 func (r ApiGetBudgetStatusRequest) To(to time.Time) ApiGetBudgetStatusRequest {
 	r.to = &to
+	return r
+}
+
+// Converts all amounts to this currency
+func (r ApiGetBudgetStatusRequest) OutputCurrencyId(outputCurrencyId string) ApiGetBudgetStatusRequest {
+	r.outputCurrencyId = &outputCurrencyId
 	return r
 }
 
@@ -486,6 +493,9 @@ func (a *BudgetItemsAPIService) GetBudgetStatusExecute(r ApiGetBudgetStatusReque
 	}
 	if r.to != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "to", r.to, "")
+	}
+	if r.outputCurrencyId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
