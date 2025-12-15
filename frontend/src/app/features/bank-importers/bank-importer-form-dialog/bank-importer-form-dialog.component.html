@@ -1,6 +1,52 @@
 <h2 mat-dialog-title>{{ isEditMode ? 'Edit Bank Importer' : 'Create Bank Importer' }}</h2>
-
+@if(isEditMode) {
 <mat-dialog-content>
+  <mat-tab-group>
+    <mat-tab label="Settings">
+      <div class="tab-content">
+        <ng-container *ngTemplateOutlet="formContent"></ng-container>
+      </div>
+    </mat-tab>
+    <mat-tab label="Import History">
+      <div class="tab-content">
+        @if (bankImporter?.lastImports?.length) {
+        <table mat-table [dataSource]="bankImporter?.lastImports || []" class="history-table">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let element">{{element.date | date:'short'}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let element">
+              <span [class.success]="element.status === 'success'" [class.error]="element.status === 'error'">
+                {{element.status}}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let element">{{element.description}}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+        </table>
+        } @else {
+        <p class="no-data">No import history available.</p>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>
+} @else {
+<mat-dialog-content>
+  <ng-container *ngTemplateOutlet="formContent"></ng-container>
+</mat-dialog-content>
+}
+
+<ng-template #formContent>
   <form [formGroup]="form" class="bank-importer-form">
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Name</mat-label>
@@ -50,7 +96,7 @@
       </mat-checkbox>
     </div>
   </form>
-</mat-dialog-content>
+</ng-template>
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">Cancel</button>

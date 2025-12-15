@@ -10,6 +10,9 @@ import { BankImporter } from '../../../core/api/models/bank-importer';
 import { BankImporterNoId } from '../../../core/api/models/bank-importer-no-id';
 import { AccountService } from '../../accounts/services/account.service';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+import { DatePipe, CommonModule } from '@angular/common';
 
 export interface BankImporterFormDialogData {
   mode: 'create' | 'edit';
@@ -26,7 +29,11 @@ export interface BankImporterFormDialogData {
     MatButtonModule,
     MatSelectModule,
     MatCheckboxModule,
-    AccountSelectComponent
+    AccountSelectComponent,
+    MatTabsModule,
+    MatTableModule,
+    DatePipe,
+    CommonModule,
   ],
   templateUrl: './bank-importer-form-dialog.component.html',
   styleUrl: './bank-importer-form-dialog.component.scss',
@@ -39,12 +46,14 @@ export class BankImporterFormDialogComponent implements OnInit {
 
   protected readonly form: FormGroup;
   protected readonly isEditMode = this.data.mode === 'edit';
+  protected readonly bankImporter = this.data.bankImporter;
   protected readonly accounts = this.accountService.accounts;
   protected readonly bankTypes = [
     { value: 'fio', label: 'FIO Bank' },
     { value: 'kb', label: 'KB Bank' },
     { value: 'revolut', label: 'Revolut' },
   ];
+  protected readonly historyColumns = ['date', 'status', 'description'];
 
   constructor() {
     this.form = this.fb.group({

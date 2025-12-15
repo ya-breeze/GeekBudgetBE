@@ -202,6 +202,25 @@ export class BankImportersComponent implements OnInit {
     return text.replace(/^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier_Base}\s]+/u, '').trim();
   }
 
+  protected getImportsSummary(importer: BankImporter): string {
+    if (!importer.lastImports || importer.lastImports.length === 0) {
+      return 'No imports yet';
+    }
+    const total = importer.lastImports.length;
+    const success = importer.lastImports.filter(i => i.status === 'success').length;
+    const error = total - success;
+    return `Last ${total}: ${success} success, ${error} error`;
+  }
+
+  protected getImportsStatusColor(importer: BankImporter): string {
+    if (!importer.lastImports || importer.lastImports.length === 0) {
+      return '';
+    }
+    const hasError = importer.lastImports.some(i => i.status === 'error');
+    if (hasError) return '#f44336'; // Red
+    return '#4caf50'; // Green
+  }
+
   private comparePrimitiveValues(
     a: string | number | Date | null | undefined,
     b: string | number | Date | null | undefined,
