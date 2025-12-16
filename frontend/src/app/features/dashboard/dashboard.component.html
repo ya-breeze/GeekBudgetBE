@@ -83,7 +83,14 @@
         <tbody>
           @for (row of table.rows; track row.accountId) {
           <tr>
-            <td class="account-cell">{{ row.accountName }}</td>
+            <td class="account-cell">
+              <div class="account-info">
+                <span class="account-name">{{ row.accountName }}</span>
+                @if (row.averageSpent > 0 && row.accountId !== 'total') {
+                <span class="account-average">Avg: {{ row.averageSpent | number : '1.0-2' }}</span>
+                }
+              </div>
+            </td>
             @for (month of monthColumns(); track month) {
             <td class="expense-cell clickable" [style.background-color]="row.monthCells.get(month)?.color || 'white'"
               (click)="onCellClick(row.accountId, month)">

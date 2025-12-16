@@ -33,6 +33,7 @@ interface ExpenseTableRow {
   accountName: string;
   monthCells: Map<string, ExpenseTableCell>;
   total: ExpenseTableCell;
+  averageSpent: number; // Added averageSpent
 }
 
 interface CurrencyTable {
@@ -218,6 +219,7 @@ export class DashboardComponent implements OnInit {
             value: rowData.rowTotal,
             color: this.calculateColor(rowData.rowTotal, allValues),
           },
+          averageSpent: this.accountService.averages().find(a => a.accountId === rowData.accountId)?.averageSpent ?? 0,
         };
       });
 
@@ -241,6 +243,7 @@ export class DashboardComponent implements OnInit {
           value: grandTotal,
           color: 'rgb(255, 255, 255)', // Grand total is always white
         },
+        averageSpent: 0,
       };
 
       const currencyMeta = currenciesById.get(currencyAgg.currencyId);
@@ -417,7 +420,8 @@ export class DashboardComponent implements OnInit {
       ),
       assetData: getBalances(this.http, this.apiConfig.rootUrl, balanceParams).pipe(
         map((response) => response.body)
-      )
+      ),
+      averages: this.accountService.loadYearlyExpenses(outputCurrencyId ?? undefined) // Load averages
     }).subscribe({
       next: ({ expenseData, assetData }) => {
         console.log('Dashboard data loaded:', { expenseData, assetData });
@@ -530,12 +534,12 @@ export class DashboardComponent implements OnInit {
   }
 
   protected onCellClick(accountId: string, monthDateString: string): void {
-    const date = new Date(monthDateString);
+    const d = new Date(monthDateString);
     this.router.navigate(['/transactions'], {
       queryParams: {
         accountId,
-        month: date.getMonth(),
-        year: date.getFullYear(),
+        month: d.getMonth(),
+        year: d.getFullYear(),
       },
     });
   }

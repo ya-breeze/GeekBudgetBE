@@ -217,11 +217,29 @@
     color: #202124;
     background-color: white;
     /* Ensure sticky column has background */
+
+    .account-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .account-name {
+        font-weight: 500;
+        font-size: 15px; // Matched to budget component
+      }
+
+      .account-average {
+        font-size: 0.75rem;
+        color: #666;
+        font-weight: normal;
+      }
+    }
   }
 
   .total-header,
   .total-cell {
     font-weight: 700;
+    font-size: 15px; // Matched to budget component
   }
 
   .total-row {
