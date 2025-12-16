@@ -150,7 +150,16 @@ func (c *AggregationsAPIController) GetExpenses(w http.ResponseWriter, r *http.R
 		outputCurrencyIdParam = param
 	} else {
 	}
-	result, err := c.service.GetExpenses(r.Context(), fromParam, toParam, outputCurrencyIdParam)
+	var granularityParam string
+	if query.Has("granularity") {
+		param := query.Get("granularity")
+
+		granularityParam = param
+	} else {
+		param := "month"
+		granularityParam = param
+	}
+	result, err := c.service.GetExpenses(r.Context(), fromParam, toParam, outputCurrencyIdParam, granularityParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

@@ -25,6 +25,11 @@ export interface GetExpenses$Params {
  * Converts all transactions to this currency
  */
   outputCurrencyId?: string;
+
+/**
+ * Granularity of expenses (month or year)
+ */
+  granularity?: 'month' | 'year';
 }
 
 export function getExpenses(http: HttpClient, rootUrl: string, params?: GetExpenses$Params, context?: HttpContext): Observable<StrictHttpResponse<Aggregation>> {
@@ -33,6 +38,7 @@ export function getExpenses(http: HttpClient, rootUrl: string, params?: GetExpen
     rb.query('from', params.from, {});
     rb.query('to', params.to, {});
     rb.query('outputCurrencyId', params.outputCurrencyId, {});
+    rb.query('granularity', params.granularity, {});
   }
 
   return http.request(

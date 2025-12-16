@@ -81,7 +81,7 @@ Name | Type | Description  | Notes
 
 ## GetExpenses
 
-> Aggregation GetExpenses(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
+> Aggregation GetExpenses(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Granularity(granularity).Execute()
 
 get expenses for filtered transactions
 
@@ -102,10 +102,11 @@ func main() {
 	from := time.Now() // time.Time | Uses transactions from this date (optional)
 	to := time.Now() // time.Time | Uses transactions to this date (optional)
 	outputCurrencyId := "outputCurrencyId_example" // string | Converts all transactions to this currency (optional)
+	granularity := "granularity_example" // string | Granularity of expenses (month or year) (optional) (default to "month")
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.AggregationsAPI.GetExpenses(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
+	resp, r, err := apiClient.AggregationsAPI.GetExpenses(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Granularity(granularity).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `AggregationsAPI.GetExpenses``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -129,6 +130,7 @@ Name | Type | Description  | Notes
  **from** | **time.Time** | Uses transactions from this date | 
  **to** | **time.Time** | Uses transactions to this date | 
  **outputCurrencyId** | **string** | Converts all transactions to this currency | 
+ **granularity** | **string** | Granularity of expenses (month or year) | [default to &quot;month&quot;]
 
 ### Return type
 

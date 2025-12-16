@@ -157,6 +157,7 @@ type ApiGetExpensesRequest struct {
 	from             *time.Time
 	to               *time.Time
 	outputCurrencyId *string
+	granularity      *string
 }
 
 // Uses transactions from this date
@@ -174,6 +175,12 @@ func (r ApiGetExpensesRequest) To(to time.Time) ApiGetExpensesRequest {
 // Converts all transactions to this currency
 func (r ApiGetExpensesRequest) OutputCurrencyId(outputCurrencyId string) ApiGetExpensesRequest {
 	r.outputCurrencyId = &outputCurrencyId
+	return r
+}
+
+// Granularity of expenses (month or year)
+func (r ApiGetExpensesRequest) Granularity(granularity string) ApiGetExpensesRequest {
+	r.granularity = &granularity
 	return r
 }
 
@@ -224,6 +231,12 @@ func (a *AggregationsAPIService) GetExpensesExecute(r ApiGetExpensesRequest) (*A
 	}
 	if r.outputCurrencyId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
+	}
+	if r.granularity != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "granularity", r.granularity, "")
+	} else {
+		var defaultValue string = "month"
+		r.granularity = &defaultValue
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

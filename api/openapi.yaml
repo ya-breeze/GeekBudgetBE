@@ -705,6 +705,15 @@ paths:
           description: "Converts all transactions to this currency"
           schema:
             type: "string"
+        - name: granularity
+          in: query
+          description: "Granularity of expenses (month or year)"
+          schema:
+            type: "string"
+            enum:
+              - month
+              - year
+            default: month
       responses:
         "200":
           description: calculated expenses
@@ -1544,8 +1553,6 @@ components:
     MatcherNoID:
       type: object
       properties:
-
-
         outputDescription:
           type: string
         outputAccountId:
@@ -1575,7 +1582,6 @@ components:
             (true = confirmed, false = rejected). Server enforces maximum length
             configured via application config.
       required:
-
         - outputDescription
         - outputAccountId
 

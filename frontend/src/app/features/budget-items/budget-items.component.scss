@@ -207,3 +207,24 @@ tbody .sticky-col-header {
   font-size: 15px !important; // Bigger font
   color: #b71c1c; // Darker text for contrast
 }
+// Account Cell Styles
+.account-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  justify-content: center;
+  height: 100%;
+}
+
+.account-name {
+  font-size: 15px; // Match total cells
+  font-weight: 600;
+  color: #333;
+}
+
+.account-average {
+  font-size: 12px;
+  color: #666;
+  font-weight: 400;
+}

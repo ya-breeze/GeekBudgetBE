@@ -24,14 +24,19 @@ func NewAggregationsAPIServiceImpl(logger *slog.Logger, db database.Storage,
 }
 
 func (s *AggregationsAPIServiceImpl) GetExpenses(
-	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string,
+	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, granularity string,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID)
+	aggGranularity := utils.GranularityMonth
+	if granularity == "year" {
+		aggGranularity = utils.GranularityYear
+	}
+
+	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID, aggGranularity)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -40,7 +45,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string,
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, granularity utils.Granularity,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
@@ -68,7 +73,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 	res := Aggregate(
 		ctx, accounts, transactions,
 		dateFrom, dateTo,
-		utils.GranularityMonth,
+		granularity,
 		outputCurrencyID, currenciesRatesFetcher,
 		currencyMap,
 		isExpenseAccount,

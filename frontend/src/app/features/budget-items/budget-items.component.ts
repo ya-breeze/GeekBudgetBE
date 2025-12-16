@@ -38,6 +38,7 @@ interface MatrixRow {
   cells: MatrixCell[];
   totalPlanned: number;
   totalSpent: number;
+  averageSpent: number;
 }
 
 @Component({
@@ -113,7 +114,12 @@ interface MatrixRow {
             <tbody>
               @for (row of matrixData(); track row.account.id) {
                 <tr>
-                  <td class="sticky-col-header row-header">{{ row.account.name }}</td>
+                  <td class="sticky-col-header row-header">
+                    <div class="account-cell">
+                      <span class="account-name">{{ row.account.name }}</span>
+                      <span class="account-average">Avg: {{ row.averageSpent | currency: (preferredCurrency()?.name || '') }}</span>
+                    </div>
+                  </td>
                   @for (cell of row.cells; track cell.month) {
                     <td 
                       class="cell-interactive" 
@@ -243,6 +249,7 @@ export class BudgetItemsComponent implements OnInit {
     const items = this.budgetItems();
     const status = this.budgetStatus();
     const months = this.months();
+    const averages = this.accountService.averages();
 
     // Maps
     const itemMap = new Map<string, BudgetItem>();
@@ -256,6 +263,8 @@ export class BudgetItemsComponent implements OnInit {
       const m = s.date.substring(0, 7);
       statusMap.set(`${s.accountId}_${m}`, s);
     });
+
+    const avgMap = new Map(averages.map(a => [a.accountId, a.averageSpent]));
 
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -317,7 +326,8 @@ export class BudgetItemsComponent implements OnInit {
         account: { id: acc.id, name: acc.name },
         cells,
         totalPlanned: rowTotalPlanned,
-        totalSpent: rowTotalSpent
+        totalSpent: rowTotalSpent,
+        averageSpent: avgMap.get(acc.id) ?? 0
       };
     });
 
@@ -378,8 +388,10 @@ export class BudgetItemsComponent implements OnInit {
       // Load status with conversion
       if (currencyId) {
         this.budgetItemService.loadBudgetStatus(from, to, currencyId).subscribe();
+        this.accountService.loadYearlyExpenses(currencyId).subscribe();
       } else {
         this.budgetItemService.loadBudgetStatus(from, to).subscribe();
+        this.accountService.loadYearlyExpenses().subscribe();
       }
     });
   }
@@ -481,8 +493,10 @@ export class BudgetItemsComponent implements OnInit {
 
     if (currencyId) {
       this.budgetItemService.loadBudgetStatus(from, to, currencyId).subscribe();
+      this.accountService.loadYearlyExpenses(currencyId).subscribe();
     } else {
       this.budgetItemService.loadBudgetStatus(from, to).subscribe();
+      this.accountService.loadYearlyExpenses().subscribe();
     }
   }
 }
