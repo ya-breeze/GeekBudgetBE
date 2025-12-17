@@ -210,6 +210,12 @@ func Aggregate(
 	accountFilter AccountFilter,
 	log *slog.Logger,
 ) goserver.Aggregation {
+	// Ensure dateFrom starts at the beginning of a month/year to avoid interval drift
+	// when adding months to dates like Jan 31 or Dec 31.
+	dateFrom = utils.RoundToGranularity(dateFrom, granularity, false)
+	// Round dateTo as well for consistency
+	dateTo = utils.RoundToGranularity(dateTo, granularity, true)
+
 	res := goserver.Aggregation{
 		From: dateFrom,
 		To:   dateTo,
