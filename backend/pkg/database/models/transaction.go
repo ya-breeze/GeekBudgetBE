@@ -30,11 +30,21 @@ type Transaction struct {
 	ExternalIDs []string            `gorm:"serializer:json"`
 	Movements   []goserver.Movement `gorm:"serializer:json"`
 
+	// MatcherID is the ID of the matcher used for this conversion (if any)
+	MatcherID *uuid.UUID `gorm:"type:uuid"`
+	// IsAuto is true if this transaction was converted automatically by the matcher
+	IsAuto bool
+
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (t *Transaction) FromDB() goserver.Transaction {
+	var matcherID string
+	if t.MatcherID != nil {
+		matcherID = t.MatcherID.String()
+	}
+
 	return goserver.Transaction{
 		Id:                 t.ID.String(),
 		Date:               t.Date,
@@ -48,10 +58,16 @@ func (t *Transaction) FromDB() goserver.Transaction {
 		UnprocessedSources: t.UnprocessedSources,
 		ExternalIds:        t.ExternalIDs,
 		Movements:          t.Movements,
+		MatcherId:          matcherID,
+		IsAuto:             t.IsAuto,
 	}
 }
 
 func (t *Transaction) WithoutID() *goserver.TransactionNoId {
+	var matcherID string
+	if t.MatcherID != nil {
+		matcherID = t.MatcherID.String()
+	}
 	return &goserver.TransactionNoId{
 		Date:               t.Date,
 		Description:        t.Description,
@@ -64,10 +80,19 @@ func (t *Transaction) WithoutID() *goserver.TransactionNoId {
 		UnprocessedSources: t.UnprocessedSources,
 		ExternalIds:        t.ExternalIDs,
 		Movements:          t.Movements,
+		MatcherId:          matcherID,
+		IsAuto:             t.IsAuto,
 	}
 }
 
 func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID string) *Transaction {
+	var matcherID *uuid.UUID
+	if transaction.GetMatcherId() != "" {
+		id, err := uuid.Parse(transaction.GetMatcherId())
+		if err == nil {
+			matcherID = &id
+		}
+	}
 	return &Transaction{
 		Date:               transaction.GetDate(),
 		Description:        transaction.GetDescription(),
@@ -80,6 +105,8 @@ func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID strin
 		UnprocessedSources: transaction.GetUnprocessedSources(),
 		ExternalIDs:        transaction.GetExternalIds(),
 		Movements:          transaction.GetMovements(),
+		MatcherID:          matcherID,
+		IsAuto:             transaction.GetIsAuto(),
 		UserID:             userID,
 	}
 }
@@ -97,5 +124,7 @@ func TransactionWithoutID(transaction *goserver.Transaction) *goserver.Transacti
 		UnprocessedSources: transaction.UnprocessedSources,
 		ExternalIds:        transaction.ExternalIds,
 		Movements:          transaction.Movements,
+		MatcherId:          transaction.MatcherId,
+		IsAuto:             transaction.IsAuto,
 	}
 }

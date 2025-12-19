@@ -38,6 +38,10 @@ type TransactionNoID struct {
 	// IDs of unprocessed transaction - to match later
 	ExternalIds []string   `json:"externalIds,omitempty"`
 	Movements   []Movement `json:"movements"`
+	// ID of the matcher used for this conversion (if any)
+	MatcherId *string `json:"matcherId,omitempty"`
+	// If true, this transaction was converted automatically by the matcher
+	IsAuto *bool `json:"isAuto,omitempty"`
 }
 
 type _TransactionNoID TransactionNoID
@@ -397,6 +401,70 @@ func (o *TransactionNoID) SetMovements(v []Movement) {
 	o.Movements = v
 }
 
+// GetMatcherId returns the MatcherId field value if set, zero value otherwise.
+func (o *TransactionNoID) GetMatcherId() string {
+	if o == nil || IsNil(o.MatcherId) {
+		var ret string
+		return ret
+	}
+	return *o.MatcherId
+}
+
+// GetMatcherIdOk returns a tuple with the MatcherId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *TransactionNoID) GetMatcherIdOk() (*string, bool) {
+	if o == nil || IsNil(o.MatcherId) {
+		return nil, false
+	}
+	return o.MatcherId, true
+}
+
+// HasMatcherId returns a boolean if a field has been set.
+func (o *TransactionNoID) HasMatcherId() bool {
+	if o != nil && !IsNil(o.MatcherId) {
+		return true
+	}
+
+	return false
+}
+
+// SetMatcherId gets a reference to the given string and assigns it to the MatcherId field.
+func (o *TransactionNoID) SetMatcherId(v string) {
+	o.MatcherId = &v
+}
+
+// GetIsAuto returns the IsAuto field value if set, zero value otherwise.
+func (o *TransactionNoID) GetIsAuto() bool {
+	if o == nil || IsNil(o.IsAuto) {
+		var ret bool
+		return ret
+	}
+	return *o.IsAuto
+}
+
+// GetIsAutoOk returns a tuple with the IsAuto field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *TransactionNoID) GetIsAutoOk() (*bool, bool) {
+	if o == nil || IsNil(o.IsAuto) {
+		return nil, false
+	}
+	return o.IsAuto, true
+}
+
+// HasIsAuto returns a boolean if a field has been set.
+func (o *TransactionNoID) HasIsAuto() bool {
+	if o != nil && !IsNil(o.IsAuto) {
+		return true
+	}
+
+	return false
+}
+
+// SetIsAuto gets a reference to the given bool and assigns it to the IsAuto field.
+func (o *TransactionNoID) SetIsAuto(v bool) {
+	o.IsAuto = &v
+}
+
 func (o TransactionNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -436,6 +504,12 @@ func (o TransactionNoID) ToMap() (map[string]interface{}, error) {
 		toSerialize["externalIds"] = o.ExternalIds
 	}
 	toSerialize["movements"] = o.Movements
+	if !IsNil(o.MatcherId) {
+		toSerialize["matcherId"] = o.MatcherId
+	}
+	if !IsNil(o.IsAuto) {
+		toSerialize["isAuto"] = o.IsAuto
+	}
 	return toSerialize, nil
 }
 

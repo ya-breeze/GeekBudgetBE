@@ -33,6 +33,13 @@ func (r *WebAppRouter) unprocessedConvertHandler(w http.ResponseWriter, req *htt
 		t.Movements[i].AccountId = req.Form.Get(fmt.Sprintf("account_%d", i))
 	}
 
+	// Update matcher ID if provided
+	matcherID := req.Form.Get("matcher_id")
+	if matcherID != "" {
+		t.MatcherId = matcherID
+		t.IsAuto = false
+	}
+
 	s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
 	_, err = s.Convert(req.Context(), userID, transactionID, &t)
 	if err != nil {

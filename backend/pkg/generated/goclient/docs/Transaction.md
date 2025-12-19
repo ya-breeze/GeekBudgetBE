@@ -16,6 +16,8 @@ Name | Type | Description | Notes
 **UnprocessedSources** | Pointer to **string** | Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis | [optional] 
 **ExternalIds** | Pointer to **[]string** | IDs of unprocessed transaction - to match later | [optional] 
 **Movements** | [**[]Movement**](Movement.md) |  | 
+**MatcherId** | Pointer to **string** | ID of the matcher used for this conversion (if any) | [optional] 
+**IsAuto** | Pointer to **bool** | If true, this transaction was converted automatically by the matcher | [optional] 
 
 ## Methods
 
@@ -320,6 +322,56 @@ and a boolean to check if the value has been set.
 
 SetMovements sets Movements field to given value.
 
+
+### GetMatcherId
+
+`func (o *Transaction) GetMatcherId() string`
+
+GetMatcherId returns the MatcherId field if non-nil, zero value otherwise.
+
+### GetMatcherIdOk
+
+`func (o *Transaction) GetMatcherIdOk() (*string, bool)`
+
+GetMatcherIdOk returns a tuple with the MatcherId field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMatcherId
+
+`func (o *Transaction) SetMatcherId(v string)`
+
+SetMatcherId sets MatcherId field to given value.
+
+### HasMatcherId
+
+`func (o *Transaction) HasMatcherId() bool`
+
+HasMatcherId returns a boolean if a field has been set.
+
+### GetIsAuto
+
+`func (o *Transaction) GetIsAuto() bool`
+
+GetIsAuto returns the IsAuto field if non-nil, zero value otherwise.
+
+### GetIsAutoOk
+
+`func (o *Transaction) GetIsAutoOk() (*bool, bool)`
+
+GetIsAutoOk returns a tuple with the IsAuto field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIsAuto
+
+`func (o *Transaction) SetIsAuto(v bool)`
+
+SetIsAuto sets IsAuto field to given value.
+
+### HasIsAuto
+
+`func (o *Transaction) HasIsAuto() bool`
+
+HasIsAuto returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

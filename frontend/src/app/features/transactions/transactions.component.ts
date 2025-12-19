@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -34,6 +35,7 @@ import { LayoutService } from '../../layout/services/layout.service';
     MatProgressSpinnerModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatTooltipModule,
     MatChipsModule,
     MatFormFieldModule,
     MatInputModule,

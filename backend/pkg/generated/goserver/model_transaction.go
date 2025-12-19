@@ -43,6 +43,12 @@ type Transaction struct {
 	ExternalIds []string `json:"externalIds,omitempty"`
 
 	Movements []Movement `json:"movements"`
+
+	// ID of the matcher used for this conversion (if any)
+	MatcherId string `json:"matcherId,omitempty"`
+
+	// If true, this transaction was converted automatically by the matcher
+	IsAuto bool `json:"isAuto,omitempty"`
 }
 
 type TransactionInterface interface {
@@ -58,6 +64,8 @@ type TransactionInterface interface {
 	GetUnprocessedSources() string
 	GetExternalIds() []string
 	GetMovements() []Movement
+	GetMatcherId() string
+	GetIsAuto() bool
 }
 
 func (c *Transaction) GetId() string {
@@ -95,6 +103,12 @@ func (c *Transaction) GetExternalIds() []string {
 }
 func (c *Transaction) GetMovements() []Movement {
 	return c.Movements
+}
+func (c *Transaction) GetMatcherId() string {
+	return c.MatcherId
+}
+func (c *Transaction) GetIsAuto() bool {
+	return c.IsAuto
 }
 
 // AssertTransactionRequired checks if the required fields are not zero-ed

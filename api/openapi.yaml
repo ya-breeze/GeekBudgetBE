@@ -1429,6 +1429,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Movement"
+        matcherId:
+          type: string
+          format: uuid
+          description: ID of the matcher used for this conversion (if any)
+        isAuto:
+          type: boolean
+          description: If true, this transaction was converted automatically by the matcher
       required:
         - date
         - movements

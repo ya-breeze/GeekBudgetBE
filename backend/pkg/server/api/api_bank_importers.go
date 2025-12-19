@@ -201,6 +201,12 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		return nil, fmt.Errorf("can't fetch transactions from DB: %w", err)
 	}
 
+	matchers, err := s.db.GetMatchersRuntime(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get matchers")
+		return nil, fmt.Errorf("can't get matchers: %w", err)
+	}
+
 	// save transactions to the database
 	cnt := 0
 	for _, t := range transactions {
@@ -220,6 +226,49 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		}
 		if found {
 			continue
+		}
+
+		// Try to match with perfect matchers
+		// Create temporary transaction for matching
+		tempDetails := &goserver.Transaction{
+			Date:               t.Date,
+			Description:        t.Description,
+			Place:              t.Place,
+			Tags:               t.Tags,
+			PartnerName:        t.PartnerName,
+			PartnerAccount:     t.PartnerAccount,
+			PartnerInternalId:  t.PartnerInternalId,
+			Extra:              t.Extra,
+			UnprocessedSources: t.UnprocessedSources,
+			ExternalIds:        t.ExternalIds,
+			Movements:          t.Movements,
+		}
+
+		for _, matcher := range matchers {
+			if common.Match(&matcher, tempDetails) != common.MatchResultSuccess {
+				continue
+			}
+
+			if isPerfectMatch(matcher.Matcher) {
+				s.logger.Info("Found perfect match", "matcher", matcher.Matcher.OutputDescription, "transaction", t.Description)
+
+				t.Description = matcher.Matcher.OutputDescription
+				for i := range t.Movements {
+					if t.Movements[i].AccountId == "" {
+						t.Movements[i].AccountId = matcher.Matcher.OutputAccountId
+					}
+				}
+				t.Tags = append(t.Tags, matcher.Matcher.OutputTags...)
+				t.Tags = sortAndRemoveDuplicates(t.Tags)
+				t.MatcherId = matcher.Matcher.Id
+				t.IsAuto = true
+
+				// auto-confirm the matcher
+				if err := s.db.AddMatcherConfirmation(userID, t.MatcherId, true); err != nil {
+					s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", t.MatcherId, "error", err)
+				}
+				break
+			}
 		}
 
 		_, err = s.db.CreateTransaction(userID, &t)
@@ -311,4 +360,15 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 	}
 
 	return goserver.Response(200, lastImport), nil
+}
+func isPerfectMatch(m *goserver.Matcher) bool {
+	if len(m.ConfirmationHistory) < 10 {
+		return false
+	}
+	for _, confirmed := range m.ConfirmationHistory {
+		if !confirmed {
+			return false
+		}
+	}
+	return true
 }

@@ -211,13 +211,15 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 		return goserver.Response(500, nil), nil
 	}
 
-	// If a matcher ID is provided, record a confirmation
+	// If a matcher ID is provided, record a confirmation and update transaction
 	if matcherId != "" {
 		if err := s.db.AddMatcherConfirmation(userID, matcherId, true); err != nil {
 			s.logger.With("error", err, "matcherId", matcherId).Error("Failed to add matcher confirmation")
 			// We continue even if confirmation stats fail, as the conversion is the primary action
 		}
+		transactionNoID.MatcherId = matcherId
 	}
+	transactionNoID.IsAuto = false
 
 	transaction, err := s.Convert(ctx, userID, id, &transactionNoID)
 	if err != nil {

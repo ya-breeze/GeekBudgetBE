@@ -120,5 +120,26 @@
   .mat-row:hover {
     background-color: rgba(0, 0, 0, 0.04);
   }
+
+  .description-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .match-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      cursor: help;
+
+      &.auto {
+        color: #7b1fa2; // Purple-ish
+      }
+
+      &.manual {
+        color: #00796b; // Teal
+      }
+    }
+  }
 }
 

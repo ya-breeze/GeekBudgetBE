@@ -13,15 +13,29 @@ const (
 
 func RoundToGranularity(date time.Time, granularity Granularity, roundUp bool,
 ) time.Time {
-	add := 0
-	if roundUp {
-		add = 1
+	var rounded time.Time
+	if granularity == GranularityMonth {
+		rounded = time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())
+	} else if granularity == GranularityYear {
+		rounded = time.Date(date.Year(), 1, 1, 0, 0, 0, 0, date.Location())
 	}
 
+	if !roundUp {
+		return rounded
+	}
+
+	// If calculating ceiling (roundUp) and validation passes - return rounded
+	// Check if date is already rounded (equal to rounded).
+	// Note: Equal compares time instant. We constructed rounded with same Location.
+	if date.Equal(rounded) {
+		return rounded
+	}
+
+	add := 1
 	if granularity == GranularityMonth {
-		return time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location()).AddDate(0, add, 0)
+		return rounded.AddDate(0, add, 0)
 	} else if granularity == GranularityYear {
-		return time.Date(date.Year(), 1, 1, 0, 0, 0, 0, date.Location()).AddDate(add, 0, 0)
+		return rounded.AddDate(add, 0, 0)
 	}
 	return date
 }

@@ -15,6 +15,16 @@ export interface TransactionNoId {
    * Stores extra data about transaction. For example could hold "variable symbol" to distinguish payment for the same account, but with different meaning
    */
   extra?: string;
+
+  /**
+   * If true, this transaction was converted automatically by the matcher
+   */
+  isAuto?: boolean;
+
+  /**
+   * ID of the matcher used for this conversion (if any)
+   */
+  matcherId?: string;
   movements: Array<Movement>;
   partnerAccount?: string;
 
