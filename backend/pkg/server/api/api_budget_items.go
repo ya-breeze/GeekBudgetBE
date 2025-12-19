@@ -94,7 +94,7 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 		if _, ok := budgetMap[key]; !ok {
 			budgetMap[key] = make(map[string]float64)
 		}
-		
+
 		amount := b.Amount
 		// Convert if needed
 		accCurrencyId := accountCurrencyMap[b.AccountId]
@@ -174,8 +174,8 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 					AccountId: accId,
 					Budgeted:  budgeted,
 					Spent:     spent,
-					Rollover:  previousRollover, 
-					Available: remainder,        
+					Rollover:  previousRollover,
+					Available: remainder,
 				})
 			}
 		}

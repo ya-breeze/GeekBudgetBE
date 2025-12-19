@@ -20,7 +20,6 @@ func TestAddMatcherConfirmation(t *testing.T) {
 
 	// create a matcher using Storage API
 	noid := &goserver.MatcherNoId{
-
 		ConfirmationHistory: []bool{},
 	}
 	created, err := st.CreateMatcher("user-1", noid)

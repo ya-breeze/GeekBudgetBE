@@ -361,6 +361,7 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 
 	return goserver.Response(200, lastImport), nil
 }
+
 func isPerfectMatch(m *goserver.Matcher) bool {
 	if len(m.ConfirmationHistory) < 10 {
 		return false

@@ -103,7 +103,7 @@ validate:
 lint:
 	@echo "🚀 Linting backend..."
 	@cd ${ROOT_DIR}/backend; \
-		go tool mvdan.cc/gofumpt -l -d .
+		go tool mvdan.cc/gofumpt -w .
 	@echo "🚀 Linting frontend..."
 	@cd ${ROOT_DIR}/frontend; \
 		npx prettier --write "src/**/*.{ts,html,css,scss,json}"; \

@@ -101,7 +101,6 @@ var _ = Describe("Unprocessed Transactions API", func() {
 
 		// Create matcher
 		m := goclient.MatcherNoID{
-
 			OutputDescription: "Billa",
 			OutputAccountId:   "accountID",
 			DescriptionRegExp: utils.StrToRef(`(?i)\bBilla\b`),

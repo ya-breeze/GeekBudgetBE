@@ -88,7 +88,6 @@ var _ = Describe("Web unprocessed convert integration", func() {
 
 		// create matcher that matches description
 		m := goclient.MatcherNoID{
-
 			OutputDescription: "WEBSTORE",
 			OutputAccountId:   "accountID",
 			DescriptionRegExp: utils.StrToRef(`(?i)webstore`),

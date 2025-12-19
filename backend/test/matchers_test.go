@@ -112,7 +112,6 @@ var _ = Describe("Matchers API", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
 		matcher := goclient.MatcherNoID{
-
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          ptrString("Test.*"),
 			PartnerAccountNumberRegExp: ptrString("123.*"),
@@ -143,7 +142,6 @@ var _ = Describe("Matchers API", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
 		matcher := goclient.MatcherNoID{
-
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          ptrString("NonMatching.*"),
 			PartnerAccountNumberRegExp: ptrString("999.*"),
@@ -174,7 +172,6 @@ var _ = Describe("Matchers API", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
 		matcher := goclient.MatcherNoID{
-
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          ptrString("Test.*"),
 			PartnerAccountNumberRegExp: ptrString("123.*"),
@@ -221,7 +218,6 @@ var _ = Describe("Matchers API", func() {
 
 		// Create a matcher from this transaction
 		matcher := goclient.MatcherNoID{
-
 			OutputDescription:          "Converted",
 			DescriptionRegExp:          specialTxn.Description, // Should be escaped
 			PartnerAccountNumberRegExp: specialTxn.PartnerAccount,
