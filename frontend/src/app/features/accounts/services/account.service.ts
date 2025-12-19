@@ -136,7 +136,7 @@ export class AccountService {
 
                         aggregation.currencies.forEach((curr) => {
                             curr.accounts?.forEach((acc) => {
-                                const totalSpent = acc.amounts?.[0] ?? 0;
+                                const totalSpent = (acc.amounts ?? []).reduce((sum, val) => sum + val, 0);
                                 avgs.push({
                                     accountId: acc.accountId!,
                                     averageSpent: totalSpent / 12,

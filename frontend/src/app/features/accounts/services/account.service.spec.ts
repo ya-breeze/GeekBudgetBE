@@ -24,6 +24,9 @@ describe('AccountService', () => {
         httpMock.verify();
     });
 
+    // Helper to match partial URLs
+    const matchUrl = (url: string, fragment: string) => url.includes(fragment);
+
     it('should be created', () => {
         expect(service).toBeTruthy();
     });
@@ -98,6 +101,38 @@ describe('AccountService', () => {
 
             const req = httpMock.expectOne(`${apiConfig.rootUrl}/v1/accounts`);
             req.flush('Server Error', mockError);
+        });
+    });
+
+    describe('loadYearlyExpenses', () => {
+        it('should calculate average correctly with items in multiple years', (done) => {
+            // We want to test that it sums up multiple buckets.
+            // Mock response with amounts split across buckets (e.g. 2 years)
+            const mockAggregation = {
+                currencies: [{
+                    currencyId: 'USD',
+                    accounts: [{
+                        accountId: 'acc1',
+                        // amounts[0] is one year, amounts[1] is next year
+                        amounts: [0, 1200]
+                    }]
+                }]
+            };
+
+            service.loadYearlyExpenses('USD').subscribe({
+                next: (agg) => {
+                    const avgs = service.averages();
+                    const avg = avgs.find(a => a.accountId === 'acc1');
+                    expect(avg).toBeTruthy();
+                    // Should be (0 + 1200) / 12 = 100
+                    expect(avg?.averageSpent).toBe(100);
+                    done();
+                }
+            });
+
+            const req = httpMock.expectOne(req => req.url.includes('/v1/expenses'));
+            expect(req.request.method).toBe('GET');
+            req.flush(mockAggregation);
         });
     });
 
