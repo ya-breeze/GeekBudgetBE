@@ -24,6 +24,8 @@ import { Currency } from '../../core/api/models/currency';
 import { forkJoin, Observable } from 'rxjs';
 import { TransactionUtils } from './utils/transaction.utils';
 import { LayoutService } from '../../layout/services/layout.service';
+import { MatcherService } from '../matchers/services/matcher.service';
+import { Matcher } from '../../core/api/models/matcher';
 
 @Component({
     selector: 'app-transactions',
@@ -50,6 +52,7 @@ export class TransactionsComponent implements OnInit {
     private readonly transactionService = inject(TransactionService);
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
+    private readonly matcherService = inject(MatcherService);
     private readonly dialog = inject(MatDialog);
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
@@ -80,6 +83,13 @@ export class TransactionsComponent implements OnInit {
     protected readonly currencyMap = computed<Map<string, Currency>>(() => {
         const map = new Map<string, Currency>();
         this.currencies().forEach((currency) => map.set(currency.id!, currency));
+        return map;
+    });
+
+    protected readonly matchers = this.matcherService.matchers;
+    protected readonly matcherMap = computed<Map<string, Matcher>>(() => {
+        const map = new Map<string, Matcher>();
+        this.matchers().forEach((matcher) => map.set(matcher.id!, matcher));
         return map;
     });
 
@@ -207,6 +217,7 @@ export class TransactionsComponent implements OnInit {
         forkJoin([
             this.accountService.loadAccounts(),
             this.currencyService.loadCurrencies(),
+            this.matcherService.loadMatchers(),
             this.loadTransactions(),
         ]).subscribe({
             next: () => this.loading.set(false),
@@ -401,6 +412,16 @@ export class TransactionsComponent implements OnInit {
         }
 
         return outputAccountNames.join(', ');
+    }
+
+    /**
+     * Get the name of a matcher by its ID
+     * @param matcherId The ID of the matcher
+     * @returns The output description of the matcher, or the ID if not found
+     */
+    getMatcherName(matcherId: string): string {
+        const matcher = this.matcherMap().get(matcherId);
+        return matcher?.outputDescription || matcher?.descriptionRegExp || 'Unknown Matcher';
     }
 
     protected onSortChange(sort: Sort): void {

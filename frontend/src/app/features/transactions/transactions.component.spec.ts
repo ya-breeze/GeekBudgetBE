@@ -13,12 +13,16 @@ import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 
+import { MatcherService } from '../matchers/services/matcher.service';
+import { Matcher } from '../../core/api/models/matcher';
+
 describe('TransactionsComponent', () => {
     let component: TransactionsComponent;
     let fixture: ComponentFixture<TransactionsComponent>;
     let mockTransactionService: jasmine.SpyObj<TransactionService>;
     let mockAccountService: jasmine.SpyObj<AccountService>;
     let mockCurrencyService: jasmine.SpyObj<CurrencyService>;
+    let mockMatcherService: jasmine.SpyObj<MatcherService>;
     let mockDialog: jasmine.SpyObj<MatDialog>;
     let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
 
@@ -95,12 +99,17 @@ describe('TransactionsComponent', () => {
             currencies: signal<Currency[]>([]),
         });
 
+        mockMatcherService = jasmine.createSpyObj('MatcherService', ['loadMatchers'], {
+            matchers: signal<Matcher[]>([]),
+        });
+
         mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
         mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
         mockTransactionService.loadTransactions.and.returnValue(of(mockTransactions));
         mockAccountService.loadAccounts.and.returnValue(of(mockAccounts));
         mockCurrencyService.loadCurrencies.and.returnValue(of(mockCurrencies));
+        mockMatcherService.loadMatchers.and.returnValue(of([]));
 
         await TestBed.configureTestingModule({
             imports: [TransactionsComponent, NoopAnimationsModule],
@@ -108,6 +117,7 @@ describe('TransactionsComponent', () => {
                 { provide: TransactionService, useValue: mockTransactionService },
                 { provide: AccountService, useValue: mockAccountService },
                 { provide: CurrencyService, useValue: mockCurrencyService },
+                { provide: MatcherService, useValue: mockMatcherService },
                 { provide: MatDialog, useValue: mockDialog },
                 { provide: MatSnackBar, useValue: mockSnackBar },
                 provideRouter([]),
@@ -582,6 +592,55 @@ describe('TransactionsComponent', () => {
             expect(sorted[0].id).toBe('4'); // 2024-01-18
             expect(sorted[1].id).toBe('2'); // 2024-01-16
             expect(sorted[2].id).toBe('1'); // 2024-01-15
+        });
+    });
+
+    describe('Get Matcher Name', () => {
+        const mockMatchers: Matcher[] = [
+            {
+                id: 'm1',
+                outputDescription: 'Netflix',
+                outputAccountId: 'acc3',
+                confirmationsCount: 1,
+                confirmationsTotal: 1,
+                outputTags: [],
+                currencyRegExp: '',
+                partnerNameRegExp: '',
+                partnerAccountNumberRegExp: '',
+                descriptionRegExp: '',
+                extraRegExp: '',
+                confirmationHistory: [],
+            },
+            {
+                id: 'm2',
+                outputDescription: '',
+                descriptionRegExp: 'Spotify',
+                outputAccountId: 'acc3',
+                confirmationsCount: 1,
+                confirmationsTotal: 1,
+                outputTags: [],
+                currencyRegExp: '',
+                partnerNameRegExp: '',
+                partnerAccountNumberRegExp: '',
+                extraRegExp: '',
+                confirmationHistory: [],
+            },
+        ];
+
+        beforeEach(() => {
+            mockMatcherService.matchers.set(mockMatchers);
+        });
+
+        it('should return outputDescription if available', () => {
+            expect(component.getMatcherName('m1')).toBe('Netflix');
+        });
+
+        it('should return descriptionRegExp if outputDescription is missing', () => {
+            expect(component.getMatcherName('m2')).toBe('Spotify');
+        });
+
+        it('should return "Unknown Matcher" if matcher not found', () => {
+            expect(component.getMatcherName('unknown')).toBe('Unknown Matcher');
         });
     });
 });
