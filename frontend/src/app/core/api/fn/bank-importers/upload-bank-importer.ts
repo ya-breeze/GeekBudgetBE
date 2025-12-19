@@ -10,37 +10,41 @@ import { RequestBuilder } from '../../request-builder';
 import { ImportResult } from '../../models/import-result';
 
 export interface UploadBankImporter$Params {
+    /**
+     * ID of the bank importer
+     */
+    id: string;
 
-/**
- * ID of the bank importer
- */
-  id: string;
-
-/**
- * format of the data
- */
-  format: 'csv' | 'xlsx';
-      body?: {
-'file'?: Blob;
+    /**
+     * format of the data
+     */
+    format: 'csv' | 'xlsx';
+    body?: {
+        file?: Blob;
+    };
 }
-}
 
-export function uploadBankImporter(http: HttpClient, rootUrl: string, params: UploadBankImporter$Params, context?: HttpContext): Observable<StrictHttpResponse<ImportResult>> {
-  const rb = new RequestBuilder(rootUrl, uploadBankImporter.PATH, 'post');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.query('format', params.format, {});
-    rb.body(params.body, 'multipart/form-data');
-  }
+export function uploadBankImporter(
+    http: HttpClient,
+    rootUrl: string,
+    params: UploadBankImporter$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<ImportResult>> {
+    const rb = new RequestBuilder(rootUrl, uploadBankImporter.PATH, 'post');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.query('format', params.format, {});
+        rb.body(params.body, 'multipart/form-data');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<ImportResult>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<ImportResult>;
+            }),
+        );
 }
 
 uploadBankImporter.PATH = '/v1/bankImporters/{id}/upload';

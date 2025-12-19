@@ -1,55 +1,55 @@
 ::ng-deep .mat-mdc-dialog-content {
-  max-height: 80vh;
+    max-height: 80vh;
 }
 
 .bank-importer-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 400px;
-  padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 400px;
+    padding-top: 16px;
 }
 
 .full-width {
-  width: 100%;
+    width: 100%;
 }
 
 .checkbox-field {
-  padding: 8px 0;
+    padding: 8px 0;
 }
 
 .tab-content {
-  padding: 16px 0;
-  min-height: 300px;
+    padding: 16px 0;
+    min-height: 300px;
 }
 
 .history-table {
-  width: 100%;
+    width: 100%;
 
-  th.mat-header-cell {
-    font-weight: bold;
-    color: var(--text-secondary);
-  }
+    th.mat-header-cell {
+        font-weight: bold;
+        color: var(--text-secondary);
+    }
 
-  td.mat-cell {
-    padding: 8px;
-    font-size: 14px;
-  }
+    td.mat-cell {
+        padding: 8px;
+        font-size: 14px;
+    }
 
-  .success {
-    color: #4caf50;
-    font-weight: 500;
-  }
+    .success {
+        color: #4caf50;
+        font-weight: 500;
+    }
 
-  .error {
-    color: #f44336;
-    font-weight: 500;
-  }
+    .error {
+        color: #f44336;
+        font-weight: 500;
+    }
 }
 
 .no-data {
-  text-align: center;
-  color: var(--text-secondary);
-  padding: 32px;
-  font-style: italic;
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 32px;
+    font-style: italic;
 }

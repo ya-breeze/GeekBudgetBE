@@ -1,38 +1,37 @@
 .settings-container {
-  padding: 0;
+    padding: 0;
 }
 
 .page-title {
-  margin: 0 0 16px 0;
-  font-size: 24px;
-  font-weight: 500;
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    font-weight: 500;
 }
 
 .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
 }
 
 .settings-card {
-  max-width: 600px;
+    max-width: 600px;
 }
 
 .settings-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .full-width {
-  width: 100%;
+    width: 100%;
 }
 
 .form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
 }
-

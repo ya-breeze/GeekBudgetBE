@@ -10,27 +10,31 @@ import { RequestBuilder } from '../../request-builder';
 import { AccountHistory } from '../../models/account-history';
 
 export interface GetAccountHistory$Params {
-
-/**
- * ID of account
- */
-  accountId: string;
+    /**
+     * ID of account
+     */
+    accountId: string;
 }
 
-export function getAccountHistory(http: HttpClient, rootUrl: string, params: GetAccountHistory$Params, context?: HttpContext): Observable<StrictHttpResponse<AccountHistory>> {
-  const rb = new RequestBuilder(rootUrl, getAccountHistory.PATH, 'get');
-  if (params) {
-    rb.path('accountId', params.accountId, {});
-  }
+export function getAccountHistory(
+    http: HttpClient,
+    rootUrl: string,
+    params: GetAccountHistory$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<AccountHistory>> {
+    const rb = new RequestBuilder(rootUrl, getAccountHistory.PATH, 'get');
+    if (params) {
+        rb.path('accountId', params.accountId, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<AccountHistory>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<AccountHistory>;
+            }),
+        );
 }
 
 getAccountHistory.PATH = '/v1/accounts/{accountId}/history';

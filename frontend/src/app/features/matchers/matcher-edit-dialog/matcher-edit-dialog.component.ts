@@ -34,25 +34,31 @@ import { AccountSelectComponent } from '../../../shared/components/account-selec
         MatProgressSpinnerModule,
         MatProgressSpinnerModule,
         MatCheckboxModule,
-        AccountSelectComponent
+        AccountSelectComponent,
     ],
     templateUrl: './matcher-edit-dialog.component.html',
-    styleUrls: ['./matcher-edit-dialog.component.scss']
+    styleUrls: ['./matcher-edit-dialog.component.scss'],
 })
 export class MatcherEditDialogComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
     private readonly dialogRef = inject(MatDialogRef<MatcherEditDialogComponent>);
     private readonly matcherService = inject(MatcherService);
     private readonly accountService = inject(AccountService);
-    readonly data = inject<{ matcher?: Matcher; transaction?: Transaction } | undefined>(MAT_DIALOG_DATA);
+    readonly data = inject<{ matcher?: Matcher; transaction?: Transaction } | undefined>(
+        MAT_DIALOG_DATA,
+    );
 
     protected readonly accounts = this.accountService.accounts;
     protected readonly loading = signal(false);
 
     // Regex/Matcher Testing Signals
     protected readonly testString = signal('');
-    protected readonly matchResult = signal<{ result?: boolean, reason?: string } | null>(null);
-    protected readonly regexResult = signal<{ isValid: boolean, isMatch: boolean, error?: string } | null>(null);
+    protected readonly matchResult = signal<{ result?: boolean; reason?: string } | null>(null);
+    protected readonly regexResult = signal<{
+        isValid: boolean;
+        isMatch: boolean;
+        error?: string;
+    } | null>(null);
     protected readonly testingMatch = signal(false);
     protected readonly testingRegex = signal(false);
 
@@ -65,7 +71,6 @@ export class MatcherEditDialogComponent implements OnInit {
         // Construct matcher object from form (excluding output fields which don't affect matching)
         // We need to be careful to constructing it correctly for the backend check
         const matcherToCheck: MatcherNoId = {
-
             descriptionRegExp: formValue.descriptionRegExp || undefined,
             partnerNameRegExp: formValue.partnerNameRegExp || undefined,
             partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,
@@ -73,7 +78,7 @@ export class MatcherEditDialogComponent implements OnInit {
             extraRegExp: formValue.extraRegExp || undefined,
             outputAccountId: 'temp', // Not relevant for matching check
             outputDescription: 'temp',
-            outputTags: []
+            outputTags: [],
         };
 
         const t = this.data.transaction;
@@ -88,7 +93,7 @@ export class MatcherEditDialogComponent implements OnInit {
             partnerName: t.partnerName,
             place: t.place,
             tags: t.tags,
-            unprocessedSources: t.unprocessedSources
+            unprocessedSources: t.unprocessedSources,
         };
 
         this.matcherService.checkMatcher(matcherToCheck, transactionToCheck).subscribe({
@@ -99,7 +104,7 @@ export class MatcherEditDialogComponent implements OnInit {
             error: () => {
                 this.matchResult.set({ result: false, reason: 'Network error checking match' });
                 this.testingMatch.set(false);
-            }
+            },
         });
     }
 
@@ -121,12 +126,11 @@ export class MatcherEditDialogComponent implements OnInit {
             error: () => {
                 this.regexResult.set({ isValid: false, isMatch: false, error: 'Network error' });
                 this.testingMatch.set(false);
-            }
+            },
         });
     }
 
     protected readonly form = this.fb.group({
-
         descriptionRegExp: [''],
         partnerNameRegExp: [''],
         partnerAccountNumberRegExp: [''],
@@ -134,7 +138,7 @@ export class MatcherEditDialogComponent implements OnInit {
         extraRegExp: [''],
         outputAccountId: ['', Validators.required],
         outputDescription: ['', Validators.required],
-        outputTags: [''] // Comma separated for simplicity initially
+        outputTags: [''], // Comma separated for simplicity initially
     });
 
     ngOnInit(): void {
@@ -142,7 +146,6 @@ export class MatcherEditDialogComponent implements OnInit {
 
         if (this.data?.matcher) {
             this.form.patchValue({
-
                 descriptionRegExp: this.data.matcher.descriptionRegExp,
                 partnerNameRegExp: this.data.matcher.partnerNameRegExp,
                 partnerAccountNumberRegExp: this.data.matcher.partnerAccountNumberRegExp,
@@ -150,7 +153,7 @@ export class MatcherEditDialogComponent implements OnInit {
                 extraRegExp: this.data.matcher.extraRegExp,
                 outputAccountId: this.data.matcher.outputAccountId,
                 outputDescription: this.data.matcher.outputDescription,
-                outputTags: this.data.matcher.outputTags?.join(', ')
+                outputTags: this.data.matcher.outputTags?.join(', '),
             });
         } else if (this.data?.transaction) {
             // Pre-fill from transaction
@@ -161,8 +164,10 @@ export class MatcherEditDialogComponent implements OnInit {
                 // Pre-fill regexps with exact matches or simplistic logic (user will edit)
                 descriptionRegExp: this.escapeRegExp(t.description || ''),
                 partnerNameRegExp: t.partnerName ? this.escapeRegExp(t.partnerName) : '',
-                partnerAccountNumberRegExp: t.partnerAccount ? this.escapeRegExp(t.partnerAccount) : '',
-                outputDescription: t.description // Suggest keeping description or edit
+                partnerAccountNumberRegExp: t.partnerAccount
+                    ? this.escapeRegExp(t.partnerAccount)
+                    : '',
+                outputDescription: t.description, // Suggest keeping description or edit
             });
         }
     }
@@ -223,7 +228,6 @@ export class MatcherEditDialogComponent implements OnInit {
         const formValue = this.form.value;
 
         const matcherData: MatcherNoId = {
-
             descriptionRegExp: formValue.descriptionRegExp || undefined,
             partnerNameRegExp: formValue.partnerNameRegExp || undefined,
             partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,
@@ -231,7 +235,12 @@ export class MatcherEditDialogComponent implements OnInit {
             extraRegExp: formValue.extraRegExp || undefined,
             outputAccountId: formValue.outputAccountId!,
             outputDescription: formValue.outputDescription!,
-            outputTags: formValue.outputTags ? formValue.outputTags.split(',').map(t => t.trim()).filter(t => !!t) : []
+            outputTags: formValue.outputTags
+                ? formValue.outputTags
+                      .split(',')
+                      .map((t) => t.trim())
+                      .filter((t) => !!t)
+                : [],
         };
 
         const request = this.data?.matcher
@@ -247,7 +256,7 @@ export class MatcherEditDialogComponent implements OnInit {
                 this.loading.set(false);
                 // Error handling usually done in service via snackbar or global handler?
                 // If not, we should show message here. Service has error signal.
-            }
+            },
         });
     }
 

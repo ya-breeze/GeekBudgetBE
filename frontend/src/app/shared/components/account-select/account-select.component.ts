@@ -1,6 +1,23 @@
-import { Component, computed, forwardRef, inject, Input, OnChanges, SimpleChanges, signal, ViewChild } from '@angular/core';
+import {
+    Component,
+    computed,
+    forwardRef,
+    inject,
+    Input,
+    OnChanges,
+    SimpleChanges,
+    signal,
+    ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+    ControlValueAccessor,
+    FormControl,
+    FormsModule,
+    NG_VALUE_ACCESSOR,
+    ReactiveFormsModule,
+    Validators,
+} from '@angular/forms';
 import { MatAutocompleteModule, MatAutocomplete } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -25,17 +42,17 @@ export interface AccountGroup {
         MatFormFieldModule,
         MatInputModule,
         MatAutocompleteModule,
-        MatOptionModule
+        MatOptionModule,
     ],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => AccountSelectComponent),
-            multi: true
-        }
+            multi: true,
+        },
     ],
     templateUrl: './account-select.component.html',
-    styleUrls: ['./account-select.component.scss']
+    styleUrls: ['./account-select.component.scss'],
 })
 export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
     private readonly accountService: AccountService = inject(AccountService);
@@ -50,18 +67,18 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
 
     // Internal value tracking (Account ID)
     private _value: string | null = null;
-    private onChange: (value: string | null) => void = () => { };
-    private onTouched: () => void = () => { };
+    private onChange: (value: string | null) => void = () => {};
+    private onTouched: () => void = () => {};
 
     protected readonly filterValue = toSignal(
         this.searchControl.valueChanges.pipe(
             startWith(''),
-            map(value => {
+            map((value) => {
                 if (typeof value === 'string') return value;
                 return value?.name || '';
-            })
+            }),
         ),
-        { initialValue: '' }
+        { initialValue: '' },
     );
 
     protected readonly filteredAccountGroups = computed(() => {
@@ -70,7 +87,7 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
 
         // 1. Filter
         const filtered = accounts.filter((account: Account) =>
-            account.name.toLowerCase().includes(filterValue)
+            account.name.toLowerCase().includes(filterValue),
         );
 
         // 2. Sort
@@ -91,19 +108,19 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
         // Order of groups
         const order = ['expense', 'income', 'asset', 'liability', 'equity'];
         const pluralMap: Record<string, string> = {
-            'expense': 'Expenses',
-            'income': 'Incomes',
-            'asset': 'Assets',
-            'liability': 'Liabilities',
-            'equity': 'Equities'
+            expense: 'Expenses',
+            income: 'Incomes',
+            asset: 'Assets',
+            liability: 'Liabilities',
+            equity: 'Equities',
         };
 
         const getGroupName = (type: string) => {
-            return pluralMap[type] || (type.charAt(0).toUpperCase() + type.slice(1) + 's');
+            return pluralMap[type] || type.charAt(0).toUpperCase() + type.slice(1) + 's';
         };
 
         // Add known types in order
-        order.forEach(type => {
+        order.forEach((type) => {
             if (typeMap.has(type)) {
                 groups.push({ name: getGroupName(type), accounts: typeMap.get(type)! });
                 typeMap.delete(type);
@@ -125,15 +142,15 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
         }
 
         // Listen for selection changes from the autocomplete
-        this.searchControl.valueChanges.subscribe(value => {
+        this.searchControl.valueChanges.subscribe((value) => {
             if (typeof value === 'object' && value !== null) {
                 this.emitValue(value.id);
             } else if (value === '') {
                 // Clear selection if input is cleared
                 this.emitValue(null);
             }
-            // Note: If user types text that doesn't match, we don't necessarily clear immediately 
-            // until onBlur logic or valid option selected. 
+            // Note: If user types text that doesn't match, we don't necessarily clear immediately
+            // until onBlur logic or valid option selected.
             // But for now, let's keep it simple: only Emit if it's a valid object.
         });
     }

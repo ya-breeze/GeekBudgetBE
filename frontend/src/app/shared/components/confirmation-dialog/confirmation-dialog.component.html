@@ -4,6 +4,7 @@
 </mat-dialog-content>
 <mat-dialog-actions align="end">
     <button mat-button [mat-dialog-close]="false">{{ data.cancelText || 'Cancel' }}</button>
-    <button mat-button [mat-dialog-close]="true" cdkFocusInitial color="primary">{{ data.confirmText || 'Confirm'
-        }}</button>
+    <button mat-button [mat-dialog-close]="true" cdkFocusInitial color="primary">
+        {{ data.confirmText || 'Confirm' }}
+    </button>
 </mat-dialog-actions>

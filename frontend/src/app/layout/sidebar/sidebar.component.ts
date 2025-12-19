@@ -9,54 +9,62 @@ import { AuthService } from '../../core/auth/services/auth.service';
 import { UnprocessedTransactionService } from '../../features/unprocessed-transactions/services/unprocessed-transaction.service';
 
 interface MenuItem {
-  label: string;
-  icon: string;
-  route: string;
-  badge?: () => number;
+    label: string;
+    icon: string;
+    route: string;
+    badge?: () => number;
 }
 
 @Component({
-  selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, MatListModule, MatIconModule, MatButtonModule, MatMenuModule, MatBadgeModule],
-  templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss',
+    selector: 'app-sidebar',
+    imports: [
+        RouterLink,
+        RouterLinkActive,
+        MatListModule,
+        MatIconModule,
+        MatButtonModule,
+        MatMenuModule,
+        MatBadgeModule,
+    ],
+    templateUrl: './sidebar.component.html',
+    styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
-  private readonly authService = inject(AuthService);
-  private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
+    private readonly authService = inject(AuthService);
+    private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
 
-  menuToggle = output<void>();
+    menuToggle = output<void>();
 
-  protected readonly currentYear = signal(new Date().getFullYear());
-  protected readonly version = signal('0.0.1');
+    protected readonly currentYear = signal(new Date().getFullYear());
+    protected readonly version = signal('0.0.1');
 
-  onMenuToggle(): void {
-    this.menuToggle.emit();
-  }
+    onMenuToggle(): void {
+        this.menuToggle.emit();
+    }
 
-  protected readonly menuItems = signal<MenuItem[]>([
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-    {
-      label: 'Unprocessed',
-      icon: 'pending_actions',
-      route: '/unprocessed',
-      badge: () => this.unprocessedTransactionService.unprocessedTransactions().length
-    },
-    { label: 'Budget', icon: 'savings', route: '/budget' },
-    { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },
+    protected readonly menuItems = signal<MenuItem[]>([
+        { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+        {
+            label: 'Unprocessed',
+            icon: 'pending_actions',
+            route: '/unprocessed',
+            badge: () => this.unprocessedTransactionService.unprocessedTransactions().length,
+        },
+        { label: 'Budget', icon: 'savings', route: '/budget' },
+        { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },
 
-    { label: 'Settings', icon: 'settings', route: '/settings' },
-    { label: 'Accounts', icon: 'account_balance', route: '/accounts' },
-    { label: 'Currencies', icon: 'currency_exchange', route: '/currencies' },
-    { label: 'Bank Importers', icon: 'cloud_upload', route: '/bank-importers' },
+        { label: 'Settings', icon: 'settings', route: '/settings' },
+        { label: 'Accounts', icon: 'account_balance', route: '/accounts' },
+        { label: 'Currencies', icon: 'currency_exchange', route: '/currencies' },
+        { label: 'Bank Importers', icon: 'cloud_upload', route: '/bank-importers' },
 
-    { label: 'Matchers', icon: 'rule', route: '/matchers' },
-    { label: 'Reports', icon: 'assessment', route: '/reports' },
+        { label: 'Matchers', icon: 'rule', route: '/matchers' },
+        { label: 'Reports', icon: 'assessment', route: '/reports' },
 
-    { label: 'Notifications', icon: 'notifications', route: '/notifications' },
-  ]);
+        { label: 'Notifications', icon: 'notifications', route: '/notifications' },
+    ]);
 
-  logout(): void {
-    this.authService.logout();
-  }
+    logout(): void {
+        this.authService.logout();
+    }
 }

@@ -1,32 +1,31 @@
 .login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .login-card {
-  width: 100%;
-  max-width: 400px;
-  padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
 }
 
 .full-width {
-  width: 100%;
-  margin-bottom: 1rem;
+    width: 100%;
+    margin-bottom: 1rem;
 }
 
 .error-message {
-  color: #f44336;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background-color: #ffebee;
-  border-radius: 4px;
-  text-align: center;
+    color: #f44336;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #ffebee;
+    border-radius: 4px;
+    text-align: center;
 }
 
 button {
-  margin-top: 1rem;
+    margin-top: 1rem;
 }
-

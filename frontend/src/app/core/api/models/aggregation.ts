@@ -3,9 +3,9 @@
 
 import { CurrencyAggregation } from '../models/currency-aggregation';
 export interface Aggregation {
-  currencies: Array<CurrencyAggregation>;
-  from: string;
-  granularity: 'month' | 'year';
-  intervals: Array<string>;
-  to: string;
+    currencies: Array<CurrencyAggregation>;
+    from: string;
+    granularity: 'month' | 'year';
+    intervals: Array<string>;
+    to: string;
 }

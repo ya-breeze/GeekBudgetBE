@@ -3,10 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  apiUrl: '/api',
-  // apiUrl: 'http://truenas.local:8881',
-  apiVersion: 'v1',
+    production: false,
+    apiUrl: '/api',
+    // apiUrl: 'http://truenas.local:8881',
+    apiVersion: 'v1',
 };
 
 /*

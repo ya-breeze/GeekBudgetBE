@@ -10,51 +10,55 @@ import { RequestBuilder } from '../../request-builder';
 import { Transaction } from '../../models/transaction';
 
 export interface GetTransactions$Params {
+    /**
+     * Filter by description
+     */
+    description?: string;
 
-/**
- * Filter by description
- */
-  description?: string;
+    /**
+     * Don't return transactions with amount less than this
+     */
+    amountFrom?: number;
 
-/**
- * Don't return transactions with amount less than this
- */
-  amountFrom?: number;
+    /**
+     * Don't return transactions with amount more than this
+     */
+    amountTo?: number;
 
-/**
- * Don't return transactions with amount more than this
- */
-  amountTo?: number;
+    /**
+     * Don't return transactions with date before this
+     */
+    dateFrom?: string;
 
-/**
- * Don't return transactions with date before this
- */
-  dateFrom?: string;
-
-/**
- * Don't return transactions with date after this
- */
-  dateTo?: string;
+    /**
+     * Don't return transactions with date after this
+     */
+    dateTo?: string;
 }
 
-export function getTransactions(http: HttpClient, rootUrl: string, params?: GetTransactions$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Transaction>>> {
-  const rb = new RequestBuilder(rootUrl, getTransactions.PATH, 'get');
-  if (params) {
-    rb.query('description', params.description, {});
-    rb.query('amountFrom', params.amountFrom, {});
-    rb.query('amountTo', params.amountTo, {});
-    rb.query('dateFrom', params.dateFrom, {});
-    rb.query('dateTo', params.dateTo, {});
-  }
+export function getTransactions(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetTransactions$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<Transaction>>> {
+    const rb = new RequestBuilder(rootUrl, getTransactions.PATH, 'get');
+    if (params) {
+        rb.query('description', params.description, {});
+        rb.query('amountFrom', params.amountFrom, {});
+        rb.query('amountTo', params.amountTo, {});
+        rb.query('dateFrom', params.dateFrom, {});
+        rb.query('dateTo', params.dateTo, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<Transaction>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<Transaction>>;
+            }),
+        );
 }
 
 getTransactions.PATH = '/v1/transactions';

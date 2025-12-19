@@ -1,97 +1,96 @@
 :host ::ng-deep .mat-mdc-dialog-container {
-  .mat-mdc-dialog-content {
-    max-height: none;
-    overflow-y: auto;
-  }
+    .mat-mdc-dialog-content {
+        max-height: none;
+        overflow-y: auto;
+    }
 }
 
 .transaction-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 0;
 }
 
 .full-width {
-  width: 100%;
+    width: 100%;
 }
 
 .form-row {
-  display: flex;
-  gap: 16px;
+    display: flex;
+    gap: 16px;
 
-  mat-form-field {
-    flex: 1;
-  }
+    mat-form-field {
+        flex: 1;
+    }
 }
 
 .form-section {
-  margin-top: 16px;
+    margin-top: 16px;
 
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
 
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 500;
+        h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
     }
-  }
 }
 
 .movements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .movement-item {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 16px;
-  background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px;
+    background-color: #fafafa;
 
-  .movement-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    .movement-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
 
-    span {
-      font-weight: 500;
+        span {
+            font-weight: 500;
+        }
     }
-  }
 
-  .movement-fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
+    .movement-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
 
-    mat-form-field.full-width {
-      grid-column: 1 / -1;
+        mat-form-field.full-width {
+            grid-column: 1 / -1;
+        }
     }
-  }
 }
 
 .tags-section {
-  margin-top: 16px;
+    margin-top: 16px;
 
-  mat-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
-    color: rgba(0, 0, 0, 0.6);
-  }
+    mat-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.6);
+    }
 
-  .tags-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
-    min-height: 32px;
-  }
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+        min-height: 32px;
+    }
 }
-

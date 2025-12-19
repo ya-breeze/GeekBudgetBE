@@ -11,23 +11,28 @@ import { BankImporter } from '../../models/bank-importer';
 import { BankImporterNoId } from '../../models/bank-importer-no-id';
 
 export interface CreateBankImporter$Params {
-      body: BankImporterNoId
+    body: BankImporterNoId;
 }
 
-export function createBankImporter(http: HttpClient, rootUrl: string, params: CreateBankImporter$Params, context?: HttpContext): Observable<StrictHttpResponse<BankImporter>> {
-  const rb = new RequestBuilder(rootUrl, createBankImporter.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function createBankImporter(
+    http: HttpClient,
+    rootUrl: string,
+    params: CreateBankImporter$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<BankImporter>> {
+    const rb = new RequestBuilder(rootUrl, createBankImporter.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<BankImporter>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<BankImporter>;
+            }),
+        );
 }
 
 createBankImporter.PATH = '/v1/bankImporters';

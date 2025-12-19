@@ -11,25 +11,30 @@ import { Transaction } from '../../models/transaction';
 import { TransactionNoId } from '../../models/transaction-no-id';
 
 export interface UpdateTransaction$Params {
-  id: string;
-      body: TransactionNoId
+    id: string;
+    body: TransactionNoId;
 }
 
-export function updateTransaction(http: HttpClient, rootUrl: string, params: UpdateTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<Transaction>> {
-  const rb = new RequestBuilder(rootUrl, updateTransaction.PATH, 'put');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
-  }
+export function updateTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: UpdateTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Transaction>> {
+    const rb = new RequestBuilder(rootUrl, updateTransaction.PATH, 'put');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Transaction>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Transaction>;
+            }),
+        );
 }
 
 updateTransaction.PATH = '/v1/transactions/{id}';

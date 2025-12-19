@@ -7,112 +7,112 @@ import { filter } from 'rxjs';
 import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
-  selector: 'app-reports',
-  imports: [RouterOutlet, RouterLink, MatCardModule, MatButtonModule, MatIconModule],
-  template: `
-    <div class="reports-container">
-      @if (!sidenavOpened()) {
-        <h1 class="page-title">Reports & Analytics</h1>
-      }
+    selector: 'app-reports',
+    imports: [RouterOutlet, RouterLink, MatCardModule, MatButtonModule, MatIconModule],
+    template: `
+        <div class="reports-container">
+            @if (!sidenavOpened()) {
+                <h1 class="page-title">Reports & Analytics</h1>
+            }
 
-      @if (showCards()) {
-      <div class="reports-grid">
-        <mat-card>
-          <mat-card-header>
-            <mat-icon>bar_chart</mat-icon>
-            <mat-card-title>Expense Report</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <p>View detailed expense breakdown by category and time period.</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <a mat-button color="primary" routerLink="expense">View Report</a>
-          </mat-card-actions>
-        </mat-card>
+            @if (showCards()) {
+                <div class="reports-grid">
+                    <mat-card>
+                        <mat-card-header>
+                            <mat-icon>bar_chart</mat-icon>
+                            <mat-card-title>Expense Report</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <p>View detailed expense breakdown by category and time period.</p>
+                        </mat-card-content>
+                        <mat-card-actions>
+                            <a mat-button color="primary" routerLink="expense">View Report</a>
+                        </mat-card-actions>
+                    </mat-card>
 
-        <mat-card>
-          <mat-card-header>
-            <mat-icon>trending_up</mat-icon>
-            <mat-card-title>Income Report</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <p>Analyze income sources and trends over time.</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary" disabled>Coming Soon</button>
-          </mat-card-actions>
-        </mat-card>
+                    <mat-card>
+                        <mat-card-header>
+                            <mat-icon>trending_up</mat-icon>
+                            <mat-card-title>Income Report</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <p>Analyze income sources and trends over time.</p>
+                        </mat-card-content>
+                        <mat-card-actions>
+                            <button mat-button color="primary" disabled>Coming Soon</button>
+                        </mat-card-actions>
+                    </mat-card>
 
-        <mat-card>
-          <mat-card-header>
-            <mat-icon>account_balance</mat-icon>
-            <mat-card-title>Balance Report</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <p>Track account balances and net worth over time.</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary" disabled>Coming Soon</button>
-          </mat-card-actions>
-        </mat-card>
+                    <mat-card>
+                        <mat-card-header>
+                            <mat-icon>account_balance</mat-icon>
+                            <mat-card-title>Balance Report</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <p>Track account balances and net worth over time.</p>
+                        </mat-card-content>
+                        <mat-card-actions>
+                            <button mat-button color="primary" disabled>Coming Soon</button>
+                        </mat-card-actions>
+                    </mat-card>
 
-        <mat-card>
-          <mat-card-header>
-            <mat-icon>download</mat-icon>
-            <mat-card-title>Export Data</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <p>Export your financial data in various formats.</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary" disabled>Coming Soon</button>
-          </mat-card-actions>
-        </mat-card>
-      </div>
-      } @else {
-      <router-outlet />
-      }
-    </div>
-  `,
-  styles: `
-    .reports-container {
-      padding: 0;
-    }
-    .page-title {
-      margin: 0 0 16px 0;
-      font-size: 24px;
-      font-weight: 500;
-    }
-    .reports-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-    }
-    mat-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      mat-icon {
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
-        color: #2196f3;
-      }
-    }
-  `,
+                    <mat-card>
+                        <mat-card-header>
+                            <mat-icon>download</mat-icon>
+                            <mat-card-title>Export Data</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <p>Export your financial data in various formats.</p>
+                        </mat-card-content>
+                        <mat-card-actions>
+                            <button mat-button color="primary" disabled>Coming Soon</button>
+                        </mat-card-actions>
+                    </mat-card>
+                </div>
+            } @else {
+                <router-outlet />
+            }
+        </div>
+    `,
+    styles: `
+        .reports-container {
+            padding: 0;
+        }
+        .page-title {
+            margin: 0 0 16px 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        mat-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            mat-icon {
+                font-size: 32px;
+                width: 32px;
+                height: 32px;
+                color: #2196f3;
+            }
+        }
+    `,
 })
 export class ReportsComponent {
-  private readonly router = inject(Router);
-  private readonly layoutService = inject(LayoutService);
+    private readonly router = inject(Router);
+    private readonly layoutService = inject(LayoutService);
 
-  protected readonly showCards = signal(true);
-  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
+    protected readonly showCards = signal(true);
+    protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
-  constructor() {
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.showCards.set(event.url === '/reports' || event.url === '/reports/');
-      });
-  }
+    constructor() {
+        this.router.events
+            .pipe(filter((event) => event instanceof NavigationEnd))
+            .subscribe((event: NavigationEnd) => {
+                this.showCards.set(event.url === '/reports' || event.url === '/reports/');
+            });
+    }
 }

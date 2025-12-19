@@ -1,44 +1,44 @@
 .header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: white;
-  color: rgba(0, 0, 0, 0.87);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  display: flex;
-  justify-content: space-between;
-  padding: 0 16px;
-  height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: white;
+    color: rgba(0, 0, 0, 0.87);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 64px;
 }
 
 .left-section {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .app-title {
-  font-size: 20px;
-  font-weight: 500;
+    font-size: 20px;
+    font-weight: 500;
 }
 
 .nav-links {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-left: 24px;
-  flex: 1;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: 24px;
+    flex: 1;
 }
 
 .nav-link {
-  color: rgba(0, 0, 0, 0.7);
-  font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
+    font-weight: 500;
 
-  mat-icon {
-    margin-right: 4px;
-  }
+    mat-icon {
+        margin-right: 4px;
+    }
 
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+    }
 }

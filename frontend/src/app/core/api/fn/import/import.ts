@@ -10,23 +10,26 @@ import { RequestBuilder } from '../../request-builder';
 import { WholeUserData } from '../../models/whole-user-data';
 
 export interface Import$Params {
-      body?: WholeUserData
+    body?: WholeUserData;
 }
 
-export function import$(http: HttpClient, rootUrl: string, params?: Import$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
-  const rb = new RequestBuilder(rootUrl, import$.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json:');
-  }
+export function import$(
+    http: HttpClient,
+    rootUrl: string,
+    params?: Import$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<void>> {
+    const rb = new RequestBuilder(rootUrl, import$.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json:');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
-    })
-  );
+    return http.request(rb.build({ responseType: 'text', accept: '*/*', context })).pipe(
+        filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+        map((r: HttpResponse<any>) => {
+            return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+        }),
+    );
 }
 
 import$.PATH = '/v1/import';

@@ -3,6 +3,4 @@
 
 import { BankImporterNoId } from '../models/bank-importer-no-id';
 import { Entity } from '../models/entity';
-export type BankImporter = Entity & BankImporterNoId & {
-};
-
+export type BankImporter = Entity & BankImporterNoId & {};

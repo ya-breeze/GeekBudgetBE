@@ -23,16 +23,18 @@ describe('UnprocessedTransactionDialogComponent', () => {
             date: '2023-01-01',
             description: 'Test',
             amount: 100,
-            movements: []
+            movements: [],
         },
         matched: [],
-        duplicates: []
+        duplicates: [],
     };
 
     beforeEach(async () => {
         const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
         const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close', 'afterClosed']);
-        const unprocessedServiceSpy = jasmine.createSpyObj('UnprocessedTransactionService', ['getUnprocessedTransaction']);
+        const unprocessedServiceSpy = jasmine.createSpyObj('UnprocessedTransactionService', [
+            'getUnprocessedTransaction',
+        ]);
         const accountServiceSpy = jasmine.createSpyObj('AccountService', ['loadAccounts']);
         accountServiceSpy.accounts = signal([]);
         const currencyServiceSpy = jasmine.createSpyObj('CurrencyService', ['loadCurrencies']);
@@ -53,7 +55,7 @@ describe('UnprocessedTransactionDialogComponent', () => {
             imports: [
                 UnprocessedTransactionDialogComponent,
                 HttpClientTestingModule,
-                NoopAnimationsModule
+                NoopAnimationsModule,
             ],
             providers: [
                 { provide: MAT_DIALOG_DATA, useValue: mockTransaction },
@@ -63,8 +65,8 @@ describe('UnprocessedTransactionDialogComponent', () => {
                 { provide: AccountService, useValue: accountServiceSpy },
                 { provide: CurrencyService, useValue: currencyServiceSpy },
                 { provide: BudgetItemService, useValue: budgetItemServiceSpy },
-                { provide: MatcherService, useValue: matcherServiceSpy }
-            ]
+                { provide: MatcherService, useValue: matcherServiceSpy },
+            ],
         })
             .overrideProvider(MatDialog, { useValue: dialogSpy })
             .compileComponents();
@@ -91,13 +93,13 @@ describe('UnprocessedTransactionDialogComponent', () => {
         const matchers: Matcher[] = [
             { id: '1', outputDescription: 'Zebra Service', outputAccountId: 'acc1' } as any,
             { id: '2', outputDescription: 'Banana Store', outputAccountId: 'acc2' } as any,
-            { id: '3', outputDescription: 'Apple Store', outputAccountId: 'acc1' } as any
+            { id: '3', outputDescription: 'Apple Store', outputAccountId: 'acc1' } as any,
         ];
 
         // Mock accounts
         const accounts = [
             { id: 'acc1', name: 'Expenses: Groceries' },
-            { id: 'acc2', name: 'Expenses: Entertainment' }
+            { id: 'acc2', name: 'Expenses: Entertainment' },
         ];
         // We can't easily mock the protected accounts signal directly if it's derived from service in the component constructor/field init
         // But we mocked keys in LoadAccounts.

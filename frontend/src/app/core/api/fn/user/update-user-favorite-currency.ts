@@ -11,23 +11,28 @@ import { User } from '../../models/user';
 import { UserPatchBody } from '../../models/user-patch-body';
 
 export interface UpdateUserFavoriteCurrency$Params {
-      body: UserPatchBody
+    body: UserPatchBody;
 }
 
-export function updateUserFavoriteCurrency(http: HttpClient, rootUrl: string, params: UpdateUserFavoriteCurrency$Params, context?: HttpContext): Observable<StrictHttpResponse<User>> {
-  const rb = new RequestBuilder(rootUrl, updateUserFavoriteCurrency.PATH, 'patch');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function updateUserFavoriteCurrency(
+    http: HttpClient,
+    rootUrl: string,
+    params: UpdateUserFavoriteCurrency$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<User>> {
+    const rb = new RequestBuilder(rootUrl, updateUserFavoriteCurrency.PATH, 'patch');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<User>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<User>;
+            }),
+        );
 }
 
 updateUserFavoriteCurrency.PATH = '/v1/user';

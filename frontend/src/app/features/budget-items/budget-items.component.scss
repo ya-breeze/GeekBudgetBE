@@ -1,230 +1,230 @@
 .budget-items-container {
-  padding: 0;
+    padding: 0;
 }
 
 .page-title {
-  margin: 0 0 16px 0;
-  font-size: 24px;
-  font-weight: 500;
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    font-weight: 500;
 }
 
 .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
 }
 
 .matrix-container {
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 120px); // Fill remaining space
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px); // Fill remaining space
 }
 
 .grid-wrapper {
-  overflow: auto;
-  flex: 1;
+    overflow: auto;
+    flex: 1;
 }
 
 // Header Styles
 .matrix-header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
 }
 
 .title-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 
-  h2 {
-    margin: 0;
-  }
+    h2 {
+        margin: 0;
+    }
 }
 
 .currency-badge {
-  background: #e3f2fd;
-  color: #1976d2;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .controls-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .nav-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .month-display {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  min-width: 150px;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 150px;
+    justify-content: center;
 }
 
 .density-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 
-  span {
-    font-size: 12px;
-    color: #666;
-    font-weight: 500;
-  }
+    span {
+        font-size: 12px;
+        color: #666;
+        font-weight: 500;
+    }
 }
 
 // Table Styles
 .matrix-table {
-  width: 100%;
-  border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
 
-  th,
-  td {
-    border: 1px solid #e0e0e0;
-    padding: 4px 8px; // High density
-    font-size: 13px;
-    text-align: right;
-    min-width: 100px;
-    height: 36px; // Compact row height
-  }
+    th,
+    td {
+        border: 1px solid #e0e0e0;
+        padding: 4px 8px; // High density
+        font-size: 13px;
+        text-align: right;
+        min-width: 100px;
+        height: 36px; // Compact row height
+    }
 }
 
 .matrix-table .total-col-header,
 .matrix-table .total-cell,
 .matrix-table .total-row td {
-  background-color: #fafafa;
-  font-weight: 600;
+    background-color: #fafafa;
+    font-weight: 600;
 }
 
 .matrix-table .total-row {
-  border-top: 2px solid #e0e0e0;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  background: white;
+    border-top: 2px solid #e0e0e0;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: white;
 }
 
 .matrix-table .total-row td {
-  background: #fafafa;
+    background: #fafafa;
 }
 
 .matrix-table .divider {
-  color: #ccc;
-  margin: 0 2px;
+    color: #ccc;
+    margin: 0 2px;
 }
 
 .sticky-col-header {
-  position: sticky;
-  left: 0;
-  background: #f5f5f5;
-  z-index: 3; // Higher than top header
-  text-align: left;
-  font-weight: 500;
-  min-width: 150px;
+    position: sticky;
+    left: 0;
+    background: #f5f5f5;
+    z-index: 3; // Higher than top header
+    text-align: left;
+    font-weight: 500;
+    min-width: 150px;
 }
 
 tbody .sticky-col-header {
-  z-index: 1;
-  background: white;
+    z-index: 1;
+    background: white;
 }
 
 .cell-interactive {
-  cursor: pointer;
-  transition: background-color 0.2s;
+    cursor: pointer;
+    transition: background-color 0.2s;
 
-  &:hover {
-    filter: brightness(0.95);
-  }
+    &:hover {
+        filter: brightness(0.95);
+    }
 }
 
 .status-ok {
-  background-color: #e8f5e9 !important; // Light Green - Important to override total-row styles
+    background-color: #e8f5e9 !important; // Light Green - Important to override total-row styles
 }
 
 .status-over {
-  background-color: #ffebee !important; // Light Red - Important to override total-row styles
+    background-color: #ffebee !important; // Light Red - Important to override total-row styles
 }
 
 .cell-content {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  align-items: center;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    align-items: center;
 }
 
 .planned {
-  font-weight: 500;
+    font-weight: 500;
 }
 
 .spent {
-  color: #666;
-  font-size: 0.9em;
+    color: #666;
+    font-size: 0.9em;
 }
 
 .divider {
-  color: #ccc;
+    color: #ccc;
 }
 
 .status-virtual {
-  background-color: #fff9c4 !important; // Light Yellow for virtual budget
+    background-color: #fff9c4 !important; // Light Yellow for virtual budget
 }
 
 // Intense styles for Total Cells (Row, Column, Grand)
 .total-cell.status-ok,
 .total-row td.status-ok {
-  background-color: #c8e6c9 !important; // Deeper Green
-  font-weight: 700 !important;
-  font-size: 15px !important; // Bigger font
-  color: #1b5e20; // Darker text for contrast
+    background-color: #c8e6c9 !important; // Deeper Green
+    font-weight: 700 !important;
+    font-size: 15px !important; // Bigger font
+    color: #1b5e20; // Darker text for contrast
 }
 
 .total-cell.status-over,
 .total-row td.status-over {
-  background-color: #ffcdd2 !important; // Deeper Red
-  font-weight: 700 !important;
-  font-size: 15px !important; // Bigger font
-  color: #b71c1c; // Darker text for contrast
+    background-color: #ffcdd2 !important; // Deeper Red
+    font-weight: 700 !important;
+    font-size: 15px !important; // Bigger font
+    color: #b71c1c; // Darker text for contrast
 }
 // Account Cell Styles
 .account-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-start;
-  justify-content: center;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
 }
 
 .account-name {
-  font-size: 15px; // Match total cells
-  font-weight: 600;
-  color: #333;
+    font-size: 15px; // Match total cells
+    font-weight: 600;
+    color: #333;
 }
 
 .account-average {
-  font-size: 12px;
-  color: #666;
-  font-weight: 400;
+    font-size: 12px;
+    color: #666;
+    font-weight: 400;
 }

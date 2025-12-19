@@ -1,96 +1,95 @@
 .accounts-container {
-  padding: 0;
+    padding: 0;
 }
 
 .page-title {
-  margin: 0 0 16px 0;
-  font-size: 24px;
-  font-weight: 500;
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    font-weight: 500;
 }
 
 .header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 24px;
-
-  button {
     display: flex;
+    justify-content: flex-end;
     align-items: center;
-    gap: 8px;
-  }
+    margin-bottom: 24px;
+
+    button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 }
 
 .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
 }
 
 .table-container {
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 .accounts-table {
-  width: 100%;
+    width: 100%;
 
-  th {
-    font-weight: 600;
-  }
+    th {
+        font-weight: 600;
+    }
 
-  .mat-row:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
+    .mat-row:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+    }
 }
 
 // Account type color chips
 :host ::ng-deep {
-  mat-chip.account-type-chip {
-    &.expense {
-      --mdc-theme-primary: #ffcdd2 !important;
-      background-color: #ffcdd2 !important;
-      color: #c62828 !important;
+    mat-chip.account-type-chip {
+        &.expense {
+            --mdc-theme-primary: #ffcdd2 !important;
+            background-color: #ffcdd2 !important;
+            color: #c62828 !important;
 
-      .mdc-evolution-chip__action {
-        color: #c62828 !important;
-      }
+            .mdc-evolution-chip__action {
+                color: #c62828 !important;
+            }
 
-      .mdc-evolution-chip__text-label {
-        color: #c62828 !important;
-      }
+            .mdc-evolution-chip__text-label {
+                color: #c62828 !important;
+            }
+        }
+
+        &.income {
+            --mdc-theme-primary: #c8e6c9 !important;
+            background-color: #c8e6c9 !important;
+            color: #2e7d32 !important;
+
+            .mdc-evolution-chip__action {
+                color: #2e7d32 !important;
+            }
+
+            .mdc-evolution-chip__text-label {
+                color: #2e7d32 !important;
+            }
+        }
+
+        &.asset {
+            --mdc-theme-primary: #bbdefb !important;
+            background-color: #bbdefb !important;
+            color: #1565c0 !important;
+
+            .mdc-evolution-chip__action {
+                color: #1565c0 !important;
+            }
+
+            .mdc-evolution-chip__text-label {
+                color: #1565c0 !important;
+            }
+        }
     }
-
-    &.income {
-      --mdc-theme-primary: #c8e6c9 !important;
-      background-color: #c8e6c9 !important;
-      color: #2e7d32 !important;
-
-      .mdc-evolution-chip__action {
-        color: #2e7d32 !important;
-      }
-
-      .mdc-evolution-chip__text-label {
-        color: #2e7d32 !important;
-      }
-    }
-
-    &.asset {
-      --mdc-theme-primary: #bbdefb !important;
-      background-color: #bbdefb !important;
-      color: #1565c0 !important;
-
-      .mdc-evolution-chip__action {
-        color: #1565c0 !important;
-      }
-
-      .mdc-evolution-chip__text-label {
-        color: #1565c0 !important;
-      }
-    }
-  }
 }
-

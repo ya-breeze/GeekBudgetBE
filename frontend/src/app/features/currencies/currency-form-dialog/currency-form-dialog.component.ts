@@ -8,46 +8,48 @@ import { Currency } from '../../../core/api/models/currency';
 import { CurrencyNoId } from '../../../core/api/models/currency-no-id';
 
 export interface CurrencyFormDialogData {
-  mode: 'create' | 'edit';
-  currency?: Currency;
+    mode: 'create' | 'edit';
+    currency?: Currency;
 }
 
 @Component({
-  selector: 'app-currency-form-dialog',
-  imports: [
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-  ],
-  templateUrl: './currency-form-dialog.component.html',
-  styleUrl: './currency-form-dialog.component.scss',
+    selector: 'app-currency-form-dialog',
+    imports: [
+        ReactiveFormsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+    ],
+    templateUrl: './currency-form-dialog.component.html',
+    styleUrl: './currency-form-dialog.component.scss',
 })
 export class CurrencyFormDialogComponent {
-  private readonly dialogRef = inject(MatDialogRef<CurrencyFormDialogComponent>);
-  private readonly data = inject<CurrencyFormDialogData>(MAT_DIALOG_DATA);
-  private readonly fb = inject(FormBuilder);
+    private readonly dialogRef = inject(MatDialogRef<CurrencyFormDialogComponent>);
+    private readonly data = inject<CurrencyFormDialogData>(MAT_DIALOG_DATA);
+    private readonly fb = inject(FormBuilder);
 
-  protected readonly form: FormGroup;
-  protected readonly isEditMode = this.data.mode === 'edit';
+    protected readonly form: FormGroup;
+    protected readonly isEditMode = this.data.mode === 'edit';
 
-  constructor() {
-    this.form = this.fb.group({
-      name: [this.data.currency?.name || '', [Validators.required, Validators.maxLength(100)]],
-      description: [this.data.currency?.description || '', [Validators.maxLength(500)]],
-    });
-  }
-
-  onSubmit(): void {
-    if (this.form.valid) {
-      const formValue: CurrencyNoId = this.form.value;
-      this.dialogRef.close(formValue);
+    constructor() {
+        this.form = this.fb.group({
+            name: [
+                this.data.currency?.name || '',
+                [Validators.required, Validators.maxLength(100)],
+            ],
+            description: [this.data.currency?.description || '', [Validators.maxLength(500)]],
+        });
     }
-  }
 
-  onCancel(): void {
-    this.dialogRef.close();
-  }
+    onSubmit(): void {
+        if (this.form.valid) {
+            const formValue: CurrencyNoId = this.form.value;
+            this.dialogRef.close(formValue);
+        }
+    }
+
+    onCancel(): void {
+        this.dialogRef.close();
+    }
 }
-

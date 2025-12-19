@@ -3,6 +3,6 @@
 
 import { TransactionNoId } from '../models/transaction-no-id';
 export interface MatcherAndTransaction {
-  matcherId: string;
-  transaction: TransactionNoId;
+    matcherId: string;
+    transaction: TransactionNoId;
 }

@@ -10,23 +10,28 @@ import { RequestBuilder } from '../../request-builder';
 import { UnprocessedTransaction } from '../../models/unprocessed-transaction';
 
 export interface GetUnprocessedTransaction$Params {
-  id: string;
+    id: string;
 }
 
-export function getUnprocessedTransaction(http: HttpClient, rootUrl: string, params: GetUnprocessedTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<UnprocessedTransaction>> {
-  const rb = new RequestBuilder(rootUrl, getUnprocessedTransaction.PATH, 'get');
-  if (params) {
-    rb.path('id', params.id, {});
-  }
+export function getUnprocessedTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: GetUnprocessedTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<UnprocessedTransaction>> {
+    const rb = new RequestBuilder(rootUrl, getUnprocessedTransaction.PATH, 'get');
+    if (params) {
+        rb.path('id', params.id, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<UnprocessedTransaction>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<UnprocessedTransaction>;
+            }),
+        );
 }
 
 getUnprocessedTransaction.PATH = '/v1/unprocessedTransactions/{id}';

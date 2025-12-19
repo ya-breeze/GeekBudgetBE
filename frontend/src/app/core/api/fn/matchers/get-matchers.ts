@@ -9,22 +9,26 @@ import { RequestBuilder } from '../../request-builder';
 
 import { Matcher } from '../../models/matcher';
 
-export interface GetMatchers$Params {
-}
+export interface GetMatchers$Params {}
 
-export function getMatchers(http: HttpClient, rootUrl: string, params?: GetMatchers$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Matcher>>> {
-  const rb = new RequestBuilder(rootUrl, getMatchers.PATH, 'get');
-  if (params) {
-  }
+export function getMatchers(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetMatchers$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<Matcher>>> {
+    const rb = new RequestBuilder(rootUrl, getMatchers.PATH, 'get');
+    if (params) {
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<Matcher>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<Matcher>>;
+            }),
+        );
 }
 
 getMatchers.PATH = '/v1/matchers';

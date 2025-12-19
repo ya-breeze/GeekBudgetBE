@@ -11,23 +11,28 @@ import { Matcher } from '../../models/matcher';
 import { MatcherNoId } from '../../models/matcher-no-id';
 
 export interface CreateMatcher$Params {
-      body: MatcherNoId
+    body: MatcherNoId;
 }
 
-export function createMatcher(http: HttpClient, rootUrl: string, params: CreateMatcher$Params, context?: HttpContext): Observable<StrictHttpResponse<Matcher>> {
-  const rb = new RequestBuilder(rootUrl, createMatcher.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function createMatcher(
+    http: HttpClient,
+    rootUrl: string,
+    params: CreateMatcher$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Matcher>> {
+    const rb = new RequestBuilder(rootUrl, createMatcher.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Matcher>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Matcher>;
+            }),
+        );
 }
 
 createMatcher.PATH = '/v1/matchers';

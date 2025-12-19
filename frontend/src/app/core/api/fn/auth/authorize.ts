@@ -10,27 +10,34 @@ import { RequestBuilder } from '../../request-builder';
 import { AuthData } from '../../models/auth-data';
 
 export interface Authorize$Params {
-      body: AuthData
+    body: AuthData;
 }
 
-export function authorize(http: HttpClient, rootUrl: string, params: Authorize$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-'token': string;
-}>> {
-  const rb = new RequestBuilder(rootUrl, authorize.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function authorize(
+    http: HttpClient,
+    rootUrl: string,
+    params: Authorize$Params,
+    context?: HttpContext,
+): Observable<
+    StrictHttpResponse<{
+        token: string;
+    }>
+> {
+    const rb = new RequestBuilder(rootUrl, authorize.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<{
-      'token': string;
-      }>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<{
+                    token: string;
+                }>;
+            }),
+        );
 }
 
 authorize.PATH = '/v1/authorize';

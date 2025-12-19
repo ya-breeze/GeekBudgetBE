@@ -10,39 +10,43 @@ import { RequestBuilder } from '../../request-builder';
 import { BudgetStatus } from '../../models/budget-status';
 
 export interface GetBudgetStatus$Params {
+    /**
+     * Start date (inclusive)
+     */
+    from?: string;
 
-/**
- * Start date (inclusive)
- */
-  from?: string;
+    /**
+     * End date (exclusive)
+     */
+    to?: string;
 
-/**
- * End date (exclusive)
- */
-  to?: string;
-
-/**
- * Converts all amounts to this currency
- */
-  outputCurrencyId?: string;
+    /**
+     * Converts all amounts to this currency
+     */
+    outputCurrencyId?: string;
 }
 
-export function getBudgetStatus(http: HttpClient, rootUrl: string, params?: GetBudgetStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<BudgetStatus>>> {
-  const rb = new RequestBuilder(rootUrl, getBudgetStatus.PATH, 'get');
-  if (params) {
-    rb.query('from', params.from, {});
-    rb.query('to', params.to, {});
-    rb.query('outputCurrencyId', params.outputCurrencyId, {});
-  }
+export function getBudgetStatus(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetBudgetStatus$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<BudgetStatus>>> {
+    const rb = new RequestBuilder(rootUrl, getBudgetStatus.PATH, 'get');
+    if (params) {
+        rb.query('from', params.from, {});
+        rb.query('to', params.to, {});
+        rb.query('outputCurrencyId', params.outputCurrencyId, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<BudgetStatus>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<BudgetStatus>>;
+            }),
+        );
 }
 
 getBudgetStatus.PATH = '/v1/budgets/status';

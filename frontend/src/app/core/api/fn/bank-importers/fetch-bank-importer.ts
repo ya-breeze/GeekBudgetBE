@@ -10,27 +10,31 @@ import { RequestBuilder } from '../../request-builder';
 import { ImportResult } from '../../models/import-result';
 
 export interface FetchBankImporter$Params {
-
-/**
- * ID of the bank importer
- */
-  id: string;
+    /**
+     * ID of the bank importer
+     */
+    id: string;
 }
 
-export function fetchBankImporter(http: HttpClient, rootUrl: string, params: FetchBankImporter$Params, context?: HttpContext): Observable<StrictHttpResponse<ImportResult>> {
-  const rb = new RequestBuilder(rootUrl, fetchBankImporter.PATH, 'post');
-  if (params) {
-    rb.path('id', params.id, {});
-  }
+export function fetchBankImporter(
+    http: HttpClient,
+    rootUrl: string,
+    params: FetchBankImporter$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<ImportResult>> {
+    const rb = new RequestBuilder(rootUrl, fetchBankImporter.PATH, 'post');
+    if (params) {
+        rb.path('id', params.id, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<ImportResult>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<ImportResult>;
+            }),
+        );
 }
 
 fetchBankImporter.PATH = '/v1/bankImporters/{id}/fetch';

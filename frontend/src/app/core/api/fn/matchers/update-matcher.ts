@@ -11,29 +11,33 @@ import { Matcher } from '../../models/matcher';
 import { MatcherNoId } from '../../models/matcher-no-id';
 
 export interface UpdateMatcher$Params {
-
-/**
- * ID of the matcher
- */
-  id: string;
-      body: MatcherNoId
+    /**
+     * ID of the matcher
+     */
+    id: string;
+    body: MatcherNoId;
 }
 
-export function updateMatcher(http: HttpClient, rootUrl: string, params: UpdateMatcher$Params, context?: HttpContext): Observable<StrictHttpResponse<Matcher>> {
-  const rb = new RequestBuilder(rootUrl, updateMatcher.PATH, 'put');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
-  }
+export function updateMatcher(
+    http: HttpClient,
+    rootUrl: string,
+    params: UpdateMatcher$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Matcher>> {
+    const rb = new RequestBuilder(rootUrl, updateMatcher.PATH, 'put');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Matcher>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Matcher>;
+            }),
+        );
 }
 
 updateMatcher.PATH = '/v1/matchers/{id}';

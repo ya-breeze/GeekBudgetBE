@@ -8,10 +8,10 @@ import { Matcher } from '../models/matcher';
 import { Transaction } from '../models/transaction';
 import { User } from '../models/user';
 export interface WholeUserData {
-  accounts?: Array<Account>;
-  bankImporters?: Array<BankImporter>;
-  currencies?: Array<Currency>;
-  matchers?: Array<Matcher>;
-  transactions?: Array<Transaction>;
-  user?: User;
+    accounts?: Array<Account>;
+    bankImporters?: Array<BankImporter>;
+    currencies?: Array<Currency>;
+    matchers?: Array<Matcher>;
+    transactions?: Array<Transaction>;
+    user?: User;
 }

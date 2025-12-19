@@ -14,11 +14,11 @@ export interface ConfirmationDialogData {
     standalone: true,
     imports: [MatDialogModule, MatButtonModule],
     templateUrl: './confirmation-dialog.component.html',
-    styleUrl: './confirmation-dialog.component.scss'
+    styleUrl: './confirmation-dialog.component.scss',
 })
 export class ConfirmationDialogComponent {
     constructor(
         public dialogRef: MatDialogRef<ConfirmationDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: ConfirmationDialogData
-    ) { }
+        @Inject(MAT_DIALOG_DATA) public data: ConfirmationDialogData,
+    ) {}
 }

@@ -12,241 +12,295 @@ import { UnprocessedTransaction } from '../../core/api/models/unprocessed-transa
 import { LayoutService } from '../../layout/services/layout.service';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { UnprocessedTransactionDialogComponent, UnprocessedTransactionDialogResult } from './unprocessed-transaction-dialog/unprocessed-transaction-dialog.component';
+import {
+    UnprocessedTransactionDialogComponent,
+    UnprocessedTransactionDialogResult,
+} from './unprocessed-transaction-dialog/unprocessed-transaction-dialog.component';
 
 @Component({
-  selector: 'app-unprocessed-transactions',
-  imports: [
-    MatTableModule,
-    MatSortModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatChipsModule,
-    DatePipe,
-    MatDialogModule,
-  ],
-  templateUrl: './unprocessed-transactions.component.html',
-  styleUrl: './unprocessed-transactions.component.scss',
+    selector: 'app-unprocessed-transactions',
+    imports: [
+        MatTableModule,
+        MatSortModule,
+        MatButtonModule,
+        MatIconModule,
+        MatProgressSpinnerModule,
+        MatSnackBarModule,
+        MatChipsModule,
+        DatePipe,
+        MatDialogModule,
+    ],
+    templateUrl: './unprocessed-transactions.component.html',
+    styleUrl: './unprocessed-transactions.component.scss',
 })
 export class UnprocessedTransactionsComponent implements OnInit {
-  private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
-  private readonly snackBar = inject(MatSnackBar);
-  private readonly layoutService = inject(LayoutService);
-  private readonly currencyService = inject(CurrencyService);
-  private readonly dialog = inject(MatDialog);
+    private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
+    private readonly snackBar = inject(MatSnackBar);
+    private readonly layoutService = inject(LayoutService);
+    private readonly currencyService = inject(CurrencyService);
+    private readonly dialog = inject(MatDialog);
 
-  @ViewChild(MatSort) sort!: MatSort;
+    @ViewChild(MatSort) sort!: MatSort;
 
-  protected readonly sidenavOpened = this.layoutService.sidenavOpened;
+    protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
-  protected readonly unprocessedTransactions =
-    this.unprocessedTransactionService.unprocessedTransactions;
-  protected readonly loading = this.unprocessedTransactionService.loading;
-  protected readonly currencies = this.currencyService.currencies;
+    protected readonly unprocessedTransactions =
+        this.unprocessedTransactionService.unprocessedTransactions;
+    protected readonly loading = this.unprocessedTransactionService.loading;
+    protected readonly currencies = this.currencyService.currencies;
 
-  protected readonly displayedColumns = signal([
-    'date',
-    'description',
-    'effectiveAmount',
-    'matches',
-    'duplicates',
-  ]);
-  protected readonly sortedTransactions = signal<UnprocessedTransaction[]>([]);
+    protected readonly displayedColumns = signal([
+        'date',
+        'description',
+        'effectiveAmount',
+        'matches',
+        'duplicates',
+    ]);
+    protected readonly sortedTransactions = signal<UnprocessedTransaction[]>([]);
 
-  ngOnInit(): void {
-    this.loadUnprocessedTransactions();
-    this.currencyService.loadCurrencies().subscribe();
-  }
-
-  loadUnprocessedTransactions(): void {
-    this.unprocessedTransactionService.loadUnprocessedTransactions().subscribe();
-  }
-
-  getCurrencyName(currencyId: string): string {
-    const currency = this.currencies().find((c) => c.id === currencyId);
-    return currency ? currency.name : currencyId;
-  }
-
-  getUnknownAccountMovements(transaction: any) {
-    return transaction.movements?.filter((m: any) => !m.accountId) || [];
-  }
-
-  getSortedData(): UnprocessedTransaction[] {
-    const data = this.unprocessedTransactions();
-    if (!this.sort || !this.sort.active || this.sort.direction === '') {
-      return data;
+    ngOnInit(): void {
+        this.loadUnprocessedTransactions();
+        this.currencyService.loadCurrencies().subscribe();
     }
 
-    return data.slice().sort((a, b) => {
-      const isAsc = this.sort.direction === 'asc';
-      switch (this.sort.active) {
-        case 'date':
-          return this.compare(new Date(a.transaction.date), new Date(b.transaction.date), isAsc);
-        case 'description':
-          return this.compare(a.transaction.description || '', b.transaction.description || '', isAsc);
-        case 'effectiveAmount':
-          return this.compareAmounts(a, b, isAsc);
-        case 'matches':
-          return this.compare(a.matched.length, b.matched.length, isAsc);
-        case 'duplicates':
-          return this.compare(a.duplicates.length, b.duplicates.length, isAsc);
-        default:
-          return 0;
-      }
-    });
-  }
-
-  private compare(a: any, b: any, isAsc: boolean): number {
-    if (a < b) {
-      return isAsc ? -1 : 1;
+    loadUnprocessedTransactions(): void {
+        this.unprocessedTransactionService.loadUnprocessedTransactions().subscribe();
     }
-    if (a > b) {
-      return isAsc ? 1 : -1;
+
+    getCurrencyName(currencyId: string): string {
+        const currency = this.currencies().find((c) => c.id === currencyId);
+        return currency ? currency.name : currencyId;
     }
-    return 0;
-  }
 
-  private compareAmounts(a: UnprocessedTransaction, b: UnprocessedTransaction, isAsc: boolean): number {
-    const aAmount = this.getTotalUnknownAccountAmount(a.transaction);
-    const bAmount = this.getTotalUnknownAccountAmount(b.transaction);
-    return this.compare(aAmount, bAmount, isAsc);
-  }
+    getUnknownAccountMovements(transaction: any) {
+        return transaction.movements?.filter((m: any) => !m.accountId) || [];
+    }
 
-  private getTotalUnknownAccountAmount(transaction: any): number {
-    return this.getUnknownAccountMovements(transaction).reduce((sum: number, m: any) => sum + m.amount, 0);
-  }
-
-  openProcessDialog(transaction: UnprocessedTransaction): void {
-    const dialogRef = this.dialog.open(UnprocessedTransactionDialogComponent, {
-      data: transaction,
-      width: '95vw',
-      maxWidth: '1200px',
-      height: '90vh',
-      autoFocus: false,
-    });
-
-    const componentInstance = dialogRef.componentInstance;
-
-    // Handle actions from the dialog
-    componentInstance.action.subscribe((result: UnprocessedTransactionDialogResult) => {
-      // Access the signal directly (using any cast to bypass protected visibility if needed)
-      const currentTransaction = (componentInstance as any).transaction();
-
-      if (result.action === 'convert') {
-        this.processMatch(currentTransaction, result.match, dialogRef);
-      } else if (result.action === 'delete') {
-        this.deleteTransaction(currentTransaction, result.duplicateOf.id, dialogRef);
-      } else if (result.action === 'manual') {
-        this.processManual(currentTransaction, result.accountId, result.description, dialogRef);
-      } else if (result.action === 'skip') {
-        this.handleSkip(currentTransaction, dialogRef);
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.loadUnprocessedTransactions();
-    });
-  }
-
-  private processMatch(original: UnprocessedTransaction, match: any, dialogRef?: any) {
-    const transactionToConvert = { ...original };
-    transactionToConvert.transaction = {
-      ...original.transaction,
-      ...match.transaction
-    };
-
-    const index = this.getSortedData().findIndex(t => t.transaction.id === original.transaction.id);
-
-    this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert, match.matcherId).subscribe({
-      next: () => {
-        this.snackBar.open('Transaction processed (match applied)', 'Close', { duration: 3000 });
-        if (dialogRef) {
-          this.handleSuccess(index, dialogRef);
+    getSortedData(): UnprocessedTransaction[] {
+        const data = this.unprocessedTransactions();
+        if (!this.sort || !this.sort.active || this.sort.direction === '') {
+            return data;
         }
-      },
-      error: () => {
-        this.snackBar.open('Failed to process transaction', 'Close', { duration: 3000 });
-        if (dialogRef) dialogRef.componentInstance.setLoading(false);
-      }
-    });
-  }
 
-  private processManual(original: UnprocessedTransaction, accountId: string, description?: string, dialogRef?: any) {
-    const transactionToConvert = JSON.parse(JSON.stringify(original));
-    const movements = transactionToConvert.transaction.movements || [];
-
-    const targetMovement = movements.find((m: any) => !m.accountId);
-    if (targetMovement) {
-      targetMovement.accountId = accountId;
+        return data.slice().sort((a, b) => {
+            const isAsc = this.sort.direction === 'asc';
+            switch (this.sort.active) {
+                case 'date':
+                    return this.compare(
+                        new Date(a.transaction.date),
+                        new Date(b.transaction.date),
+                        isAsc,
+                    );
+                case 'description':
+                    return this.compare(
+                        a.transaction.description || '',
+                        b.transaction.description || '',
+                        isAsc,
+                    );
+                case 'effectiveAmount':
+                    return this.compareAmounts(a, b, isAsc);
+                case 'matches':
+                    return this.compare(a.matched.length, b.matched.length, isAsc);
+                case 'duplicates':
+                    return this.compare(a.duplicates.length, b.duplicates.length, isAsc);
+                default:
+                    return 0;
+            }
+        });
     }
 
-    if (description) {
-      transactionToConvert.transaction.description = description;
-    }
-
-    const index = this.getSortedData().findIndex(t => t.transaction.id === original.transaction.id);
-
-    this.unprocessedTransactionService.convert(original.transaction.id!, transactionToConvert).subscribe({
-      next: () => {
-        this.snackBar.open('Transaction processed (account assigned)', 'Close', { duration: 3000 });
-        if (dialogRef) {
-          this.handleSuccess(index, dialogRef);
+    private compare(a: any, b: any, isAsc: boolean): number {
+        if (a < b) {
+            return isAsc ? -1 : 1;
         }
-      },
-      error: () => {
-        this.snackBar.open('Failed to process transaction', 'Close', { duration: 3000 });
-        if (dialogRef) dialogRef.componentInstance.setLoading(false);
-      }
-    });
-  }
+        if (a > b) {
+            return isAsc ? 1 : -1;
+        }
+        return 0;
+    }
 
-  deleteTransaction(transaction: UnprocessedTransaction, duplicateOfId?: string, dialogRef?: any): void {
-    const index = this.getSortedData().findIndex(t => t.transaction.id === transaction.transaction.id);
+    private compareAmounts(
+        a: UnprocessedTransaction,
+        b: UnprocessedTransaction,
+        isAsc: boolean,
+    ): number {
+        const aAmount = this.getTotalUnknownAccountAmount(a.transaction);
+        const bAmount = this.getTotalUnknownAccountAmount(b.transaction);
+        return this.compare(aAmount, bAmount, isAsc);
+    }
 
-    this.unprocessedTransactionService.delete(transaction.transaction.id!, duplicateOfId).subscribe({
-      next: () => {
-        this.snackBar.open('Transaction deleted', 'Close', { duration: 3000 });
-        if (dialogRef) {
-          this.handleSuccess(index, dialogRef);
+    private getTotalUnknownAccountAmount(transaction: any): number {
+        return this.getUnknownAccountMovements(transaction).reduce(
+            (sum: number, m: any) => sum + m.amount,
+            0,
+        );
+    }
+
+    openProcessDialog(transaction: UnprocessedTransaction): void {
+        const dialogRef = this.dialog.open(UnprocessedTransactionDialogComponent, {
+            data: transaction,
+            width: '95vw',
+            maxWidth: '1200px',
+            height: '90vh',
+            autoFocus: false,
+        });
+
+        const componentInstance = dialogRef.componentInstance;
+
+        // Handle actions from the dialog
+        componentInstance.action.subscribe((result: UnprocessedTransactionDialogResult) => {
+            // Access the signal directly (using any cast to bypass protected visibility if needed)
+            const currentTransaction = (componentInstance as any).transaction();
+
+            if (result.action === 'convert') {
+                this.processMatch(currentTransaction, result.match, dialogRef);
+            } else if (result.action === 'delete') {
+                this.deleteTransaction(currentTransaction, result.duplicateOf.id, dialogRef);
+            } else if (result.action === 'manual') {
+                this.processManual(
+                    currentTransaction,
+                    result.accountId,
+                    result.description,
+                    dialogRef,
+                );
+            } else if (result.action === 'skip') {
+                this.handleSkip(currentTransaction, dialogRef);
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(() => {
+            this.loadUnprocessedTransactions();
+        });
+    }
+
+    private processMatch(original: UnprocessedTransaction, match: any, dialogRef?: any) {
+        const transactionToConvert = { ...original };
+        transactionToConvert.transaction = {
+            ...original.transaction,
+            ...match.transaction,
+        };
+
+        const index = this.getSortedData().findIndex(
+            (t) => t.transaction.id === original.transaction.id,
+        );
+
+        this.unprocessedTransactionService
+            .convert(original.transaction.id!, transactionToConvert, match.matcherId)
+            .subscribe({
+                next: () => {
+                    this.snackBar.open('Transaction processed (match applied)', 'Close', {
+                        duration: 3000,
+                    });
+                    if (dialogRef) {
+                        this.handleSuccess(index, dialogRef);
+                    }
+                },
+                error: () => {
+                    this.snackBar.open('Failed to process transaction', 'Close', {
+                        duration: 3000,
+                    });
+                    if (dialogRef) dialogRef.componentInstance.setLoading(false);
+                },
+            });
+    }
+
+    private processManual(
+        original: UnprocessedTransaction,
+        accountId: string,
+        description?: string,
+        dialogRef?: any,
+    ) {
+        const transactionToConvert = JSON.parse(JSON.stringify(original));
+        const movements = transactionToConvert.transaction.movements || [];
+
+        const targetMovement = movements.find((m: any) => !m.accountId);
+        if (targetMovement) {
+            targetMovement.accountId = accountId;
+        }
+
+        if (description) {
+            transactionToConvert.transaction.description = description;
+        }
+
+        const index = this.getSortedData().findIndex(
+            (t) => t.transaction.id === original.transaction.id,
+        );
+
+        this.unprocessedTransactionService
+            .convert(original.transaction.id!, transactionToConvert)
+            .subscribe({
+                next: () => {
+                    this.snackBar.open('Transaction processed (account assigned)', 'Close', {
+                        duration: 3000,
+                    });
+                    if (dialogRef) {
+                        this.handleSuccess(index, dialogRef);
+                    }
+                },
+                error: () => {
+                    this.snackBar.open('Failed to process transaction', 'Close', {
+                        duration: 3000,
+                    });
+                    if (dialogRef) dialogRef.componentInstance.setLoading(false);
+                },
+            });
+    }
+
+    deleteTransaction(
+        transaction: UnprocessedTransaction,
+        duplicateOfId?: string,
+        dialogRef?: any,
+    ): void {
+        const index = this.getSortedData().findIndex(
+            (t) => t.transaction.id === transaction.transaction.id,
+        );
+
+        this.unprocessedTransactionService
+            .delete(transaction.transaction.id!, duplicateOfId)
+            .subscribe({
+                next: () => {
+                    this.snackBar.open('Transaction deleted', 'Close', { duration: 3000 });
+                    if (dialogRef) {
+                        this.handleSuccess(index, dialogRef);
+                    } else {
+                        this.loadUnprocessedTransactions();
+                    }
+                },
+                error: () => {
+                    this.snackBar.open('Failed to delete transaction', 'Close', { duration: 3000 });
+                    if (dialogRef) dialogRef.componentInstance.setLoading(false);
+                },
+            });
+    }
+
+    private handleSuccess(index: number, dialogRef: any) {
+        const currentList = this.getSortedData();
+        // The previously processed item is already removed from the list (by signal update).
+        // The item that was at 'index' + 1 has now shifted to 'index'.
+        // So to show the "next" item, we just access 'index'.
+        const nextTransaction = currentList[index];
+
+        if (nextTransaction) {
+            dialogRef.componentInstance.updateTransaction(nextTransaction);
+            this.loadUnprocessedTransactions();
         } else {
-          this.loadUnprocessedTransactions();
+            // If we processed the last item, index is now out of bounds.
+            dialogRef.close();
+            this.loadUnprocessedTransactions();
         }
-      },
-      error: () => {
-        this.snackBar.open('Failed to delete transaction', 'Close', { duration: 3000 });
-        if (dialogRef) dialogRef.componentInstance.setLoading(false);
-      }
-    });
-  }
-
-  private handleSuccess(index: number, dialogRef: any) {
-    const currentList = this.getSortedData();
-    // The previously processed item is already removed from the list (by signal update).
-    // The item that was at 'index' + 1 has now shifted to 'index'.
-    // So to show the "next" item, we just access 'index'.
-    const nextTransaction = currentList[index];
-
-    if (nextTransaction) {
-      dialogRef.componentInstance.updateTransaction(nextTransaction);
-      this.loadUnprocessedTransactions();
-    } else {
-      // If we processed the last item, index is now out of bounds.
-      dialogRef.close();
-      this.loadUnprocessedTransactions();
     }
-  }
 
-  private handleSkip(currentTransaction: UnprocessedTransaction, dialogRef: any) {
-    const currentList = this.getSortedData();
-    const index = currentList.findIndex(t => t.transaction.id === currentTransaction.transaction.id);
-    const nextTransaction = currentList[index + 1];
+    private handleSkip(currentTransaction: UnprocessedTransaction, dialogRef: any) {
+        const currentList = this.getSortedData();
+        const index = currentList.findIndex(
+            (t) => t.transaction.id === currentTransaction.transaction.id,
+        );
+        const nextTransaction = currentList[index + 1];
 
-    if (nextTransaction) {
-      dialogRef.componentInstance.updateTransaction(nextTransaction);
-    } else {
-      dialogRef.close();
+        if (nextTransaction) {
+            dialogRef.componentInstance.updateTransaction(nextTransaction);
+        } else {
+            dialogRef.close();
+        }
     }
-  }
 }

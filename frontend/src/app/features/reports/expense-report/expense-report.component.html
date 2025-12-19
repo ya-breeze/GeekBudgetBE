@@ -1,150 +1,184 @@
 <div class="expense-report-container">
-  <h1>Expense Report</h1>
-  <p class="subtitle">Detailed expense breakdown by category and time period</p>
+    <h1>Expense Report</h1>
+    <p class="subtitle">Detailed expense breakdown by category and time period</p>
 
-  <!-- Filter Section -->
-  <mat-card class="filter-card">
-    <mat-card-content>
-      <form [formGroup]="filterForm" (ngSubmit)="onFilterSubmit()" class="filter-form">
-        <div class="filter-fields">
-          <mat-form-field appearance="outline">
-            <mat-label>Start Date</mat-label>
-            <input matInput [matDatepicker]="startPicker" formControlName="startDate" required />
-            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-            <mat-datepicker #startPicker></mat-datepicker>
-          </mat-form-field>
+    <!-- Filter Section -->
+    <mat-card class="filter-card">
+        <mat-card-content>
+            <form [formGroup]="filterForm" (ngSubmit)="onFilterSubmit()" class="filter-form">
+                <div class="filter-fields">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Start Date</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="startPicker"
+                            formControlName="startDate"
+                            required
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="startPicker"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #startPicker></mat-datepicker>
+                    </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>End Date</mat-label>
-            <input matInput [matDatepicker]="endPicker" formControlName="endDate" required />
-            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-            <mat-datepicker #endPicker></mat-datepicker>
-          </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>End Date</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="endPicker"
+                            formControlName="endDate"
+                            required
+                        />
+                        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #endPicker></mat-datepicker>
+                    </mat-form-field>
 
-          <button
-            mat-raised-button
-            color="primary"
-            type="submit"
-            [disabled]="!filterForm.valid || loading()"
-          >
-            <mat-icon>search</mat-icon>
-            Generate Report
-          </button>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
-
-  @if (loading()) {
-  <div class="loading-container">
-    <mat-spinner></mat-spinner>
-  </div>
-  } @else if (currencyReports().length) { @for (report of currencyReports(); track
-  report.currencyId) {
-  <h2 class="currency-title">
-    Currency: {{ report.currencyName }}
-    <mat-button-toggle
-      class="currency-toggle"
-      [checked]="selectedOutputCurrencyId() === report.currencyId"
-      (click)="onOutputCurrencyToggle(report.currencyId)"
-    >
-      Use as output currency
-    </mat-button-toggle>
-  </h2>
-
-  <!-- Charts Section -->
-  <div class="charts-section">
-    <mat-card class="chart-card">
-      <mat-card-header>
-        <mat-card-title>Expenses by Category</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="chart-container">
-          <canvas
-            baseChart
-            [data]="report.categoryChartData"
-            [options]="categoryChartOptions"
-            type="bar"
-          ></canvas>
-        </div>
-      </mat-card-content>
+                    <button
+                        mat-raised-button
+                        color="primary"
+                        type="submit"
+                        [disabled]="!filterForm.valid || loading()"
+                    >
+                        <mat-icon>search</mat-icon>
+                        Generate Report
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
     </mat-card>
 
-    <mat-card class="chart-card">
-      <mat-card-header>
-        <mat-card-title>Monthly Trends</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="chart-container">
-          <canvas
-            baseChart
-            [data]="report.monthlyChartData"
-            [options]="monthlyChartOptions"
-            type="line"
-          ></canvas>
+    @if (loading()) {
+        <div class="loading-container">
+            <mat-spinner></mat-spinner>
         </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
+    } @else if (currencyReports().length) {
+        @for (report of currencyReports(); track report.currencyId) {
+            <h2 class="currency-title">
+                Currency: {{ report.currencyName }}
+                <mat-button-toggle
+                    class="currency-toggle"
+                    [checked]="selectedOutputCurrencyId() === report.currencyId"
+                    (click)="onOutputCurrencyToggle(report.currencyId)"
+                >
+                    Use as output currency
+                </mat-button-toggle>
+            </h2>
 
-  <!-- Summary Section -->
-  <mat-card class="summary-card">
-    <mat-card-header>
-      <mat-card-title>Category Summary</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="table-container">
-        <table mat-table [dataSource]="report.categorySummaries" class="summary-table">
-          <ng-container matColumnDef="category">
-            <th
-              mat-header-cell
-              *matHeaderCellDef
-              class="sortable"
-              (click)="onSortChange('category')"
-            >
-              Category @if (sortColumn() === 'category') {
-              <mat-icon class="sort-icon">{{
-                sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward'
-              }}</mat-icon>
-              }
-            </th>
-            <td mat-cell *matCellDef="let summary">{{ summary.categoryName }}</td>
-            <td mat-footer-cell *matFooterCellDef class="total-label">Grand Total</td>
-          </ng-container>
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <mat-card class="chart-card">
+                    <mat-card-header>
+                        <mat-card-title>Expenses by Category</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="chart-container">
+                            <canvas
+                                baseChart
+                                [data]="report.categoryChartData"
+                                [options]="categoryChartOptions"
+                                type="bar"
+                            ></canvas>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
 
-          <ng-container matColumnDef="total">
-            <th
-              mat-header-cell
-              *matHeaderCellDef
-              class="sortable amount-cell"
-              (click)="onSortChange('amount')"
-            >
-              Total @if (sortColumn() === 'amount') {
-              <mat-icon class="sort-icon">{{
-                sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward'
-              }}</mat-icon>
-              }
-            </th>
-            <td mat-cell *matCellDef="let summary" class="amount-cell">
-              {{ summary.total | number : '1.2-2' }}
-            </td>
-            <td mat-footer-cell *matFooterCellDef class="total-amount">
-              {{ report.grandTotal | number : '1.2-2' }}
-            </td>
-          </ng-container>
+                <mat-card class="chart-card">
+                    <mat-card-header>
+                        <mat-card-title>Monthly Trends</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="chart-container">
+                            <canvas
+                                baseChart
+                                [data]="report.monthlyChartData"
+                                [options]="monthlyChartOptions"
+                                type="line"
+                            ></canvas>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
 
-          <tr mat-header-row *matHeaderRowDef="['category', 'total']"></tr>
-          <tr mat-row *matRowDef="let row; columns: ['category', 'total']"></tr>
-          <tr mat-footer-row *matFooterRowDef="['category', 'total']" class="total-row"></tr>
-        </table>
-      </div>
-    </mat-card-content>
-  </mat-card>
-  } } @else {
-  <mat-card class="no-data-card">
-    <mat-card-content>
-      <p>No expense data available. Please select a date range and generate the report.</p>
-    </mat-card-content>
-  </mat-card>
-  }
+            <!-- Summary Section -->
+            <mat-card class="summary-card">
+                <mat-card-header>
+                    <mat-card-title>Category Summary</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="table-container">
+                        <table
+                            mat-table
+                            [dataSource]="report.categorySummaries"
+                            class="summary-table"
+                        >
+                            <ng-container matColumnDef="category">
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef
+                                    class="sortable"
+                                    (click)="onSortChange('category')"
+                                >
+                                    Category
+                                    @if (sortColumn() === 'category') {
+                                        <mat-icon class="sort-icon">{{
+                                            sortDirection() === 'asc'
+                                                ? 'arrow_upward'
+                                                : 'arrow_downward'
+                                        }}</mat-icon>
+                                    }
+                                </th>
+                                <td mat-cell *matCellDef="let summary">
+                                    {{ summary.categoryName }}
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef class="total-label">
+                                    Grand Total
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="total">
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef
+                                    class="sortable amount-cell"
+                                    (click)="onSortChange('amount')"
+                                >
+                                    Total
+                                    @if (sortColumn() === 'amount') {
+                                        <mat-icon class="sort-icon">{{
+                                            sortDirection() === 'asc'
+                                                ? 'arrow_upward'
+                                                : 'arrow_downward'
+                                        }}</mat-icon>
+                                    }
+                                </th>
+                                <td mat-cell *matCellDef="let summary" class="amount-cell">
+                                    {{ summary.total | number: '1.2-2' }}
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef class="total-amount">
+                                    {{ report.grandTotal | number: '1.2-2' }}
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="['category', 'total']"></tr>
+                            <tr mat-row *matRowDef="let row; columns: ['category', 'total']"></tr>
+                            <tr
+                                mat-footer-row
+                                *matFooterRowDef="['category', 'total']"
+                                class="total-row"
+                            ></tr>
+                        </table>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        }
+    } @else {
+        <mat-card class="no-data-card">
+            <mat-card-content>
+                <p>
+                    No expense data available. Please select a date range and generate the report.
+                </p>
+            </mat-card-content>
+        </mat-card>
+    }
 </div>

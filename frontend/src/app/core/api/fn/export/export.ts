@@ -9,22 +9,26 @@ import { RequestBuilder } from '../../request-builder';
 
 import { WholeUserData } from '../../models/whole-user-data';
 
-export interface Export$Params {
-}
+export interface Export$Params {}
 
-export function export$(http: HttpClient, rootUrl: string, params?: Export$Params, context?: HttpContext): Observable<StrictHttpResponse<WholeUserData>> {
-  const rb = new RequestBuilder(rootUrl, export$.PATH, 'post');
-  if (params) {
-  }
+export function export$(
+    http: HttpClient,
+    rootUrl: string,
+    params?: Export$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<WholeUserData>> {
+    const rb = new RequestBuilder(rootUrl, export$.PATH, 'post');
+    if (params) {
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<WholeUserData>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<WholeUserData>;
+            }),
+        );
 }
 
 export$.PATH = '/v1/export';

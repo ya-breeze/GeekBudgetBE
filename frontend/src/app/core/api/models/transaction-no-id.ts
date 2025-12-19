@@ -3,41 +3,41 @@
 
 import { Movement } from '../models/movement';
 export interface TransactionNoId {
-  date: string;
-  description?: string;
+    date: string;
+    description?: string;
 
-  /**
-   * IDs of unprocessed transaction - to match later
-   */
-  externalIds?: Array<string>;
+    /**
+     * IDs of unprocessed transaction - to match later
+     */
+    externalIds?: Array<string>;
 
-  /**
-   * Stores extra data about transaction. For example could hold "variable symbol" to distinguish payment for the same account, but with different meaning
-   */
-  extra?: string;
+    /**
+     * Stores extra data about transaction. For example could hold "variable symbol" to distinguish payment for the same account, but with different meaning
+     */
+    extra?: string;
 
-  /**
-   * If true, this transaction was converted automatically by the matcher
-   */
-  isAuto?: boolean;
+    /**
+     * If true, this transaction was converted automatically by the matcher
+     */
+    isAuto?: boolean;
 
-  /**
-   * ID of the matcher used for this conversion (if any)
-   */
-  matcherId?: string;
-  movements: Array<Movement>;
-  partnerAccount?: string;
+    /**
+     * ID of the matcher used for this conversion (if any)
+     */
+    matcherId?: string;
+    movements: Array<Movement>;
+    partnerAccount?: string;
 
-  /**
-   * Internal bank's ID to be able to match later if necessary
-   */
-  partnerInternalId?: string;
-  partnerName?: string;
-  place?: string;
-  tags?: Array<string>;
+    /**
+     * Internal bank's ID to be able to match later if necessary
+     */
+    partnerInternalId?: string;
+    partnerName?: string;
+    place?: string;
+    tags?: Array<string>;
 
-  /**
-   * Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis
-   */
-  unprocessedSources?: string;
+    /**
+     * Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis
+     */
+    unprocessedSources?: string;
 }

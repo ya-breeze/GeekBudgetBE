@@ -11,23 +11,28 @@ import { BudgetItem } from '../../models/budget-item';
 import { BudgetItemNoId } from '../../models/budget-item-no-id';
 
 export interface CreateBudgetItem$Params {
-      body: BudgetItemNoId
+    body: BudgetItemNoId;
 }
 
-export function createBudgetItem(http: HttpClient, rootUrl: string, params: CreateBudgetItem$Params, context?: HttpContext): Observable<StrictHttpResponse<BudgetItem>> {
-  const rb = new RequestBuilder(rootUrl, createBudgetItem.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function createBudgetItem(
+    http: HttpClient,
+    rootUrl: string,
+    params: CreateBudgetItem$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<BudgetItem>> {
+    const rb = new RequestBuilder(rootUrl, createBudgetItem.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<BudgetItem>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<BudgetItem>;
+            }),
+        );
 }
 
 createBudgetItem.PATH = '/v1/budgetItems';

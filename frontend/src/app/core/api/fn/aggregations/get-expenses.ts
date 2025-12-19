@@ -10,45 +10,49 @@ import { RequestBuilder } from '../../request-builder';
 import { Aggregation } from '../../models/aggregation';
 
 export interface GetExpenses$Params {
+    /**
+     * Uses transactions from this date
+     */
+    from?: string;
 
-/**
- * Uses transactions from this date
- */
-  from?: string;
+    /**
+     * Uses transactions to this date
+     */
+    to?: string;
 
-/**
- * Uses transactions to this date
- */
-  to?: string;
+    /**
+     * Converts all transactions to this currency
+     */
+    outputCurrencyId?: string;
 
-/**
- * Converts all transactions to this currency
- */
-  outputCurrencyId?: string;
-
-/**
- * Granularity of expenses (month or year)
- */
-  granularity?: 'month' | 'year';
+    /**
+     * Granularity of expenses (month or year)
+     */
+    granularity?: 'month' | 'year';
 }
 
-export function getExpenses(http: HttpClient, rootUrl: string, params?: GetExpenses$Params, context?: HttpContext): Observable<StrictHttpResponse<Aggregation>> {
-  const rb = new RequestBuilder(rootUrl, getExpenses.PATH, 'get');
-  if (params) {
-    rb.query('from', params.from, {});
-    rb.query('to', params.to, {});
-    rb.query('outputCurrencyId', params.outputCurrencyId, {});
-    rb.query('granularity', params.granularity, {});
-  }
+export function getExpenses(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetExpenses$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Aggregation>> {
+    const rb = new RequestBuilder(rootUrl, getExpenses.PATH, 'get');
+    if (params) {
+        rb.query('from', params.from, {});
+        rb.query('to', params.to, {});
+        rb.query('outputCurrencyId', params.outputCurrencyId, {});
+        rb.query('granularity', params.granularity, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Aggregation>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Aggregation>;
+            }),
+        );
 }
 
 getExpenses.PATH = '/v1/expenses';

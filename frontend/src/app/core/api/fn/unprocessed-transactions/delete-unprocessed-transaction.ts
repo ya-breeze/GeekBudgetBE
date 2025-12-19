@@ -7,31 +7,33 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-
 export interface DeleteUnprocessedTransaction$Params {
-  id: string;
+    id: string;
 
-/**
- * ID of transaction which is duplicate of this one
- */
-  duplicateOf?: string;
+    /**
+     * ID of transaction which is duplicate of this one
+     */
+    duplicateOf?: string;
 }
 
-export function deleteUnprocessedTransaction(http: HttpClient, rootUrl: string, params: DeleteUnprocessedTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
-  const rb = new RequestBuilder(rootUrl, deleteUnprocessedTransaction.PATH, 'delete');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.query('duplicateOf', params.duplicateOf, {});
-  }
+export function deleteUnprocessedTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: DeleteUnprocessedTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<void>> {
+    const rb = new RequestBuilder(rootUrl, deleteUnprocessedTransaction.PATH, 'delete');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.query('duplicateOf', params.duplicateOf, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
-    })
-  );
+    return http.request(rb.build({ responseType: 'text', accept: '*/*', context })).pipe(
+        filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+        map((r: HttpResponse<any>) => {
+            return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+        }),
+    );
 }
 
 deleteUnprocessedTransaction.PATH = '/v1/unprocessedTransactions/{id}';

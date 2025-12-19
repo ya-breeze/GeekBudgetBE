@@ -1,7 +1,12 @@
 import { Component, inject, OnInit, signal, EventEmitter, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef, MatDialog } from '@angular/material/dialog';
+import {
+    MAT_DIALOG_DATA,
+    MatDialogModule,
+    MatDialogRef,
+    MatDialog,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -65,13 +70,17 @@ export type UnprocessedTransactionDialogResult =
         ReactiveFormsModule,
         DatePipe,
         AccountSelectComponent,
-        OverlayModule
+        OverlayModule,
     ],
     templateUrl: './unprocessed-transaction-dialog.component.html',
     styleUrl: './unprocessed-transaction-dialog.component.scss',
-    styles: [`
-        .badge-loading { opacity: 0.7; }
-    `]
+    styles: [
+        `
+            .badge-loading {
+                opacity: 0.7;
+            }
+        `,
+    ],
 })
 export class UnprocessedTransactionDialogComponent implements OnInit {
     private readonly dialogRef = inject(MatDialogRef<UnprocessedTransactionDialogComponent>);
@@ -102,10 +111,13 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     protected readonly showEditPopover = signal(false);
     protected readonly matcherSearchControl = new FormControl<string | Matcher>('');
-    protected readonly matcherSearchQuery = toSignal(this.matcherSearchControl.valueChanges.pipe(
-        startWith(''),
-        map(v => (typeof v === 'string' ? v : v?.outputDescription || ''))
-    ), { initialValue: '' });
+    protected readonly matcherSearchQuery = toSignal(
+        this.matcherSearchControl.valueChanges.pipe(
+            startWith(''),
+            map((v) => (typeof v === 'string' ? v : v?.outputDescription || '')),
+        ),
+        { initialValue: '' },
+    );
 
     protected readonly allMatchers = this.matcherService.matchers; // Signal from service
     protected readonly filteredMatchers = computed(() => {
@@ -116,18 +128,24 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
         if (query) {
             const lowerQuery = query.toLowerCase();
-            filtered = matchers.filter(m => {
+            filtered = matchers.filter((m) => {
                 const accountName = this.getAccountName(m.outputAccountId).toLowerCase();
-                return (m.descriptionRegExp && m.descriptionRegExp.toLowerCase().includes(lowerQuery)) ||
-                    (m.outputDescription && m.outputDescription.toLowerCase().includes(lowerQuery)) ||
-                    (accountName.includes(lowerQuery));
+                return (
+                    (m.descriptionRegExp &&
+                        m.descriptionRegExp.toLowerCase().includes(lowerQuery)) ||
+                    (m.outputDescription &&
+                        m.outputDescription.toLowerCase().includes(lowerQuery)) ||
+                    accountName.includes(lowerQuery)
+                );
             });
         }
 
         // Return sorted
         return filtered.sort((a, b) => {
-            const nameA = `${this.getAccountName(a.outputAccountId)}: ${a.outputDescription || ''}`.toLowerCase();
-            const nameB = `${this.getAccountName(b.outputAccountId)}: ${b.outputDescription || ''}`.toLowerCase();
+            const nameA =
+                `${this.getAccountName(a.outputAccountId)}: ${a.outputDescription || ''}`.toLowerCase();
+            const nameB =
+                `${this.getAccountName(b.outputAccountId)}: ${b.outputDescription || ''}`.toLowerCase();
             return nameA.localeCompare(nameB);
         });
     });
@@ -140,11 +158,10 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     protected readonly matchersMap = signal<Map<string, Matcher>>(new Map());
 
-
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
-        this.budgetItemService.loadBudgetItems().subscribe(items => {
+        this.budgetItemService.loadBudgetItems().subscribe((items) => {
             this.budgetItems.set(items);
         });
         this.matcherService.loadMatchers().subscribe(); // Load all matchers for the search
@@ -153,23 +170,22 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     // I will replace ngOnInit completely to include the effect/computed logic correctly
 
-
     private loadMatchers() {
         const t = this.transaction();
         const missingIds = t.matched
-            .map(m => m.matcherId)
-            .filter(id => !this.matchersMap().has(id));
+            .map((m) => m.matcherId)
+            .filter((id) => !this.matchersMap().has(id));
 
-        new Set(missingIds).forEach(id => {
+        new Set(missingIds).forEach((id) => {
             getMatcher(this.http, this.apiConfig.rootUrl, { id: id }).subscribe({
                 next: (response) => {
-                    this.matchersMap.update(map => {
+                    this.matchersMap.update((map) => {
                         const newMap = new Map(map);
                         newMap.set(id, response.body);
                         return newMap;
                     });
                 },
-                error: (err) => console.error('Failed to load matcher', id, err)
+                error: (err) => console.error('Failed to load matcher', id, err),
             });
         });
     }
@@ -188,7 +204,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     getAccountName(accountId: string | undefined): string {
         if (!accountId) return 'Unknown Account';
-        const account = this.accounts().find(a => a.id === accountId);
+        const account = this.accounts().find((a) => a.id === accountId);
         return account ? account.name : accountId;
     }
 
@@ -204,16 +220,16 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         const dialogRef = this.dialog.open(MatcherEditDialogComponent, {
             data: {
                 transaction: this.transaction().transaction,
-                matcher: matcher
+                matcher: matcher,
             },
             width: '98%',
             maxWidth: '98vw',
             height: '95%',
             maxHeight: '98vh',
-            disableClose: true
+            disableClose: true,
         });
 
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             if (result) {
                 // If we edited a matcher, we should refresh the transaction to see if it now matches
                 // Or if we created one.
@@ -225,7 +241,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     }
 
     toggleEditPopover(): void {
-        this.showEditPopover.update(v => !v);
+        this.showEditPopover.update((v) => !v);
         if (this.showEditPopover()) {
             this.matcherSearchControl.setValue('');
         }
@@ -241,7 +257,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         if (!matcher) return '';
         const accountName = this.getAccountName(matcher.outputAccountId);
         return `${accountName}: ${matcher.outputDescription || ''}`;
-    }
+    };
 
     private refresh(): void {
         this.loading.set(true);
@@ -253,12 +269,12 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
             error: () => {
                 this.loading.set(false);
                 // Handle error? Maybe close dialog or show message
-            }
+            },
         });
     }
 
     getCurrencyName(currencyId: string): string {
-        const currency = this.currencies().find(c => c.id === currencyId);
+        const currency = this.currencies().find((c) => c.id === currencyId);
         return currency ? currency.name : currencyId;
     }
 
@@ -266,7 +282,11 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         return (this.transaction().transaction.movements || []).length === 2;
     }
 
-    get effectiveAmount(): { amount: number, currencyName: string, knownAccountId?: string } | null {
+    get effectiveAmount(): {
+        amount: number;
+        currencyName: string;
+        knownAccountId?: string;
+    } | null {
         if (!this.shouldShowEffectiveAmount) return null;
 
         const movements = this.transaction().transaction.movements || [];
@@ -277,12 +297,16 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
             return {
                 amount: unknownAccountMovement.amount,
                 currencyName: this.getCurrencyName(unknownAccountMovement.currencyId),
-                knownAccountId: knownAccountMovement?.accountId
+                knownAccountId: knownAccountMovement?.accountId,
             };
         }
 
         const m = movements[0];
-        return { amount: m.amount, currencyName: this.getCurrencyName(m.currencyId), knownAccountId: movements.find((mov: Movement) => mov !== m)?.accountId };
+        return {
+            amount: m.amount,
+            currencyName: this.getCurrencyName(m.currencyId),
+            knownAccountId: movements.find((mov: Movement) => mov !== m)?.accountId,
+        };
     }
 
     get knownAccountName(): string | null {
@@ -311,7 +335,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
             this.action.emit({
                 action: 'manual',
                 accountId,
-                description: this.descriptionControl.value || undefined
+                description: this.descriptionControl.value || undefined,
             });
         }
     }
@@ -320,13 +344,19 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.action.emit({ action: 'skip' });
     }
 
-
-
-    getConfidenceBadge(match: MatcherAndTransaction): { text: string; class: string; tooltip: string } {
+    getConfidenceBadge(match: MatcherAndTransaction): {
+        text: string;
+        class: string;
+        tooltip: string;
+    } {
         const matcher = this.matchersMap().get(match.matcherId);
 
         if (!matcher) {
-            return { text: '...', class: 'badge-secondary badge-loading', tooltip: 'Loading confirmation history...' };
+            return {
+                text: '...',
+                class: 'badge-secondary badge-loading',
+                tooltip: 'Loading confirmation history...',
+            };
         }
 
         const count = matcher.confirmationsCount || 0;
@@ -352,7 +382,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         return {
             text: `${count}/${total}`,
             class: badgeClass,
-            tooltip: `${count} successful confirmations out of ${total} attempts (${percentage.toFixed(0)}%)`
+            tooltip: `${count} successful confirmations out of ${total} attempts (${percentage.toFixed(0)}%)`,
         };
     }
 

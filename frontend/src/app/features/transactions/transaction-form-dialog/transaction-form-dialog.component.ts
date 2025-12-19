@@ -18,118 +18,120 @@ import { CurrencyService } from '../../currencies/services/currency.service';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 
 export interface TransactionFormDialogData {
-  mode: 'create' | 'edit';
-  transaction?: Transaction;
+    mode: 'create' | 'edit';
+    transaction?: Transaction;
 }
 
 @Component({
-  selector: 'app-transaction-form-dialog',
-  imports: [
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatIconModule,
-    MatChipsModule,
-    AccountSelectComponent
-  ],
-  templateUrl: './transaction-form-dialog.component.html',
-  styleUrl: './transaction-form-dialog.component.scss',
+    selector: 'app-transaction-form-dialog',
+    imports: [
+        ReactiveFormsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatSelectModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatIconModule,
+        MatChipsModule,
+        AccountSelectComponent,
+    ],
+    templateUrl: './transaction-form-dialog.component.html',
+    styleUrl: './transaction-form-dialog.component.scss',
 })
 export class TransactionFormDialogComponent implements OnInit {
-  private readonly dialogRef = inject(MatDialogRef<TransactionFormDialogComponent>);
-  private readonly data = inject<TransactionFormDialogData>(MAT_DIALOG_DATA);
-  private readonly fb = inject(FormBuilder);
-  private readonly accountService = inject(AccountService);
-  private readonly currencyService = inject(CurrencyService);
+    private readonly dialogRef = inject(MatDialogRef<TransactionFormDialogComponent>);
+    private readonly data = inject<TransactionFormDialogData>(MAT_DIALOG_DATA);
+    private readonly fb = inject(FormBuilder);
+    private readonly accountService = inject(AccountService);
+    private readonly currencyService = inject(CurrencyService);
 
-  protected readonly form: FormGroup;
-  protected readonly isEditMode = this.data.mode === 'edit';
-  protected readonly accounts = this.accountService.accounts;
-  protected readonly currencies = this.currencyService.currencies;
-  protected readonly tags = signal<string[]>([]);
+    protected readonly form: FormGroup;
+    protected readonly isEditMode = this.data.mode === 'edit';
+    protected readonly accounts = this.accountService.accounts;
+    protected readonly currencies = this.currencyService.currencies;
+    protected readonly tags = signal<string[]>([]);
 
-  constructor() {
-    this.form = this.fb.group({
-      date: [this.data.transaction?.date ? new Date(this.data.transaction.date) : new Date(), [Validators.required]],
-      description: [this.data.transaction?.description || '', [Validators.maxLength(500)]],
-      movements: this.fb.array([], [Validators.required, Validators.minLength(1)]),
-      partnerName: [this.data.transaction?.partnerName || ''],
-      partnerAccount: [this.data.transaction?.partnerAccount || ''],
-      place: [this.data.transaction?.place || ''],
-    });
+    constructor() {
+        this.form = this.fb.group({
+            date: [
+                this.data.transaction?.date ? new Date(this.data.transaction.date) : new Date(),
+                [Validators.required],
+            ],
+            description: [this.data.transaction?.description || '', [Validators.maxLength(500)]],
+            movements: this.fb.array([], [Validators.required, Validators.minLength(1)]),
+            partnerName: [this.data.transaction?.partnerName || ''],
+            partnerAccount: [this.data.transaction?.partnerAccount || ''],
+            place: [this.data.transaction?.place || ''],
+        });
 
-    if (this.data.transaction?.tags) {
-      this.tags.set([...this.data.transaction.tags]);
+        if (this.data.transaction?.tags) {
+            this.tags.set([...this.data.transaction.tags]);
+        }
     }
-  }
 
-  ngOnInit(): void {
-    this.accountService.loadAccounts().subscribe();
-    this.currencyService.loadCurrencies().subscribe();
+    ngOnInit(): void {
+        this.accountService.loadAccounts().subscribe();
+        this.currencyService.loadCurrencies().subscribe();
 
-    if (this.data.transaction?.movements) {
-      this.data.transaction.movements.forEach((movement) => {
-        this.addMovement(movement);
-      });
-    } else {
-      this.addMovement();
+        if (this.data.transaction?.movements) {
+            this.data.transaction.movements.forEach((movement) => {
+                this.addMovement(movement);
+            });
+        } else {
+            this.addMovement();
+        }
     }
-  }
 
-  get movements(): FormArray {
-    return this.form.get('movements') as FormArray;
-  }
-
-  addMovement(movement?: Movement): void {
-    const movementGroup = this.fb.group({
-      accountId: [movement?.accountId || '', [Validators.required]],
-      currencyId: [movement?.currencyId || '', [Validators.required]],
-      amount: [movement?.amount || 0, [Validators.required]],
-      description: [movement?.description || ''],
-    });
-    this.movements.push(movementGroup);
-  }
-
-  removeMovement(index: number): void {
-    this.movements.removeAt(index);
-  }
-
-  addTag(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = input.value.trim();
-    if (value) {
-      this.tags.update((tags) => [...tags, value]);
-      input.value = '';
+    get movements(): FormArray {
+        return this.form.get('movements') as FormArray;
     }
-  }
 
-  removeTag(tag: string): void {
-    this.tags.update((tags) => tags.filter((t) => t !== tag));
-  }
-
-  onSubmit(): void {
-    if (this.form.valid) {
-      const formValue = this.form.value;
-      const transaction: TransactionNoId = {
-        date: formValue.date.toISOString(),
-        description: formValue.description,
-        movements: formValue.movements,
-        partnerName: formValue.partnerName || undefined,
-        partnerAccount: formValue.partnerAccount || undefined,
-        place: formValue.place || undefined,
-        tags: this.tags().length > 0 ? this.tags() : undefined,
-      };
-      this.dialogRef.close(transaction);
+    addMovement(movement?: Movement): void {
+        const movementGroup = this.fb.group({
+            accountId: [movement?.accountId || '', [Validators.required]],
+            currencyId: [movement?.currencyId || '', [Validators.required]],
+            amount: [movement?.amount || 0, [Validators.required]],
+            description: [movement?.description || ''],
+        });
+        this.movements.push(movementGroup);
     }
-  }
 
-  onCancel(): void {
-    this.dialogRef.close();
-  }
+    removeMovement(index: number): void {
+        this.movements.removeAt(index);
+    }
+
+    addTag(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const value = input.value.trim();
+        if (value) {
+            this.tags.update((tags) => [...tags, value]);
+            input.value = '';
+        }
+    }
+
+    removeTag(tag: string): void {
+        this.tags.update((tags) => tags.filter((t) => t !== tag));
+    }
+
+    onSubmit(): void {
+        if (this.form.valid) {
+            const formValue = this.form.value;
+            const transaction: TransactionNoId = {
+                date: formValue.date.toISOString(),
+                description: formValue.description,
+                movements: formValue.movements,
+                partnerName: formValue.partnerName || undefined,
+                partnerAccount: formValue.partnerAccount || undefined,
+                place: formValue.place || undefined,
+                tags: this.tags().length > 0 ? this.tags() : undefined,
+            };
+            this.dialogRef.close(transaction);
+        }
+    }
+
+    onCancel(): void {
+        this.dialogRef.close();
+    }
 }
-

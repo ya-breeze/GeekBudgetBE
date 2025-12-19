@@ -11,31 +11,36 @@ import { Transaction } from '../../models/transaction';
 import { TransactionNoId } from '../../models/transaction-no-id';
 
 export interface ConvertUnprocessedTransaction$Params {
-  id: string;
+    id: string;
 
-/**
- * ID of the matcher used for this conversion (if any)
- */
-  matcherId?: string;
-      body: TransactionNoId
+    /**
+     * ID of the matcher used for this conversion (if any)
+     */
+    matcherId?: string;
+    body: TransactionNoId;
 }
 
-export function convertUnprocessedTransaction(http: HttpClient, rootUrl: string, params: ConvertUnprocessedTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<Transaction>> {
-  const rb = new RequestBuilder(rootUrl, convertUnprocessedTransaction.PATH, 'post');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.query('matcherId', params.matcherId, {});
-    rb.body(params.body, 'application/json');
-  }
+export function convertUnprocessedTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: ConvertUnprocessedTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Transaction>> {
+    const rb = new RequestBuilder(rootUrl, convertUnprocessedTransaction.PATH, 'post');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.query('matcherId', params.matcherId, {});
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Transaction>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Transaction>;
+            }),
+        );
 }
 
 convertUnprocessedTransaction.PATH = '/v1/unprocessedTransactions/{id}/convert';

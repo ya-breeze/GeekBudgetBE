@@ -3,6 +3,6 @@
 
 import { AccountAggregation } from '../models/account-aggregation';
 export interface CurrencyAggregation {
-  accounts: Array<AccountAggregation>;
-  currencyId: string;
+    accounts: Array<AccountAggregation>;
+    currencyId: string;
 }

@@ -30,36 +30,43 @@ describe('BudgetItemsComponent', () => {
             loadBudgetItems: jasmine.createSpy('loadBudgetItems').and.returnValue(of([])),
             loadBudgetStatus: jasmine.createSpy('loadBudgetStatus').and.returnValue(of([])),
             create: jasmine.createSpy('create').and.returnValue(of({})),
-            update: jasmine.createSpy('update').and.returnValue(of({}))
+            update: jasmine.createSpy('update').and.returnValue(of({})),
         };
 
         mockAccountService = {
             accounts: signal([]),
-            loadAccounts: jasmine.createSpy('loadAccounts').and.returnValue(of([]))
+            averages: signal([]),
+            loadAccounts: jasmine.createSpy('loadAccounts').and.returnValue(of([])),
+            loadYearlyExpenses: jasmine.createSpy('loadYearlyExpenses').and.returnValue(of([])),
         };
 
         mockUserService = {
             user: signal({ favoriteCurrencyId: 'curr1' }),
-            loadUser: jasmine.createSpy('loadUser').and.returnValue(of({ favoriteCurrencyId: 'curr1' }))
+            loadUser: jasmine
+                .createSpy('loadUser')
+                .and.returnValue(of({ favoriteCurrencyId: 'curr1' })),
         };
 
         mockCurrencyService = {
-            currencies: signal([{ id: 'curr1', name: 'USD' }, { id: 'curr2', name: 'EUR' }]),
-            loadCurrencies: jasmine.createSpy('loadCurrencies').and.returnValue(of([]))
+            currencies: signal([
+                { id: 'curr1', name: 'USD' },
+                { id: 'curr2', name: 'EUR' },
+            ]),
+            loadCurrencies: jasmine.createSpy('loadCurrencies').and.returnValue(of([])),
         };
 
         mockLayoutService = {
-            sidenavOpened: signal(false)
+            sidenavOpened: signal(false),
         };
 
         mockSnackBar = {
-            open: jasmine.createSpy('open')
+            open: jasmine.createSpy('open'),
         };
 
         mockDialog = {
             open: jasmine.createSpy('open').and.returnValue({
-                afterClosed: () => of(100) // Simulate user entering 100
-            })
+                afterClosed: () => of(100), // Simulate user entering 100
+            }),
         };
 
         await TestBed.configureTestingModule({
@@ -69,16 +76,16 @@ describe('BudgetItemsComponent', () => {
                 { provide: AccountService, useValue: mockAccountService },
                 { provide: UserService, useValue: mockUserService },
                 { provide: CurrencyService, useValue: mockCurrencyService },
-                { provide: LayoutService, useValue: mockLayoutService }
+                { provide: LayoutService, useValue: mockLayoutService },
             ],
         })
             .overrideComponent(BudgetItemsComponent, {
                 add: {
                     providers: [
                         { provide: MatSnackBar, useValue: mockSnackBar },
-                        { provide: MatDialog, useValue: mockDialog }
-                    ]
-                }
+                        { provide: MatDialog, useValue: mockDialog },
+                    ],
+                },
             })
             .compileComponents();
 
@@ -112,13 +119,19 @@ describe('BudgetItemsComponent', () => {
 
     it('should calculate matrix data correctly with totals', () => {
         // Setup mock data
-        mockAccountService.accounts.set([{ id: 'acc1', name: 'Test Account' }]);
+        mockAccountService.accounts.set([{ id: 'acc1', name: 'Test Account', type: 'expense' }]);
         mockBudgetItemService.budgetItems.set([
-            { id: 'item1', accountId: 'acc1', amount: 500, date: new Date().toISOString() }
+            { id: 'item1', accountId: 'acc1', amount: 500, date: new Date().toISOString() },
         ]);
         // Status with converted amounts
         mockBudgetItemService.budgetStatus.set([
-            { accountId: 'acc1', date: new Date().toISOString(), spent: 200, available: 300, budgeted: 500 }
+            {
+                accountId: 'acc1',
+                date: new Date().toISOString(),
+                spent: 200,
+                available: 300,
+                budgeted: 500,
+            },
         ]);
 
         // Force re-computation
