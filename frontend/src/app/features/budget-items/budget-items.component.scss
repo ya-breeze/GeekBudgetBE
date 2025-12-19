@@ -167,28 +167,66 @@ tbody .sticky-col-header {
     background-color: #ffebee !important; // Light Red - Important to override total-row styles
 }
 
-.cell-content {
+.cell-content-modern {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     gap: 4px;
-    align-items: center;
+    padding: 8px;
+    min-width: 140px;
 }
 
-.planned {
+.cell-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.label {
+    color: #888;
+    font-size: 11px;
     font-weight: 500;
 }
 
-.spent {
+.value-primary {
+    font-weight: 600;
+    color: #333;
+}
+
+.value-secondary {
+    font-weight: 500;
     color: #666;
-    font-size: 0.9em;
 }
 
-.divider {
-    color: #ccc;
+.progress-bar-container {
+    height: 6px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+    width: 100%;
 }
 
-.status-virtual {
-    background-color: #fff9c4 !important; // Light Yellow for virtual budget
+.progress-bar-fill {
+    height: 100%;
+    background-color: #4caf50; // Green for safe
+    border-radius: 3px;
+    transition: width 0.3s ease;
+
+    &.over-budget {
+        background-color: #f44336; // Red for over
+    }
+
+    &.unbudgeted-spent {
+        background-color: #ffc107; // Amber/Yellow for unbudgeted but spent
+    }
+}
+
+.percentage-label {
+    text-align: right;
+    font-size: 10px;
+    color: #999;
 }
 
 // Intense styles for Total Cells (Row, Column, Grand)
@@ -207,6 +245,7 @@ tbody .sticky-col-header {
     font-size: 15px !important; // Bigger font
     color: #b71c1c; // Darker text for contrast
 }
+
 // Account Cell Styles
 .account-cell {
     display: flex;

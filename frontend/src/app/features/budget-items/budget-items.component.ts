@@ -31,6 +31,7 @@ interface MatrixCell {
     budgetItemId?: string; // If exists for editing
     calculatedAvailable?: number; // For styling
     isVirtual?: boolean;
+    isPastMonth?: boolean;
 }
 
 interface MatrixRow {
@@ -183,18 +184,36 @@ interface MatrixRow {
                                                 [class.status-virtual]="cell.isVirtual"
                                                 (click)="editCell(row.account, cell)"
                                             >
-                                                <div class="cell-content">
-                                                    <span class="planned">{{
-                                                        cell.amount
-                                                            | currency
-                                                                : preferredCurrency()?.name || ''
-                                                    }}</span>
-                                                    <span class="divider">/</span>
-                                                    <span class="spent">{{
-                                                        cell.spent
-                                                            | currency
-                                                                : preferredCurrency()?.name || ''
-                                                    }}</span>
+                                                <div class="cell-content-modern">
+                                                    <div class="cell-row top-row">
+                                                        <span class="label">Budget</span>
+                                                        <span class="value-primary">{{
+                                                            cell.amount
+                                                                | currency
+                                                                    : preferredCurrency()?.name || ''
+                                                                    : 'symbol-narrow' : '1.0-0'
+                                                        }}</span>
+                                                    </div>
+                                                    <div class="cell-row middle-row">
+                                                        <span class="label">Spent</span>
+                                                        <span class="value-secondary">{{
+                                                            cell.spent
+                                                                | currency
+                                                                    : preferredCurrency()?.name || ''
+                                                                    : 'symbol-narrow' : '1.0-0'
+                                                        }}</span>
+                                                    </div>
+                                                    <div class="progress-bar-container">
+                                                        <div 
+                                                            class="progress-bar-fill" 
+                                                            [style.width.%]="(cell.amount > 0 ? (cell.spent / cell.amount * 100) : (cell.spent > 0 ? 100 : 0)) | number:'1.0-0'"
+                                                            [class.over-budget]="cell.spent > cell.amount"
+                                                            [class.unbudgeted-spent]="cell.isVirtual"
+                                                        ></div>
+                                                    </div>
+                                                    <div class="percentage-label">
+                                                        {{ cell.amount > 0 ? (cell.spent / cell.amount | percent:'1.0-0') : '0%' }}
+                                                    </div>
                                                 </div>
                                             </td>
                                         }
@@ -376,6 +395,15 @@ export class BudgetItemsComponent implements OnInit {
                     cellDate.getUTCFullYear() === currentYear &&
                     cellDate.getUTCMonth() === currentMonth;
 
+                // Check if past month (simple comparison since we iterate)
+                // Actually easier to compare tokens or date objects
+                // currentYear/Month is local time from new Date()
+                // cellDate is UTC from string.
+                // Let's rely on flexible comparison:
+                const nowTotalMonths = currentYear * 12 + currentMonth;
+                const cellTotalMonths = cellDate.getUTCFullYear() * 12 + cellDate.getUTCMonth();
+                const isPastMonth = cellTotalMonths < nowTotalMonths;
+
                 const spentDisplay = stat?.spent ?? 0;
 
                 let amountDisplay = 0;
@@ -412,6 +440,7 @@ export class BudgetItemsComponent implements OnInit {
                     budgetItemId: item?.id,
                     calculatedAvailable: available,
                     isVirtual: isVirtual,
+                    isPastMonth: isPastMonth,
                 };
             });
 

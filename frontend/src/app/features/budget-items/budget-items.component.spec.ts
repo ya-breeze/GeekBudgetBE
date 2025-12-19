@@ -173,4 +173,84 @@ describe('BudgetItemsComponent', () => {
         const newDate = (component as any).startDate();
         expect(newDate.getMonth()).not.toBe(initialDate.getMonth());
     });
+
+    it('should correctly mark virtual and over-budget status properties', () => {
+        // Setup scenarios
+        // 1. Budgeted < Spent (Should be Red -> over-budget class)
+        // 2. Unbudgeted & Spent > 0 & Current Month (Should be Red -> over-budget class)
+        // 3. Unbudgeted & Spent > 0 & Past Month (Should be Yellow -> unbudgeted-spent class)
+
+        const now = new Date();
+        const currentMonthStr = now.toISOString().substring(0, 7);
+
+        const pastDate = new Date(now);
+        pastDate.setMonth(pastDate.getMonth() - 1);
+        const pastMonthStr = pastDate.toISOString().substring(0, 7);
+
+        mockAccountService.accounts.set([{ id: 'acc1', name: 'Test Account', type: 'expense' }]);
+
+        // Mock Items (Budget Set)
+        mockBudgetItemService.budgetItems.set([
+            // Scenario 1: Budget Set
+            { id: 'item1', accountId: 'acc1', amount: 100, date: currentMonthStr + '-01' },
+        ]);
+
+        // Mock Status
+        mockBudgetItemService.budgetStatus.set([
+            // Scenario 1: Budgeted 100, Spent 200
+            { accountId: 'acc1', date: currentMonthStr + '-01', spent: 200, available: -100, budgeted: 100 },
+            // Scenario 3: Past Month, Unbudgeted, Spent 50
+            { accountId: 'acc1', date: pastMonthStr + '-01', spent: 50, available: -50, budgeted: 0 },
+        ]);
+
+        // Scenario 2: Current Month, Unbudgeted... wait, we need another item or account for this difference?
+        // Let's use a different account for the unbudgeted current month scenario to avoid collision with Scenario 1
+        mockAccountService.accounts.set([
+            { id: 'acc1', name: 'Budgeted Account', type: 'expense' },
+            { id: 'acc2', name: 'Unbudgeted Account', type: 'expense' }
+        ]);
+
+        // Status updates
+        mockBudgetItemService.budgetStatus.set([
+            // Scenario 1 (acc1, current): Budgeted 100, Spent 200
+            { accountId: 'acc1', date: currentMonthStr + '-01', spent: 200, available: -100, budgeted: 100 },
+            // Scenario 2 (acc2, current): Unbudgeted, Spent 50
+            { accountId: 'acc2', date: currentMonthStr + '-01', spent: 50, available: -50, budgeted: 0 },
+            // Scenario 3 (acc2, past): Unbudgeted, Spent 50
+            { accountId: 'acc2', date: pastMonthStr + '-01', spent: 50, available: -50, budgeted: 0 },
+        ]);
+
+        // Ensure month count covers past month
+        (component as any).monthCount.set(2);
+
+        fixture.detectChanges();
+
+        const matrix = (component as any).matrixData();
+
+        // Check Scenario 1: Budgeted < Spent
+        const row1 = matrix.find((r: any) => r.account.id === 'acc1');
+        const cell1 = row1.cells.find((c: any) => c.month.startsWith(currentMonthStr));
+        // Expect: spent > amount. Logic: 200 > 100.
+        expect(cell1.spent).toBe(200);
+        expect(cell1.amount).toBe(100);
+        expect(cell1.spent > cell1.amount).toBeTrue();
+        expect(cell1.isVirtual).toBeFalse();
+
+        // Check Scenario 2: Unbudgeted & Spent > 0 & Current Month
+        const row2 = matrix.find((r: any) => r.account.id === 'acc2');
+        const cell2 = row2.cells.find((c: any) => c.month.startsWith(currentMonthStr));
+        // Expect: Amount 0 (Strict), Spent 50.
+        expect(cell2.amount).toBe(0);
+        expect(cell2.spent).toBe(50);
+        expect(cell2.spent > cell2.amount).toBeTrue(); // Triggers Red
+        expect(cell2.isVirtual).toBeFalse();
+
+        // Check Scenario 3: Unbudgeted & Spent > 0 & Past Month
+        const cell3 = row2.cells.find((c: any) => c.month.startsWith(pastMonthStr));
+        // Expect: Amount = Spent = 50 (Virtual).
+        expect(cell3.amount).toBe(50);
+        expect(cell3.spent).toBe(50);
+        expect(cell3.spent > cell3.amount).toBeFalse(); // Not Red
+        expect(cell3.isVirtual).toBeTrue(); // Triggers Yellow
+    });
 });
