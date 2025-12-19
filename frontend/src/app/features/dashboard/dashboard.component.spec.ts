@@ -15,8 +15,7 @@ describe('DashboardComponent', () => {
     let fixture: ComponentFixture<DashboardComponent>;
     let httpClient: jasmine.SpyObj<HttpClient>;
     let accountService: jasmine.SpyObj<AccountService>;
-    let currencyService: jasmine.SpyObj<CurrencyService>;
-    let userService: jasmine.SpyObj<UserService>;
+
     let layoutService: jasmine.SpyObj<LayoutService>;
     let dialogSpy: jasmine.SpyObj<MatDialog>;
     let accountsSignal: any;
@@ -128,8 +127,7 @@ describe('DashboardComponent', () => {
 
         httpClient = TestBed.inject(HttpClient) as jasmine.SpyObj<HttpClient>;
         accountService = TestBed.inject(AccountService) as jasmine.SpyObj<AccountService>;
-        currencyService = TestBed.inject(CurrencyService) as jasmine.SpyObj<CurrencyService>;
-        userService = TestBed.inject(UserService) as jasmine.SpyObj<UserService>;
+
         layoutService = TestBed.inject(LayoutService) as jasmine.SpyObj<LayoutService>;
 
         fixture = TestBed.createComponent(DashboardComponent);

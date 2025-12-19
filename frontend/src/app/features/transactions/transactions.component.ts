@@ -192,15 +192,12 @@ export class TransactionsComponent implements OnInit {
     ngOnInit(): void {
         // Read query parameters
         this.route.queryParams.subscribe((params) => {
-            let dataReloadNeeded = false;
-
             if (params['month'] && params['year']) {
                 const month = parseInt(params['month'], 10);
                 const year = parseInt(params['year'], 10);
                 if (!isNaN(month) && !isNaN(year)) {
                     this.currentMonth.set(month);
                     this.currentYear.set(year);
-                    dataReloadNeeded = true;
                 }
             }
 

@@ -134,12 +134,12 @@ export class DashboardComponent implements OnInit {
             const allValues: number[] = [];
 
             // PHASE 1: Collect all values first (month cells, row totals, month totals, grand total)
-            const rowsData: Array<{
+            const rowsData: {
                 accountId: string;
                 accountName: string;
                 monthValues: Map<string, number>;
                 rowTotal: number;
-            }> = [];
+            }[] = [];
 
             // Build rows for each expense account for this currency
             expenseAccounts.forEach((account) => {

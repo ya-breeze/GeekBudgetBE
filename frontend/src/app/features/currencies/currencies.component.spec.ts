@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CurrenciesComponent } from './currencies.component';
 import { CurrencyService } from './services/currency.service';
-import { MatDialog } from '@angular/material/dialog';
+
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
@@ -12,7 +12,6 @@ describe('CurrenciesComponent', () => {
     let component: CurrenciesComponent;
     let fixture: ComponentFixture<CurrenciesComponent>;
     let currencyService: jasmine.SpyObj<CurrencyService>;
-    let dialog: MatDialog;
 
     const mockCurrencies: Currency[] = [
         { id: '1', name: 'USD', description: 'US Dollar' },
@@ -46,7 +45,6 @@ describe('CurrenciesComponent', () => {
         }).compileComponents();
 
         currencyService = TestBed.inject(CurrencyService) as jasmine.SpyObj<CurrencyService>;
-        dialog = TestBed.inject(MatDialog);
 
         fixture = TestBed.createComponent(CurrenciesComponent);
         component = fixture.componentInstance;

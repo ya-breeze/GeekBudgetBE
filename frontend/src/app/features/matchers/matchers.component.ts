@@ -160,12 +160,12 @@ export class MatchersComponent implements OnInit {
                 return matcher.outputAccountName ?? matcher.outputAccountId ?? '';
             case 'outputDescription':
                 return this.removeLeadingEmoji(matcher.outputDescription ?? '');
-            case 'confidence':
+            case 'confidence': {
                 const total = matcher.confirmationsTotal || 0;
                 if (total === 0) return -1;
 
                 const count = matcher.confirmationsCount || 0;
-                let score = count / total;
+                const score = count / total;
 
                 // Boost score for proven perfect matches (>= 10 confirmations, 100%)
                 // or penalize small perfect matches.
@@ -183,6 +183,7 @@ export class MatchersComponent implements OnInit {
                 }
 
                 return score;
+            }
             default:
                 return null;
         }

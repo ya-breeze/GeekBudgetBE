@@ -34,7 +34,7 @@ import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
 import { getMatcher } from '../../../core/api/fn/matchers/get-matcher';
 import { Matcher } from '../../../core/api/models/matcher';
-import { startWith, map, combineLatest } from 'rxjs';
+import { startWith, map } from 'rxjs';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { OverlayModule } from '@angular/cdk/overlay';

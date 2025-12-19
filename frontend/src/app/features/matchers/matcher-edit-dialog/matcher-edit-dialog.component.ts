@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
+import { Component, inject, OnInit, signal, HostListener } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -178,7 +178,7 @@ export class MatcherEditDialogComponent implements OnInit {
     }
 
     toggleCaseInsensitive(checked: boolean): void {
-        let val = this.form.controls.descriptionRegExp.value || '';
+        const val = this.form.controls.descriptionRegExp.value || '';
         if (checked) {
             if (!val.startsWith('(?i)')) {
                 this.form.controls.descriptionRegExp.setValue('(?i)' + val);
