@@ -1,26 +1,19 @@
 <h2 mat-dialog-title>Delete Account</h2>
 <mat-dialog-content>
     <p>
-        Are you sure you want to delete account <strong>{{ accountToDelete.name }}</strong
-        >?
+        Are you sure you want to delete account <strong>{{ accountToDelete.name }}</strong>?
     </p>
     <p class="text-warn">
         This action cannot be undone. All related data might be lost unless reassigned.
     </p>
 
-    <mat-form-field appearance="outline">
-        <mat-label>Reassign transactions to (optional)</mat-label>
-        <mat-select
-            [ngModel]="replaceWithAccountId()"
-            (ngModelChange)="replaceWithAccountId.set($event)"
-        >
-            <mat-option [value]="null">-- Do not reassign (Delete transactions) --</mat-option>
-            <mat-option *ngFor="let account of availableAccounts" [value]="account.id">
-                {{ account.name }}
-            </mat-option>
-        </mat-select>
-        <mat-hint>Select an account to move existing transactions to.</mat-hint>
-    </mat-form-field>
+    <div class="control-container">
+        <app-account-select label="Reassign transactions to (optional)" [ngModel]="replaceWithAccountId()"
+            (ngModelChange)="replaceWithAccountId.set($event)" [excludedIds]="[accountToDelete.id]"
+            placeholder="Select a replacement account"></app-account-select>
+        <p class="hint-text" style="font-size: 75%; opacity: 0.7; margin-top: 5px;">Leave empty to
+            <strong>delete</strong> associated transactions.</p>
+    </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()">Cancel</button>

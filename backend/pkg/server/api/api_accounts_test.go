@@ -54,6 +54,20 @@ var _ = Describe("Accounts API", func() {
 			Expect(resp.Code).To(Equal(http.StatusBadRequest))
 		})
 
+		It("returns 400 when replacing with self", func() {
+			accountID := "acc-1"
+
+			// Mock GetAccount (image check)
+			mockStorage.EXPECT().GetAccount("user1", accountID).Return(goserver.Account{Id: accountID}, nil)
+
+			// We expect NO calls to GetAccount for validation of replacement because the check happens before
+			// We expect NO calls to DeleteAccount
+
+			resp, err := sut.DeleteAccount(ctx, accountID, accountID)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusBadRequest))
+		})
+
 		It("returns 200 when deleting an account with valid replacement", func() {
 			accountID := "acc-1"
 			replaceID := "acc-2"

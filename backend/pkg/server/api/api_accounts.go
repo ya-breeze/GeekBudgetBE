@@ -97,6 +97,10 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 	}
 
 	if replaceWithAccountId != "" {
+		if replaceWithAccountId == accountID {
+			s.logger.With("error", "replaceWithAccountId equals accountID").Warn("Cannot replace account with itself")
+			return goserver.Response(400, nil), nil
+		}
 		if _, err := s.db.GetAccount(userID, replaceWithAccountId); err != nil {
 			s.logger.With("error", err, "replaceWithAccountId", replaceWithAccountId).Warn("Replacement account not found")
 			return goserver.Response(400, nil), nil

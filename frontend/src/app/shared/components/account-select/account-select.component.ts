@@ -60,14 +60,15 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
     @Input() label = 'Account';
     @Input() required = false;
     @Input() placeholder = 'Select an account';
+    @Input() excludedIds: string[] = [];
 
     @ViewChild('auto') auto!: MatAutocomplete;
     readonly searchControl = new FormControl<string | Account>('');
 
     // Internal value tracking (Account ID)
     private _value: string | null = null;
-    private onChange: (value: string | null) => void = () => {};
-    private onTouched: () => void = () => {};
+    private onChange: (value: string | null) => void = () => { };
+    private onTouched: () => void = () => { };
 
     protected readonly filterValue = toSignal(
         this.searchControl.valueChanges.pipe(
@@ -85,9 +86,12 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
         const filterValue = (this.filterValue() || '').toLowerCase();
 
         // 1. Filter
-        const filtered = accounts.filter((account: Account) =>
-            account.name.toLowerCase().includes(filterValue),
-        );
+        const filtered = accounts.filter((account: Account) => {
+            if (this.excludedIds.length > 0 && this.excludedIds.includes(account.id)) {
+                return false;
+            }
+            return account.name.toLowerCase().includes(filterValue);
+        });
 
         // 2. Sort
         filtered.sort((a: Account, b: Account) => a.name.localeCompare(b.name));

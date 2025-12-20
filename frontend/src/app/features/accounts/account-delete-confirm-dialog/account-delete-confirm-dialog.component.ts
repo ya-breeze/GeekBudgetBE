@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { Account } from '../../../core/api/models/account';
+import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 
 export interface AccountDeleteConfirmDialogData {
     accountToDelete: Account;
@@ -24,9 +25,8 @@ export interface AccountDeleteConfirmDialogResult {
         CommonModule,
         MatDialogModule,
         MatButtonModule,
-        MatFormFieldModule,
-        MatSelectModule,
         FormsModule,
+        AccountSelectComponent,
     ],
     templateUrl: './account-delete-confirm-dialog.component.html',
     styles: [

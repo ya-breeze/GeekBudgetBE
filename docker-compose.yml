@@ -14,8 +14,8 @@ services:
       GB_DBPATH: ${GB_DBPATH:-/data/geekbudget.db}
       GB_ALLOWEDORIGINS: ${GB_ALLOWEDORIGINS:-http://localhost,http://localhost:80,http://localhost:8080}
       GB_JWTSECRET: ${GB_JWTSECRET:-}
-      GB_SESSION_SECRET: ${GB_SESSION_SECRET:-}
-      GB_COOKIE_SECURE: ${GB_COOKIE_SECURE:-true}
+      GB_SESSIONSECRET: ${GB_SESSIONSECRET:-}
+      GB_COOKIESECURE: ${GB_COOKIESECURE:-true}
       GB_ISSUER: ${GB_ISSUER:-geekbudget}
       GB_PORT: ${GB_PORT:-8080}
       GB_DISABLEIMPORTERS: ${GB_DISABLEIMPORTERS:-false}
