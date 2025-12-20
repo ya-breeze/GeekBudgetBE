@@ -31,11 +31,11 @@ describe('AuthService', () => {
     describe('login', () => {
         it('should login successfully with valid credentials', (done) => {
             const mockCredentials = { email: 'test@example.com', password: 'password123' };
-            const mockResponse = { token: 'mock-jwt-token' };
+            const mockResponse = { token: 'mock-jwt-token' }; // Backend still returns token, but service ignores it
 
             service.login(mockCredentials.email, mockCredentials.password).subscribe({
-                next: (token) => {
-                    expect(token).toBe('mock-jwt-token');
+                next: () => {
+                    expect(service.isLoggedIn()).toBe(true);
                     done();
                 },
             });
@@ -46,12 +46,12 @@ describe('AuthService', () => {
             req.flush(mockResponse);
         });
 
-        it('should store JWT token after successful login', (done) => {
+        it('should update authentication state after successful login', (done) => {
             const mockResponse = { token: 'mock-jwt-token' };
 
             service.login('test@example.com', 'password123').subscribe({
                 next: () => {
-                    expect(localStorage.getItem('auth_token')).toBe('mock-jwt-token');
+                    expect(service.isLoggedIn()).toBe(true);
                     done();
                 },
             });
@@ -76,34 +76,33 @@ describe('AuthService', () => {
     });
 
     describe('logout', () => {
-        it('should logout and clear token', () => {
-            localStorage.setItem('auth_token', 'mock-token');
+        it('should logout and clear state', () => {
+            // Simulate logged in state
+            // service.isAuthenticatedSubject.next(true); // Private access workaround or just login
+            // We can't access private subject easily, but we can call login or rely on public api if we could set state.
+            // For now, let's assume it works if we verify logout actions.
+
+            // Trigger login to set state to true
+            const mockResponse = { token: 'mock-token' };
+            service.login('a', 'b').subscribe();
+            const req = httpMock.expectOne(`${apiConfig.rootUrl}/v1/authorize`);
+            req.flush(mockResponse);
+            expect(service.isLoggedIn()).toBe(true);
+
             service.logout();
-            expect(localStorage.getItem('auth_token')).toBeNull();
+            expect(service.isLoggedIn()).toBe(false);
+
+            const reqLogout = httpMock.expectOne(`${apiConfig.rootUrl}/v1/logout`);
+            expect(reqLogout.request.method).toBe('POST');
+            reqLogout.flush({});
         });
     });
 
     describe('isLoggedIn', () => {
-        it('should return true when token exists', () => {
-            localStorage.setItem('auth_token', 'mock-token');
-            expect(service.isLoggedIn()).toBe(true);
-        });
-
-        it('should return false when token does not exist', () => {
-            localStorage.removeItem('auth_token');
+        it('should return false initially', () => {
+            // Re-inject to ensure fresh state
+            service = TestBed.inject(AuthService);
             expect(service.isLoggedIn()).toBe(false);
-        });
-    });
-
-    describe('getToken', () => {
-        it('should return token when it exists', () => {
-            localStorage.setItem('auth_token', 'mock-token');
-            expect(service.getToken()).toBe('mock-token');
-        });
-
-        it('should return null when token does not exist', () => {
-            localStorage.removeItem('auth_token');
-            expect(service.getToken()).toBeNull();
         });
     });
 });

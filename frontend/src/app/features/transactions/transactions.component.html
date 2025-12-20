@@ -1,6 +1,6 @@
 <div class="transactions-container">
     @if (!sidenavOpened()) {
-    <h1 class="page-title">Transactions</h1>
+        <h1 class="page-title">Transactions</h1>
     }
 
     <div class="header">
@@ -24,10 +24,10 @@
         <div class="filter-header">
             <h3>Filters</h3>
             @if (hasActiveFilters()) {
-            <button mat-button color="accent" (click)="clearFilters()">
-                <mat-icon>clear</mat-icon>
-                Clear Filters
-            </button>
+                <button mat-button color="accent" (click)="clearFilters()">
+                    <mat-icon>clear</mat-icon>
+                    Clear Filters
+                </button>
             }
         </div>
 
@@ -36,11 +36,11 @@
                 <mat-label>Filter by Accounts</mat-label>
                 <mat-select [(ngModel)]="selectedAccountIds" multiple>
                     @for (account of accounts(); track account.id) {
-                    <mat-option [value]="account.id">{{ account.name }}</mat-option>
+                        <mat-option [value]="account.id">{{ account.name }}</mat-option>
                     }
                 </mat-select>
                 @if (selectedAccountIds().length > 0) {
-                <mat-hint>{{ selectedAccountIds().length }} account(s) selected</mat-hint>
+                    <mat-hint>{{ selectedAccountIds().length }} account(s) selected</mat-hint>
                 }
             </mat-form-field>
 
@@ -48,157 +48,203 @@
                 <mat-label>Filter by Tags</mat-label>
                 <mat-select [(ngModel)]="selectedTags" multiple>
                     @for (tag of availableTags(); track tag) {
-                    <mat-option [value]="tag">{{ tag }}</mat-option>
+                        <mat-option [value]="tag">{{ tag }}</mat-option>
                     }
                 </mat-select>
                 @if (selectedTags().length > 0) {
-                <mat-hint>{{ selectedTags().length }} tag(s) selected</mat-hint>
+                    <mat-hint>{{ selectedTags().length }} tag(s) selected</mat-hint>
                 }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="filter-field">
                 <mat-label>Search Description</mat-label>
-                <input matInput [(ngModel)]="descriptionFilter" placeholder="Enter text to search..." />
+                <input
+                    matInput
+                    [(ngModel)]="descriptionFilter"
+                    placeholder="Enter text to search..."
+                />
                 @if (descriptionFilter()) {
-                <button matSuffix mat-icon-button (click)="descriptionFilter.set('')" aria-label="Clear">
-                    <mat-icon>close</mat-icon>
-                </button>
+                    <button
+                        matSuffix
+                        mat-icon-button
+                        (click)="descriptionFilter.set('')"
+                        aria-label="Clear"
+                    >
+                        <mat-icon>close</mat-icon>
+                    </button>
                 }
             </mat-form-field>
         </div>
 
         @if (hasActiveFilters()) {
-        <div class="filter-summary">
-            <mat-chip-set>
-                @if (selectedAccountIds().length > 0) {
-                <mat-chip>
-                    Accounts: {{ selectedAccountIds().length }}
-                    <button matChipRemove (click)="selectedAccountIds.set([])">
-                        <mat-icon>cancel</mat-icon>
-                    </button>
-                </mat-chip>
-                }
-                @if (selectedTags().length > 0) {
-                <mat-chip>
-                    Tags: {{ selectedTags().length }}
-                    <button matChipRemove (click)="selectedTags.set([])">
-                        <mat-icon>cancel</mat-icon>
-                    </button>
-                </mat-chip>
-                }
-                @if (descriptionFilter()) {
-                <mat-chip>
-                    Description: "{{ descriptionFilter() }}"
-                    <button matChipRemove (click)="descriptionFilter.set('')">
-                        <mat-icon>cancel</mat-icon>
-                    </button>
-                </mat-chip>
-                }
-            </mat-chip-set>
-        </div>
+            <div class="filter-summary">
+                <mat-chip-set>
+                    @if (selectedAccountIds().length > 0) {
+                        <mat-chip>
+                            Accounts: {{ selectedAccountIds().length }}
+                            <button matChipRemove (click)="selectedAccountIds.set([])">
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip>
+                    }
+                    @if (selectedTags().length > 0) {
+                        <mat-chip>
+                            Tags: {{ selectedTags().length }}
+                            <button matChipRemove (click)="selectedTags.set([])">
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip>
+                    }
+                    @if (descriptionFilter()) {
+                        <mat-chip>
+                            Description: "{{ descriptionFilter() }}"
+                            <button matChipRemove (click)="descriptionFilter.set('')">
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip>
+                    }
+                </mat-chip-set>
+            </div>
         }
     </div>
 
     @if (loading()) {
-    <div class="loading-container">
-        <mat-spinner></mat-spinner>
-    </div>
+        <div class="loading-container">
+            <mat-spinner></mat-spinner>
+        </div>
     } @else {
-    <div class="table-container">
-        <table mat-table [dataSource]="sortedAndFilteredTransactions()" matSort (matSortChange)="onSortChange($event)"
-            [matSortActive]="sortActive() ?? displayedColumns()[0]" [matSortDirection]="sortDirection()"
-            class="transactions-table">
-            <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-                <td mat-cell *matCellDef="let transaction">
-                    {{ transaction.date | date: 'dd/MM/yyyy' }}
-                </td>
-            </ng-container>
+        <div class="table-container">
+            <table
+                mat-table
+                [dataSource]="sortedAndFilteredTransactions()"
+                matSort
+                (matSortChange)="onSortChange($event)"
+                [matSortActive]="sortActive() ?? displayedColumns()[0]"
+                [matSortDirection]="sortDirection()"
+                class="transactions-table"
+            >
+                <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                    <td mat-cell *matCellDef="let transaction">
+                        {{ transaction.date | date: 'dd/MM/yyyy' }}
+                    </td>
+                </ng-container>
 
-            <ng-container matColumnDef="description">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
-                <td mat-cell *matCellDef="let transaction">
-                    <div class="description-cell">
-                        <span>{{ transaction.description || '-' }}</span>
-                        @if (transaction.matcherId) {
-                        @if (matcherMap().get(transaction.matcherId!)?.image) {
-                        <img [src]="matcherMap().get(transaction.matcherId!)?.image | imageUrl"
-                            class="matcher-icon-small" [class.auto]="transaction.isAuto"
-                            [class.manual]="!transaction.isAuto" [matTooltip]="
-                                        (transaction.isAuto ? 'Automatically matched by ' : 'Manually matched using ') +
-                                        getMatcherName(transaction.matcherId!)
-                                    " alt="Matcher Icon" />
-                        } @else {
-                        @if (transaction.isAuto) {
-                        <mat-icon class="match-icon auto" [matTooltip]="
-                                            'Automatically converted by matcher ' +
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+                    <td mat-cell *matCellDef="let transaction">
+                        <div class="description-cell">
+                            <span>{{ transaction.description || '-' }}</span>
+                            @if (transaction.matcherId) {
+                                @if (matcherMap().get(transaction.matcherId!)?.image) {
+                                    <img
+                                        [src]="
+                                            matcherMap().get(transaction.matcherId!)?.image
+                                                | imageUrl
+                                        "
+                                        class="matcher-icon-small"
+                                        [class.auto]="transaction.isAuto"
+                                        [class.manual]="!transaction.isAuto"
+                                        [matTooltip]="
+                                            (transaction.isAuto
+                                                ? 'Automatically matched by '
+                                                : 'Manually matched using ') +
                                             getMatcherName(transaction.matcherId!)
-                                        ">auto_fix_high</mat-icon>
+                                        "
+                                        alt="Matcher Icon"
+                                    />
+                                } @else {
+                                    @if (transaction.isAuto) {
+                                        <mat-icon
+                                            class="match-icon auto"
+                                            [matTooltip]="
+                                                'Automatically converted by matcher ' +
+                                                getMatcherName(transaction.matcherId!)
+                                            "
+                                            >auto_fix_high</mat-icon
+                                        >
+                                    } @else {
+                                        <mat-icon
+                                            class="match-icon manual"
+                                            [matTooltip]="
+                                                'Manually matched using matcher ' +
+                                                getMatcherName(transaction.matcherId!)
+                                            "
+                                            >link</mat-icon
+                                        >
+                                    }
+                                }
+                            }
+                        </div>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="effectiveAmount">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+                    <td mat-cell *matCellDef="let transaction">
+                        {{ formatEffectiveAmounts(transaction) }}
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="movements">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Accounts</th>
+                    <td
+                        mat-cell
+                        *matCellDef="let transaction"
+                        [title]="formatMovements(transaction)"
+                    >
+                        {{ getTargetAccounts(transaction) }}
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="tags">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Tags</th>
+                    <td mat-cell *matCellDef="let transaction">
+                        @if (transaction.tags && transaction.tags.length > 0) {
+                            @for (tag of transaction.tags; track tag) {
+                                <mat-chip>{{ tag }}</mat-chip>
+                            }
                         } @else {
-                        <mat-icon class="match-icon manual" [matTooltip]="
-                                            'Manually matched using matcher ' +
-                                            getMatcherName(transaction.matcherId!)
-                                        ">link</mat-icon>
+                            -
                         }
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let transaction">
+                        <button
+                            mat-icon-button
+                            (click)="openEditDialog(transaction)"
+                            aria-label="Edit"
+                        >
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                            mat-icon-button
+                            color="warn"
+                            (click)="deleteTransaction(transaction)"
+                            aria-label="Delete"
+                        >
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" [attr.colspan]="displayedColumns().length">
+                        @if (hasActiveFilters()) {
+                            No transactions match the current filters. Try adjusting your filter
+                            criteria.
+                        } @else {
+                            No transactions found. Click "Add Transaction" to create one.
                         }
-                        }
-                    </div>
-                </td>
-            </ng-container>
-
-            <ng-container matColumnDef="effectiveAmount">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-                <td mat-cell *matCellDef="let transaction">
-                    {{ formatEffectiveAmounts(transaction) }}
-                </td>
-            </ng-container>
-
-            <ng-container matColumnDef="movements">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Accounts</th>
-                <td mat-cell *matCellDef="let transaction" [title]="formatMovements(transaction)">
-                    {{ getTargetAccounts(transaction) }}
-                </td>
-            </ng-container>
-
-            <ng-container matColumnDef="tags">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Tags</th>
-                <td mat-cell *matCellDef="let transaction">
-                    @if (transaction.tags && transaction.tags.length > 0) {
-                    @for (tag of transaction.tags; track tag) {
-                    <mat-chip>{{ tag }}</mat-chip>
-                    }
-                    } @else {
-                    -
-                    }
-                </td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Actions</th>
-                <td mat-cell *matCellDef="let transaction">
-                    <button mat-icon-button (click)="openEditDialog(transaction)" aria-label="Edit">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="deleteTransaction(transaction)" aria-label="Delete">
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
-
-            <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" [attr.colspan]="displayedColumns().length">
-                    @if (hasActiveFilters()) {
-                    No transactions match the current filters. Try adjusting your filter
-                    criteria.
-                    } @else {
-                    No transactions found. Click "Add Transaction" to create one.
-                    }
-                </td>
-            </tr>
-        </table>
-    </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
     }
 </div>

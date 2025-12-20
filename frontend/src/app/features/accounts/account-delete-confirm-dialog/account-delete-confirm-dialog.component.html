@@ -1,7 +1,8 @@
 <h2 mat-dialog-title>Delete Account</h2>
 <mat-dialog-content>
     <p>
-        Are you sure you want to delete account <strong>{{ accountToDelete.name }}</strong>?
+        Are you sure you want to delete account <strong>{{ accountToDelete.name }}</strong
+        >?
     </p>
     <p class="text-warn">
         This action cannot be undone. All related data might be lost unless reassigned.
@@ -9,7 +10,10 @@
 
     <mat-form-field appearance="outline">
         <mat-label>Reassign transactions to (optional)</mat-label>
-        <mat-select [ngModel]="replaceWithAccountId()" (ngModelChange)="replaceWithAccountId.set($event)">
+        <mat-select
+            [ngModel]="replaceWithAccountId()"
+            (ngModelChange)="replaceWithAccountId.set($event)"
+        >
             <mat-option [value]="null">-- Do not reassign (Delete transactions) --</mat-option>
             <mat-option *ngFor="let account of availableAccounts" [value]="account.id">
                 {{ account.name }}

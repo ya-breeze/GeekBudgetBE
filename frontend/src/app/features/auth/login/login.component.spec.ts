@@ -68,8 +68,7 @@ describe('LoginComponent', () => {
     });
 
     it('should call auth service on submit', () => {
-        const mockToken = 'mock-token';
-        authService.login.and.returnValue(of(mockToken));
+        authService.login.and.returnValue(of(void 0));
 
         component.loginForm.setValue({
             email: 'test@example.com',
@@ -82,8 +81,7 @@ describe('LoginComponent', () => {
     });
 
     it('should navigate to dashboard on successful login', () => {
-        const mockToken = 'mock-token';
-        authService.login.and.returnValue(of(mockToken));
+        authService.login.and.returnValue(of(void 0));
 
         component.loginForm.setValue({
             email: 'test@example.com',
@@ -124,12 +122,11 @@ describe('LoginComponent', () => {
     });
 
     it('should show loading state during login', (done) => {
-        const mockToken = 'mock-token';
         let loadingDuringCall = false;
 
         authService.login.and.callFake(() => {
             loadingDuringCall = component.isLoading;
-            return of(mockToken);
+            return of(void 0);
         });
 
         component.loginForm.setValue({
