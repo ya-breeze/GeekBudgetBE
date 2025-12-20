@@ -194,6 +194,14 @@ paths:
             type: "string"
             format: "uuid"
             example: "123e4567-e89b-12d3-a456-426614174000"
+        - name: "replaceWithAccountId"
+          in: "query"
+          description: "ID of the account to which transactions should be reassigned"
+          required: false
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
       responses:
         "200":
           description: no body

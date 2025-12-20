@@ -18,7 +18,10 @@ import (
 
 const StorageError = "storage error: %w"
 
-var ErrNotFound = errors.New("not found")
+var (
+	ErrNotFound     = errors.New("not found")
+	ErrAccountInUse = errors.New("account is in use")
+)
 
 type ImportInfo struct {
 	UserID           string
@@ -41,7 +44,7 @@ type Storage interface {
 	GetAccounts(userID string) ([]goserver.Account, error)
 	GetAccount(userID string, id string) (goserver.Account, error)
 	UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error)
-	DeleteAccount(userID string, id string) error
+	DeleteAccount(userID string, id string, replaceWithAccountID *string) error
 	GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error)
 
 	CreateCurrency(userID string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
@@ -230,12 +233,118 @@ func (s *storage) UpdateAccount(userID string, id string, account *goserver.Acco
 	return acc.FromDB(), nil
 }
 
-func (s *storage) DeleteAccount(userID string, id string) error {
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Account{}).Error; err != nil {
-		return fmt.Errorf(StorageError, err)
-	}
+func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *string) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		if replaceWithAccountID != nil && *replaceWithAccountID != "" {
+			newAccountID := *replaceWithAccountID
 
-	return nil
+			// 1. Reassign BankImporters
+			if err := tx.Model(&models.BankImporter{}).Where("account_id = ? AND user_id = ?", id, userID).
+				Update("account_id", newAccountID).Error; err != nil {
+				return fmt.Errorf("failed to reassign bank importers: %w", err)
+			}
+
+			// 2. Reassign Matchers
+			if err := tx.Model(&models.Matcher{}).Where("output_account_id = ? AND user_id = ?", id, userID).
+				Update("output_account_id", newAccountID).Error; err != nil {
+				return fmt.Errorf("failed to reassign matchers: %w", err)
+			}
+
+			// 3. Reassign BudgetItems
+			if err := tx.Model(&models.BudgetItem{}).Where("account_id = ? AND user_id = ?", id, userID).
+				Update("account_id", newAccountID).Error; err != nil {
+				return fmt.Errorf("failed to reassign budget items: %w", err)
+			}
+
+			// 4. Reassign Transactions (Movements)
+			// Since movements are stored as JSON, we need to fetch, modify, and save.
+			// Ideally we should process in batches, but for simplicity/MVP we do it here.
+			// We find all transactions that have a movement with this account ID.
+			// Note: simpler approach is to iterate over all transactions for this user.
+			// Optimization: Use a LIKE query on the JSON column if possible, but GORM/SQLite support varies.
+			// Assuming low volume or acceptable performance for now.
+			// A safer approach for SQLite/Postgres JSON: .Where("movements LIKE ?", "%"+id+"%")
+
+			var transactions []models.Transaction
+			// Use LIKE to pre-filter transactions that *might* have the account ID in movements
+			// "movements" column contains the JSON.
+			if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
+				return fmt.Errorf("failed to find transactions for reassignment: %w", err)
+			}
+
+			for _, t := range transactions {
+				updated := false
+				newMovements := make([]goserver.Movement, len(t.Movements))
+				for i, m := range t.Movements {
+					if m.AccountId == id {
+						m.AccountId = newAccountID
+						updated = true
+					}
+					newMovements[i] = m
+				}
+
+				if updated {
+					t.Movements = newMovements
+					if err := tx.Save(&t).Error; err != nil {
+						return fmt.Errorf("failed to save reassigned transaction %s: %w", t.ID, err)
+					}
+				}
+			}
+		} else {
+			// User chose NOT to reassign.
+			// Check if account is in use by any entity
+			var count int64
+
+			// Check BankImporters
+			if err := tx.Model(&models.BankImporter{}).Where("account_id = ? AND user_id = ?", id, userID).Count(&count).Error; err != nil {
+				return fmt.Errorf("failed to check bank importers: %w", err)
+			}
+			if count > 0 {
+				return ErrAccountInUse
+			}
+
+			// Check Matchers
+			if err := tx.Model(&models.Matcher{}).Where("output_account_id = ? AND user_id = ?", id, userID).Count(&count).Error; err != nil {
+				return fmt.Errorf("failed to check matchers: %w", err)
+			}
+			if count > 0 {
+				return ErrAccountInUse
+			}
+
+			// Check BudgetItems
+			if err := tx.Model(&models.BudgetItem{}).Where("account_id = ? AND user_id = ?", id, userID).Count(&count).Error; err != nil {
+				return fmt.Errorf("failed to check budget items: %w", err)
+			}
+			if count > 0 {
+				return ErrAccountInUse
+			}
+
+			// Check Transactions (Movements)
+			// Using the same LIKE query as before
+			if err := tx.Model(&models.Transaction{}).Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Count(&count).Error; err != nil {
+				return fmt.Errorf("failed to check transactions: %w", err)
+			}
+			if count > 0 {
+				// We need to double check because LIKE is loose
+				var transactions []models.Transaction
+				if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
+					return fmt.Errorf("failed to fetch transactions for verification: %w", err)
+				}
+				for _, t := range transactions {
+					for _, m := range t.Movements {
+						if m.AccountId == id {
+							return ErrAccountInUse
+						}
+					}
+				}
+			}
+		}
+
+		if err := tx.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Account{}).Error; err != nil {
+			return fmt.Errorf(StorageError, err)
+		}
+		return nil
+	})
 }
 
 func (s *storage) GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error) {

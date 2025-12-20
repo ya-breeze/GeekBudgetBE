@@ -158,7 +158,7 @@ type AccountsAPIServicer interface {
 	CreateAccount(context.Context, AccountNoId) (ImplResponse, error)
 	GetAccount(context.Context, string) (ImplResponse, error)
 	UpdateAccount(context.Context, string, AccountNoId) (ImplResponse, error)
-	DeleteAccount(context.Context, string) (ImplResponse, error)
+	DeleteAccount(context.Context, string, string) (ImplResponse, error)
 	UploadAccountImage(context.Context, string, *os.File) (ImplResponse, error)
 	DeleteAccountImage(context.Context, string) (ImplResponse, error)
 }

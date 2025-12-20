@@ -12,6 +12,10 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { AccountService } from './services/account.service';
 import { Account } from '../../core/api/models/account';
 import { AccountFormDialogComponent } from './account-form-dialog/account-form-dialog.component';
+import {
+    AccountDeleteConfirmDialogComponent,
+    AccountDeleteConfirmDialogResult,
+} from './account-delete-confirm-dialog/account-delete-confirm-dialog.component';
 import { LayoutService } from '../../layout/services/layout.service';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 
@@ -259,19 +263,33 @@ export class AccountsComponent implements OnInit {
     }
 
     deleteAccount(account: Account): void {
-        if (confirm(`Are you sure you want to delete "${account.name}"?`)) {
-            if (account.id) {
-                this.accountService.delete(account.id).subscribe({
-                    next: () => {
-                        this.snackBar.open('Account deleted successfully', 'Close', {
-                            duration: 3000,
-                        });
-                    },
-                    error: () => {
-                        this.snackBar.open('Failed to delete account', 'Close', { duration: 3000 });
-                    },
-                });
+        const availableAccounts = this.accounts().filter((a) => a.id !== account.id);
+
+        const dialogRef = this.dialog.open(AccountDeleteConfirmDialogComponent, {
+            width: '500px',
+            data: {
+                accountToDelete: account,
+                availableAccounts: availableAccounts,
+            },
+        });
+
+        dialogRef.afterClosed().subscribe((result: AccountDeleteConfirmDialogResult) => {
+            if (result && result.confirmed && account.id) {
+                this.accountService
+                    .delete(account.id, result.replaceWithAccountId ?? undefined)
+                    .subscribe({
+                        next: () => {
+                            this.snackBar.open('Account deleted successfully', 'Close', {
+                                duration: 3000,
+                            });
+                        },
+                        error: () => {
+                            this.snackBar.open('Failed to delete account', 'Close', {
+                                duration: 3000,
+                            });
+                        },
+                    });
             }
-        }
+        });
     }
 }

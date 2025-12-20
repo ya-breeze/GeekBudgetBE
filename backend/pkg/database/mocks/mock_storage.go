@@ -201,17 +201,17 @@ func (mr *MockStorageMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // DeleteAccount mocks base method.
-func (m *MockStorage) DeleteAccount(arg0, arg1 string) error {
+func (m *MockStorage) DeleteAccount(arg0, arg1 string, arg2 *string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteAccount", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteAccount", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteAccount indicates an expected call of DeleteAccount.
-func (mr *MockStorageMockRecorder) DeleteAccount(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) DeleteAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccount", reflect.TypeOf((*MockStorage)(nil).DeleteAccount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccount", reflect.TypeOf((*MockStorage)(nil).DeleteAccount), arg0, arg1, arg2)
 }
 
 // DeleteBankImporter mocks base method.

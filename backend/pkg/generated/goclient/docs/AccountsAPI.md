@@ -81,7 +81,7 @@ Name | Type | Description  | Notes
 
 ## DeleteAccount
 
-> DeleteAccount(ctx, id).Execute()
+> DeleteAccount(ctx, id).ReplaceWithAccountId(replaceWithAccountId).Execute()
 
 delete account
 
@@ -99,10 +99,11 @@ import (
 
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the account
+	replaceWithAccountId := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the account to which transactions should be reassigned (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	r, err := apiClient.AccountsAPI.DeleteAccount(context.Background(), id).Execute()
+	r, err := apiClient.AccountsAPI.DeleteAccount(context.Background(), id).ReplaceWithAccountId(replaceWithAccountId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `AccountsAPI.DeleteAccount``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -126,6 +127,7 @@ Other parameters are passed through a pointer to a apiDeleteAccountRequest struc
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
+ **replaceWithAccountId** | **string** | ID of the account to which transactions should be reassigned | 
 
 ### Return type
 

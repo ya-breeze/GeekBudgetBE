@@ -31,7 +31,7 @@ type AccountsAPIService interface {
 	// UpdateAccount - update account
 	UpdateAccount(ctx context.Context, id string, accountNoId AccountNoId) (ImplResponse, error)
 	// DeleteAccount - delete account
-	DeleteAccount(ctx context.Context, id string) (ImplResponse, error)
+	DeleteAccount(ctx context.Context, id string, replaceWithAccountId string) (ImplResponse, error)
 	// UploadAccountImage - Upload account image
 	UploadAccountImage(ctx context.Context, id string, file *os.File) (ImplResponse, error)
 	// DeleteAccountImage - delete account image
@@ -105,7 +105,7 @@ func (s *AccountsAPIServiceImpl) UpdateAccount(ctx context.Context, id string, a
 }
 
 // DeleteAccount - delete account
-func (s *AccountsAPIServiceImpl) DeleteAccount(ctx context.Context, id string) (ImplResponse, error) {
+func (s *AccountsAPIServiceImpl) DeleteAccount(ctx context.Context, id string, replaceWithAccountId string) (ImplResponse, error) {
 	// TODO - update DeleteAccount with the required logic for this service method.
 	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

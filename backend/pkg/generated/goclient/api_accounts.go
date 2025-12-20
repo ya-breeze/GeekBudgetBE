@@ -135,9 +135,16 @@ func (a *AccountsAPIService) CreateAccountExecute(r ApiCreateAccountRequest) (*A
 }
 
 type ApiDeleteAccountRequest struct {
-	ctx        context.Context
-	ApiService *AccountsAPIService
-	id         string
+	ctx                  context.Context
+	ApiService           *AccountsAPIService
+	id                   string
+	replaceWithAccountId *string
+}
+
+// ID of the account to which transactions should be reassigned
+func (r ApiDeleteAccountRequest) ReplaceWithAccountId(replaceWithAccountId string) ApiDeleteAccountRequest {
+	r.replaceWithAccountId = &replaceWithAccountId
+	return r
 }
 
 func (r ApiDeleteAccountRequest) Execute() (*http.Response, error) {
@@ -179,6 +186,9 @@ func (a *AccountsAPIService) DeleteAccountExecute(r ApiDeleteAccountRequest) (*h
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.replaceWithAccountId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "replaceWithAccountId", r.replaceWithAccountId, "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 

@@ -12,6 +12,10 @@ export interface DeleteAccount$Params {
      * ID of the account
      */
     id: string;
+    /**
+     * ID of the account to which transactions should be reassigned
+     */
+    replaceWithAccountId?: string;
 }
 
 export function deleteAccount(
@@ -23,6 +27,7 @@ export function deleteAccount(
     const rb = new RequestBuilder(rootUrl, deleteAccount.PATH, 'delete');
     if (params) {
         rb.path('id', params.id, {});
+        rb.query('replaceWithAccountId', params.replaceWithAccountId, {});
     }
 
     return http.request(rb.build({ responseType: 'text', accept: '*/*', context })).pipe(

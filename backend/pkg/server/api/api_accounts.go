@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -80,7 +81,7 @@ func (s *AccountsAPIServicerImpl) UpdateAccount(
 }
 
 func (s *AccountsAPIServicerImpl) DeleteAccount(
-	ctx context.Context, accountID string,
+	ctx context.Context, accountID string, replaceWithAccountId string,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
@@ -95,7 +96,18 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 		}
 	}
 
-	if err := s.db.DeleteAccount(userID, accountID); err != nil {
+	if replaceWithAccountId != "" {
+		if _, err := s.db.GetAccount(userID, replaceWithAccountId); err != nil {
+			s.logger.With("error", err, "replaceWithAccountId", replaceWithAccountId).Warn("Replacement account not found")
+			return goserver.Response(400, nil), nil
+		}
+	}
+
+	if err := s.db.DeleteAccount(userID, accountID, &replaceWithAccountId); err != nil {
+		if errors.Is(err, database.ErrAccountInUse) {
+			s.logger.With("error", err).Warn("Cannot delete account in use without replacement")
+			return goserver.Response(400, nil), nil
+		}
 		s.logger.With("error", err).Error("Failed to delete account")
 		return goserver.Response(500, nil), nil
 	}

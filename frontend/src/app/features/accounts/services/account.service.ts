@@ -86,11 +86,14 @@ export class AccountService {
         );
     }
 
-    delete(id: string): Observable<void> {
+    delete(id: string, replaceWithAccountId?: string): Observable<void> {
         this.loading.set(true);
         this.error.set(null);
 
-        return deleteAccount(this.http, this.apiConfig.rootUrl, { id }).pipe(
+        return deleteAccount(this.http, this.apiConfig.rootUrl, {
+            id,
+            replaceWithAccountId,
+        }).pipe(
             map(() => undefined),
             tap({
                 next: () => {
