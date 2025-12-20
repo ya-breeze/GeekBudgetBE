@@ -17,7 +17,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 // Server-side error
                 switch (error.status) {
                     case 401:
-                        authService.logout();
+                        if (!req.url.includes('/logout')) {
+                            authService.logout();
+                        }
                         errorMessage = 'Session expired. Please login again.';
                         break;
                     case 403:

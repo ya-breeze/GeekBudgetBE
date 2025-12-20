@@ -19,7 +19,7 @@ run-backend:
 	@cd ${ROOT_DIR}/backend/cmd && go build -o ../bin/geekbudget
 	@GB_USERS=test@test.com:JDJhJDEwJC9sVWJpTlBYVlZvcU9ZNUxIZmhqYi4vUnRuVkJNaEw4MTQ2VUdFSXRDeE9Ib0ZoVkRLR3pl \
 	GB_DISABLEIMPORTERS=true \
-	GB_COOKIE_SECURE=false \
+	GB_COOKIESECURE=false \
 	GB_DBPATH=$(ROOT_DIR)geekbudget.db \
 	${ROOT_DIR}/backend/bin/geekbudget server
 

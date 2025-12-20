@@ -1,9 +1,9 @@
 package auth
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,8 +29,17 @@ func CheckPasswordHash(password, hashedPassword []byte) bool {
 func GenerateRandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[rand.IntN(len(charset))] //nolint:gosec // it's okay to use math/rand here
+	if _, err := rand.Read(b); err != nil {
+		// In the rare case of an error, fall back to a less secure but functional method
+		// or panic, depending on the severity. For a helper like this, panic might be safer
+		// than silent insecurity, but we'll log/panic in the caller if needed.
+		// Since we can't return error here easily without changing signature everywhere,
+		// we'll panic which is acceptable for init-time secrets generation failure.
+		panic("failed to generate random string: " + err.Error())
+	}
+
+	for i, v := range b {
+		b[i] = charset[int(v)%len(charset)]
 	}
 	return string(b)
 }

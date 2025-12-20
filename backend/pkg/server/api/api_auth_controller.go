@@ -59,7 +59,10 @@ func (c *CustomAuthAPIController) setSessionToken(w http.ResponseWriter, req *ht
 
 	session, err := c.cookies.Get(req, cookieName)
 	if err != nil {
-		return err
+		// If the session fails to decode (e.g. key changed), we should just create a new one
+		// instead of failing the whole login process.
+		c.logger.Warn("Failed to decode existing session, creating new one", "error", err)
+		session = sessions.NewSession(c.cookies, cookieName)
 	}
 	session.Values["token"] = token
 	// Ensure option fields are set from config
@@ -131,7 +134,10 @@ func (c *CustomAuthAPIController) clearSessionToken(w http.ResponseWriter, req *
 
 	session, err := c.cookies.Get(req, cookieName)
 	if err != nil {
-		return err
+		// If decoding fails, we still want to overwrite the cookie to clear it.
+		// So we create a new session object to save a "delete" command.
+		c.logger.Warn("Failed to decode existing session for logout, creating new one to clear", "error", err)
+		session = sessions.NewSession(c.cookies, cookieName)
 	}
 
 	c.configureSessionOptions(session)

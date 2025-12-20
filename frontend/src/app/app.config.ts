@@ -9,7 +9,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 import { routes } from './app.routes';
-import { authInterceptor } from './core/auth/interceptors/auth.interceptor';
+// import { authInterceptor } from './core/auth/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/auth/interceptors/error.interceptor';
 import { ApiConfiguration } from './core/api/api-configuration';
 import { environment } from '../environments/environment';
@@ -19,7 +19,7 @@ export const appConfig: ApplicationConfig = {
         provideBrowserGlobalErrorListeners(),
         provideZoneChangeDetection({ eventCoalescing: true }),
         provideRouter(routes),
-        provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+        provideHttpClient(withInterceptors([errorInterceptor])),
         provideAnimationsAsync(),
         provideCharts(withDefaultRegisterables()),
         {

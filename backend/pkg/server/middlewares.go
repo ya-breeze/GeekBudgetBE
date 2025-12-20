@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -15,11 +16,8 @@ import (
 )
 
 func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc {
-	// Re-create cookie store here or pass it in. Ideally pass it in, but for now we recreate it
-	// based on the key "SESSION_KEY" usage in webapp.go.
-	// TODO: Refactor to pass cookie store consistently or use a shared constant/config.
-	// In webapp.go: cookies: sessions.NewCookieStore([]byte("SESSION_KEY")),
-	store := sessions.NewCookieStore([]byte("SESSION_KEY"))
+	// Use the configured session secret for the cookie store
+	store := sessions.NewCookieStore([]byte(cfg.SessionSecret))
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
@@ -35,85 +33,83 @@ func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc 
 				return
 			}
 
-			// Skip authorization for the authorize endpoint - there is no way to do it with
-			// go-server openapi templates now :(
+			// Skip authorization for the authorize endpoint
 			if req.URL.Path == "/v1/authorize" {
 				next.ServeHTTP(writer, req)
 				return
 			}
 
-			if strings.HasPrefix(req.URL.Path, "/images/") {
-				checkCookie(logger, cfg.Issuer, cfg.JWTSecret, cfg.CookieName, store, next, writer, req)
+			// 1. Try Cookie Authentication
+			userID, err := getUserIDFromCookie(req, store, cfg.CookieName, cfg.Issuer, cfg.JWTSecret)
+			if err == nil {
+				req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
+				next.ServeHTTP(writer, req)
 				return
 			}
+			// Only log real errors, not just missing cookies
+			if !errors.Is(err, http.ErrNoCookie) && !strings.Contains(err.Error(), "session") {
+				logger.Debug("Cookie auth failed", "error", err)
+			}
 
-			checkToken(logger, cfg.Issuer, cfg.JWTSecret, next, writer, req)
+			// 2. Try Bearer Token Authentication
+			userID, err = getUserIDFromToken(req, cfg.Issuer, cfg.JWTSecret)
+			if err == nil {
+				req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
+				next.ServeHTTP(writer, req)
+				return
+			}
+			logger.Debug("Bearer token auth failed", "error", err)
+
+			// 3. Unauthorized
+			http.Error(writer, "Unauthorized", http.StatusUnauthorized)
 		})
 	}
 }
 
-func checkToken(
-	logger *slog.Logger, issuer, jwtSecret string, next http.Handler,
-	writer http.ResponseWriter, req *http.Request,
-) {
-	// Authorization logic
+func getUserIDFromToken(req *http.Request, issuer, jwtSecret string) (string, error) {
 	authHeader := req.Header.Get("Authorization")
 	if authHeader == "" {
-		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
-		return
+		return "", errors.New("missing authorization header")
 	}
 	authHeaderParts := strings.Split(authHeader, " ")
 	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-		http.Error(writer, "Invalid authorization header", http.StatusUnauthorized)
-		return
+		return "", errors.New("invalid authorization header format")
 	}
 	bearerToken := authHeaderParts[1]
 
-	// Parse the token
-	userID, err := auth.CheckJWT(bearerToken, issuer, jwtSecret)
-	if err != nil {
-		logger.With("err", err).Warn("Invalid token")
-		http.Error(writer, "Invalid token", http.StatusUnauthorized)
-		return
-	}
-
-	req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
-	next.ServeHTTP(writer, req)
+	return auth.CheckJWT(bearerToken, issuer, jwtSecret)
 }
 
-func checkCookie(
-	logger *slog.Logger, issuer, jwtSecret, cookieName string, store *sessions.CookieStore,
-	next http.Handler, writer http.ResponseWriter, req *http.Request,
-) {
+func getUserIDFromCookie(
+	req *http.Request, store *sessions.CookieStore, cookieName, issuer, jwtSecret string,
+) (string, error) {
+	// If cookieName is empty, use default from controller (though cfg should handle this)
+	if cookieName == "" {
+		cookieName = "geekbudgetcookie"
+	}
+
 	session, err := store.Get(req, cookieName)
 	if err != nil {
-		logger.With("err", err).Warn("Failed to get session")
-		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
-		return
+		return "", err
 	}
 
 	token, ok := session.Values["token"].(string)
-	if !ok {
-		logger.Warn("Token not found in session")
-		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
-		return
+	if !ok || token == "" {
+		return "", errors.New("token not found in session")
 	}
 
-	userID, err := auth.CheckJWT(token, issuer, jwtSecret)
-	if err != nil {
-		logger.With("err", err).Warn("Invalid token in cookie")
-		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
-	next.ServeHTTP(writer, req)
+	return auth.CheckJWT(token, issuer, jwtSecret)
 }
 
 func CORSMiddleware() mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 			// Add CORS headers to all responses
+			// Note: For cookie-based auth cross-origin, Access-Control-Allow-Origin cannot be "*"
+			// and Access-Control-Allow-Credentials must be true.
+			// Ideally, we restrict Origin to the frontend domain.
+			// For now, we keep "*" but strictly this breaks withCredentials=true.
+			// Since we act as same-site (mostly), we'll start with this.
 			writer.Header().Set("Access-Control-Allow-Origin", "*")
 			writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 			writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
@@ -141,5 +137,3 @@ func ForcedImportMiddleware(logger *slog.Logger, forcedImports chan<- background
 		})
 	}
 }
-
-

@@ -14,46 +14,35 @@ export class AuthService {
     private readonly apiConfig = inject(ApiConfiguration);
     private readonly router = inject(Router);
 
-    private readonly TOKEN_KEY = 'auth_token';
-    private readonly isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+    // Track authentication state locally. ideally verification uses an endpoint /me
+    private readonly isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
     public readonly isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-    constructor() {}
+    constructor() {
+        // Optimistically assume not logged in, or check an endpoint to confirm session
+        // For strictness, one would call /v1/users/me (if it exists) here.
+    }
 
-    login(email: string, password: string): Observable<string> {
+    login(email: string, password: string): Observable<void> {
         const authData: AuthData = { email, password };
         return authorize(this.http, this.apiConfig.rootUrl, { body: authData }).pipe(
-            map((response) => response.body.token),
-            tap((token) => {
-                this.setToken(token);
+            map(() => void 0),
+            tap(() => {
                 this.isAuthenticatedSubject.next(true);
             }),
         );
     }
 
     logout(): void {
-        this.removeToken();
         this.isAuthenticatedSubject.next(false);
+        // Call backend logout to clear cookie
+        this.http.post(`${this.apiConfig.rootUrl}/v1/logout`, {}).subscribe();
         this.router.navigate(['/auth/login']);
     }
 
-    getToken(): string | null {
-        return localStorage.getItem(this.TOKEN_KEY);
-    }
-
-    private setToken(token: string): void {
-        localStorage.setItem(this.TOKEN_KEY, token);
-    }
-
-    private removeToken(): void {
-        localStorage.removeItem(this.TOKEN_KEY);
-    }
-
-    private hasToken(): boolean {
-        return !!this.getToken();
-    }
-
     isLoggedIn(): boolean {
-        return this.hasToken();
+        // Fallback or explicit check.
+        // Without access to document.cookie (HttpOnly), we rely on state or 401s
+        return this.isAuthenticatedSubject.value;
     }
 }
