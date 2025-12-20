@@ -33,6 +33,8 @@ type Matcher struct {
 	ExtraRegExp                *string  `json:"extraRegExp,omitempty"`
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
+	// ID of the matcher image
+	Image *string `json:"image,omitempty"`
 	// Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct.
 	ConfirmationsCount int32 `json:"confirmationsCount"`
 	// Total length of the confirmation history array. This is the total number of times this matcher has been evaluated.
@@ -359,6 +361,38 @@ func (o *Matcher) SetConfirmationHistory(v []bool) {
 	o.ConfirmationHistory = v
 }
 
+// GetImage returns the Image field value if set, zero value otherwise.
+func (o *Matcher) GetImage() string {
+	if o == nil || IsNil(o.Image) {
+		var ret string
+		return ret
+	}
+	return *o.Image
+}
+
+// GetImageOk returns a tuple with the Image field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Matcher) GetImageOk() (*string, bool) {
+	if o == nil || IsNil(o.Image) {
+		return nil, false
+	}
+	return o.Image, true
+}
+
+// HasImage returns a boolean if a field has been set.
+func (o *Matcher) HasImage() bool {
+	if o != nil && !IsNil(o.Image) {
+		return true
+	}
+
+	return false
+}
+
+// SetImage gets a reference to the given string and assigns it to the Image field.
+func (o *Matcher) SetImage(v string) {
+	o.Image = &v
+}
+
 // GetConfirmationsCount returns the ConfirmationsCount field value
 func (o *Matcher) GetConfirmationsCount() int32 {
 	if o == nil {
@@ -440,6 +474,9 @@ func (o Matcher) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ConfirmationHistory) {
 		toSerialize["confirmationHistory"] = o.ConfirmationHistory
+	}
+	if !IsNil(o.Image) {
+		toSerialize["image"] = o.Image
 	}
 	toSerialize["confirmationsCount"] = o.ConfirmationsCount
 	toSerialize["confirmationsTotal"] = o.ConfirmationsTotal

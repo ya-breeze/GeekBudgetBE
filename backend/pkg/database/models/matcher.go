@@ -19,6 +19,7 @@ type Matcher struct {
 	DescriptionRegExp          string
 	ExtraRegExp                string
 	ConfirmationHistory        []bool `gorm:"serializer:json"`
+	Image                      string
 
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
@@ -46,6 +47,7 @@ func (m *Matcher) FromDB() goserver.Matcher {
 		ConfirmationHistory:        m.ConfirmationHistory,
 		ConfirmationsCount:         count,
 		ConfirmationsTotal:         total,
+		Image:                      m.Image,
 	}
 }
 
@@ -67,6 +69,7 @@ func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
 		DescriptionRegExp:          m.GetDescriptionRegExp(),
 		ExtraRegExp:                m.GetExtraRegExp(),
 		ConfirmationHistory:        history,
+		Image:                      m.GetImage(),
 	}
 }
 
@@ -81,6 +84,7 @@ func MatcherWithoutID(matcher *goserver.Matcher) *goserver.MatcherNoId {
 		DescriptionRegExp:          matcher.DescriptionRegExp,
 		ExtraRegExp:                matcher.ExtraRegExp,
 		ConfirmationHistory:        matcher.ConfirmationHistory,
+		Image:                      matcher.Image,
 	}
 }
 

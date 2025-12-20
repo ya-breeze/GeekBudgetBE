@@ -27,6 +27,8 @@ import { LayoutService } from '../../layout/services/layout.service';
 import { MatcherService } from '../matchers/services/matcher.service';
 import { Matcher } from '../../core/api/models/matcher';
 
+import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+
 @Component({
     selector: 'app-transactions',
     imports: [
@@ -44,6 +46,7 @@ import { Matcher } from '../../core/api/models/matcher';
         MatSelectModule,
         DatePipe,
         FormsModule,
+        ImageUrlPipe,
     ],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',

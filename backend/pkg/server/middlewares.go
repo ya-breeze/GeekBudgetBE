@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
@@ -14,6 +15,12 @@ import (
 )
 
 func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc {
+	// Re-create cookie store here or pass it in. Ideally pass it in, but for now we recreate it
+	// based on the key "SESSION_KEY" usage in webapp.go.
+	// TODO: Refactor to pass cookie store consistently or use a shared constant/config.
+	// In webapp.go: cookies: sessions.NewCookieStore([]byte("SESSION_KEY")),
+	store := sessions.NewCookieStore([]byte("SESSION_KEY"))
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 			// Skip authorization for OPTIONS requests (CORS preflight)
@@ -32,6 +39,11 @@ func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc 
 			// go-server openapi templates now :(
 			if req.URL.Path == "/v1/authorize" {
 				next.ServeHTTP(writer, req)
+				return
+			}
+
+			if strings.HasPrefix(req.URL.Path, "/images/") {
+				checkCookie(logger, cfg.Issuer, cfg.JWTSecret, cfg.CookieName, store, next, writer, req)
 				return
 			}
 
@@ -62,6 +74,35 @@ func checkToken(
 	if err != nil {
 		logger.With("err", err).Warn("Invalid token")
 		http.Error(writer, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
+	next.ServeHTTP(writer, req)
+}
+
+func checkCookie(
+	logger *slog.Logger, issuer, jwtSecret, cookieName string, store *sessions.CookieStore,
+	next http.Handler, writer http.ResponseWriter, req *http.Request,
+) {
+	session, err := store.Get(req, cookieName)
+	if err != nil {
+		logger.With("err", err).Warn("Failed to get session")
+		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	token, ok := session.Values["token"].(string)
+	if !ok {
+		logger.Warn("Token not found in session")
+		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := auth.CheckJWT(token, issuer, jwtSecret)
+	if err != nil {
+		logger.With("err", err).Warn("Invalid token in cookie")
+		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -100,3 +141,5 @@ func ForcedImportMiddleware(logger *slog.Logger, forcedImports chan<- background
 		})
 	}
 }
+
+

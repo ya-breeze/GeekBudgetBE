@@ -6,11 +6,13 @@ import (
 	"html/template"
 	"log/slog"
 	"math"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -150,6 +152,11 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/transactions/edit",
 			HandlerFunc: r.transactionsEditHandler,
 		},
+		"Images": goserver.Route{
+			Method:      "GET",
+			Pattern:     "/images/{id}",
+			HandlerFunc: r.imageHandler,
+		},
 	}
 }
 
@@ -255,4 +262,23 @@ func transactionNoIDToTransaction(t goserver.TransactionNoId, id string) goserve
 	}
 
 	return res
+}
+
+func (r *WebAppRouter) imageHandler(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	id := vars["id"]
+
+	image, err := r.db.GetImage(id)
+	if err != nil {
+		r.logger.With("error", err, "id", id).Error("Failed to get image")
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", image.ContentType)
+	// Cache control for images
+	w.Header().Set("Cache-Control", "public, max-age=31536000") // 1 year
+	if _, err := w.Write(image.Data); err != nil {
+		r.logger.With("error", err).Error("Failed to write image data")
+	}
 }

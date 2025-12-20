@@ -198,26 +198,56 @@ describe('BudgetItemsComponent', () => {
         // Mock Status
         mockBudgetItemService.budgetStatus.set([
             // Scenario 1: Budgeted 100, Spent 200
-            { accountId: 'acc1', date: currentMonthStr + '-01', spent: 200, available: -100, budgeted: 100 },
+            {
+                accountId: 'acc1',
+                date: currentMonthStr + '-01',
+                spent: 200,
+                available: -100,
+                budgeted: 100,
+            },
             // Scenario 3: Past Month, Unbudgeted, Spent 50
-            { accountId: 'acc1', date: pastMonthStr + '-01', spent: 50, available: -50, budgeted: 0 },
+            {
+                accountId: 'acc1',
+                date: pastMonthStr + '-01',
+                spent: 50,
+                available: -50,
+                budgeted: 0,
+            },
         ]);
 
         // Scenario 2: Current Month, Unbudgeted... wait, we need another item or account for this difference?
         // Let's use a different account for the unbudgeted current month scenario to avoid collision with Scenario 1
         mockAccountService.accounts.set([
             { id: 'acc1', name: 'Budgeted Account', type: 'expense' },
-            { id: 'acc2', name: 'Unbudgeted Account', type: 'expense' }
+            { id: 'acc2', name: 'Unbudgeted Account', type: 'expense' },
         ]);
 
         // Status updates
         mockBudgetItemService.budgetStatus.set([
             // Scenario 1 (acc1, current): Budgeted 100, Spent 200
-            { accountId: 'acc1', date: currentMonthStr + '-01', spent: 200, available: -100, budgeted: 100 },
+            {
+                accountId: 'acc1',
+                date: currentMonthStr + '-01',
+                spent: 200,
+                available: -100,
+                budgeted: 100,
+            },
             // Scenario 2 (acc2, current): Unbudgeted, Spent 50
-            { accountId: 'acc2', date: currentMonthStr + '-01', spent: 50, available: -50, budgeted: 0 },
+            {
+                accountId: 'acc2',
+                date: currentMonthStr + '-01',
+                spent: 50,
+                available: -50,
+                budgeted: 0,
+            },
             // Scenario 3 (acc2, past): Unbudgeted, Spent 50
-            { accountId: 'acc2', date: pastMonthStr + '-01', spent: 50, available: -50, budgeted: 0 },
+            {
+                accountId: 'acc2',
+                date: pastMonthStr + '-01',
+                spent: 50,
+                available: -50,
+                budgeted: 0,
+            },
         ]);
 
         // Ensure month count covers past month

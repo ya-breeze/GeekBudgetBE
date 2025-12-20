@@ -9,6 +9,11 @@ export interface MatcherNoId {
     currencyRegExp?: string;
     descriptionRegExp?: string;
     extraRegExp?: string;
+
+    /**
+     * URL or filename of the matcher image
+     */
+    image?: string;
     outputAccountId: string;
     outputDescription: string;
     outputTags?: Array<string>;

@@ -8,9 +8,11 @@ Method | HTTP request | Description
 [**CheckRegex**](MatchersAPI.md#CheckRegex) | **Post** /v1/matchers/check-regex | check if regex is valid and matches string (using backend&#39;s regex engine)
 [**CreateMatcher**](MatchersAPI.md#CreateMatcher) | **Post** /v1/matchers | create new matcher
 [**DeleteMatcher**](MatchersAPI.md#DeleteMatcher) | **Delete** /v1/matchers/{id} | delete matcher
+[**DeleteMatcherImage**](MatchersAPI.md#DeleteMatcherImage) | **Delete** /v1/matchers/{id}/image | delete matcher image
 [**GetMatcher**](MatchersAPI.md#GetMatcher) | **Get** /v1/matchers/{id} | get matcher
 [**GetMatchers**](MatchersAPI.md#GetMatchers) | **Get** /v1/matchers | get all matchers
 [**UpdateMatcher**](MatchersAPI.md#UpdateMatcher) | **Put** /v1/matchers/{id} | update matcher
+[**UploadMatcherImage**](MatchersAPI.md#UploadMatcherImage) | **Post** /v1/matchers/{id}/image | Upload matcher image
 
 
 
@@ -273,6 +275,74 @@ Name | Type | Description  | Notes
 [[Back to README]](../README.md)
 
 
+## DeleteMatcherImage
+
+> Matcher DeleteMatcherImage(ctx, id).Execute()
+
+delete matcher image
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.MatchersAPI.DeleteMatcherImage(context.Background(), id).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `MatchersAPI.DeleteMatcherImage``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `DeleteMatcherImage`: Matcher
+	fmt.Fprintf(os.Stdout, "Response from `MatchersAPI.DeleteMatcherImage`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** |  | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiDeleteMatcherImageRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**Matcher**](Matcher.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
 ## GetMatcher
 
 > Matcher GetMatcher(ctx, id).Execute()
@@ -463,6 +533,76 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## UploadMatcherImage
+
+> Matcher UploadMatcherImage(ctx, id).File(file).Execute()
+
+Upload matcher image
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | 
+	file := os.NewFile(1234, "some_file") // *os.File |  (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.MatchersAPI.UploadMatcherImage(context.Background(), id).File(file).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `MatchersAPI.UploadMatcherImage``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `UploadMatcherImage`: Matcher
+	fmt.Fprintf(os.Stdout, "Response from `MatchersAPI.UploadMatcherImage`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** |  | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiUploadMatcherImageRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **file** | ***os.File** |  | 
+
+### Return type
+
+[**Matcher**](Matcher.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: multipart/form-data
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

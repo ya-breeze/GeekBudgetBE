@@ -80,10 +80,12 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AccountsAPI* | [**CreateAccount**](docs/AccountsAPI.md#createaccount) | **Post** /v1/accounts | create new account
 *AccountsAPI* | [**DeleteAccount**](docs/AccountsAPI.md#deleteaccount) | **Delete** /v1/accounts/{id} | delete account
+*AccountsAPI* | [**DeleteAccountImage**](docs/AccountsAPI.md#deleteaccountimage) | **Delete** /v1/accounts/{id}/image | delete account image
 *AccountsAPI* | [**GetAccount**](docs/AccountsAPI.md#getaccount) | **Get** /v1/accounts/{id} | get account
 *AccountsAPI* | [**GetAccountHistory**](docs/AccountsAPI.md#getaccounthistory) | **Get** /v1/accounts/{accountId}/history | return list of dates when this account was used in some transaction
 *AccountsAPI* | [**GetAccounts**](docs/AccountsAPI.md#getaccounts) | **Get** /v1/accounts | get all accounts
 *AccountsAPI* | [**UpdateAccount**](docs/AccountsAPI.md#updateaccount) | **Put** /v1/accounts/{id} | update account
+*AccountsAPI* | [**UploadAccountImage**](docs/AccountsAPI.md#uploadaccountimage) | **Post** /v1/accounts/{id}/image | Upload account image
 *AggregationsAPI* | [**GetBalances**](docs/AggregationsAPI.md#getbalances) | **Get** /v1/balances | get balance for filtered transactions
 *AggregationsAPI* | [**GetExpenses**](docs/AggregationsAPI.md#getexpenses) | **Get** /v1/expenses | get expenses for filtered transactions
 *AggregationsAPI* | [**GetIncomes**](docs/AggregationsAPI.md#getincomes) | **Get** /v1/incomes | get incomes for filtered transactions
@@ -110,9 +112,11 @@ Class | Method | HTTP request | Description
 *MatchersAPI* | [**CheckRegex**](docs/MatchersAPI.md#checkregex) | **Post** /v1/matchers/check-regex | check if regex is valid and matches string (using backend&#39;s regex engine)
 *MatchersAPI* | [**CreateMatcher**](docs/MatchersAPI.md#creatematcher) | **Post** /v1/matchers | create new matcher
 *MatchersAPI* | [**DeleteMatcher**](docs/MatchersAPI.md#deletematcher) | **Delete** /v1/matchers/{id} | delete matcher
+*MatchersAPI* | [**DeleteMatcherImage**](docs/MatchersAPI.md#deletematcherimage) | **Delete** /v1/matchers/{id}/image | delete matcher image
 *MatchersAPI* | [**GetMatcher**](docs/MatchersAPI.md#getmatcher) | **Get** /v1/matchers/{id} | get matcher
 *MatchersAPI* | [**GetMatchers**](docs/MatchersAPI.md#getmatchers) | **Get** /v1/matchers | get all matchers
 *MatchersAPI* | [**UpdateMatcher**](docs/MatchersAPI.md#updatematcher) | **Put** /v1/matchers/{id} | update matcher
+*MatchersAPI* | [**UploadMatcherImage**](docs/MatchersAPI.md#uploadmatcherimage) | **Post** /v1/matchers/{id}/image | Upload matcher image
 *NotificationsAPI* | [**DeleteNotification**](docs/NotificationsAPI.md#deletenotification) | **Delete** /v1/notifications/{id} | delete notification
 *NotificationsAPI* | [**GetNotifications**](docs/NotificationsAPI.md#getnotifications) | **Get** /v1/notifications | return all notifications
 *TransactionsAPI* | [**CreateTransaction**](docs/TransactionsAPI.md#createtransaction) | **Post** /v1/transactions | create new transaction

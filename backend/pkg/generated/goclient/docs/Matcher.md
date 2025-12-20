@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **DescriptionRegExp** | Pointer to **string** |  | [optional] 
 **ExtraRegExp** | Pointer to **string** |  | [optional] 
 **ConfirmationHistory** | Pointer to **[]bool** | List of booleans representing manual confirmations for this matcher (true &#x3D; confirmed, false &#x3D; rejected). Server enforces maximum length configured via application config. | [optional] 
+**Image** | Pointer to **string** | ID of the matcher image | [optional] 
 **ConfirmationsCount** | **int32** | Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct. | 
 **ConfirmationsTotal** | **int32** | Total length of the confirmation history array. This is the total number of times this matcher has been evaluated. | 
 
@@ -270,6 +271,31 @@ SetConfirmationHistory sets ConfirmationHistory field to given value.
 `func (o *Matcher) HasConfirmationHistory() bool`
 
 HasConfirmationHistory returns a boolean if a field has been set.
+
+### GetImage
+
+`func (o *Matcher) GetImage() string`
+
+GetImage returns the Image field if non-nil, zero value otherwise.
+
+### GetImageOk
+
+`func (o *Matcher) GetImageOk() (*string, bool)`
+
+GetImageOk returns a tuple with the Image field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetImage
+
+`func (o *Matcher) SetImage(v string)`
+
+SetImage sets Image field to given value.
+
+### HasImage
+
+`func (o *Matcher) HasImage() bool`
+
+HasImage returns a boolean if a field has been set.
 
 ### GetConfirmationsCount
 

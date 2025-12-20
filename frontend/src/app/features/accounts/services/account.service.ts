@@ -9,6 +9,8 @@ import { getAccounts } from '../../../core/api/fn/accounts/get-accounts';
 import { createAccount } from '../../../core/api/fn/accounts/create-account';
 import { updateAccount } from '../../../core/api/fn/accounts/update-account';
 import { deleteAccount } from '../../../core/api/fn/accounts/delete-account';
+import { uploadAccountImage } from '../../../core/api/fn/accounts/upload-account-image';
+import { deleteAccountImage } from '../../../core/api/fn/accounts/delete-account-image';
 import { getExpenses } from '../../../core/api/fn/aggregations/get-expenses';
 // Assuming AppStateService is also in a core module, adjust path if needed
 // import { AppStateService } from '../../../core/state/app-state.service'; // Added import for AppStateService (commented out as path is unknown)
@@ -103,6 +105,32 @@ export class AccountService {
         );
     }
 
+    uploadAccountImage(params: { id: string; body: { file: File } }): Observable<Account> {
+        return uploadAccountImage(this.http, this.apiConfig.rootUrl, params).pipe(
+            map((response) => response.body),
+            tap({
+                next: (updatedAccount) => {
+                    this.accounts.update((accounts) =>
+                        accounts.map((a) => (a.id === params.id ? updatedAccount : a)),
+                    );
+                },
+            }),
+        );
+    }
+
+    deleteAccountImage(params: { id: string }): Observable<Account> {
+        return deleteAccountImage(this.http, this.apiConfig.rootUrl, params).pipe(
+            map((response) => response.body),
+            tap({
+                next: (updatedAccount) => {
+                    this.accounts.update((accounts) =>
+                        accounts.map((a) => (a.id === params.id ? updatedAccount : a)),
+                    );
+                },
+            }),
+        );
+    }
+
     readonly averages = signal<AccountAverage[]>([]);
 
     loadYearlyExpenses(currencyId?: string): Observable<Aggregation> {
@@ -136,7 +164,10 @@ export class AccountService {
 
                         aggregation.currencies.forEach((curr) => {
                             curr.accounts?.forEach((acc) => {
-                                const totalSpent = (acc.amounts ?? []).reduce((sum, val) => sum + val, 0);
+                                const totalSpent = (acc.amounts ?? []).reduce(
+                                    (sum, val) => sum + val,
+                                    0,
+                                );
                                 avgs.push({
                                     accountId: acc.accountId!,
                                     averageSpent: totalSpent / 12,

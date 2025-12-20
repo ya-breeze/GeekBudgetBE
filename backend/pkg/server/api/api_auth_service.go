@@ -8,27 +8,26 @@ import (
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
 type AuthAPIService struct {
-	logger    *slog.Logger
-	db        database.Storage
-	issuer    string
-	jwtSecret string
+	logger *slog.Logger
+	db     database.Storage
+	cfg    *config.Config
 }
 
-func NewAuthAPIService(logger *slog.Logger, db database.Storage, issuer, jwtSecret string) goserver.AuthAPIService {
+func NewAuthAPIService(logger *slog.Logger, db database.Storage, cfg *config.Config) goserver.AuthAPIService {
 	return &AuthAPIService{
-		logger:    logger,
-		db:        db,
-		issuer:    issuer,
-		jwtSecret: jwtSecret,
+		logger: logger,
+		db:     db,
+		cfg:    cfg,
 	}
 }
 
-func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData) (goserver.ImplResponse, error) {
+func (s *AuthAPIService) Authorize(ctx context.Context, authData goserver.AuthData) (goserver.ImplResponse, error) {
 	userID, err := s.db.GetUserID(authData.Email)
 	if err != nil {
 		if errors.Is(err, database.ErrNotFound) {
@@ -58,9 +57,10 @@ func (s *AuthAPIService) Authorize(_ context.Context, authData goserver.AuthData
 		return goserver.Response(401, nil), nil
 	}
 
-	token, err := auth.CreateJWT(userID, s.issuer, s.jwtSecret)
+	token, err := auth.CreateJWT(userID, s.cfg.Issuer, s.cfg.JWTSecret)
 	if err != nil {
 		return goserver.Response(500, nil), nil // TODO internal error
 	}
+
 	return goserver.Response(200, goserver.Authorize200Response{Token: token}), nil
 }

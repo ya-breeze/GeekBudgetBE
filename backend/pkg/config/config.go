@@ -19,6 +19,8 @@ type Config struct {
 	DisableCurrenciesRatesFetch   bool   `mapstructure:"disablecurrenciesratesfetch" default:"false"`
 	Issuer                        string `mapstructure:"issuer" default:"geekbudget"`
 	CookieName                    string `mapstructure:"cookiename" default:"geekbudgetcookie"`
+	SessionSecret                 string `mapstructure:"sessionsecret" default:""`
+	CookieSecure                  bool   `mapstructure:"cookiesecure" default:"true"`
 	MatcherConfirmationHistoryMax int    `mapstructure:"matcherconfirmationhistorymax" default:"10"`
 }
 

@@ -22,6 +22,9 @@ type AccountNoId struct {
 
 	// If true, show this account in dashboard summary.
 	ShowInDashboardSummary bool `json:"showInDashboardSummary,omitempty"`
+
+	// ID of the account image
+	Image string `json:"image,omitempty"`
 }
 
 type AccountNoIdInterface interface {
@@ -30,6 +33,7 @@ type AccountNoIdInterface interface {
 	GetType() string
 	GetBankInfo() BankAccountInfo
 	GetShowInDashboardSummary() bool
+	GetImage() string
 }
 
 func (c *AccountNoId) GetName() string {
@@ -46,6 +50,9 @@ func (c *AccountNoId) GetBankInfo() BankAccountInfo {
 }
 func (c *AccountNoId) GetShowInDashboardSummary() bool {
 	return c.ShowInDashboardSummary
+}
+func (c *AccountNoId) GetImage() string {
+	return c.Image
 }
 
 // AssertAccountNoIdRequired checks if the required fields are not zero-ed

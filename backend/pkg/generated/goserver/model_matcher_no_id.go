@@ -30,6 +30,9 @@ type MatcherNoId struct {
 
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
+
+	// ID of the matcher image
+	Image string `json:"image,omitempty"`
 }
 
 type MatcherNoIdInterface interface {
@@ -42,6 +45,7 @@ type MatcherNoIdInterface interface {
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
 	GetConfirmationHistory() []bool
+	GetImage() string
 }
 
 func (c *MatcherNoId) GetOutputDescription() string {
@@ -70,6 +74,9 @@ func (c *MatcherNoId) GetExtraRegExp() string {
 }
 func (c *MatcherNoId) GetConfirmationHistory() []bool {
 	return c.ConfirmationHistory
+}
+func (c *MatcherNoId) GetImage() string {
+	return c.Image
 }
 
 // AssertMatcherNoIdRequired checks if the required fields are not zero-ed

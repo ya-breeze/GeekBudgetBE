@@ -125,6 +125,21 @@ func (mr *MockStorageMockRecorder) CreateCurrency(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCurrency", reflect.TypeOf((*MockStorage)(nil).CreateCurrency), arg0, arg1)
 }
 
+// CreateImage mocks base method.
+func (m *MockStorage) CreateImage(arg0 []byte, arg1 string) (models.Image, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateImage", arg0, arg1)
+	ret0, _ := ret[0].(models.Image)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateImage indicates an expected call of CreateImage.
+func (mr *MockStorageMockRecorder) CreateImage(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateImage", reflect.TypeOf((*MockStorage)(nil).CreateImage), arg0, arg1)
+}
+
 // CreateMatcher mocks base method.
 func (m *MockStorage) CreateMatcher(arg0 string, arg1 goserver.MatcherNoIdInterface) (goserver.Matcher, error) {
 	m.ctrl.T.Helper()
@@ -253,6 +268,20 @@ func (m *MockStorage) DeleteDuplicateTransaction(arg0, arg1, arg2 string) error 
 func (mr *MockStorageMockRecorder) DeleteDuplicateTransaction(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDuplicateTransaction", reflect.TypeOf((*MockStorage)(nil).DeleteDuplicateTransaction), arg0, arg1, arg2)
+}
+
+// DeleteImage mocks base method.
+func (m *MockStorage) DeleteImage(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteImage", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteImage indicates an expected call of DeleteImage.
+func (mr *MockStorageMockRecorder) DeleteImage(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteImage", reflect.TypeOf((*MockStorage)(nil).DeleteImage), arg0)
 }
 
 // DeleteMatcher mocks base method.
@@ -446,6 +475,21 @@ func (m *MockStorage) GetCurrency(arg0, arg1 string) (goserver.Currency, error) 
 func (mr *MockStorageMockRecorder) GetCurrency(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrency", reflect.TypeOf((*MockStorage)(nil).GetCurrency), arg0, arg1)
+}
+
+// GetImage mocks base method.
+func (m *MockStorage) GetImage(arg0 string) (models.Image, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetImage", arg0)
+	ret0, _ := ret[0].(models.Image)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetImage indicates an expected call of GetImage.
+func (mr *MockStorageMockRecorder) GetImage(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImage", reflect.TypeOf((*MockStorage)(nil).GetImage), arg0)
 }
 
 // GetMatcher mocks base method.

@@ -190,8 +190,10 @@ interface MatrixRow {
                                                         <span class="value-primary">{{
                                                             cell.amount
                                                                 | currency
-                                                                    : preferredCurrency()?.name || ''
-                                                                    : 'symbol-narrow' : '1.0-0'
+                                                                    : preferredCurrency()?.name ||
+                                                                          ''
+                                                                    : 'symbol-narrow'
+                                                                    : '1.0-0'
                                                         }}</span>
                                                     </div>
                                                     <div class="cell-row middle-row">
@@ -199,20 +201,39 @@ interface MatrixRow {
                                                         <span class="value-secondary">{{
                                                             cell.spent
                                                                 | currency
-                                                                    : preferredCurrency()?.name || ''
-                                                                    : 'symbol-narrow' : '1.0-0'
+                                                                    : preferredCurrency()?.name ||
+                                                                          ''
+                                                                    : 'symbol-narrow'
+                                                                    : '1.0-0'
                                                         }}</span>
                                                     </div>
                                                     <div class="progress-bar-container">
-                                                        <div 
-                                                            class="progress-bar-fill" 
-                                                            [style.width.%]="(cell.amount > 0 ? (cell.spent / cell.amount * 100) : (cell.spent > 0 ? 100 : 0)) | number:'1.0-0'"
-                                                            [class.over-budget]="cell.spent > cell.amount"
-                                                            [class.unbudgeted-spent]="cell.isVirtual"
+                                                        <div
+                                                            class="progress-bar-fill"
+                                                            [style.width.%]="
+                                                                (cell.amount > 0
+                                                                    ? (cell.spent / cell.amount) *
+                                                                      100
+                                                                    : cell.spent > 0
+                                                                      ? 100
+                                                                      : 0
+                                                                ) | number: '1.0-0'
+                                                            "
+                                                            [class.over-budget]="
+                                                                cell.spent > cell.amount
+                                                            "
+                                                            [class.unbudgeted-spent]="
+                                                                cell.isVirtual
+                                                            "
                                                         ></div>
                                                     </div>
                                                     <div class="percentage-label">
-                                                        {{ cell.amount > 0 ? (cell.spent / cell.amount | percent:'1.0-0') : '0%' }}
+                                                        {{
+                                                            cell.amount > 0
+                                                                ? (cell.spent / cell.amount
+                                                                  | percent: '1.0-0')
+                                                                : '0%'
+                                                        }}
                                                     </div>
                                                 </div>
                                             </td>

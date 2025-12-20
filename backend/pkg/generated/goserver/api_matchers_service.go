@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 )
 
 // MatchersAPIService is an interface that defines the logic for the MatchersAPIServicer
@@ -29,6 +30,10 @@ type MatchersAPIService interface {
 	UpdateMatcher(ctx context.Context, id string, matcherNoId MatcherNoId) (ImplResponse, error)
 	// DeleteMatcher - delete matcher
 	DeleteMatcher(ctx context.Context, id string) (ImplResponse, error)
+	// UploadMatcherImage - Upload matcher image
+	UploadMatcherImage(ctx context.Context, id string, file *os.File) (ImplResponse, error)
+	// DeleteMatcherImage - delete matcher image
+	DeleteMatcherImage(ctx context.Context, id string) (ImplResponse, error)
 	// CheckRegex - check if regex is valid and matches string (using backend&#39;s regex engine)
 	CheckRegex(ctx context.Context, checkRegexRequest CheckRegexRequest) (ImplResponse, error)
 	// CheckMatcher - check if passed matcher matches given transaction
@@ -99,6 +104,28 @@ func (s *MatchersAPIServiceImpl) DeleteMatcher(ctx context.Context, id string) (
 	// return Response(200, nil),nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("DeleteMatcher method not implemented")
+}
+
+// UploadMatcherImage - Upload matcher image
+func (s *MatchersAPIServiceImpl) UploadMatcherImage(ctx context.Context, id string, file *os.File) (ImplResponse, error) {
+	// TODO - update UploadMatcherImage with the required logic for this service method.
+	// Add api_matchers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Matcher{}) or use other options such as http.Ok ...
+	// return Response(200, Matcher{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("UploadMatcherImage method not implemented")
+}
+
+// DeleteMatcherImage - delete matcher image
+func (s *MatchersAPIServiceImpl) DeleteMatcherImage(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update DeleteMatcherImage with the required logic for this service method.
+	// Add api_matchers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Matcher{}) or use other options such as http.Ok ...
+	// return Response(200, Matcher{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DeleteMatcherImage method not implemented")
 }
 
 // CheckRegex - check if regex is valid and matches string (using backend&#39;s regex engine)

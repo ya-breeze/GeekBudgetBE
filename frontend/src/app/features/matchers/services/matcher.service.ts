@@ -10,6 +10,8 @@ import { updateMatcher } from '../../../core/api/fn/matchers/update-matcher';
 import { deleteMatcher } from '../../../core/api/fn/matchers/delete-matcher';
 import { checkRegex } from '../../../core/api/fn/matchers/check-regex';
 import { checkMatcher } from '../../../core/api/fn/matchers/check-matcher';
+import { uploadMatcherImage } from '../../../core/api/fn/matchers/upload-matcher-image';
+import { deleteMatcherImage } from '../../../core/api/fn/matchers/delete-matcher-image';
 import { TransactionNoId } from '../../../core/api/models/transaction-no-id';
 
 @Injectable({
@@ -116,5 +118,30 @@ export class MatcherService {
         return checkMatcher(this.http, this.apiConfig.rootUrl, {
             body: { matcher, transaction },
         }).pipe(map((response) => response.body));
+    }
+
+    uploadImage(id: string, file: File): Observable<Matcher> {
+        return uploadMatcherImage(this.http, this.apiConfig.rootUrl, {
+            id,
+            body: { file: file },
+        }).pipe(
+            map((response) => response.body),
+            tap((updatedMatcher) => {
+                this.matchers.update((matchers) =>
+                    matchers.map((m) => (m.id === id ? updatedMatcher : m)),
+                );
+            }),
+        );
+    }
+
+    deleteImage(id: string): Observable<Matcher> {
+        return deleteMatcherImage(this.http, this.apiConfig.rootUrl, { id }).pipe(
+            map((response) => response.body),
+            tap((updatedMatcher) => {
+                this.matchers.update((matchers) =>
+                    matchers.map((m) => (m.id === id ? updatedMatcher : m)),
+                );
+            }),
+        );
     }
 }

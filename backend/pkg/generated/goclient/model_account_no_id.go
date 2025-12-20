@@ -28,6 +28,8 @@ type AccountNoID struct {
 	BankInfo    *BankAccountInfo `json:"bankInfo,omitempty"`
 	// If true, show this account in dashboard summary.
 	ShowInDashboardSummary *bool `json:"showInDashboardSummary,omitempty"`
+	// ID of the account image
+	Image *string `json:"image,omitempty"`
 }
 
 type _AccountNoID AccountNoID
@@ -199,6 +201,38 @@ func (o *AccountNoID) SetShowInDashboardSummary(v bool) {
 	o.ShowInDashboardSummary = &v
 }
 
+// GetImage returns the Image field value if set, zero value otherwise.
+func (o *AccountNoID) GetImage() string {
+	if o == nil || IsNil(o.Image) {
+		var ret string
+		return ret
+	}
+	return *o.Image
+}
+
+// GetImageOk returns a tuple with the Image field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountNoID) GetImageOk() (*string, bool) {
+	if o == nil || IsNil(o.Image) {
+		return nil, false
+	}
+	return o.Image, true
+}
+
+// HasImage returns a boolean if a field has been set.
+func (o *AccountNoID) HasImage() bool {
+	if o != nil && !IsNil(o.Image) {
+		return true
+	}
+
+	return false
+}
+
+// SetImage gets a reference to the given string and assigns it to the Image field.
+func (o *AccountNoID) SetImage(v string) {
+	o.Image = &v
+}
+
 func (o AccountNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -219,6 +253,9 @@ func (o AccountNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ShowInDashboardSummary) {
 		toSerialize["showInDashboardSummary"] = o.ShowInDashboardSummary
+	}
+	if !IsNil(o.Image) {
+		toSerialize["image"] = o.Image
 	}
 	return toSerialize, nil
 }

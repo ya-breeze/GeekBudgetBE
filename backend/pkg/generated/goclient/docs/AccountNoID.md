@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **Type** | **string** |  | 
 **BankInfo** | Pointer to [**BankAccountInfo**](BankAccountInfo.md) |  | [optional] 
 **ShowInDashboardSummary** | Pointer to **bool** | If true, show this account in dashboard summary. | [optional] [default to true]
+**Image** | Pointer to **string** | ID of the account image | [optional] 
 
 ## Methods
 
@@ -143,6 +144,31 @@ SetShowInDashboardSummary sets ShowInDashboardSummary field to given value.
 `func (o *AccountNoID) HasShowInDashboardSummary() bool`
 
 HasShowInDashboardSummary returns a boolean if a field has been set.
+
+### GetImage
+
+`func (o *AccountNoID) GetImage() string`
+
+GetImage returns the Image field if non-nil, zero value otherwise.
+
+### GetImageOk
+
+`func (o *AccountNoID) GetImageOk() (*string, bool)`
+
+GetImageOk returns a tuple with the Image field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetImage
+
+`func (o *AccountNoID) SetImage(v string)`
+
+SetImage sets Image field to given value.
+
+### HasImage
+
+`func (o *AccountNoID) HasImage() bool`
+
+HasImage returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

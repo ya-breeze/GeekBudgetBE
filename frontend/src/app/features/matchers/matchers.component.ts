@@ -11,6 +11,7 @@ import { Matcher } from '../../core/api/models/matcher';
 import { AccountService } from '../accounts/services/account.service';
 import { LayoutService } from '../../layout/services/layout.service';
 import { MatcherEditDialogComponent } from './matcher-edit-dialog/matcher-edit-dialog.component';
+import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 
 @Component({
     selector: 'app-matchers',
@@ -23,9 +24,10 @@ import { MatcherEditDialogComponent } from './matcher-edit-dialog/matcher-edit-d
         MatProgressSpinnerModule,
         MatDialogModule,
         MatTooltipModule,
+        ImageUrlPipe,
     ],
     templateUrl: './matchers.component.html',
-    styleUrl: './matchers.component.css',
+    styleUrl: './matchers.component.scss',
 })
 export class MatchersComponent implements OnInit {
     private readonly matcherService = inject(MatcherService);

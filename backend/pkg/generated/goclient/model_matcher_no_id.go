@@ -32,6 +32,8 @@ type MatcherNoID struct {
 	ExtraRegExp                *string  `json:"extraRegExp,omitempty"`
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
+	// ID of the matcher image
+	Image *string `json:"image,omitempty"`
 }
 
 type _MatcherNoID MatcherNoID
@@ -327,6 +329,38 @@ func (o *MatcherNoID) SetConfirmationHistory(v []bool) {
 	o.ConfirmationHistory = v
 }
 
+// GetImage returns the Image field value if set, zero value otherwise.
+func (o *MatcherNoID) GetImage() string {
+	if o == nil || IsNil(o.Image) {
+		var ret string
+		return ret
+	}
+	return *o.Image
+}
+
+// GetImageOk returns a tuple with the Image field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *MatcherNoID) GetImageOk() (*string, bool) {
+	if o == nil || IsNil(o.Image) {
+		return nil, false
+	}
+	return o.Image, true
+}
+
+// HasImage returns a boolean if a field has been set.
+func (o *MatcherNoID) HasImage() bool {
+	if o != nil && !IsNil(o.Image) {
+		return true
+	}
+
+	return false
+}
+
+// SetImage gets a reference to the given string and assigns it to the Image field.
+func (o *MatcherNoID) SetImage(v string) {
+	o.Image = &v
+}
+
 func (o MatcherNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -359,6 +393,9 @@ func (o MatcherNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ConfirmationHistory) {
 		toSerialize["confirmationHistory"] = o.ConfirmationHistory
+	}
+	if !IsNil(o.Image) {
+		toSerialize["image"] = o.Image
 	}
 	return toSerialize, nil
 }

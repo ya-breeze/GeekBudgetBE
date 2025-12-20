@@ -33,6 +33,9 @@ type Matcher struct {
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
 
+	// ID of the matcher image
+	Image string `json:"image,omitempty"`
+
 	// Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct.
 	ConfirmationsCount int32 `json:"confirmationsCount"`
 
@@ -51,6 +54,7 @@ type MatcherInterface interface {
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
 	GetConfirmationHistory() []bool
+	GetImage() string
 	GetConfirmationsCount() int32
 	GetConfirmationsTotal() int32
 }
@@ -84,6 +88,9 @@ func (c *Matcher) GetExtraRegExp() string {
 }
 func (c *Matcher) GetConfirmationHistory() []bool {
 	return c.ConfirmationHistory
+}
+func (c *Matcher) GetImage() string {
+	return c.Image
 }
 func (c *Matcher) GetConfirmationsCount() int32 {
 	return c.ConfirmationsCount

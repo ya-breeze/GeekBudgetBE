@@ -203,6 +203,40 @@
             <!-- Output Section -->
             <h3 class="section-title">Output</h3>
 
+            <div class="image-section mb-4">
+                <div class="image-label">Icon</div>
+                <div class="image-container">
+                    @if (imagePreview) {
+                        <div class="preview-container">
+                            <img
+                                [src]="imagePreview"
+                                alt="Matcher Icon"
+                                class="matcher-icon-preview"
+                            />
+                            <button
+                                mat-icon-button
+                                color="warn"
+                                (click)="removeImage()"
+                                type="button"
+                            >
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    }
+
+                    <input
+                        #fileInput
+                        type="file"
+                        (change)="onFileSelected($event)"
+                        style="display: none"
+                        accept="image/*"
+                    />
+                    <button mat-stroked-button (click)="fileInput.click()" type="button">
+                        {{ imagePreview ? 'Change Icon' : 'Upload Icon' }}
+                    </button>
+                </div>
+            </div>
+
             <app-account-select
                 formControlName="outputAccountId"
                 label="Output Account"

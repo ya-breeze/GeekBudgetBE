@@ -220,7 +220,7 @@ func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Requ
 	ctx := context.WithValue(req.Context(), common.UserIDKey, userID)
 
 	// Call the API service directly
-	matchersService := api.NewMatchersAPIServiceImpl(r.logger, r.db)
+	matchersService := api.NewMatchersAPIServiceImpl(r.logger, r.db, r.cfg)
 	result, err := matchersService.CheckMatcher(ctx, checkRequest)
 	if err != nil {
 		r.logger.Error("Failed to check matcher", "error", err)

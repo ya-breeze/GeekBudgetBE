@@ -14,6 +14,7 @@ package goserver
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -81,6 +82,16 @@ func (c *AccountsAPIController) Routes() Routes {
 			strings.ToUpper("Delete"),
 			"/v1/accounts/{id}",
 			c.DeleteAccount,
+		},
+		"UploadAccountImage": Route{
+			strings.ToUpper("Post"),
+			"/v1/accounts/{id}/image",
+			c.UploadAccountImage,
+		},
+		"DeleteAccountImage": Route{
+			strings.ToUpper("Delete"),
+			"/v1/accounts/{id}/image",
+			c.DeleteAccountImage,
 		},
 	}
 }
@@ -202,6 +213,57 @@ func (c *AccountsAPIController) DeleteAccount(w http.ResponseWriter, r *http.Req
 		return
 	}
 	result, err := c.service.DeleteAccount(r.Context(), idParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// UploadAccountImage - Upload account image
+func (c *AccountsAPIController) UploadAccountImage(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	var fileParam *os.File
+	{
+		param, err := ReadFormFileToTempFile(r, "file")
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "file", Err: err}, nil)
+			return
+		}
+
+		fileParam = param
+	}
+
+	result, err := c.service.UploadAccountImage(r.Context(), idParam, fileParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// DeleteAccountImage - delete account image
+func (c *AccountsAPIController) DeleteAccountImage(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.DeleteAccountImage(r.Context(), idParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

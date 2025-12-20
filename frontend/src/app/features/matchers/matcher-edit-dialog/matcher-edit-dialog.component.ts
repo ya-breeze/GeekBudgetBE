@@ -16,6 +16,7 @@ import { Matcher } from '../../../core/api/models/matcher';
 import { MatcherNoId } from '../../../core/api/models/matcher-no-id';
 import { Transaction } from '../../../core/api/models/transaction';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
+import { ApiConfiguration } from '../../../core/api/api-configuration';
 
 @Component({
     selector: 'app-matcher-edit-dialog',
@@ -44,6 +45,7 @@ export class MatcherEditDialogComponent implements OnInit {
     private readonly dialogRef = inject(MatDialogRef<MatcherEditDialogComponent>);
     private readonly matcherService = inject(MatcherService);
     private readonly accountService = inject(AccountService);
+    private readonly apiConfig = inject(ApiConfiguration);
     readonly data = inject<{ matcher?: Matcher; transaction?: Transaction } | undefined>(
         MAT_DIALOG_DATA,
     );
@@ -61,6 +63,31 @@ export class MatcherEditDialogComponent implements OnInit {
     } | null>(null);
     protected readonly testingMatch = signal(false);
     protected readonly testingRegex = signal(false);
+
+    protected selectedFile: File | null = null;
+    protected imagePreview: string | null = null;
+    protected deleteImage = false;
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            this.selectedFile = input.files[0];
+            this.deleteImage = false;
+
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = () => {
+                this.imagePreview = reader.result as string;
+            };
+            reader.readAsDataURL(this.selectedFile);
+        }
+    }
+
+    removeImage(): void {
+        this.selectedFile = null;
+        this.imagePreview = null;
+        this.deleteImage = true;
+    }
 
     checkMatch(): void {
         if (!this.data?.transaction) return;
@@ -155,6 +182,13 @@ export class MatcherEditDialogComponent implements OnInit {
                 outputDescription: this.data.matcher.outputDescription,
                 outputTags: this.data.matcher.outputTags?.join(', '),
             });
+
+            if (this.data.matcher.image) {
+                const root = this.apiConfig.rootUrl.endsWith('/')
+                    ? this.apiConfig.rootUrl.slice(0, -1)
+                    : this.apiConfig.rootUrl;
+                this.imagePreview = `${root}/images/${this.data.matcher.image}`;
+            }
         } else if (this.data?.transaction) {
             // Pre-fill from transaction
             const t = this.data.transaction;
@@ -248,7 +282,39 @@ export class MatcherEditDialogComponent implements OnInit {
             : this.matcherService.create(matcherData);
 
         request.subscribe({
-            next: () => {
+            next: (savedMatcher) => {
+                // Handle Image Upload/Delete
+                if (savedMatcher.id) {
+                    if (this.deleteImage && !this.selectedFile) {
+                        this.matcherService.deleteImage(savedMatcher.id).subscribe({
+                            next: () => {
+                                this.loading.set(false);
+                                this.dialogRef.close(true);
+                            },
+                            error: () => {
+                                this.loading.set(false);
+                                // Show warning or just close?
+                                this.dialogRef.close(true);
+                            },
+                        });
+                        return;
+                    } else if (this.selectedFile) {
+                        this.matcherService
+                            .uploadImage(savedMatcher.id, this.selectedFile)
+                            .subscribe({
+                                next: () => {
+                                    this.loading.set(false);
+                                    this.dialogRef.close(true);
+                                },
+                                error: () => {
+                                    this.loading.set(false);
+                                    this.dialogRef.close(true);
+                                },
+                            });
+                        return;
+                    }
+                }
+
                 this.loading.set(false);
                 this.dialogRef.close(true);
             },

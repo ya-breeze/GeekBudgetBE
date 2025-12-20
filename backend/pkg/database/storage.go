@@ -89,6 +89,10 @@ type Storage interface {
 	GetBudgetItem(userID string, id string) (goserver.BudgetItem, error)
 	UpdateBudgetItem(userID string, id string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
 	DeleteBudgetItem(userID string, id string) error
+
+	CreateImage(data []byte, contentType string) (models.Image, error)
+	GetImage(id string) (models.Image, error)
+	DeleteImage(id string) error
 }
 
 type MatcherRuntime struct {
@@ -798,6 +802,43 @@ func (s *storage) GetCNBRates(date time.Time) (map[string]float64, error) {
 	return result, nil
 }
 
+// #endregion CNB rates
+
+// #region Images
+
+func (s *storage) CreateImage(data []byte, contentType string) (models.Image, error) {
+	image := models.Image{
+		Data:        data,
+		ContentType: contentType,
+	}
+
+	if err := s.db.Create(&image).Error; err != nil {
+		return models.Image{}, fmt.Errorf(StorageError, err)
+	}
+
+	return image, nil
+}
+
+func (s *storage) GetImage(id string) (models.Image, error) {
+	var image models.Image
+	if err := s.db.Where("id = ?", id).First(&image).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.Image{}, ErrNotFound
+		}
+		return models.Image{}, fmt.Errorf(StorageError, err)
+	}
+
+	return image, nil
+}
+
+func (s *storage) DeleteImage(id string) error {
+	if err := s.db.Where("id = ?", id).Delete(&models.Image{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+	return nil
+}
+
+// #endregion Images
 //#endregion CNB rates
 
 // #region BudgetItems

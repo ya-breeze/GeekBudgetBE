@@ -197,6 +197,54 @@ paths:
       responses:
         "200":
           description: no body
+  /v1/accounts/{id}/image:
+    post:
+      tags:
+        - accounts
+      summary: Upload account image
+      operationId: uploadAccountImage
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: status of the upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+    delete:
+      tags:
+        - accounts
+      summary: delete account image
+      operationId: deleteAccountImage
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: updated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
 
   /v1/currencies:
     post:
@@ -887,6 +935,54 @@ paths:
       responses:
         "200":
           description: no body
+  /v1/matchers/{id}/image:
+    post:
+      tags:
+        - matchers
+      summary: Upload matcher image
+      operationId: uploadMatcherImage
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: status of the upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matcher"
+    delete:
+      tags:
+        - matchers
+      summary: delete matcher image
+      operationId: deleteMatcherImage
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: updated matcher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matcher"
   /v1/matchers/check-regex:
     post:
       tags:
@@ -1233,6 +1329,9 @@ components:
           type: boolean
           description: "If true, show this account in dashboard summary."
           default: true
+        image:
+          type: string
+          description: "ID of the account image"
       required:
         - name
         - type
@@ -1588,6 +1687,9 @@ components:
             List of booleans representing manual confirmations for this matcher
             (true = confirmed, false = rejected). Server enforces maximum length
             configured via application config.
+        image:
+          type: string
+          description: "ID of the matcher image"
       required:
         - outputDescription
         - outputAccountId

@@ -70,6 +70,9 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 	// Allow to use without HTTPS - for local network
 	session.Options.Secure = false
 	session.Options.SameSite = http.SameSiteLaxMode
+	session.Options.Path = "/"
+	session.Options.HttpOnly = true
+	session.Options.MaxAge = 86400 * 30 // 30 days
 	err = session.Save(req, w)
 	if err != nil {
 		r.logger.Warn("failed to save session", "error", err)

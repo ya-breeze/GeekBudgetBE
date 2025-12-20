@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 )
 
 // AccountsAPIService is an interface that defines the logic for the AccountsAPIServicer
@@ -31,6 +32,10 @@ type AccountsAPIService interface {
 	UpdateAccount(ctx context.Context, id string, accountNoId AccountNoId) (ImplResponse, error)
 	// DeleteAccount - delete account
 	DeleteAccount(ctx context.Context, id string) (ImplResponse, error)
+	// UploadAccountImage - Upload account image
+	UploadAccountImage(ctx context.Context, id string, file *os.File) (ImplResponse, error)
+	// DeleteAccountImage - delete account image
+	DeleteAccountImage(ctx context.Context, id string) (ImplResponse, error)
 }
 
 // AccountsAPIService is a service that implements the logic for the AccountsAPIServicer
@@ -108,4 +113,26 @@ func (s *AccountsAPIServiceImpl) DeleteAccount(ctx context.Context, id string) (
 	// return Response(200, nil),nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("DeleteAccount method not implemented")
+}
+
+// UploadAccountImage - Upload account image
+func (s *AccountsAPIServiceImpl) UploadAccountImage(ctx context.Context, id string, file *os.File) (ImplResponse, error) {
+	// TODO - update UploadAccountImage with the required logic for this service method.
+	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Account{}) or use other options such as http.Ok ...
+	// return Response(200, Account{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("UploadAccountImage method not implemented")
+}
+
+// DeleteAccountImage - delete account image
+func (s *AccountsAPIServiceImpl) DeleteAccountImage(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update DeleteAccountImage with the required logic for this service method.
+	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, Account{}) or use other options such as http.Ok ...
+	// return Response(200, Account{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DeleteAccountImage method not implemented")
 }

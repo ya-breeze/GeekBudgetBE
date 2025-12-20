@@ -76,13 +76,13 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 
 func createControllers(logger *slog.Logger, cfg *config.Config, db database.Storage) goserver.CustomControllers {
 	return goserver.CustomControllers{
-		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg.Issuer, cfg.JWTSecret),
+		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg),
 		UserAPIService:                    api.NewUserAPIService(logger, db),
-		AccountsAPIService:                api.NewAccountsAPIService(logger, db),
+		AccountsAPIService:                api.NewAccountsAPIService(logger, db, cfg),
 		CurrenciesAPIService:              api.NewCurrenciesAPIServicer(logger, db),
 		TransactionsAPIService:            api.NewTransactionsAPIService(logger, db),
 		UnprocessedTransactionsAPIService: api.NewUnprocessedTransactionsAPIServiceImpl(logger, db),
-		MatchersAPIService:                api.NewMatchersAPIServiceImpl(logger, db),
+		MatchersAPIService:                api.NewMatchersAPIServiceImpl(logger, db, cfg),
 		BankImportersAPIService:           api.NewBankImportersAPIServiceImpl(logger, db),
 		AggregationsAPIService:            api.NewAggregationsAPIServiceImpl(logger, db),
 		NotificationsAPIService:           api.NewNotificationsAPIServiceImpl(logger, db),
@@ -115,6 +115,11 @@ func Serve(
 		cfg.JWTSecret = auth.GenerateRandomString(32)
 	}
 
+	if cfg.SessionSecret == "" {
+		logger.Warn("Session secret is not set. Creating random secret...")
+		cfg.SessionSecret = auth.GenerateRandomString(64)
+	}
+
 	logger.Info("Starting GeekBudget server...")
 
 	if cfg.Users != "" {
@@ -134,9 +139,13 @@ func Serve(
 		logger.Info("No users defined in configuration")
 	}
 
+	controllers := createControllers(logger, cfg, storage)
+	extraRouters := []goserver.Router{webapp.NewWebAppRouter(commit, logger, cfg, storage)}
+	extraRouters = append(extraRouters, api.NewCustomAuthAPIController(controllers.AuthAPIService, logger, cfg))
+
 	return goserver.Serve(ctx, logger, cfg,
-		createControllers(logger, cfg, storage),
-		[]goserver.Router{webapp.NewWebAppRouter(commit, logger, cfg, storage)},
+		controllers,
+		extraRouters,
 		createMiddlewares(logger, cfg, forcedImports)...)
 }
 

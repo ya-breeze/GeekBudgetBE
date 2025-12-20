@@ -28,6 +28,8 @@ type AccountsAPIRouter interface {
 	GetAccount(http.ResponseWriter, *http.Request)
 	UpdateAccount(http.ResponseWriter, *http.Request)
 	DeleteAccount(http.ResponseWriter, *http.Request)
+	UploadAccountImage(http.ResponseWriter, *http.Request)
+	DeleteAccountImage(http.ResponseWriter, *http.Request)
 }
 
 // AggregationsAPIRouter defines the required methods for binding the api requests to a responses for the AggregationsAPI
@@ -103,6 +105,8 @@ type MatchersAPIRouter interface {
 	GetMatcher(http.ResponseWriter, *http.Request)
 	UpdateMatcher(http.ResponseWriter, *http.Request)
 	DeleteMatcher(http.ResponseWriter, *http.Request)
+	UploadMatcherImage(http.ResponseWriter, *http.Request)
+	DeleteMatcherImage(http.ResponseWriter, *http.Request)
 	CheckRegex(http.ResponseWriter, *http.Request)
 	CheckMatcher(http.ResponseWriter, *http.Request)
 }
@@ -155,6 +159,8 @@ type AccountsAPIServicer interface {
 	GetAccount(context.Context, string) (ImplResponse, error)
 	UpdateAccount(context.Context, string, AccountNoId) (ImplResponse, error)
 	DeleteAccount(context.Context, string) (ImplResponse, error)
+	UploadAccountImage(context.Context, string, *os.File) (ImplResponse, error)
+	DeleteAccountImage(context.Context, string) (ImplResponse, error)
 }
 
 // AggregationsAPIServicer defines the api actions for the AggregationsAPI service
@@ -238,6 +244,8 @@ type MatchersAPIServicer interface {
 	GetMatcher(context.Context, string) (ImplResponse, error)
 	UpdateMatcher(context.Context, string, MatcherNoId) (ImplResponse, error)
 	DeleteMatcher(context.Context, string) (ImplResponse, error)
+	UploadMatcherImage(context.Context, string, *os.File) (ImplResponse, error)
+	DeleteMatcherImage(context.Context, string) (ImplResponse, error)
 	CheckRegex(context.Context, CheckRegexRequest) (ImplResponse, error)
 	CheckMatcher(context.Context, CheckMatcherRequest) (ImplResponse, error)
 }

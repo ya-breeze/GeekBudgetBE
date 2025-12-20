@@ -18,6 +18,31 @@
             }
         </mat-form-field>
 
+        <div class="image-section mb-4">
+            <div class="image-label">Icon</div>
+            <div class="image-container">
+                @if (imagePreview) {
+                    <div class="preview-container">
+                        <img [src]="imagePreview" alt="Account Icon" class="account-icon-preview" />
+                        <button mat-icon-button color="warn" (click)="removeImage()" type="button">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+                }
+
+                <input
+                    #fileInput
+                    type="file"
+                    (change)="onFileSelected($event)"
+                    style="display: none"
+                    accept="image/*"
+                />
+                <button mat-stroked-button (click)="fileInput.click()" type="button">
+                    {{ imagePreview ? 'Change Icon' : 'Upload Icon' }}
+                </button>
+            </div>
+        </div>
+
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Type</mat-label>
             <mat-select formControlName="type" required>
