@@ -15,6 +15,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { UnprocessedTransaction } from '../../../core/api/models/unprocessed-transaction';
@@ -38,6 +39,7 @@ import { startWith, map } from 'rxjs';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 export interface AccountGroup {
     name: string;
@@ -71,6 +73,7 @@ export type UnprocessedTransactionDialogResult =
         DatePipe,
         AccountSelectComponent,
         OverlayModule,
+        MatChipsModule,
     ],
     templateUrl: './unprocessed-transaction-dialog.component.html',
     styleUrl: './unprocessed-transaction-dialog.component.scss',
@@ -95,6 +98,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     // Inject data but treat it as initial state
     readonly initialData = inject<UnprocessedTransaction>(MAT_DIALOG_DATA);
+    readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
     constructor() {
         this.descriptionControl.setValue(this.initialData.transaction.description || '');
@@ -158,6 +162,21 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     protected readonly matchersMap = signal<Map<string, Matcher>>(new Map());
 
+    // Details / Edit State
+    protected readonly expandedMatchId = signal<string | null>(null);
+    protected readonly expandedDuplicateId = signal<string | null>(null);
+
+    // Initial edit state for the expanded match
+    protected readonly editState = signal<{
+        description: string;
+        tags: string[];
+        movements: Movement[];
+    } | null>(null);
+
+    // Component-level editing for manual processing or transaction details
+    protected readonly tagsControl = new FormControl<string[]>([]);
+    protected readonly tagInputControl = new FormControl('');
+
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
@@ -166,6 +185,9 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         });
         this.matcherService.loadMatchers().subscribe(); // Load all matchers for the search
         this.loadMatchers(); // Load specific matchers for this transaction matches (if any missing from global? logic slightly duplicative but okay)
+
+        // Initialize tags for the main transaction
+        this.tagsControl.setValue(this.transaction().transaction.tags || []);
     }
 
     // I will replace ngOnInit completely to include the effect/computed logic correctly
@@ -200,6 +222,98 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     setLoading(isLoading: boolean) {
         this.loading.set(isLoading);
+    }
+
+    addTag(event: any, control: FormControl<string[] | null>): void {
+        const value = (event.value || '').trim();
+        const currentTags = control.value || [];
+
+        if (value) {
+            control.setValue([...currentTags, value]);
+        }
+
+        event.chipInput!.clear();
+        this.tagInputControl.setValue('');
+    }
+
+    removeTag(tag: string, control: FormControl<string[] | null>): void {
+        const currentTags = control.value || [];
+        const index = currentTags.indexOf(tag);
+
+        if (index >= 0) {
+            const newTags = [...currentTags];
+            newTags.splice(index, 1);
+            control.setValue(newTags);
+        }
+    }
+
+    // For Match Edit State Tags
+    addMatchTag(event: any): void {
+        const value = (event.value || '').trim();
+        const state = this.editState();
+        if (value && state) {
+            this.editState.set({
+                ...state,
+                tags: [...(state.tags || []), value],
+            });
+        }
+        event.chipInput!.clear();
+    }
+
+    removeMatchTag(tag: string): void {
+        const state = this.editState();
+        if (state && state.tags) {
+            this.editState.set({
+                ...state,
+                tags: state.tags.filter((t) => t !== tag),
+            });
+        }
+    }
+
+    updateMatchMovementAccount(index: number, accountId: string) {
+        const state = this.editState();
+        if (!state) return;
+
+        const newMovements = [...state.movements];
+        newMovements[index] = { ...newMovements[index], accountId };
+
+        this.editState.set({ ...state, movements: newMovements });
+    }
+
+    updateMatchDescription(description: string) {
+        const state = this.editState();
+        if (state) {
+            this.editState.set({ ...state, description });
+        }
+    }
+
+    toggleMatch(matchId: string, matchData: MatcherAndTransaction) {
+        if (this.expandedMatchId() === matchId) {
+            this.expandedMatchId.set(null);
+            this.editState.set(null);
+        } else {
+            this.expandedMatchId.set(matchId);
+            this.expandedDuplicateId.set(null); // exclusive
+
+            // Initialize edit state
+            this.editState.set({
+                description: matchData.transaction.description || '',
+                tags: matchData.transaction.tags ? [...matchData.transaction.tags] : [],
+                movements: matchData.transaction.movements
+                    ? matchData.transaction.movements.map((m) => ({ ...m }))
+                    : [],
+            });
+        }
+    }
+
+    toggleDuplicate(id: string) {
+        if (this.expandedDuplicateId() === id) {
+            this.expandedDuplicateId.set(null);
+        } else {
+            this.expandedDuplicateId.set(id);
+            this.expandedMatchId.set(null); // exclusive
+            this.editState.set(null);
+        }
     }
 
     getAccountName(accountId: string | undefined): string {
@@ -318,6 +432,23 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     }
 
     applyMatch(match: MatcherAndTransaction): void {
+        // If this match is currently being edited, use the edit state
+        if (this.expandedMatchId() === match.matcherId && this.editState()) {
+            const state = this.editState()!;
+            const updatedMatch: MatcherAndTransaction = {
+                ...match,
+                transaction: {
+                    ...match.transaction,
+                    description: state.description,
+                    tags: state.tags,
+                    movements: state.movements,
+                },
+            };
+            this.loading.set(true);
+            this.action.emit({ action: 'convert', match: updatedMatch });
+            return;
+        }
+
         this.loading.set(true);
         this.action.emit({ action: 'convert', match });
     }

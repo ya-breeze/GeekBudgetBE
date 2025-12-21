@@ -232,37 +232,12 @@ mat-dialog-content {
     gap: 8px;
 }
 
-.custom-list-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    background-color: #fff;
-    border-radius: 4px;
-    border: 1px solid #eee;
-    /* Light border definition */
+// Old custom-list-item styles removed or refactored into the container in the previous block.
+// This block cleans up any residual or redundant styles if necessary.
+// Actually, earlier I defined .custom-list-item inside .custom-list-item-container
+// So I should ensure the standalone .custom-list-item rule is removed or updated.
 
-    &:hover {
-        background-color: #f5f5f5;
-    }
-
-    .item-content {
-        flex: 1;
-        overflow: hidden;
-
-        .item-title {
-            font-weight: 500;
-            color: #333;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .item-subtitle {
-            font-size: 0.85em;
-            color: #757575;
-        }
-    }
-}
+// Removing the standalone .custom-list-item rule entirely as it is now inside the container
 
 .confidence-badge {
     display: inline-block;
@@ -312,70 +287,161 @@ mat-dialog-content {
     border-left: 4px solid #4caf50; // Green for 'new' action
 }
 
-.manual-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 8px 0;
-}
-
-.manual-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .label {
-        font-weight: 500;
-        color: #666;
-    }
-
-    .value {
-        font-weight: 500;
-    }
-}
-
-.manual-controls {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-
-    .account-select {
-        flex: 1;
-    }
-}
-
-.dialog-container {
-    position: relative;
-    height: 100%; // Fill the dialog panel
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; // Prevent double scrollbars
-}
-
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.8);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.custom-list-item-container {
+    border: 1px solid #eee;
     border-radius: 4px;
+    background-color: #fff;
+    overflow: hidden;
+    transition: all 0.2s ease;
+
+    &.expanded {
+        border-color: #3f51b5;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin: 8px 0;
+    }
+
+    .custom-list-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        border: none; // Handled by container
+        background: transparent;
+
+        &:hover {
+            background-color: #f5f5f5;
+        }
+
+        .item-content {
+            flex: 1;
+            overflow: hidden;
+        }
+    }
 }
 
-.no-matches-container {
+.expanded-details {
+    padding: 16px;
+    border-top: 1px solid #eee;
+    background-color: #fafafa;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 0;
+    gap: 12px;
 
-    .empty-state {
-        margin: 0;
-        color: #757575;
-        font-style: italic;
+    .dense-field {
+        // Compact form fields
+        font-size: 0.9rem;
+
+        ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+            height: 0; // Compact
+        }
+    }
+}
+
+.movements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.movement-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    gap: 12px;
+
+    .movement-account {
+        flex: 1;
+        display: flex;
+        align-items: center;
+
+        .fixed-account {
+            font-weight: 500;
+            color: #424242;
+        }
+
+        .dense-select {
+            width: 100%;
+        }
+    }
+
+    .movement-amount {
+        font-weight: 600;
+        white-space: nowrap;
+
+        &.negative {
+            color: #c62828;
+        }
+
+        &.positive {
+            color: #2e7d32;
+        }
+    }
+}
+
+.expanded-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+// Updating Manual Grid to match Movement Row style
+.manual-grid {
+    .manual-item {
+        // Redefine to look like movement row
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+
+        .label {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .amount {
+            font-weight: 600;
+        }
+
+        .negative {
+            color: #c62828;
+        }
+    }
+
+    .manual-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 12px; // slightly different padding as select has its own padding
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        gap: 12px;
+
+        .account-select {
+            flex: 1;
+
+            // Remove default form field bottom margin/padding if any
+            ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+                display: none;
+            }
+        }
+
+        .amount {
+            font-weight: 600;
+            white-space: nowrap;
+
+            &.positive {
+                color: #2e7d32;
+            }
+        }
     }
 }

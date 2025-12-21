@@ -25,8 +25,17 @@ describe('UnprocessedTransactionDialogComponent', () => {
             amount: 100,
             movements: [],
         },
-        matched: [],
-        duplicates: [],
+        matched: [
+            {
+                matcherId: 'm1',
+                transaction: {
+                    description: 'Match Desc',
+                    movements: [{ accountId: 'acc-1', amount: 100, currencyId: 'CZK' }],
+                    tags: ['tag1'],
+                },
+            } as any,
+        ],
+        duplicates: [{ id: 'd1', description: 'Dup Desc', date: '2023-01-01' } as any],
     };
 
     beforeEach(async () => {
@@ -137,5 +146,65 @@ describe('UnprocessedTransactionDialogComponent', () => {
         expect(dialogSpy.open).toHaveBeenCalled();
         // Verify showEditPopover is set to false
         expect(component['showEditPopover']()).toBeFalse();
+    });
+
+    it('should toggle match expansion and initialize edit state', () => {
+        const match = mockTransaction.matched[0];
+        // Toggle On
+        component.toggleMatch(match.matcherId, match);
+        expect(component['expandedMatchId']()).toBe(match.matcherId);
+        expect(component['editState']()).toEqual({
+            description: match.transaction.description!,
+            tags: match.transaction.tags!,
+            movements: match.transaction.movements!,
+        });
+
+        // Toggle Off
+        component.toggleMatch(match.matcherId, match);
+        expect(component['expandedMatchId']()).toBeNull();
+        expect(component['editState']()).toBeNull();
+    });
+
+    it('should toggle duplicate expansion exclusive of match', () => {
+        // Need to ensure signals are updated or check initial state
+        const match = mockTransaction.matched[0];
+        const duplicate = mockTransaction.duplicates[0];
+
+        component.toggleMatch(match.matcherId, match);
+        expect(component['expandedMatchId']()).toBe(match.matcherId);
+
+        component.toggleDuplicate(duplicate.id);
+        expect(component['expandedDuplicateId']()).toBe(duplicate.id);
+        expect(component['expandedMatchId']()).toBeNull(); // Should close match
+    });
+
+    it('should emit edited values when applying an edited match', () => {
+        spyOn(component.action, 'emit');
+        const match = mockTransaction.matched[0];
+
+        // 1. Expand Match
+        component.toggleMatch(match.matcherId, match);
+
+        // 2. Modify State
+        component.addMatchTag({ value: 'new-tag', chipInput: { clear: () => {} } });
+        const currentState = component['editState']()!;
+        expect(currentState.tags).toContain('new-tag');
+
+        // 3. Apply
+        component.applyMatch(match);
+
+        // 4. Verify Emit
+        expect(component.action.emit).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                action: 'convert',
+                match: jasmine.objectContaining({
+                    matcherId: match.matcherId,
+                    transaction: jasmine.objectContaining({
+                        tags: jasmine.arrayContaining(['new-tag']),
+                        description: match.transaction.description, // unchanged
+                    }),
+                }),
+            }),
+        );
     });
 });

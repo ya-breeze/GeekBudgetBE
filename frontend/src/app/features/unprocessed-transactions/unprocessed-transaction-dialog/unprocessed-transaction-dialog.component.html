@@ -72,68 +72,80 @@
                                 <span class="value">{{ transaction().transaction.extra }}</span>
                             </div>
                         }
-                        <div class="detail-item">
-                            <span class="label">Tags:</span>
-                            <span class="value">{{
-                                transaction().transaction.tags?.join(', ') || '-'
-                            }}</span>
+                        <div class="detail-item description-field">
+                            <mat-form-field
+                                appearance="outline"
+                                class="full-width-input"
+                                subscriptSizing="dynamic"
+                            >
+                                <mat-label>Tags</mat-label>
+                                <mat-chip-grid #chipGrid aria-label="Enter tags">
+                                    @for (tag of tagsControl.value; track tag) {
+                                        <mat-chip-row (removed)="removeTag(tag, tagsControl)">
+                                            {{ tag }}
+                                            <button
+                                                matChipRemove
+                                                [attr.aria-label]="'remove ' + tag"
+                                            >
+                                                <mat-icon>cancel</mat-icon>
+                                            </button>
+                                        </mat-chip-row>
+                                    }
+                                    <input
+                                        placeholder="New tag..."
+                                        [matChipInputFor]="chipGrid"
+                                        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                                        [matChipInputAddOnBlur]="true"
+                                        (matChipInputTokenEnd)="addTag($event, tagsControl)"
+                                        [formControl]="tagInputControl"
+                                    />
+                                </mat-chip-grid>
+                            </mat-form-field>
                         </div>
-
-                        @if (shouldShowEffectiveAmount) {
-                            <div class="detail-item highlight">
-                                <span class="label">Amount:</span>
-                                <span class="value amount"
-                                    >{{ effectiveAmount?.amount }}
-                                    {{ effectiveAmount?.currencyName }}</span
-                                >
-                            </div>
-                        }
                     </div>
 
+                    <!-- Removed Amount Display (Redundant) -->
+
                     @if (!shouldShowEffectiveAmount) {
-                        <div class="sub-section">
-                            <h4>Movements</h4>
-                            <mat-list>
-                                @for (
-                                    movement of transaction().transaction.movements;
-                                    track $index
-                                ) {
-                                    <mat-list-item>
-                                        <span matListItemTitle
-                                            >{{ movement.amount }}
-                                            {{ getCurrencyName(movement.currencyId) }}</span
-                                        >
-                                        <span matListItemLine>{{
-                                            getAccountName(movement.accountId)
-                                        }}</span>
-                                        <span matListItemLine>{{
-                                            movement.description || 'No description'
-                                        }}</span>
-                                    </mat-list-item>
-                                }
-                            </mat-list>
-                        </div>
+                        <!-- Kept movements logic if needed, but Manual Processing covers simple cases -->
                     }
                 </div>
 
                 <div class="section-container manual-section">
                     <h3 class="section-title">Manual Processing</h3>
                     <div class="manual-grid">
+                        <!-- Source (Fixed) -->
                         @if (knownAccountName) {
                             <div class="manual-item">
-                                <span class="label">Source:</span>
-                                <span class="value">{{ knownAccountName }}</span>
+                                <span class="label">Source: {{ knownAccountName }}</span>
+                                <span class="value amount negative"
+                                    >{{ effectiveAmount?.amount | number: '1.2-2' }}
+                                    {{ effectiveAmount?.currencyName }}</span
+                                >
                             </div>
                         }
 
+                        <!-- Target (Selectable) -->
                         <div class="manual-controls">
                             <app-account-select
                                 [formControl]="accountControl"
                                 label="Select Target"
                                 [required]="true"
+                                class="account-select"
                             >
                             </app-account-select>
+                            <!-- Target Amount (Positive/Inverted usually for double entry, or just same amount) -->
+                            <!-- Assuming simple transfer logic: Same amount, different sign/direction -->
+                            <span class="value amount positive"
+                                >+{{ effectiveAmount?.amount | number: '1.2-2' }}
+                                {{ effectiveAmount?.currencyName }}</span
+                            >
+                        </div>
 
+                        <div
+                            class="manual-actions"
+                            style="display: flex; justify-content: flex-end; margin-top: 8px"
+                        >
                             <button
                                 mat-raised-button
                                 color="primary"
@@ -207,30 +219,161 @@
                     @if (transaction().matched.length > 0) {
                         <div class="custom-list">
                             @for (match of transaction().matched; track match.matcherId) {
-                                <div class="custom-list-item">
-                                    <div class="item-content">
-                                        <div class="item-title">
-                                            <span
-                                                [class]="
-                                                    'confidence-badge ' +
-                                                    getConfidenceBadge(match).class
-                                                "
-                                                [matTooltip]="getConfidenceBadge(match).tooltip"
-                                            >
-                                                {{ getConfidenceBadge(match).text }}
-                                            </span>
-                                            {{ match.transaction.description }}
-                                        </div>
-                                    </div>
-                                    <button
-                                        mat-icon-button
-                                        (click)="applyMatch(match)"
-                                        color="primary"
-                                        aria-label="Apply Match"
-                                        matTooltip="Apply Match"
+                                <div
+                                    class="custom-list-item-container"
+                                    [class.expanded]="expandedMatchId() === match.matcherId"
+                                >
+                                    <div
+                                        class="custom-list-item"
+                                        (click)="toggleMatch(match.matcherId, match)"
                                     >
-                                        <mat-icon>check_circle</mat-icon>
-                                    </button>
+                                        <div class="item-content">
+                                            <div class="item-title">
+                                                <span
+                                                    [class]="
+                                                        'confidence-badge ' +
+                                                        getConfidenceBadge(match).class
+                                                    "
+                                                    [matTooltip]="getConfidenceBadge(match).tooltip"
+                                                >
+                                                    {{ getConfidenceBadge(match).text }}
+                                                </span>
+                                                {{ match.transaction.description }}
+                                            </div>
+                                        </div>
+                                        @if (expandedMatchId() !== match.matcherId) {
+                                            <button
+                                                mat-icon-button
+                                                (click)="
+                                                    $event.stopPropagation(); applyMatch(match)
+                                                "
+                                                color="primary"
+                                                aria-label="Apply Match"
+                                                matTooltip="Quick Apply"
+                                            >
+                                                <mat-icon>check_circle</mat-icon>
+                                            </button>
+                                        }
+                                        <button
+                                            mat-icon-button
+                                            (click)="
+                                                $event.stopPropagation();
+                                                toggleMatch(match.matcherId, match)
+                                            "
+                                        >
+                                            <mat-icon>{{
+                                                expandedMatchId() === match.matcherId
+                                                    ? 'expand_less'
+                                                    : 'expand_more'
+                                            }}</mat-icon>
+                                        </button>
+                                    </div>
+
+                                    @if (expandedMatchId() === match.matcherId && editState()) {
+                                        <div
+                                            class="expanded-details"
+                                            (click)="$event.stopPropagation()"
+                                        >
+                                            <mat-form-field
+                                                appearance="outline"
+                                                class="full-width-input dense-field"
+                                                subscriptSizing="dynamic"
+                                            >
+                                                <mat-label>Description</mat-label>
+                                                <input
+                                                    matInput
+                                                    [ngModel]="editState()!.description"
+                                                    (ngModelChange)="updateMatchDescription($event)"
+                                                />
+                                            </mat-form-field>
+
+                                            <mat-form-field
+                                                appearance="outline"
+                                                class="full-width-input dense-field"
+                                                subscriptSizing="dynamic"
+                                            >
+                                                <mat-label>Tags</mat-label>
+                                                <mat-chip-grid
+                                                    #matchChipGrid
+                                                    aria-label="Enter tags"
+                                                >
+                                                    @for (tag of editState()!.tags; track tag) {
+                                                        <mat-chip-row
+                                                            (removed)="removeMatchTag(tag)"
+                                                        >
+                                                            {{ tag }}
+                                                            <button
+                                                                matChipRemove
+                                                                [attr.aria-label]="'remove ' + tag"
+                                                            >
+                                                                <mat-icon>cancel</mat-icon>
+                                                            </button>
+                                                        </mat-chip-row>
+                                                    }
+                                                    <input
+                                                        placeholder="New tag..."
+                                                        [matChipInputFor]="matchChipGrid"
+                                                        [matChipInputSeparatorKeyCodes]="
+                                                            separatorKeysCodes
+                                                        "
+                                                        [matChipInputAddOnBlur]="true"
+                                                        (matChipInputTokenEnd)="addMatchTag($event)"
+                                                    />
+                                                </mat-chip-grid>
+                                            </mat-form-field>
+
+                                            <div class="movements-list">
+                                                <strong>Movements:</strong>
+                                                @for (mov of editState()!.movements; track $index) {
+                                                    <div class="movement-row">
+                                                        <div class="movement-account">
+                                                            @if (
+                                                                !mov.accountId ||
+                                                                mov.accountId ===
+                                                                    transaction().transaction
+                                                                        .partnerAccount
+                                                            ) {
+                                                                <app-account-select
+                                                                    [ngModel]="mov.accountId"
+                                                                    (ngModelChange)="
+                                                                        updateMatchMovementAccount(
+                                                                            $index,
+                                                                            $event
+                                                                        )
+                                                                    "
+                                                                    label="Select Account"
+                                                                    class="dense-select"
+                                                                >
+                                                                </app-account-select>
+                                                            } @else {
+                                                                <span class="fixed-account">{{
+                                                                    getAccountName(mov.accountId)
+                                                                }}</span>
+                                                            }
+                                                        </div>
+                                                        <div
+                                                            class="movement-amount"
+                                                            [class.negative]="mov.amount < 0"
+                                                            [class.positive]="mov.amount > 0"
+                                                        >
+                                                            {{ mov.amount | number: '1.2-2' }}
+                                                            {{ getCurrencyName(mov.currencyId) }}
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <div class="expanded-actions">
+                                                <button
+                                                    mat-raised-button
+                                                    color="primary"
+                                                    (click)="applyMatch(match)"
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
@@ -252,22 +395,100 @@
                     @if (transaction().duplicates.length > 0) {
                         <div class="custom-list">
                             @for (duplicate of transaction().duplicates; track duplicate.id) {
-                                <div class="custom-list-item">
-                                    <div class="item-content">
-                                        <div class="item-title">{{ duplicate.description }}</div>
-                                        <div class="item-subtitle">
-                                            {{ duplicate.date | date: 'medium' }}
-                                        </div>
-                                    </div>
-                                    <button
-                                        mat-icon-button
-                                        (click)="applyDuplicate(duplicate)"
-                                        color="warn"
-                                        aria-label="Confirm Duplicate"
-                                        matTooltip="Merge/Delete Duplicate"
+                                <div
+                                    class="custom-list-item-container"
+                                    [class.expanded]="expandedDuplicateId() === duplicate.id"
+                                >
+                                    <div
+                                        class="custom-list-item"
+                                        (click)="toggleDuplicate(duplicate.id)"
                                     >
-                                        <mat-icon>delete</mat-icon>
-                                    </button>
+                                        <div class="item-content">
+                                            <div class="item-title">
+                                                {{ duplicate.description }}
+                                            </div>
+                                            <div class="item-subtitle">
+                                                {{ duplicate.date | date: 'medium' }}
+                                            </div>
+                                        </div>
+                                        @if (expandedDuplicateId() !== duplicate.id) {
+                                            <button
+                                                mat-icon-button
+                                                (click)="
+                                                    $event.stopPropagation();
+                                                    applyDuplicate(duplicate)
+                                                "
+                                                color="warn"
+                                                aria-label="Confirm Duplicate"
+                                                matTooltip="Merge/Delete Duplicate"
+                                            >
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        }
+                                        <button
+                                            mat-icon-button
+                                            (click)="
+                                                $event.stopPropagation();
+                                                toggleDuplicate(duplicate.id)
+                                            "
+                                        >
+                                            <mat-icon>{{
+                                                expandedDuplicateId() === duplicate.id
+                                                    ? 'expand_less'
+                                                    : 'expand_more'
+                                            }}</mat-icon>
+                                        </button>
+                                    </div>
+
+                                    @if (expandedDuplicateId() === duplicate.id) {
+                                        <div
+                                            class="expanded-details"
+                                            (click)="$event.stopPropagation()"
+                                        >
+                                            <div class="detail-grid">
+                                                <div class="label">Date:</div>
+                                                <div class="value">
+                                                    {{ duplicate.date | date: 'medium' }}
+                                                </div>
+
+                                                <div class="label">Partner:</div>
+                                                <div class="value">
+                                                    {{ duplicate.partnerName || '-' }}
+                                                </div>
+                                            </div>
+
+                                            <div class="movements-list">
+                                                <strong>Movements:</strong>
+                                                @for (mov of duplicate.movements; track $index) {
+                                                    <div class="movement-row">
+                                                        <div class="movement-account">
+                                                            <span class="fixed-account">{{
+                                                                getAccountName(mov.accountId)
+                                                            }}</span>
+                                                        </div>
+                                                        <div
+                                                            class="movement-amount"
+                                                            [class.negative]="mov.amount < 0"
+                                                            [class.positive]="mov.amount > 0"
+                                                        >
+                                                            {{ mov.amount | number: '1.2-2' }}
+                                                            {{ getCurrencyName(mov.currencyId) }}
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <div class="expanded-actions">
+                                                <button
+                                                    mat-raised-button
+                                                    color="warn"
+                                                    (click)="applyDuplicate(duplicate)"
+                                                >
+                                                    Confirm Duplicate (Delete)
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
