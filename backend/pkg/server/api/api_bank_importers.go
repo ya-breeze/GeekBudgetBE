@@ -222,17 +222,46 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	// save transactions to the database
 	cnt := 0
 	for _, t := range transactions {
-		// Imported transactions should have exactly one external ID fille by the bank importer
-		if len(t.ExternalIds) != 1 {
+
+		// Imported transactions should have at least one external ID filled by the bank importer.
+		// Revolut importer now initiates 2 IDs (legacy hash + stable hash)
+		if len(t.ExternalIds) == 0 {
 			return nil, fmt.Errorf("transaction has invalid external IDs: %v", t)
 		}
 
 		// search for existing transaction with the same external ID. If found, skip saving
 		found := false
+		tStableHash := bankimporters.ComputeStableHash(&t)
+
 		for _, dbt := range dbTransactions {
-			if slices.Contains(dbt.ExternalIds, t.ExternalIds[0]) {
+			// 1. Check for exact match of any external ID
+			for _, extID := range t.ExternalIds {
+				if slices.Contains(dbt.ExternalIds, extID) {
+					found = true
+					s.logger.With("externalID", extID).Info("Transaction already was imported (exact match)")
+					break
+				}
+			}
+			if found {
+				break
+			}
+
+			// 2. Check for stable hash match
+			// We need to construct a TransactionNoId from dbt to compute the hash
+			dbtNoId := goserver.TransactionNoId{
+				Date:      dbt.Date,
+				Movements: dbt.Movements,
+			}
+			dbtStableHash := bankimporters.ComputeStableHash(&dbtNoId)
+			if dbtStableHash == tStableHash {
 				found = true
-				s.logger.With("externalID", t.ExternalIds[0]).Info("Transaction already was imported")
+				s.logger.With("stableHash", tStableHash).Info("Transaction already was imported (stable hash match)")
+
+				// Optional: Update the existing transaction with the new legacy hash?
+				// If we matched by stable hash, it means the legacy hash is missing from dbt.
+				// We probably should add it to dbt.ExternalIds to prevent future re-computations?
+				// But mutating dbt here is complex (need to save to DB).
+				// For now, accept it as duplicate and skip.
 				break
 			}
 		}

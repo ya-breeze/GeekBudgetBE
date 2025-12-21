@@ -1,9 +1,7 @@
 package bankimporters
 
 import (
-	"crypto/sha256"
 	"encoding/csv"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -258,25 +256,10 @@ func (fc *RevolutConverter) convertToTransaction(_ goserver.BankImporter, record
 		return res, fmt.Errorf("can't marshal Revolut transaction: %w", err)
 	}
 	res.UnprocessedSources = string(b)
-	res.ExternalIds = append(res.ExternalIds, hashString(res.UnprocessedSources))
+	res.ExternalIds = append(res.ExternalIds, HashString(res.UnprocessedSources))
+	res.ExternalIds = append(res.ExternalIds, ComputeStableHash(&res))
 
 	return res, nil
-}
-
-func hashString(input string) string {
-	// Create a new SHA-256 hash object
-	hasher := sha256.New()
-
-	// Write the input string to the hash object
-	hasher.Write([]byte(input))
-
-	// Get the resulting hash as a byte slice
-	hashBytes := hasher.Sum(nil)
-
-	// Convert the byte slice to a hexadecimal string
-	hashString := hex.EncodeToString(hashBytes)
-
-	return hashString
 }
 
 func (fc *RevolutConverter) parseCSV(data string) ([][]string, error) {
