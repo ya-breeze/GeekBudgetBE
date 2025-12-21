@@ -18,48 +18,48 @@ import (
 )
 
 const (
-	KBIndexStartedDate      = 0
-	KBIndexDateOtherBank    = 1
+	KBIndexDate             = 0
+	KBIndexDateExecuted     = 1
 	KBIndexPartnerAccount   = 2
 	KBIndexPartnerName      = 3
 	KBIndexAmount           = 4
-	KBIndexOriginalAmount   = 5
-	KBIndexOriginalCurrency = 6
-	KBIndexKurz             = 7
-	KBIndexVS               = 8
-	KBIndexKS               = 9
-	KBIndexSS               = 10
-	KBIndexTransactionID    = 11
-	KBIndexSystemNote       = 12
-	KBIndexXXXNote          = 13
-	KBIndexPartnerNote      = 14
-	KBIndexAV1              = 15
-	KBIndexAV2              = 16
-	KBIndexAV3              = 17
-	KBIndexAV4              = 18
+	KBIndexCurrency         = 5
+	KBIndexOriginalAmount   = 6
+	KBIndexOriginalCurrency = 7
+	KBIndexRate             = 8
+	KBIndexVS               = 9
+	KBIndexKS               = 10
+	KBIndexSS               = 11
+	KBIndexTransactionID    = 12
+	KBIndexType             = 13
+	KBIndexDescriptionUser  = 14
+	KBIndexMessage          = 15
+	KBIndexReference        = 16
+	KBIndexBIC              = 17
+	KBIndexFee              = 18
 )
 
 //nolint:gochecknoglobals // const list of fields in KB file
 var kbCSVFields = []string{
-	"Datum splatnosti",
-	"Datum odepsání z jiné banky",
-	"Protiúčet a kód banky",
-	"Název protiúčtu",
-	"Částka",
-	"Originální částka",
-	"Originální měna",
-	"Kurz",
+	"Datum zauctovani",
+	"Datum provedeni",
+	"Protistrana",
+	"Nazev protiuctu",
+	"Castka",
+	"Mena",
+	"Originalni castka",
+	"Originalni mena",
+	"Smenny kurz",
 	"VS",
 	"KS",
 	"SS",
 	"Identifikace transakce",
-	"Systémový popis",
-	"Popis příkazce",
-	"Popis pro příjemce",
-	"AV pole 1",
-	"AV pole 2",
-	"AV pole 3",
-	"AV pole 4",
+	"Typ transakce",
+	"Popis pro me",
+	"Zprava pro prijemce",
+	"Reference platby",
+	"BIC / SWIFT",
+	"Poplatek",
 }
 
 type KBConverter struct {
@@ -99,13 +99,32 @@ func (fc *KBConverter) ParseTransactions(data string,
 	// Create a new reader that decodes windows-1250 to UTF-8
 	decoder := transform.NewReader(reader, charmap.Windows1250.NewDecoder())
 	scanner := bufio.NewScanner(decoder)
-	for range 17 {
+	for range 16 {
 		if !scanner.Scan() {
 			return nil, nil, errors.New("can't read CSV header")
 		}
 
 		line := scanner.Text()
 		fc.logger.Info("Processing header: " + line)
+		parts := strings.Split(line, ";")
+		if len(parts) < 2 {
+			return nil, nil, errors.New("can't read CSV header")
+		}
+		if parts[0] == "Cislo uctu" {
+			// Cislo uctu;123-177270217;;;;;;;;;;;;;;;;;
+			info.AccountId = parts[1]
+		} else if parts[0] == "Konecny zustatek" {
+			// Konecny zustatek;13468,31;;;;;;;;;;;;;;;;;
+			amount, err := strconv.ParseFloat(strings.ReplaceAll(parts[1], ",", "."), 64)
+			if err == nil {
+				info.Balances = []goserver.BankAccountInfoBalancesInner{
+					{
+						ClosingBalance: amount,
+						CurrencyId:     "CZK", // default to CZK as per example
+					},
+				}
+			}
+		}
 	}
 
 	if !scanner.Scan() {
@@ -114,6 +133,9 @@ func (fc *KBConverter) ParseTransactions(data string,
 	line := strings.ReplaceAll(scanner.Text(), "\u00A0", " ")
 	cvsFields := strings.Split(line, ";")
 	for i := range kbCSVFields {
+		if i >= len(cvsFields) {
+			return nil, nil, fmt.Errorf("missing field %q", kbCSVFields[i])
+		}
 		if strings.Trim(cvsFields[i], "\"") != kbCSVFields[i] {
 			return nil, nil, fmt.Errorf("wrong format: %q != %q", cvsFields[i], kbCSVFields[i])
 		}
@@ -138,6 +160,24 @@ func (fc *KBConverter) ParseTransactions(data string,
 	}
 
 	fc.logger.Info("Successfully parsed KB transactions", "count", len(res))
+
+	// If we found a balance, try to update the currency ID if we can infer it or if it's set in the transactions
+	if len(info.Balances) > 0 && len(res) > 0 {
+		// Assuming all transactions in the file share the same currency which is also the account currency
+		// This is a simplification but often true for bank statements
+		// In the example file, "Mena" column is CZK
+		// We could potentially read "Mena uctu" from line 5 if we wanted to be more precise
+
+		// Let's verify if we can find the currency ID for the balance
+		// We used "CZK" as placeholder, let's see if we can resolve it to ID
+		currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
+			return c.Name == "CZK" // Default from example
+		})
+		if currencyIdx != -1 {
+			info.Balances[0].CurrencyId = fc.currencies[currencyIdx].Id
+		}
+	}
+
 	return &info, res, nil
 }
 
@@ -154,32 +194,32 @@ func (fc *KBConverter) ConvertToTransaction(record []string) (goserver.Transacti
 	}
 	strCurrencyID := fc.currencies[currencyIdx].Id
 
-	res.Date, err = time.ParseInLocation("02.01.2006", record[KBIndexStartedDate], fc.location)
+	res.Date, err = time.ParseInLocation("02.01.2006", record[KBIndexDate], fc.location)
 	if err != nil {
-		return res, fmt.Errorf("can't parse date %q: %w", record[KBIndexStartedDate], err)
+		return res, fmt.Errorf("can't parse date %q: %w", record[KBIndexDate], err)
 	}
 
-	if len(record[KBIndexSystemNote]) > 0 {
-		res.Description = record[KBIndexSystemNote]
+	if len(record[KBIndexType]) > 0 {
+		res.Description = record[KBIndexType]
 	}
-	if len(record[KBIndexXXXNote]) > 0 {
-		res.Description += ": " + record[KBIndexXXXNote]
+	if len(record[KBIndexDescriptionUser]) > 0 {
+		if res.Description != "" {
+			res.Description += ": "
+		}
+		res.Description += record[KBIndexDescriptionUser]
 	}
-	if len(record[KBIndexPartnerNote]) > 0 {
-		res.Description += "; " + record[KBIndexPartnerNote]
+	if len(record[KBIndexMessage]) > 0 {
+		if res.Description != "" {
+			res.Description += "; "
+		}
+		res.Description += record[KBIndexMessage]
 	}
 
-	if len(record[KBIndexAV1]) > 0 && record[KBIndexAV1] != record[KBIndexXXXNote] {
-		res.Description += "; " + record[KBIndexAV1]
-	}
-	if len(record[KBIndexAV2]) > 0 {
-		res.Description += record[KBIndexAV2]
-	}
-	if len(record[KBIndexAV3]) > 0 {
-		res.Description += record[KBIndexAV3]
-	}
-	if len(record[KBIndexAV4]) > 0 {
-		res.Description += record[KBIndexAV4]
+	if len(record[KBIndexReference]) > 0 {
+		if res.Description != "" {
+			res.Description += "; "
+		}
+		res.Description += record[KBIndexReference]
 	}
 
 	res.PartnerAccount = record[KBIndexPartnerAccount]

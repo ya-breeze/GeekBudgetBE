@@ -61,12 +61,11 @@ var _ = Describe("KB converter", func() {
 			Expect(transaction.Movements[1].AccountId).To(Equal(expectedTransaction.Movements[1].AccountId))
 		},
 		Entry("transaction N1",
-			`"26.09.2024";"26.09.2024";"123/45";"companyname";"-12345,00";"";"";"";"9";"138";"0";`+
-				`"externalid";"incoming";"companyname";"personname";"9/0138/0/11/                       "`+
-				`;"/VS9/SS/KS0138                     ";"B/O company ";"                                   ";`,
+			`"26.09.2024";"26.09.2024";"123/45";"companyname";"-12345,00";"CZK";"";"";"";"9";"138";"0";`+
+				`"externalid";"incoming";"description user";"message";"reference";"BIC";"fee"`,
 			goserver.TransactionNoId{
 				Date:           time.Date(2024, 9, 26, 0, 0, 0, 0, loc),
-				Description:    "incoming: companyname; personname; 9/0138/0/11//VS9/SS/KS0138B/O company",
+				Description:    "incoming: description user; message; reference",
 				PartnerAccount: "123/45; VS:9; KS:138",
 				PartnerName:    "companyname",
 				Tags:           []string{"kb"},
@@ -84,4 +83,56 @@ var _ = Describe("KB converter", func() {
 				},
 			}),
 	)
+
+	It("parses KB file with header", func() {
+		data := `KB+, vypis v csv. formatu;;;;;;;;;;;;;;;;;;
+Datum vytvoreni souboru;21.12.2025;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+Cislo uctu;123-123123;;;;;;;;;;;;;;;;;
+Mena uctu / Hlavni mena uctu;CZK;;;;;;;;;;;;;;;;;
+Mena vypisu;;;;;;;;;;;;;;;;;;
+IBAN;CZ123123123;;;;;;;;;;;;;;;;;
+Nazev uctu;A B;;;;;;;;;;;;;;;;;
+Vypis od;01.01.2025;;;;;;;;;;;;;;;;;
+Vypis do;20.12.2025;;;;;;;;;;;;;;;;;
+Cislo vypisu;;;;;;;;;;;;;;;;;;
+Pocet polozek;55;;;;;;;;;;;;;;;;;
+Mena;CZK;EUR;USD;GBP;AUD;BGN;CAD;CHF;DKK;HUF;JPY;NOK;PLN;RON;SEK;;;
+Pocatecni zustatek;321321,21;;;;;;;;;;;;;;;;;
+Konecny zustatek;123123,12;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+Datum zauctovani;Datum provedeni;Protistrana;Nazev protiuctu;Castka;Mena;Originalni castka;Originalni mena;Smenny kurz;VS;KS;SS;Identifikace transakce;Typ transakce;Popis pro me;Zprava pro prijemce;Reference platby;BIC / SWIFT;Poplatek
+26.09.2024;26.09.2024;123/45;Employer Corp;12345,00;CZK;;;;9;138;0;tx1;Incoming payment;Salary;September;;BIC1;
+26.09.2024;26.09.2024;987/65;Landlord;-10000,00;CZK;;;;0;0;0;tx2;Outgoing payment;Rent;October;;BIC2;
+30.09.2024;30.09.2024;;Bank;-15,00;CZK;;;;0;0;0;tx3;Fee;Account Fee;;;;`
+
+		info, transactions, err := rc.ParseAndImport("csv", data)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(info.AccountId).To(Equal("123-123123"))
+		Expect(info.Balances).To(HaveLen(1))
+		Expect(info.Balances[0].ClosingBalance).To(BeNumerically("==", 123123.12))
+		Expect(info.Balances[0].CurrencyId).To(Equal("__CZK_ID__"))
+
+		Expect(transactions).To(HaveLen(3))
+
+		// Check Incoming Payment
+		Expect(transactions[0].ExternalIds).To(ContainElement("tx1"))
+		Expect(transactions[0].PartnerName).To(Equal("Employer Corp"))
+		Expect(transactions[0].Movements[0].Amount).To(BeNumerically("==", -12345.00))
+		Expect(transactions[0].Description).To(ContainSubstring("Incoming payment"))
+		Expect(transactions[0].Description).To(ContainSubstring("Salary"))
+		Expect(transactions[0].Description).To(ContainSubstring("September"))
+
+		// Check Outgoing Payment
+		Expect(transactions[1].ExternalIds).To(ContainElement("tx2"))
+		Expect(transactions[1].PartnerName).To(Equal("Landlord"))
+		Expect(transactions[1].Movements[0].Amount).To(BeNumerically("==", 10000.00))
+		Expect(transactions[1].Movements[1].Amount).To(BeNumerically("==", -10000.00))
+
+		// Check Fee
+		Expect(transactions[2].ExternalIds).To(ContainElement("tx3"))
+		Expect(transactions[2].PartnerName).To(Equal("Bank"))
+		Expect(transactions[2].Description).To(ContainSubstring("Fee"))
+		Expect(transactions[2].Movements[1].Amount).To(BeNumerically("==", -15.00))
+	})
 })
