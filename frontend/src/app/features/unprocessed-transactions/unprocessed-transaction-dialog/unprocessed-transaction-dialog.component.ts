@@ -197,9 +197,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.tagsControl.setValue(t.tags || []);
 
         // Initialize manual movements with a deep copy
-        this.manualMovements.set(
-            t.movements ? t.movements.map(m => ({ ...m })) : []
-        );
+        this.manualMovements.set(t.movements ? t.movements.map((m) => ({ ...m })) : []);
     }
 
     private loadMatchers() {
@@ -444,22 +442,23 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     processManual(): void {
         const movements = this.manualMovements();
-        // optionally validate that all movements have accounts? 
+        // optionally validate that all movements have accounts?
         // Logic: at least one side should be known, or typically all should be assigned for a 'processed' transaction.
         // For now, let's allow saving if at least one account is selected (which the UI might enforce).
 
         const manualTransaction: Transaction = {
             ...this.transaction().transaction,
-            description: this.descriptionControl.value || this.transaction().transaction.description,
+            description:
+                this.descriptionControl.value || this.transaction().transaction.description,
             tags: this.tagsControl.value || [],
-            movements: movements
+            movements: movements,
         };
 
         // Create a dummy matcher structure for the 'convert' action
         // effectively treating this as a "Manual Match"
         const manualMatch: MatcherAndTransaction = {
             matcherId: 'manual', // specific ID or empty
-            transaction: manualTransaction
+            transaction: manualTransaction,
         };
 
         this.loading.set(true);

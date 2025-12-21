@@ -1,6 +1,23 @@
-.dialog-content {
-    max-height: 80vh;
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+mat-dialog-content {
+    flex: 1;
+    max-height: none;
+    overflow-y: auto;
     padding-top: 20px;
+    min-height: 0; // Fix for flexbox scrolling in some browsers
+}
+
+.dialog-actions-footer {
+    flex-shrink: 0; // Ensure buttons are never pushed out or squashed
+    padding-bottom: 24px; // Increased padding for visibility
+    padding-right: 24px;
+    margin-bottom: 0;
 }
 
 .section-title {
