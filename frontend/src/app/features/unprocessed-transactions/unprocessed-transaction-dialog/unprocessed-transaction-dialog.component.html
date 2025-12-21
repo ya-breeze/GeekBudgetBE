@@ -1,8 +1,8 @@
 <div class="dialog-container" [class.loading]="loading()">
     @if (loading()) {
-        <div class="loading-overlay">
-            <mat-spinner diameter="40"></mat-spinner>
-        </div>
+    <div class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+    </div>
     }
 
     <div class="dialog-header" mat-dialog-title>
@@ -24,81 +24,67 @@
                             <span class="label">Date:</span>
                             <span class="value">{{
                                 transaction().transaction.date | date: 'medium'
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="detail-item description-field">
-                            <mat-form-field
-                                appearance="outline"
-                                subscriptSizing="dynamic"
-                                class="full-width-input"
-                            >
+                            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width-input">
                                 <mat-label>Description</mat-label>
                                 <input matInput [formControl]="descriptionControl" />
                             </mat-form-field>
                         </div>
                         @if (transaction().transaction.partnerName) {
-                            <div class="detail-item">
-                                <span class="label">Partner Name:</span>
-                                <span class="value">{{
-                                    transaction().transaction.partnerName
+                        <div class="detail-item">
+                            <span class="label">Partner Name:</span>
+                            <span class="value">{{
+                                transaction().transaction.partnerName
                                 }}</span>
-                            </div>
+                        </div>
                         }
                         @if (transaction().transaction.partnerAccount) {
-                            <div class="detail-item">
-                                <span class="label">Partner Account:</span>
-                                <span class="value">{{
-                                    transaction().transaction.partnerAccount
+                        <div class="detail-item">
+                            <span class="label">Partner Account:</span>
+                            <span class="value">{{
+                                transaction().transaction.partnerAccount
                                 }}</span>
-                            </div>
+                        </div>
                         }
                         @if (transaction().transaction.place) {
-                            <div class="detail-item">
-                                <span class="label">Place:</span>
-                                <span class="value">{{ transaction().transaction.place }}</span>
-                            </div>
+                        <div class="detail-item">
+                            <span class="label">Place:</span>
+                            <span class="value">{{ transaction().transaction.place }}</span>
+                        </div>
                         }
                         @if (transaction().transaction.partnerInternalId) {
-                            <div class="detail-item">
-                                <span class="label">Partner ID:</span>
-                                <span class="value">{{
-                                    transaction().transaction.partnerInternalId
+                        <div class="detail-item">
+                            <span class="label">Partner ID:</span>
+                            <span class="value">{{
+                                transaction().transaction.partnerInternalId
                                 }}</span>
-                            </div>
+                        </div>
                         }
                         @if (transaction().transaction.extra) {
-                            <div class="detail-item">
-                                <span class="label">Extra:</span>
-                                <span class="value">{{ transaction().transaction.extra }}</span>
-                            </div>
+                        <div class="detail-item">
+                            <span class="label">Extra:</span>
+                            <span class="value">{{ transaction().transaction.extra }}</span>
+                        </div>
                         }
                         <div class="detail-item description-field">
-                            <mat-form-field
-                                appearance="outline"
-                                class="full-width-input"
-                                subscriptSizing="dynamic"
-                            >
+                            <mat-form-field appearance="outline" class="full-width-input" subscriptSizing="dynamic">
                                 <mat-label>Tags</mat-label>
                                 <mat-chip-grid #chipGrid aria-label="Enter tags">
                                     @for (tag of tagsControl.value; track tag) {
-                                        <mat-chip-row (removed)="removeTag(tag, tagsControl)">
-                                            {{ tag }}
-                                            <button
-                                                matChipRemove
-                                                [attr.aria-label]="'remove ' + tag"
-                                            >
-                                                <mat-icon>cancel</mat-icon>
-                                            </button>
-                                        </mat-chip-row>
+                                    <mat-chip-row (removed)="removeTag(tag, tagsControl)">
+                                        {{ tag }}
+                                        <button matChipRemove [attr.aria-label]="'remove ' + tag">
+                                            <mat-icon>cancel</mat-icon>
+                                        </button>
+                                    </mat-chip-row>
                                     }
-                                    <input
-                                        placeholder="New tag..."
-                                        [matChipInputFor]="chipGrid"
+                                    <input placeholder="New tag..." [matChipInputFor]="chipGrid"
                                         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                                         [matChipInputAddOnBlur]="true"
                                         (matChipInputTokenEnd)="addTag($event, tagsControl)"
-                                        [formControl]="tagInputControl"
-                                    />
+                                        [formControl]="tagInputControl" />
                                 </mat-chip-grid>
                             </mat-form-field>
                         </div>
@@ -106,52 +92,34 @@
 
                     <!-- Removed Amount Display (Redundant) -->
 
-                    @if (!shouldShowEffectiveAmount) {
-                        <!-- Kept movements logic if needed, but Manual Processing covers simple cases -->
-                    }
+
                 </div>
 
                 <div class="section-container manual-section">
                     <h3 class="section-title">Manual Processing</h3>
                     <div class="manual-grid">
-                        <!-- Source (Fixed) -->
-                        @if (knownAccountName) {
-                            <div class="manual-item">
-                                <span class="label">Source: {{ knownAccountName }}</span>
-                                <span class="value amount negative"
-                                    >{{ effectiveAmount?.amount | number: '1.2-2' }}
-                                    {{ effectiveAmount?.currencyName }}</span
-                                >
+                        <div class="movements-list">
+                            @for (mov of manualMovements(); track $index) {
+                            <div class="movement-row">
+                                @if (isOriginalAccountDefined($index)) {
+                                <span class="fixed-account">{{ getAccountName(mov.accountId) }}</span>
+                                } @else {
+                                <app-account-select [ngModel]="mov.accountId"
+                                    (ngModelChange)="updateManualMovementAccount($index, $event)" label="Select Account"
+                                    [required]="true">
+                                </app-account-select>
+                                }
+                                <div class="movement-amount" [class.negative]="mov.amount < 0"
+                                    [class.positive]="mov.amount > 0">
+                                    {{ mov.amount | number: '1.2-2' }}
+                                    {{ getCurrencyName(mov.currencyId) }}
+                                </div>
                             </div>
-                        }
-
-                        <!-- Target (Selectable) -->
-                        <div class="manual-controls">
-                            <app-account-select
-                                [formControl]="accountControl"
-                                label="Select Target"
-                                [required]="true"
-                                class="account-select"
-                            >
-                            </app-account-select>
-                            <!-- Target Amount (Positive/Inverted usually for double entry, or just same amount) -->
-                            <!-- Assuming simple transfer logic: Same amount, different sign/direction -->
-                            <span class="value amount positive"
-                                >+{{ effectiveAmount?.amount | number: '1.2-2' }}
-                                {{ effectiveAmount?.currencyName }}</span
-                            >
+                            }
                         </div>
 
-                        <div
-                            class="manual-actions"
-                            style="display: flex; justify-content: flex-end; margin-top: 8px"
-                        >
-                            <button
-                                mat-raised-button
-                                color="primary"
-                                [disabled]="!accountControl.value || accountControl.invalid"
-                                (click)="processManual()"
-                            >
+                        <div class="manual-actions" style="display: flex; justify-content: flex-end; margin-top: 8px">
+                            <button mat-raised-button color="primary" (click)="processManual()">
                                 Save
                             </button>
                         </div>
@@ -160,29 +128,16 @@
             </div>
 
             <div class="processing-column">
-                <div
-                    class="section-container matches-section"
-                    [class.has-content]="transaction().matched.length > 0"
-                >
+                <div class="section-container matches-section" [class.has-content]="transaction().matched.length > 0">
                     <h3 class="section-title">
                         Matches
                         <div class="header-actions-mini">
-                            <button
-                                mat-icon-button
-                                class="small-icon-button"
-                                (click)="createMatcher()"
-                                matTooltip="Create New Matcher"
-                            >
+                            <button mat-icon-button class="small-icon-button" (click)="createMatcher()"
+                                matTooltip="Create New Matcher">
                                 <mat-icon>add</mat-icon>
                             </button>
-                            <button
-                                mat-icon-button
-                                class="small-icon-button"
-                                (click)="toggleEditPopover()"
-                                matTooltip="Find & Edit Matcher"
-                                cdkOverlayOrigin
-                                #trigger="cdkOverlayOrigin"
-                            >
+                            <button mat-icon-button class="small-icon-button" (click)="toggleEditPopover()"
+                                matTooltip="Find & Edit Matcher" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
                                 <mat-icon>edit</mat-icon>
                             </button>
                             <span class="badge">{{ transaction().matched.length }}</span>
@@ -191,309 +146,224 @@
 
                     <!-- Edit Popover -->
                     @if (showEditPopover()) {
-                        <div class="popover-backdrop" (click)="toggleEditPopover()"></div>
-                        <div class="edit-popover elevation-z4">
-                            <mat-form-field appearance="outline" class="popover-search">
-                                <mat-label>Select existing matcher...</mat-label>
-                                <input
-                                    matInput
-                                    [formControl]="matcherSearchControl"
-                                    [matAutocomplete]="auto"
-                                />
-                                <mat-autocomplete
-                                    #auto="matAutocomplete"
-                                    [displayWith]="displayMatcherFn"
-                                    (optionSelected)="onMatcherSelected($event)"
-                                >
-                                    @for (matcher of filteredMatchers(); track matcher.id) {
-                                        <mat-option [value]="matcher">
-                                            {{ getAccountName(matcher.outputAccountId) }}:
-                                            {{ matcher.outputDescription }}
-                                        </mat-option>
-                                    }
-                                </mat-autocomplete>
-                            </mat-form-field>
-                        </div>
+                    <div class="popover-backdrop" (click)="toggleEditPopover()"></div>
+                    <div class="edit-popover elevation-z4">
+                        <mat-form-field appearance="outline" class="popover-search">
+                            <mat-label>Select existing matcher...</mat-label>
+                            <input matInput [formControl]="matcherSearchControl" [matAutocomplete]="auto" />
+                            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayMatcherFn"
+                                (optionSelected)="onMatcherSelected($event)">
+                                @for (matcher of filteredMatchers(); track matcher.id) {
+                                <mat-option [value]="matcher">
+                                    {{ getAccountName(matcher.outputAccountId) }}:
+                                    {{ matcher.outputDescription }}
+                                </mat-option>
+                                }
+                            </mat-autocomplete>
+                        </mat-form-field>
+                    </div>
                     }
 
                     @if (transaction().matched.length > 0) {
-                        <div class="custom-list">
-                            @for (match of transaction().matched; track match.matcherId) {
-                                <div
-                                    class="custom-list-item-container"
-                                    [class.expanded]="expandedMatchId() === match.matcherId"
-                                >
-                                    <div
-                                        class="custom-list-item"
-                                        (click)="toggleMatch(match.matcherId, match)"
-                                    >
-                                        <div class="item-content">
-                                            <div class="item-title">
-                                                <span
-                                                    [class]="
+                    <div class="custom-list">
+                        @for (match of transaction().matched; track match.matcherId) {
+                        <div class="custom-list-item-container"
+                            [class.expanded]="expandedMatchId() === match.matcherId">
+                            <div class="custom-list-item" (click)="toggleMatch(match.matcherId, match)">
+                                <div class="item-content">
+                                    <div class="item-title">
+                                        <span [class]="
                                                         'confidence-badge ' +
                                                         getConfidenceBadge(match).class
-                                                    "
-                                                    [matTooltip]="getConfidenceBadge(match).tooltip"
-                                                >
-                                                    {{ getConfidenceBadge(match).text }}
-                                                </span>
-                                                {{ match.transaction.description }}
-                                            </div>
-                                        </div>
-                                        @if (expandedMatchId() !== match.matcherId) {
-                                            <button
-                                                mat-icon-button
-                                                (click)="
+                                                    " [matTooltip]="getConfidenceBadge(match).tooltip">
+                                            {{ getConfidenceBadge(match).text }}
+                                        </span>
+                                        {{ match.transaction.description }}
+                                    </div>
+                                </div>
+                                @if (expandedMatchId() !== match.matcherId) {
+                                <button mat-icon-button (click)="
                                                     $event.stopPropagation(); applyMatch(match)
-                                                "
-                                                color="primary"
-                                                aria-label="Apply Match"
-                                                matTooltip="Quick Apply"
-                                            >
-                                                <mat-icon>check_circle</mat-icon>
-                                            </button>
-                                        }
-                                        <button
-                                            mat-icon-button
-                                            (click)="
+                                                " color="primary" aria-label="Apply Match" matTooltip="Quick Apply">
+                                    <mat-icon>check_circle</mat-icon>
+                                </button>
+                                }
+                                <button mat-icon-button (click)="
                                                 $event.stopPropagation();
                                                 toggleMatch(match.matcherId, match)
-                                            "
-                                        >
-                                            <mat-icon>{{
-                                                expandedMatchId() === match.matcherId
-                                                    ? 'expand_less'
-                                                    : 'expand_more'
-                                            }}</mat-icon>
-                                        </button>
-                                    </div>
+                                            ">
+                                    <mat-icon>{{
+                                        expandedMatchId() === match.matcherId
+                                        ? 'expand_less'
+                                        : 'expand_more'
+                                        }}</mat-icon>
+                                </button>
+                            </div>
 
-                                    @if (expandedMatchId() === match.matcherId && editState()) {
-                                        <div
-                                            class="expanded-details"
-                                            (click)="$event.stopPropagation()"
-                                        >
-                                            <mat-form-field
-                                                appearance="outline"
-                                                class="full-width-input dense-field"
-                                                subscriptSizing="dynamic"
-                                            >
-                                                <mat-label>Description</mat-label>
-                                                <input
-                                                    matInput
-                                                    [ngModel]="editState()!.description"
-                                                    (ngModelChange)="updateMatchDescription($event)"
-                                                />
-                                            </mat-form-field>
+                            @if (expandedMatchId() === match.matcherId && editState()) {
+                            <div class="expanded-details" (click)="$event.stopPropagation()">
+                                <mat-form-field appearance="outline" class="full-width-input dense-field"
+                                    subscriptSizing="dynamic">
+                                    <mat-label>Description</mat-label>
+                                    <input matInput [ngModel]="editState()!.description"
+                                        (ngModelChange)="updateMatchDescription($event)" />
+                                </mat-form-field>
 
-                                            <mat-form-field
-                                                appearance="outline"
-                                                class="full-width-input dense-field"
-                                                subscriptSizing="dynamic"
-                                            >
-                                                <mat-label>Tags</mat-label>
-                                                <mat-chip-grid
-                                                    #matchChipGrid
-                                                    aria-label="Enter tags"
-                                                >
-                                                    @for (tag of editState()!.tags; track tag) {
-                                                        <mat-chip-row
-                                                            (removed)="removeMatchTag(tag)"
-                                                        >
-                                                            {{ tag }}
-                                                            <button
-                                                                matChipRemove
-                                                                [attr.aria-label]="'remove ' + tag"
-                                                            >
-                                                                <mat-icon>cancel</mat-icon>
-                                                            </button>
-                                                        </mat-chip-row>
-                                                    }
-                                                    <input
-                                                        placeholder="New tag..."
-                                                        [matChipInputFor]="matchChipGrid"
-                                                        [matChipInputSeparatorKeyCodes]="
+                                <mat-form-field appearance="outline" class="full-width-input dense-field"
+                                    subscriptSizing="dynamic">
+                                    <mat-label>Tags</mat-label>
+                                    <mat-chip-grid #matchChipGrid aria-label="Enter tags">
+                                        @for (tag of editState()!.tags; track tag) {
+                                        <mat-chip-row (removed)="removeMatchTag(tag)">
+                                            {{ tag }}
+                                            <button matChipRemove [attr.aria-label]="'remove ' + tag">
+                                                <mat-icon>cancel</mat-icon>
+                                            </button>
+                                        </mat-chip-row>
+                                        }
+                                        <input placeholder="New tag..." [matChipInputFor]="matchChipGrid"
+                                            [matChipInputSeparatorKeyCodes]="
                                                             separatorKeysCodes
-                                                        "
-                                                        [matChipInputAddOnBlur]="true"
-                                                        (matChipInputTokenEnd)="addMatchTag($event)"
-                                                    />
-                                                </mat-chip-grid>
-                                            </mat-form-field>
+                                                        " [matChipInputAddOnBlur]="true"
+                                            (matChipInputTokenEnd)="addMatchTag($event)" />
+                                    </mat-chip-grid>
+                                </mat-form-field>
 
-                                            <div class="movements-list">
-                                                <strong>Movements:</strong>
-                                                @for (mov of editState()!.movements; track $index) {
-                                                    <div class="movement-row">
-                                                        <div class="movement-account">
-                                                            @if (
-                                                                !mov.accountId ||
-                                                                mov.accountId ===
-                                                                    transaction().transaction
-                                                                        .partnerAccount
-                                                            ) {
-                                                                <app-account-select
-                                                                    [ngModel]="mov.accountId"
-                                                                    (ngModelChange)="
+                                <div class="movements-list">
+                                    <strong>Movements:</strong>
+                                    @for (mov of editState()!.movements; track $index) {
+                                    <div class="movement-row">
+                                        <div class="movement-account">
+                                            @if (
+                                            !mov.accountId ||
+                                            mov.accountId ===
+                                            transaction().transaction
+                                            .partnerAccount
+                                            ) {
+                                            <app-account-select [ngModel]="mov.accountId" (ngModelChange)="
                                                                         updateMatchMovementAccount(
                                                                             $index,
                                                                             $event
                                                                         )
-                                                                    "
-                                                                    label="Select Account"
-                                                                    class="dense-select"
-                                                                >
-                                                                </app-account-select>
-                                                            } @else {
-                                                                <span class="fixed-account">{{
-                                                                    getAccountName(mov.accountId)
-                                                                }}</span>
-                                                            }
-                                                        </div>
-                                                        <div
-                                                            class="movement-amount"
-                                                            [class.negative]="mov.amount < 0"
-                                                            [class.positive]="mov.amount > 0"
-                                                        >
-                                                            {{ mov.amount | number: '1.2-2' }}
-                                                            {{ getCurrencyName(mov.currencyId) }}
-                                                        </div>
-                                                    </div>
-                                                }
-                                            </div>
-
-                                            <div class="expanded-actions">
-                                                <button
-                                                    mat-raised-button
-                                                    color="primary"
-                                                    (click)="applyMatch(match)"
-                                                >
-                                                    Apply
-                                                </button>
-                                            </div>
+                                                                    " label="Select Account" class="dense-select">
+                                            </app-account-select>
+                                            } @else {
+                                            <span class="fixed-account">{{
+                                                getAccountName(mov.accountId)
+                                                }}</span>
+                                            }
                                         </div>
+                                        <div class="movement-amount" [class.negative]="mov.amount < 0"
+                                            [class.positive]="mov.amount > 0">
+                                            {{ mov.amount | number: '1.2-2' }}
+                                            {{ getCurrencyName(mov.currencyId) }}
+                                        </div>
+                                    </div>
                                     }
                                 </div>
+
+                                <div class="expanded-actions">
+                                    <button mat-raised-button color="primary" (click)="applyMatch(match)">
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
                             }
                         </div>
+                        }
+                    </div>
                     } @else {
-                        <div class="no-matches-container">
-                            <p class="empty-state">No matches found.</p>
-                        </div>
+                    <div class="no-matches-container">
+                        <p class="empty-state">No matches found.</p>
+                    </div>
                     }
                 </div>
 
-                <div
-                    class="section-container duplicates-section"
-                    [class.has-content]="transaction().duplicates.length > 0"
-                >
+                <div class="section-container duplicates-section"
+                    [class.has-content]="transaction().duplicates.length > 0">
                     <h3 class="section-title">
                         Potential Duplicates
                         <span class="badge warn">{{ transaction().duplicates.length }}</span>
                     </h3>
                     @if (transaction().duplicates.length > 0) {
-                        <div class="custom-list">
-                            @for (duplicate of transaction().duplicates; track duplicate.id) {
-                                <div
-                                    class="custom-list-item-container"
-                                    [class.expanded]="expandedDuplicateId() === duplicate.id"
-                                >
-                                    <div
-                                        class="custom-list-item"
-                                        (click)="toggleDuplicate(duplicate.id)"
-                                    >
-                                        <div class="item-content">
-                                            <div class="item-title">
-                                                {{ duplicate.description }}
-                                            </div>
-                                            <div class="item-subtitle">
-                                                {{ duplicate.date | date: 'medium' }}
-                                            </div>
-                                        </div>
-                                        @if (expandedDuplicateId() !== duplicate.id) {
-                                            <button
-                                                mat-icon-button
-                                                (click)="
+                    <div class="custom-list">
+                        @for (duplicate of transaction().duplicates; track duplicate.id) {
+                        <div class="custom-list-item-container"
+                            [class.expanded]="expandedDuplicateId() === duplicate.id">
+                            <div class="custom-list-item" (click)="toggleDuplicate(duplicate.id)">
+                                <div class="item-content">
+                                    <div class="item-title">
+                                        {{ duplicate.description }}
+                                    </div>
+                                    <div class="item-subtitle">
+                                        {{ duplicate.date | date: 'medium' }}
+                                    </div>
+                                </div>
+                                @if (expandedDuplicateId() !== duplicate.id) {
+                                <button mat-icon-button (click)="
                                                     $event.stopPropagation();
                                                     applyDuplicate(duplicate)
-                                                "
-                                                color="warn"
-                                                aria-label="Confirm Duplicate"
-                                                matTooltip="Merge/Delete Duplicate"
-                                            >
-                                                <mat-icon>delete</mat-icon>
-                                            </button>
-                                        }
-                                        <button
-                                            mat-icon-button
-                                            (click)="
+                                                " color="warn" aria-label="Confirm Duplicate"
+                                    matTooltip="Merge/Delete Duplicate">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                                }
+                                <button mat-icon-button (click)="
                                                 $event.stopPropagation();
                                                 toggleDuplicate(duplicate.id)
-                                            "
-                                        >
-                                            <mat-icon>{{
-                                                expandedDuplicateId() === duplicate.id
-                                                    ? 'expand_less'
-                                                    : 'expand_more'
-                                            }}</mat-icon>
-                                        </button>
+                                            ">
+                                    <mat-icon>{{
+                                        expandedDuplicateId() === duplicate.id
+                                        ? 'expand_less'
+                                        : 'expand_more'
+                                        }}</mat-icon>
+                                </button>
+                            </div>
+
+                            @if (expandedDuplicateId() === duplicate.id) {
+                            <div class="expanded-details" (click)="$event.stopPropagation()">
+                                <div class="detail-grid">
+                                    <div class="label">Date:</div>
+                                    <div class="value">
+                                        {{ duplicate.date | date: 'medium' }}
                                     </div>
 
-                                    @if (expandedDuplicateId() === duplicate.id) {
-                                        <div
-                                            class="expanded-details"
-                                            (click)="$event.stopPropagation()"
-                                        >
-                                            <div class="detail-grid">
-                                                <div class="label">Date:</div>
-                                                <div class="value">
-                                                    {{ duplicate.date | date: 'medium' }}
-                                                </div>
+                                    <div class="label">Partner:</div>
+                                    <div class="value">
+                                        {{ duplicate.partnerName || '-' }}
+                                    </div>
+                                </div>
 
-                                                <div class="label">Partner:</div>
-                                                <div class="value">
-                                                    {{ duplicate.partnerName || '-' }}
-                                                </div>
-                                            </div>
-
-                                            <div class="movements-list">
-                                                <strong>Movements:</strong>
-                                                @for (mov of duplicate.movements; track $index) {
-                                                    <div class="movement-row">
-                                                        <div class="movement-account">
-                                                            <span class="fixed-account">{{
-                                                                getAccountName(mov.accountId)
-                                                            }}</span>
-                                                        </div>
-                                                        <div
-                                                            class="movement-amount"
-                                                            [class.negative]="mov.amount < 0"
-                                                            [class.positive]="mov.amount > 0"
-                                                        >
-                                                            {{ mov.amount | number: '1.2-2' }}
-                                                            {{ getCurrencyName(mov.currencyId) }}
-                                                        </div>
-                                                    </div>
-                                                }
-                                            </div>
-
-                                            <div class="expanded-actions">
-                                                <button
-                                                    mat-raised-button
-                                                    color="warn"
-                                                    (click)="applyDuplicate(duplicate)"
-                                                >
-                                                    Confirm Duplicate (Delete)
-                                                </button>
-                                            </div>
+                                <div class="movements-list">
+                                    <strong>Movements:</strong>
+                                    @for (mov of duplicate.movements; track $index) {
+                                    <div class="movement-row">
+                                        <div class="movement-account">
+                                            <span class="fixed-account">{{
+                                                getAccountName(mov.accountId)
+                                                }}</span>
                                         </div>
+                                        <div class="movement-amount" [class.negative]="mov.amount < 0"
+                                            [class.positive]="mov.amount > 0">
+                                            {{ mov.amount | number: '1.2-2' }}
+                                            {{ getCurrencyName(mov.currencyId) }}
+                                        </div>
+                                    </div>
                                     }
                                 </div>
+
+                                <div class="expanded-actions">
+                                    <button mat-raised-button color="warn" (click)="applyDuplicate(duplicate)">
+                                        Confirm Duplicate (Delete)
+                                    </button>
+                                </div>
+                            </div>
                             }
                         </div>
+                        }
+                    </div>
                     } @else {
-                        <p class="empty-state">No duplicates found.</p>
+                    <p class="empty-state">No duplicates found.</p>
                     }
                 </div>
             </div>

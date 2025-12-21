@@ -177,6 +177,9 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     protected readonly tagsControl = new FormControl<string[]>([]);
     protected readonly tagInputControl = new FormControl('');
 
+    // Manual Processing State
+    protected readonly manualMovements = signal<Movement[]>([]);
+
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
@@ -186,11 +189,18 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.matcherService.loadMatchers().subscribe(); // Load all matchers for the search
         this.loadMatchers(); // Load specific matchers for this transaction matches (if any missing from global? logic slightly duplicative but okay)
 
-        // Initialize tags for the main transaction
-        this.tagsControl.setValue(this.transaction().transaction.tags || []);
+        this.initializeManualState();
     }
 
-    // I will replace ngOnInit completely to include the effect/computed logic correctly
+    private initializeManualState() {
+        const t = this.transaction().transaction;
+        this.tagsControl.setValue(t.tags || []);
+
+        // Initialize manual movements with a deep copy
+        this.manualMovements.set(
+            t.movements ? t.movements.map(m => ({ ...m })) : []
+        );
+    }
 
     private loadMatchers() {
         const t = this.transaction();
@@ -218,6 +228,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.transaction.set(transaction);
 
         this.descriptionControl.setValue(transaction.transaction.description || '');
+        this.initializeManualState();
     }
 
     setLoading(isLoading: boolean) {
@@ -278,6 +289,18 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         newMovements[index] = { ...newMovements[index], accountId };
 
         this.editState.set({ ...state, movements: newMovements });
+    }
+
+    updateManualMovementAccount(index: number, accountId: string) {
+        const current = this.manualMovements();
+        const updated = [...current];
+        updated[index] = { ...updated[index], accountId };
+        this.manualMovements.set(updated);
+    }
+
+    isOriginalAccountDefined(index: number): boolean {
+        const originalMovements = this.transaction().transaction.movements;
+        return !!originalMovements && !!originalMovements[index]?.accountId;
     }
 
     updateMatchDescription(description: string) {
@@ -392,45 +415,6 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         return currency ? currency.name : currencyId;
     }
 
-    get shouldShowEffectiveAmount(): boolean {
-        return (this.transaction().transaction.movements || []).length === 2;
-    }
-
-    get effectiveAmount(): {
-        amount: number;
-        currencyName: string;
-        knownAccountId?: string;
-    } | null {
-        if (!this.shouldShowEffectiveAmount) return null;
-
-        const movements = this.transaction().transaction.movements || [];
-        const unknownAccountMovement = movements.find((m: Movement) => !m.accountId);
-        const knownAccountMovement = movements.find((m: Movement) => !!m.accountId);
-
-        if (unknownAccountMovement) {
-            return {
-                amount: unknownAccountMovement.amount,
-                currencyName: this.getCurrencyName(unknownAccountMovement.currencyId),
-                knownAccountId: knownAccountMovement?.accountId,
-            };
-        }
-
-        const m = movements[0];
-        return {
-            amount: m.amount,
-            currencyName: this.getCurrencyName(m.currencyId),
-            knownAccountId: movements.find((mov: Movement) => mov !== m)?.accountId,
-        };
-    }
-
-    get knownAccountName(): string | null {
-        const amountData = this.effectiveAmount;
-        if (amountData?.knownAccountId) {
-            return this.getAccountName(amountData.knownAccountId);
-        }
-        return null;
-    }
-
     applyMatch(match: MatcherAndTransaction): void {
         // If this match is currently being edited, use the edit state
         if (this.expandedMatchId() === match.matcherId && this.editState()) {
@@ -459,16 +443,27 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
     }
 
     processManual(): void {
-        const accountId = this.accountControl.value;
+        const movements = this.manualMovements();
+        // optionally validate that all movements have accounts? 
+        // Logic: at least one side should be known, or typically all should be assigned for a 'processed' transaction.
+        // For now, let's allow saving if at least one account is selected (which the UI might enforce).
 
-        if (accountId) {
-            this.loading.set(true);
-            this.action.emit({
-                action: 'manual',
-                accountId,
-                description: this.descriptionControl.value || undefined,
-            });
-        }
+        const manualTransaction: Transaction = {
+            ...this.transaction().transaction,
+            description: this.descriptionControl.value || this.transaction().transaction.description,
+            tags: this.tagsControl.value || [],
+            movements: movements
+        };
+
+        // Create a dummy matcher structure for the 'convert' action
+        // effectively treating this as a "Manual Match"
+        const manualMatch: MatcherAndTransaction = {
+            matcherId: 'manual', // specific ID or empty
+            transaction: manualTransaction
+        };
+
+        this.loading.set(true);
+        this.action.emit({ action: 'convert', match: manualMatch });
     }
 
     skip(): void {

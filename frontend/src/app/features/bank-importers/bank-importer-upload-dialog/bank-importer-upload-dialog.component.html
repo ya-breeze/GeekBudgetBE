@@ -4,33 +4,44 @@
         <span [innerHTML]="config.description"></span>
     </p>
 
-    <div class="file-upload-area" (click)="fileInput.click()" (drop)="onFileDrop($event)"
-        (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" [class.dragging]="isDragging()">
-        <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none"
-            [accept]="config.accept" />
+    <div
+        class="file-upload-area"
+        (click)="fileInput.click()"
+        (drop)="onFileDrop($event)"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        [class.dragging]="isDragging()"
+    >
+        <input
+            #fileInput
+            type="file"
+            (change)="onFileSelected($event)"
+            style="display: none"
+            [accept]="config.accept"
+        />
 
         <mat-icon class="upload-icon">cloud_upload</mat-icon>
 
         @if (selectedFile()) {
-        <div class="file-info">
-            <span class="file-name">{{ selectedFile()?.name }}</span>
-            <button mat-icon-button (click)="$event.stopPropagation(); selectedFile.set(null)">
-                <mat-icon>close</mat-icon>
-            </button>
-        </div>
+            <div class="file-info">
+                <span class="file-name">{{ selectedFile()?.name }}</span>
+                <button mat-icon-button (click)="$event.stopPropagation(); selectedFile.set(null)">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
         } @else {
-        <p class="upload-prompt">Click to browse or drag file here</p>
+            <p class="upload-prompt">Click to browse or drag file here</p>
         }
     </div>
 
     @if (!config.fixedFormat) {
-    <mat-form-field appearance="outline" class="format-field">
-        <mat-label>Format</mat-label>
-        <mat-select [ngModel]="selectedFormat()" (ngModelChange)="selectedFormat.set($event)">
-            <mat-option value="csv">CSV</mat-option>
-            <mat-option value="xlsx">Excel (XLSX)</mat-option>
-        </mat-select>
-    </mat-form-field>
+        <mat-form-field appearance="outline" class="format-field">
+            <mat-label>Format</mat-label>
+            <mat-select [ngModel]="selectedFormat()" (ngModelChange)="selectedFormat.set($event)">
+                <mat-option value="csv">CSV</mat-option>
+                <mat-option value="xlsx">Excel (XLSX)</mat-option>
+            </mat-select>
+        </mat-form-field>
     }
 </mat-dialog-content>
 <mat-dialog-actions align="end">

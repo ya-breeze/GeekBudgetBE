@@ -10,6 +10,7 @@ import { MatcherService } from '../../matchers/services/matcher.service';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Matcher } from '../../../core/api/models/matcher';
+import { UnprocessedTransaction } from '../../../core/api/models/unprocessed-transaction';
 import { signal } from '@angular/core';
 
 describe('UnprocessedTransactionDialogComponent', () => {
@@ -88,6 +89,47 @@ describe('UnprocessedTransactionDialogComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('should handle transactions with 3 movements correctly (repro)', () => {
+        // Setup transaction with 3 movements: Source, Fee, Target(Unknown)
+        const threeMovTransaction: UnprocessedTransaction = {
+            transaction: {
+                id: 't3',
+                description: 'Complex Transaction',
+                date: '2023-01-01',
+                movements: [
+                    { accountId: 'acc-1', amount: -100, currencyId: 'USD' }, // Source
+                    { accountId: 'acc-1', amount: -1, currencyId: 'USD' },   // Fee
+                    { accountId: undefined, amount: 101, currencyId: 'USD' } // Target (Unknown)
+                ],
+                tags: []
+            } as any,
+            matched: [],
+            duplicates: []
+        };
+
+        // Re-create component with new data
+        // Note: In a real app we'd likely use a different setup or override the injection, 
+        // but here we can just update the signal if it were writable or re-instantiate.
+        // Actually, the component's `transaction` signal is `protected readonly transaction = signal...`. We can try casting to any to set it.
+
+        (component as any).transaction.set(threeMovTransaction);
+        fixture.detectChanges();
+
+        // Initialize manual state (since we updated the transaction signal manually in the test setup above, 
+        // we might also need to trigger the initialization logic or call updateTransaction if the component doesn't auto-detect signal changes deeply for side effects in ngOnInit, 
+        // but we called ngOnInit once. 
+        // Ideally we should call `updateTransaction` or similar. 
+        // Let's call the private/public update method if accessible or just check if manualMovements updated if it's using an effect (it's not, it's init logic).
+        // Since we are hacking the signal set in the test: (component as any).transaction.set(...)
+        // The `initializeManualState` was called in ngOnInit with the OLD data.
+        // We need to re-initialize it.
+        (component as any).initializeManualState();
+
+        const movements = component['manualMovements']();
+        expect(movements.length).toBe(3);
+        expect(movements[2].amount).toBe(101);
     });
 
     it('should toggle edit popover', () => {
@@ -186,7 +228,7 @@ describe('UnprocessedTransactionDialogComponent', () => {
         component.toggleMatch(match.matcherId, match);
 
         // 2. Modify State
-        component.addMatchTag({ value: 'new-tag', chipInput: { clear: () => {} } });
+        component.addMatchTag({ value: 'new-tag', chipInput: { clear: () => { } } });
         const currentState = component['editState']()!;
         expect(currentState.tags).toContain('new-tag');
 

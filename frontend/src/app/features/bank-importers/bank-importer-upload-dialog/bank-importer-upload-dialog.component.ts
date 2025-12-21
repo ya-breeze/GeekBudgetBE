@@ -115,7 +115,7 @@ export class BankImporterUploadDialogComponent {
         } else {
             // Ideally notify user about wrong format
             console.warn(
-                `Invalid file format: ${extension}. Allowed: ${this.config.allowedExtensions.join(', ')}`
+                `Invalid file format: ${extension}. Allowed: ${this.config.allowedExtensions.join(', ')}`,
             );
         }
     }
