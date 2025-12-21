@@ -25,7 +25,7 @@ type BudgetItemsAPIService interface {
 	// CreateBudgetItem - create new budgetItem
 	CreateBudgetItem(ctx context.Context, budgetItemNoId BudgetItemNoId) (ImplResponse, error)
 	// GetBudgetStatus - get budget status with rollover
-	GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string) (ImplResponse, error)
+	GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string, includeHidden bool) (ImplResponse, error)
 	// GetBudgetItem - get budgetItem
 	GetBudgetItem(ctx context.Context, id string) (ImplResponse, error)
 	// UpdateBudgetItem - update budgetItem
@@ -68,7 +68,7 @@ func (s *BudgetItemsAPIServiceImpl) CreateBudgetItem(ctx context.Context, budget
 }
 
 // GetBudgetStatus - get budget status with rollover
-func (s *BudgetItemsAPIServiceImpl) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string) (ImplResponse, error) {
+func (s *BudgetItemsAPIServiceImpl) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string, includeHidden bool) (ImplResponse, error) {
 	// TODO - update GetBudgetStatus with the required logic for this service method.
 	// Add api_budget_items_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

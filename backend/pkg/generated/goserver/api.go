@@ -168,9 +168,9 @@ type AccountsAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type AggregationsAPIServicer interface {
-	GetBalances(context.Context, time.Time, time.Time, string) (ImplResponse, error)
-	GetExpenses(context.Context, time.Time, time.Time, string, string) (ImplResponse, error)
-	GetIncomes(context.Context, time.Time, time.Time, string) (ImplResponse, error)
+	GetBalances(context.Context, time.Time, time.Time, string, bool) (ImplResponse, error)
+	GetExpenses(context.Context, time.Time, time.Time, string, string, bool) (ImplResponse, error)
+	GetIncomes(context.Context, time.Time, time.Time, string, bool) (ImplResponse, error)
 }
 
 // AuthAPIServicer defines the api actions for the AuthAPI service
@@ -201,7 +201,7 @@ type BankImportersAPIServicer interface {
 type BudgetItemsAPIServicer interface {
 	GetBudgetItems(context.Context) (ImplResponse, error)
 	CreateBudgetItem(context.Context, BudgetItemNoId) (ImplResponse, error)
-	GetBudgetStatus(context.Context, time.Time, time.Time, string) (ImplResponse, error)
+	GetBudgetStatus(context.Context, time.Time, time.Time, string, bool) (ImplResponse, error)
 	GetBudgetItem(context.Context, string) (ImplResponse, error)
 	UpdateBudgetItem(context.Context, string, BudgetItemNoId) (ImplResponse, error)
 	DeleteBudgetItem(context.Context, string) (ImplResponse, error)

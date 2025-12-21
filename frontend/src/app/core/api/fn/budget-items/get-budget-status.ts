@@ -24,6 +24,11 @@ export interface GetBudgetStatus$Params {
      * Converts all amounts to this currency
      */
     outputCurrencyId?: string;
+
+    /**
+     * If true, include hidden accounts
+     */
+    includeHidden?: boolean;
 }
 
 export function getBudgetStatus(
@@ -37,6 +42,7 @@ export function getBudgetStatus(
         rb.query('from', params.from, {});
         rb.query('to', params.to, {});
         rb.query('outputCurrencyId', params.outputCurrencyId, {});
+        rb.query('includeHidden', params.includeHidden, {});
     }
 
     return http

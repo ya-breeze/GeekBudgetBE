@@ -43,9 +43,10 @@ var _ = Describe("Expenses Aggregation API", func() {
 		to := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		accountA := goserver.Account{
-			Id:   "acc-a",
-			Name: "Account A",
-			Type: "expense",
+			Id:              "acc-a",
+			Name:            "Account A",
+			Type:            "expense",
+			HideFromReports: false,
 			BankInfo: goserver.BankAccountInfo{
 				Balances: []goserver.BankAccountInfoBalancesInner{{CurrencyId: "USD"}},
 			},
@@ -77,7 +78,7 @@ var _ = Describe("Expenses Aggregation API", func() {
 		mockStorage.EXPECT().GetTransactions("user1", from, to).Return(transactions, nil)
 		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{{Id: "USD", Name: "USD"}}, nil)
 
-		resp, err := sut.GetExpenses(ctx, from, to, "", "year")
+		resp, err := sut.GetExpenses(ctx, from, to, "", "year", false)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(resp.Code).To(Equal(http.StatusOK))
 

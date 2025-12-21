@@ -106,6 +106,7 @@ export class BudgetItemService {
         from?: string,
         to?: string,
         outputCurrencyId?: string,
+        includeHidden?: boolean,
     ): Observable<BudgetStatus[]> {
         this.loading.set(true);
         this.error.set(null);
@@ -114,6 +115,7 @@ export class BudgetItemService {
             from,
             to,
             outputCurrencyId,
+            includeHidden,
         }).pipe(
             map((response) => response.body),
             tap({

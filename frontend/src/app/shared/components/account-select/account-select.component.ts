@@ -67,8 +67,8 @@ export class AccountSelectComponent implements ControlValueAccessor, OnChanges {
 
     // Internal value tracking (Account ID)
     private _value: string | null = null;
-    private onChange: (value: string | null) => void = () => { };
-    private onTouched: () => void = () => { };
+    private onChange: (value: string | null) => void = () => {};
+    private onTouched: () => void = () => {};
 
     protected readonly filterValue = toSignal(
         this.searchControl.valueChanges.pipe(

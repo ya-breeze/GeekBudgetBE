@@ -7,7 +7,12 @@ export interface AccountNoId {
     description?: string;
 
     /**
-     * URL or filename of the account image
+     * If true, this account should be hidden from reports and budget.
+     */
+    hideFromReports?: boolean;
+
+    /**
+     * ID of the account image
      */
     image?: string;
     name: string;

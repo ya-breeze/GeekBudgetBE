@@ -68,8 +68,10 @@ var _ = Describe("Transactions API", func() {
 		currencies = test.PrepareCurrencies()
 		for i, account := range accounts {
 			a := goclient.AccountNoID{
-				Name: account.Name,
-				Type: account.Type,
+				Name:                   account.Name,
+				Type:                   account.Type,
+				HideFromReports:        utils.BoolToRef(false),
+				ShowInDashboardSummary: utils.BoolToRef(true),
 			}
 			acc, _, err := client.AccountsAPI.CreateAccount(authCtx).AccountNoID(a).Execute()
 			Expect(err).ToNot(HaveOccurred())

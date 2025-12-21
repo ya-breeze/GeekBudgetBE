@@ -19,6 +19,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { map } from 'rxjs';
@@ -64,6 +65,7 @@ type SortDirection = 'asc' | 'desc';
         MatProgressSpinnerModule,
         MatTableModule,
         MatIconModule,
+        MatSlideToggleModule,
         DecimalPipe,
         BaseChartDirective,
     ],
@@ -85,6 +87,7 @@ export class ExpenseReportComponent implements OnInit {
     protected readonly sortColumn = signal<SortColumn>('amount');
     protected readonly sortDirection = signal<SortDirection>('desc');
     protected readonly selectedOutputCurrencyId = signal<string | null>(null);
+    protected readonly includeHidden = signal(false);
 
     protected readonly currencyReports = computed<CurrencyReport[]>(() => {
         const data = this.expenseData();
@@ -267,14 +270,26 @@ export class ExpenseReportComponent implements OnInit {
         this.loadExpenseData();
     }
 
+    protected onIncludeHiddenToggle(): void {
+        this.includeHidden.update((current) => !current);
+        this.loadExpenseData();
+    }
+
     private loadExpenseData(): void {
         this.loading.set(true);
 
         const formValue = this.filterForm.value;
         const outputCurrencyId = this.selectedOutputCurrencyId();
-        const params: { from: string; to: string; outputCurrencyId?: string } = {
+        const includeHidden = this.includeHidden();
+        const params: {
+            from: string;
+            to: string;
+            outputCurrencyId?: string;
+            includeHidden?: boolean;
+        } = {
             from: formValue.startDate.toISOString(),
             to: formValue.endDate.toISOString(),
+            includeHidden: includeHidden,
         };
 
         if (outputCurrencyId) {

@@ -34,6 +34,15 @@
                         <mat-datepicker #endPicker></mat-datepicker>
                     </mat-form-field>
 
+                    <mat-slide-toggle
+                        [checked]="includeHidden()"
+                        (change)="onIncludeHiddenToggle()"
+                        color="primary"
+                        style="margin-right: 16px; align-self: center"
+                    >
+                        Include Hidden
+                    </mat-slide-toggle>
+
                     <button
                         mat-raised-button
                         color="primary"

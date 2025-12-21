@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BudgetItemService } from './services/budget-item.service';
 import { AccountService } from '../accounts/services/account.service';
 import { UserService } from '../../core/services/user.service'; // Added
@@ -61,6 +62,7 @@ interface MatrixRow {
         MatDatepickerModule,
         MatNativeDateModule,
         MatDialogModule,
+        MatSlideToggleModule,
     ],
     template: `
         <div class="budget-items-container">
@@ -139,6 +141,15 @@ interface MatrixRow {
                                     <mat-icon>add</mat-icon>
                                 </button>
                             </div>
+
+                            <mat-slide-toggle
+                                [checked]="includeHidden()"
+                                (change)="includeHidden.set($event.checked)"
+                                color="primary"
+                                style="margin-left: 16px;"
+                            >
+                                <span style="font-size: 12px;">Hidden</span>
+                            </mat-slide-toggle>
                         </div>
                     </div>
 
@@ -336,6 +347,7 @@ export class BudgetItemsComponent implements OnInit {
     // Configuration Signals
     protected readonly startDate = signal(new Date()); // Start of the view
     protected readonly monthCount = signal(3); // Number of months to show
+    protected readonly includeHidden = signal(false);
 
     // Computed state
     protected readonly preferredCurrency = computed(() => {
@@ -514,6 +526,7 @@ export class BudgetItemsComponent implements OnInit {
             const anchor = this.startDate();
             const count = this.monthCount();
             const currency = this.preferredCurrency();
+            const includeHidden = this.includeHidden();
 
             // Calculate query range
             const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
@@ -533,10 +546,14 @@ export class BudgetItemsComponent implements OnInit {
 
             // Load status with conversion
             if (currencyId) {
-                this.budgetItemService.loadBudgetStatus(from, to, currencyId).subscribe();
+                this.budgetItemService
+                    .loadBudgetStatus(from, to, currencyId, includeHidden)
+                    .subscribe();
                 this.accountService.loadYearlyExpenses(currencyId).subscribe();
             } else {
-                this.budgetItemService.loadBudgetStatus(from, to).subscribe();
+                this.budgetItemService
+                    .loadBudgetStatus(from, to, undefined, includeHidden)
+                    .subscribe();
                 this.accountService.loadYearlyExpenses().subscribe();
             }
         });
@@ -626,6 +643,7 @@ export class BudgetItemsComponent implements OnInit {
         const anchor = this.startDate();
         const count = this.monthCount();
         const currency = this.preferredCurrency();
+        const includeHidden = this.includeHidden();
 
         // Use UTC to avoid timezone shifts
         const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
@@ -644,10 +662,12 @@ export class BudgetItemsComponent implements OnInit {
         const currencyId = currency?.id;
 
         if (currencyId) {
-            this.budgetItemService.loadBudgetStatus(from, to, currencyId).subscribe();
+            this.budgetItemService
+                .loadBudgetStatus(from, to, currencyId, includeHidden)
+                .subscribe();
             this.accountService.loadYearlyExpenses(currencyId).subscribe();
         } else {
-            this.budgetItemService.loadBudgetStatus(from, to).subscribe();
+            this.budgetItemService.loadBudgetStatus(from, to, undefined, includeHidden).subscribe();
             this.accountService.loadYearlyExpenses().subscribe();
         }
     }

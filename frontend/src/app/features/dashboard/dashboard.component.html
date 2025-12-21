@@ -3,6 +3,12 @@
         <h1 class="page-title">Dashboard</h1>
     }
 
+    <div class="dashboard-actions option-toggle">
+        <mat-slide-toggle [checked]="includeHidden()" (change)="onIncludeHiddenToggle()">
+            Include Hidden Accounts
+        </mat-slide-toggle>
+    </div>
+
     @if (loading()) {
         <div class="loading-container">
             <mat-spinner></mat-spinner>

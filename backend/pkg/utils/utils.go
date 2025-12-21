@@ -13,6 +13,10 @@ func StrToRef(s string) *string {
 	return &s
 }
 
+func BoolToRef(b bool) *bool {
+	return &b
+}
+
 //nolint:forbidigo // it's okay to use fmt in this function
 func PrintInTwoColumns(str1, str2 string) {
 	lines1 := strings.Split(str1, "\n")

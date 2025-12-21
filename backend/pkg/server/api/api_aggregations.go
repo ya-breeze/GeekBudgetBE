@@ -18,13 +18,68 @@ type AggregationsAPIServiceImpl struct {
 	db     database.Storage
 }
 
-func NewAggregationsAPIServiceImpl(logger *slog.Logger, db database.Storage,
-) *AggregationsAPIServiceImpl {
-	return &AggregationsAPIServiceImpl{logger: logger, db: db}
+func NewAggregationsAPIServiceImpl(logger *slog.Logger, db database.Storage) *AggregationsAPIServiceImpl {
+	return &AggregationsAPIServiceImpl{
+		logger: logger,
+		db:     db,
+	}
+}
+
+func (s *AggregationsAPIServiceImpl) GetIncomes(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string, includeHidden bool) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	aggregation, err := s.GetAggregatedIncomes(ctx, userID, from, to, outputCurrencyID, includeHidden)
+	if err != nil {
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, aggregation), nil
+}
+
+func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
+) (*goserver.Aggregation, error) {
+	if dateFrom.IsZero() {
+		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
+	}
+	if dateTo.IsZero() {
+		dateTo = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
+	}
+
+	accounts, err := s.db.GetAccounts(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get accounts")
+		return nil, nil
+	}
+
+	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get transactions")
+		return nil, nil
+	}
+
+	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
+
+	res := Aggregate(
+		ctx, accounts, transactions,
+		dateFrom, dateTo,
+		utils.GranularityMonth,
+		outputCurrencyID, currenciesRatesFetcher,
+		currencyMap,
+		func(a goserver.Account) bool {
+			return a.Type == constants.AccountIncome && (includeHidden || !a.HideFromReports)
+		},
+		s.logger)
+
+	return &res, nil
 }
 
 func (s *AggregationsAPIServiceImpl) GetExpenses(
-	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, granularity string,
+	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, granularity string, includeHidden bool,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
@@ -36,7 +91,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 		aggGranularity = utils.GranularityYear
 	}
 
-	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID, aggGranularity)
+	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID, aggGranularity, includeHidden)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -45,7 +100,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, granularity utils.Granularity,
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, granularity utils.Granularity, includeHidden bool,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
@@ -76,21 +131,23 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		granularity,
 		outputCurrencyID, currenciesRatesFetcher,
 		currencyMap,
-		isExpenseAccount,
+		func(a goserver.Account) bool {
+			return isExpenseAccount(a) && (includeHidden || !a.HideFromReports)
+		},
 		s.logger)
 
 	return &res, nil
 }
 
 func (s *AggregationsAPIServiceImpl) GetBalances(
-	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string,
+	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	aggregation, err := s.GetAggregatedBalances(ctx, userID, dateFrom, dateTo, outputCurrencyID)
+	aggregation, err := s.GetAggregatedBalances(ctx, userID, dateFrom, dateTo, outputCurrencyID, includeHidden)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -99,7 +156,7 @@ func (s *AggregationsAPIServiceImpl) GetBalances(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string,
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
 ) (*goserver.Aggregation, error) {
 	// For balances, if dateFrom is zero, we want to start from the beginning to get full balance
 	// But Aggregation struct expects a specific range.
@@ -138,7 +195,9 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 		utils.GranularityMonth,
 		outputCurrencyID, currenciesRatesFetcher,
 		currencyMap,
-		isAssetAccount, // Filter for asset accounts
+		func(a goserver.Account) bool {
+			return isAssetAccount(a) && (includeHidden || !a.HideFromReports)
+		}, // Filter for asset accounts excluding hidden if needed
 		s.logger)
 
 	return &res, nil
@@ -351,9 +410,4 @@ func convertMovementAmount(
 		"convertedAmount", convertedAmount)
 
 	return convertedAmount, outputCurrencyID
-}
-
-func (s *AggregationsAPIServiceImpl) GetIncomes(context.Context, time.Time, time.Time, string,
-) (goserver.ImplResponse, error) {
-	return goserver.Response(500, nil), nil
 }

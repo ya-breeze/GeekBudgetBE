@@ -11,7 +11,7 @@ export interface MatcherNoId {
     extraRegExp?: string;
 
     /**
-     * URL or filename of the matcher image
+     * ID of the matcher image
      */
     image?: string;
     outputAccountId: string;

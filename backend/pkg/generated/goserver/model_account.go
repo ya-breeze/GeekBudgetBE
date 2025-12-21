@@ -25,6 +25,9 @@ type Account struct {
 	// If true, show this account in dashboard summary.
 	ShowInDashboardSummary bool `json:"showInDashboardSummary"`
 
+	// If true, this account should be hidden from reports and budget.
+	HideFromReports bool `json:"hideFromReports,omitempty"`
+
 	// ID of the account image
 	Image string `json:"image,omitempty"`
 }
@@ -36,6 +39,7 @@ type AccountInterface interface {
 	GetType() string
 	GetBankInfo() BankAccountInfo
 	GetShowInDashboardSummary() bool
+	GetHideFromReports() bool
 	GetImage() string
 }
 
@@ -56,6 +60,9 @@ func (c *Account) GetBankInfo() BankAccountInfo {
 }
 func (c *Account) GetShowInDashboardSummary() bool {
 	return c.ShowInDashboardSummary
+}
+func (c *Account) GetHideFromReports() bool {
+	return c.HideFromReports
 }
 func (c *Account) GetImage() string {
 	return c.Image

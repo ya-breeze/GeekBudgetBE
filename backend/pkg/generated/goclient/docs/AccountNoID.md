@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **Type** | **string** |  | 
 **BankInfo** | Pointer to [**BankAccountInfo**](BankAccountInfo.md) |  | [optional] 
 **ShowInDashboardSummary** | Pointer to **bool** | If true, show this account in dashboard summary. | [optional] [default to true]
+**HideFromReports** | Pointer to **bool** | If true, this account should be hidden from reports and budget. | [optional] [default to false]
 **Image** | Pointer to **string** | ID of the account image | [optional] 
 
 ## Methods
@@ -144,6 +145,31 @@ SetShowInDashboardSummary sets ShowInDashboardSummary field to given value.
 `func (o *AccountNoID) HasShowInDashboardSummary() bool`
 
 HasShowInDashboardSummary returns a boolean if a field has been set.
+
+### GetHideFromReports
+
+`func (o *AccountNoID) GetHideFromReports() bool`
+
+GetHideFromReports returns the HideFromReports field if non-nil, zero value otherwise.
+
+### GetHideFromReportsOk
+
+`func (o *AccountNoID) GetHideFromReportsOk() (*bool, bool)`
+
+GetHideFromReportsOk returns a tuple with the HideFromReports field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetHideFromReports
+
+`func (o *AccountNoID) SetHideFromReports(v bool)`
+
+SetHideFromReports sets HideFromReports field to given value.
+
+### HasHideFromReports
+
+`func (o *AccountNoID) HasHideFromReports() bool`
+
+HasHideFromReports returns a boolean if a field has been set.
 
 ### GetImage
 

@@ -28,6 +28,8 @@ type AccountNoID struct {
 	BankInfo    *BankAccountInfo `json:"bankInfo,omitempty"`
 	// If true, show this account in dashboard summary.
 	ShowInDashboardSummary *bool `json:"showInDashboardSummary,omitempty"`
+	// If true, this account should be hidden from reports and budget.
+	HideFromReports *bool `json:"hideFromReports,omitempty"`
 	// ID of the account image
 	Image *string `json:"image,omitempty"`
 }
@@ -44,6 +46,8 @@ func NewAccountNoID(name string, type_ string) *AccountNoID {
 	this.Type = type_
 	var showInDashboardSummary bool = true
 	this.ShowInDashboardSummary = &showInDashboardSummary
+	var hideFromReports bool = false
+	this.HideFromReports = &hideFromReports
 	return &this
 }
 
@@ -54,6 +58,8 @@ func NewAccountNoIDWithDefaults() *AccountNoID {
 	this := AccountNoID{}
 	var showInDashboardSummary bool = true
 	this.ShowInDashboardSummary = &showInDashboardSummary
+	var hideFromReports bool = false
+	this.HideFromReports = &hideFromReports
 	return &this
 }
 
@@ -201,6 +207,38 @@ func (o *AccountNoID) SetShowInDashboardSummary(v bool) {
 	o.ShowInDashboardSummary = &v
 }
 
+// GetHideFromReports returns the HideFromReports field value if set, zero value otherwise.
+func (o *AccountNoID) GetHideFromReports() bool {
+	if o == nil || IsNil(o.HideFromReports) {
+		var ret bool
+		return ret
+	}
+	return *o.HideFromReports
+}
+
+// GetHideFromReportsOk returns a tuple with the HideFromReports field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountNoID) GetHideFromReportsOk() (*bool, bool) {
+	if o == nil || IsNil(o.HideFromReports) {
+		return nil, false
+	}
+	return o.HideFromReports, true
+}
+
+// HasHideFromReports returns a boolean if a field has been set.
+func (o *AccountNoID) HasHideFromReports() bool {
+	if o != nil && !IsNil(o.HideFromReports) {
+		return true
+	}
+
+	return false
+}
+
+// SetHideFromReports gets a reference to the given bool and assigns it to the HideFromReports field.
+func (o *AccountNoID) SetHideFromReports(v bool) {
+	o.HideFromReports = &v
+}
+
 // GetImage returns the Image field value if set, zero value otherwise.
 func (o *AccountNoID) GetImage() string {
 	if o == nil || IsNil(o.Image) {
@@ -253,6 +291,9 @@ func (o AccountNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ShowInDashboardSummary) {
 		toSerialize["showInDashboardSummary"] = o.ShowInDashboardSummary
+	}
+	if !IsNil(o.HideFromReports) {
+		toSerialize["hideFromReports"] = o.HideFromReports
 	}
 	if !IsNil(o.Image) {
 		toSerialize["image"] = o.Image

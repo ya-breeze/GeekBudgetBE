@@ -29,6 +29,11 @@ export interface GetExpenses$Params {
      * Granularity of expenses (month or year)
      */
     granularity?: 'month' | 'year';
+
+    /**
+     * If true, include hidden accounts
+     */
+    includeHidden?: boolean;
 }
 
 export function getExpenses(
@@ -43,6 +48,7 @@ export function getExpenses(
         rb.query('to', params.to, {});
         rb.query('outputCurrencyId', params.outputCurrencyId, {});
         rb.query('granularity', params.granularity, {});
+        rb.query('includeHidden', params.includeHidden, {});
     }
 
     return http

@@ -55,6 +55,7 @@ export class AccountFormDialogComponent {
             type: [this.data.account?.type || 'expense', [Validators.required]],
             description: [this.data.account?.description || '', [Validators.maxLength(500)]],
             showInDashboardSummary: [this.data.account?.showInDashboardSummary ?? true],
+            hideFromReports: [this.data.account?.hideFromReports ?? false],
         });
 
         if (this.data.account?.image) {

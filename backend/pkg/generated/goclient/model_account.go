@@ -29,6 +29,8 @@ type Account struct {
 	BankInfo    *BankAccountInfo `json:"bankInfo,omitempty"`
 	// If true, show this account in dashboard summary.
 	ShowInDashboardSummary bool `json:"showInDashboardSummary"`
+	// If true, this account should be hidden from reports and budget.
+	HideFromReports *bool `json:"hideFromReports,omitempty"`
 	// ID of the account image
 	Image *string `json:"image,omitempty"`
 }
@@ -45,6 +47,8 @@ func NewAccount(id string, name string, type_ string, showInDashboardSummary boo
 	this.Name = name
 	this.Type = type_
 	this.ShowInDashboardSummary = showInDashboardSummary
+	var hideFromReports bool = false
+	this.HideFromReports = &hideFromReports
 	return &this
 }
 
@@ -55,6 +59,8 @@ func NewAccountWithDefaults() *Account {
 	this := Account{}
 	var showInDashboardSummary bool = true
 	this.ShowInDashboardSummary = showInDashboardSummary
+	var hideFromReports bool = false
+	this.HideFromReports = &hideFromReports
 	return &this
 }
 
@@ -218,6 +224,38 @@ func (o *Account) SetShowInDashboardSummary(v bool) {
 	o.ShowInDashboardSummary = v
 }
 
+// GetHideFromReports returns the HideFromReports field value if set, zero value otherwise.
+func (o *Account) GetHideFromReports() bool {
+	if o == nil || IsNil(o.HideFromReports) {
+		var ret bool
+		return ret
+	}
+	return *o.HideFromReports
+}
+
+// GetHideFromReportsOk returns a tuple with the HideFromReports field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Account) GetHideFromReportsOk() (*bool, bool) {
+	if o == nil || IsNil(o.HideFromReports) {
+		return nil, false
+	}
+	return o.HideFromReports, true
+}
+
+// HasHideFromReports returns a boolean if a field has been set.
+func (o *Account) HasHideFromReports() bool {
+	if o != nil && !IsNil(o.HideFromReports) {
+		return true
+	}
+
+	return false
+}
+
+// SetHideFromReports gets a reference to the given bool and assigns it to the HideFromReports field.
+func (o *Account) SetHideFromReports(v bool) {
+	o.HideFromReports = &v
+}
+
 // GetImage returns the Image field value if set, zero value otherwise.
 func (o *Account) GetImage() string {
 	if o == nil || IsNil(o.Image) {
@@ -270,6 +308,9 @@ func (o Account) ToMap() (map[string]interface{}, error) {
 		toSerialize["bankInfo"] = o.BankInfo
 	}
 	toSerialize["showInDashboardSummary"] = o.ShowInDashboardSummary
+	if !IsNil(o.HideFromReports) {
+		toSerialize["hideFromReports"] = o.HideFromReports
+	}
 	if !IsNil(o.Image) {
 		toSerialize["image"] = o.Image
 	}

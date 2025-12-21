@@ -161,7 +161,23 @@ func (c *BudgetItemsAPIController) GetBudgetStatus(w http.ResponseWriter, r *htt
 		outputCurrencyIdParam = param
 	} else {
 	}
-	result, err := c.service.GetBudgetStatus(r.Context(), fromParam, toParam, outputCurrencyIdParam)
+	var includeHiddenParam bool
+	if query.Has("includeHidden") {
+		param, err := parseBoolParameter(
+			query.Get("includeHidden"),
+			WithParse[bool](parseBool),
+		)
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "includeHidden", Err: err}, nil)
+			return
+		}
+
+		includeHiddenParam = param
+	} else {
+		var param bool = false
+		includeHiddenParam = param
+	}
+	result, err := c.service.GetBudgetStatus(r.Context(), fromParam, toParam, outputCurrencyIdParam, includeHiddenParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

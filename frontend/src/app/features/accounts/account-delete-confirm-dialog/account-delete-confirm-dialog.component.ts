@@ -21,13 +21,7 @@ export interface AccountDeleteConfirmDialogResult {
 @Component({
     selector: 'app-account-delete-confirm-dialog',
     standalone: true,
-    imports: [
-        CommonModule,
-        MatDialogModule,
-        MatButtonModule,
-        FormsModule,
-        AccountSelectComponent,
-    ],
+    imports: [CommonModule, MatDialogModule, MatButtonModule, FormsModule, AccountSelectComponent],
     templateUrl: './account-delete-confirm-dialog.component.html',
     styles: [
         `

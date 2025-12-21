@@ -24,7 +24,7 @@ func NewBudgetItemsAPIService(logger *slog.Logger, db database.Storage) goserver
 }
 
 // GetBudgetStatus - get budget status with rollover
-func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string) (goserver.ImplResponse, error) {
+func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string, includeHidden bool) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
@@ -44,7 +44,11 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 		return goserver.Response(http.StatusInternalServerError, nil), err
 	}
 	accountCurrencyMap := make(map[string]string) // AccountID -> CurrencyID
+	allowedAccounts := make(map[string]bool)
 	for _, acc := range accounts {
+		if includeHidden || !acc.HideFromReports {
+			allowedAccounts[acc.Id] = true
+		}
 		// Use first balance currency as "Account Currency" for budgeting purposes
 		if len(acc.BankInfo.Balances) > 0 {
 			accountCurrencyMap[acc.Id] = acc.BankInfo.Balances[0].CurrencyId
@@ -64,6 +68,9 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	if len(budgetItems) > 0 {
 		minDate = budgetItems[0].Date
 		for _, b := range budgetItems {
+			if !allowedAccounts[b.AccountId] {
+				continue
+			}
 			if b.Date.Before(minDate) {
 				minDate = b.Date
 			}
@@ -90,6 +97,9 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	}
 
 	for _, b := range budgetItems {
+		if !allowedAccounts[b.AccountId] {
+			continue
+		}
 		key := getMonthKey(b.Date)
 		if _, ok := budgetMap[key]; !ok {
 			budgetMap[key] = make(map[string]float64)
@@ -115,6 +125,9 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	for _, t := range transactions {
 		tMonth := getMonthKey(t.Date)
 		for _, m := range t.Movements {
+			if !allowedAccounts[m.AccountId] {
+				continue
+			}
 			if m.Amount > 0 {
 				if _, ok := spentMap[tMonth]; !ok {
 					spentMap[tMonth] = make(map[string]float64)

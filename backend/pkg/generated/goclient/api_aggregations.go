@@ -29,6 +29,7 @@ type ApiGetBalancesRequest struct {
 	from             *time.Time
 	to               *time.Time
 	outputCurrencyId *string
+	includeHidden    *bool
 }
 
 // Uses transactions from this date
@@ -46,6 +47,12 @@ func (r ApiGetBalancesRequest) To(to time.Time) ApiGetBalancesRequest {
 // Converts all transactions to this currency
 func (r ApiGetBalancesRequest) OutputCurrencyId(outputCurrencyId string) ApiGetBalancesRequest {
 	r.outputCurrencyId = &outputCurrencyId
+	return r
+}
+
+// If true, include hidden accounts
+func (r ApiGetBalancesRequest) IncludeHidden(includeHidden bool) ApiGetBalancesRequest {
+	r.includeHidden = &includeHidden
 	return r
 }
 
@@ -96,6 +103,12 @@ func (a *AggregationsAPIService) GetBalancesExecute(r ApiGetBalancesRequest) (*A
 	}
 	if r.outputCurrencyId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
+	}
+	if r.includeHidden != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "includeHidden", r.includeHidden, "")
+	} else {
+		var defaultValue bool = false
+		r.includeHidden = &defaultValue
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -158,6 +171,7 @@ type ApiGetExpensesRequest struct {
 	to               *time.Time
 	outputCurrencyId *string
 	granularity      *string
+	includeHidden    *bool
 }
 
 // Uses transactions from this date
@@ -181,6 +195,12 @@ func (r ApiGetExpensesRequest) OutputCurrencyId(outputCurrencyId string) ApiGetE
 // Granularity of expenses (month or year)
 func (r ApiGetExpensesRequest) Granularity(granularity string) ApiGetExpensesRequest {
 	r.granularity = &granularity
+	return r
+}
+
+// If true, include hidden accounts
+func (r ApiGetExpensesRequest) IncludeHidden(includeHidden bool) ApiGetExpensesRequest {
+	r.includeHidden = &includeHidden
 	return r
 }
 
@@ -237,6 +257,12 @@ func (a *AggregationsAPIService) GetExpensesExecute(r ApiGetExpensesRequest) (*A
 	} else {
 		var defaultValue string = "month"
 		r.granularity = &defaultValue
+	}
+	if r.includeHidden != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "includeHidden", r.includeHidden, "")
+	} else {
+		var defaultValue bool = false
+		r.includeHidden = &defaultValue
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -298,6 +324,7 @@ type ApiGetIncomesRequest struct {
 	from             *time.Time
 	to               *time.Time
 	outputCurrencyId *string
+	includeHidden    *bool
 }
 
 // Uses transactions from this date
@@ -315,6 +342,12 @@ func (r ApiGetIncomesRequest) To(to time.Time) ApiGetIncomesRequest {
 // Converts all transactions to this currency
 func (r ApiGetIncomesRequest) OutputCurrencyId(outputCurrencyId string) ApiGetIncomesRequest {
 	r.outputCurrencyId = &outputCurrencyId
+	return r
+}
+
+// If true, include hidden accounts
+func (r ApiGetIncomesRequest) IncludeHidden(includeHidden bool) ApiGetIncomesRequest {
+	r.includeHidden = &includeHidden
 	return r
 }
 
@@ -365,6 +398,12 @@ func (a *AggregationsAPIService) GetIncomesExecute(r ApiGetIncomesRequest) (*Agg
 	}
 	if r.outputCurrencyId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
+	}
+	if r.includeHidden != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "includeHidden", r.includeHidden, "")
+	} else {
+		var defaultValue bool = false
+		r.includeHidden = &defaultValue
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

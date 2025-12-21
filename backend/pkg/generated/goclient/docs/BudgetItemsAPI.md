@@ -273,7 +273,7 @@ Other parameters are passed through a pointer to a apiGetBudgetItemsRequest stru
 
 ## GetBudgetStatus
 
-> []BudgetStatus GetBudgetStatus(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
+> []BudgetStatus GetBudgetStatus(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).IncludeHidden(includeHidden).Execute()
 
 get budget status with rollover
 
@@ -294,10 +294,11 @@ func main() {
 	from := time.Now() // time.Time | Start date (inclusive) (optional)
 	to := time.Now() // time.Time | End date (exclusive) (optional)
 	outputCurrencyId := "123e4567-e89b-12d3-a456-426614174000" // string | Converts all amounts to this currency (optional)
+	includeHidden := true // bool | If true, include hidden accounts (optional) (default to false)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.BudgetItemsAPI.GetBudgetStatus(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Execute()
+	resp, r, err := apiClient.BudgetItemsAPI.GetBudgetStatus(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).IncludeHidden(includeHidden).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `BudgetItemsAPI.GetBudgetStatus``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -321,6 +322,7 @@ Name | Type | Description  | Notes
  **from** | **time.Time** | Start date (inclusive) | 
  **to** | **time.Time** | End date (exclusive) | 
  **outputCurrencyId** | **string** | Converts all amounts to this currency | 
+ **includeHidden** | **bool** | If true, include hidden accounts | [default to false]
 
 ### Return type
 

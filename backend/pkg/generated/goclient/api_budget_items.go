@@ -429,6 +429,7 @@ type ApiGetBudgetStatusRequest struct {
 	from             *time.Time
 	to               *time.Time
 	outputCurrencyId *string
+	includeHidden    *bool
 }
 
 // Start date (inclusive)
@@ -446,6 +447,12 @@ func (r ApiGetBudgetStatusRequest) To(to time.Time) ApiGetBudgetStatusRequest {
 // Converts all amounts to this currency
 func (r ApiGetBudgetStatusRequest) OutputCurrencyId(outputCurrencyId string) ApiGetBudgetStatusRequest {
 	r.outputCurrencyId = &outputCurrencyId
+	return r
+}
+
+// If true, include hidden accounts
+func (r ApiGetBudgetStatusRequest) IncludeHidden(includeHidden bool) ApiGetBudgetStatusRequest {
+	r.includeHidden = &includeHidden
 	return r
 }
 
@@ -496,6 +503,12 @@ func (a *BudgetItemsAPIService) GetBudgetStatusExecute(r ApiGetBudgetStatusReque
 	}
 	if r.outputCurrencyId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "outputCurrencyId", r.outputCurrencyId, "")
+	}
+	if r.includeHidden != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "includeHidden", r.includeHidden, "")
+	} else {
+		var defaultValue bool = false
+		r.includeHidden = &defaultValue
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

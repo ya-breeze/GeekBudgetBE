@@ -12,6 +12,7 @@ export interface DeleteAccount$Params {
      * ID of the account
      */
     id: string;
+
     /**
      * ID of the account to which transactions should be reassigned
      */

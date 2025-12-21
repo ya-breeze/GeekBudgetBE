@@ -729,6 +729,13 @@ paths:
             type: "string"
             format: "uuid"
             example: "123e4567-e89b-12d3-a456-426614174000"
+
+        - name: includeHidden
+          in: query
+          description: "If true, include hidden accounts"
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: calculated balance
@@ -770,6 +777,13 @@ paths:
               - month
               - year
             default: month
+
+        - name: includeHidden
+          in: query
+          description: "If true, include hidden accounts"
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: calculated expenses
@@ -802,6 +816,12 @@ paths:
           description: "Converts all transactions to this currency"
           schema:
             type: "string"
+        - name: includeHidden
+          in: query
+          description: "If true, include hidden accounts"
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: calculated incomes
@@ -1153,6 +1173,12 @@ paths:
             type: "string"
             format: "uuid"
             example: "123e4567-e89b-12d3-a456-426614174000"
+        - name: includeHidden
+          in: query
+          description: "If true, include hidden accounts"
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: budget status
@@ -1337,6 +1363,10 @@ components:
           type: boolean
           description: "If true, show this account in dashboard summary."
           default: true
+        hideFromReports:
+          type: boolean
+          description: "If true, this account should be hidden from reports and budget."
+          default: false
         image:
           type: string
           description: "ID of the account image"

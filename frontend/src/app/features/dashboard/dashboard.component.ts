@@ -43,6 +43,8 @@ interface CurrencyTable {
     totalRow: ExpenseTableRow;
 }
 
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+
 @Component({
     selector: 'app-dashboard',
     imports: [
@@ -54,6 +56,7 @@ interface CurrencyTable {
         MatButtonModule,
         MatSnackBarModule,
         MatDialogModule,
+        MatSlideToggleModule,
         DecimalPipe,
         JsonPipe,
     ],
@@ -77,6 +80,7 @@ export class DashboardComponent implements OnInit {
     protected readonly accounts = this.accountService.accounts;
     protected readonly selectedOutputCurrencyId = signal<string | null>(null);
     protected readonly isSmallScreen = signal(false);
+    protected readonly includeHidden = signal(false);
     private readonly windowWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
     constructor() {
@@ -414,6 +418,11 @@ export class DashboardComponent implements OnInit {
         this.loadDashboardData();
     }
 
+    protected onIncludeHiddenToggle(): void {
+        this.includeHidden.update((current) => !current);
+        this.loadDashboardData();
+    }
+
     private loadDashboardData(): void {
         this.loading.set(true);
 
@@ -421,14 +430,22 @@ export class DashboardComponent implements OnInit {
         // Get data for the last 12 months for expenses
         const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
         const outputCurrencyId = this.selectedOutputCurrencyId();
+        const includeHidden = this.includeHidden();
 
-        const expenseParams: { from: string; to: string; outputCurrencyId?: string } = {
+        const expenseParams: {
+            from: string;
+            to: string;
+            outputCurrencyId?: string;
+            includeHidden?: boolean;
+        } = {
             from: twelveMonthsAgo.toISOString(),
             to: now.toISOString(),
+            includeHidden: includeHidden,
         };
 
-        const balanceParams: { to: string; outputCurrencyId?: string } = {
+        const balanceParams: { to: string; outputCurrencyId?: string; includeHidden?: boolean } = {
             to: now.toISOString(),
+            includeHidden: includeHidden,
         };
 
         if (outputCurrencyId) {

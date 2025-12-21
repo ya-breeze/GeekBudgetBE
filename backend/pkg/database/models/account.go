@@ -14,6 +14,7 @@ type Account struct {
 	Description            string
 	Type                   string
 	ShowInDashboardSummary bool
+	HideFromReports        bool `gorm:"default:false"`
 	Image                  string
 
 	BankInfo goserver.BankAccountInfo `gorm:"serializer:json"`
@@ -30,6 +31,7 @@ func (a *Account) FromDB() goserver.Account {
 		Description:            a.Description,
 		BankInfo:               a.BankInfo,
 		ShowInDashboardSummary: a.ShowInDashboardSummary,
+		HideFromReports:        a.HideFromReports,
 		Image:                  a.Image,
 	}
 }
@@ -42,6 +44,7 @@ func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
 		Type:                   m.GetType(),
 		BankInfo:               m.GetBankInfo(),
 		ShowInDashboardSummary: m.GetShowInDashboardSummary(),
+		HideFromReports:        m.GetHideFromReports(),
 		Image:                  m.GetImage(),
 	}
 }
@@ -53,6 +56,7 @@ func AccountWithoutID(account *goserver.Account) *goserver.AccountNoId {
 		Description:            account.Description,
 		BankInfo:               account.BankInfo,
 		ShowInDashboardSummary: account.ShowInDashboardSummary,
+		HideFromReports:        account.HideFromReports,
 		Image:                  account.Image,
 	}
 }
