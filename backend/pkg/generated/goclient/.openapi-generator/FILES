@@ -49,6 +49,7 @@ docs/Entity.md
 docs/ExportAPI.md
 docs/ImportAPI.md
 docs/ImportResult.md
+docs/ImportResultBalancesInner.md
 docs/Matcher.md
 docs/MatcherAndTransaction.md
 docs/MatcherNoID.md
@@ -89,6 +90,7 @@ model_currency_aggregation.go
 model_currency_no_id.go
 model_entity.go
 model_import_result.go
+model_import_result_balances_inner.go
 model_matcher.go
 model_matcher_and_transaction.go
 model_matcher_no_id.go

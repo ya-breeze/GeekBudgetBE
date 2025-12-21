@@ -25,12 +25,15 @@ type ImportResult struct {
 
 	// Details of import
 	Description string `json:"description,omitempty"`
+
+	Balances []ImportResultBalancesInner `json:"balances,omitempty"`
 }
 
 type ImportResultInterface interface {
 	GetDate() time.Time
 	GetStatus() string
 	GetDescription() string
+	GetBalances() []ImportResultBalancesInner
 }
 
 func (c *ImportResult) GetDate() time.Time {
@@ -42,13 +45,26 @@ func (c *ImportResult) GetStatus() string {
 func (c *ImportResult) GetDescription() string {
 	return c.Description
 }
+func (c *ImportResult) GetBalances() []ImportResultBalancesInner {
+	return c.Balances
+}
 
 // AssertImportResultRequired checks if the required fields are not zero-ed
 func AssertImportResultRequired(obj ImportResult) error {
+	for _, el := range obj.Balances {
+		if err := AssertImportResultBalancesInnerRequired(el); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 // AssertImportResultConstraints checks if the values respects the defined constraints
 func AssertImportResultConstraints(obj ImportResult) error {
+	for _, el := range obj.Balances {
+		if err := AssertImportResultBalancesInnerConstraints(el); err != nil {
+			return err
+		}
+	}
 	return nil
 }

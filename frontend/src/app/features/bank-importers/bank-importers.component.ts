@@ -11,8 +11,17 @@ import { DatePipe } from '@angular/common';
 import { BankImporterService } from './services/bank-importer.service';
 import { BankImporter } from '../../core/api/models/bank-importer';
 import { BankImporterFormDialogComponent } from './bank-importer-form-dialog/bank-importer-form-dialog.component';
+import {
+    BankImporterUploadDialogComponent,
+    BankImporterUploadDialogResult,
+} from './bank-importer-upload-dialog/bank-importer-upload-dialog.component';
+import {
+    ImportResultDialogComponent,
+    ImportResultDialogData,
+} from './import-result-dialog/import-result-dialog.component';
 import { AccountService } from '../accounts/services/account.service';
 import { LayoutService } from '../../layout/services/layout.service';
+import { CurrencyService } from '../currencies/services/currency.service';
 
 @Component({
     selector: 'app-bank-importers',
@@ -36,6 +45,7 @@ export class BankImportersComponent implements OnInit {
     private readonly dialog = inject(MatDialog);
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
+    private readonly currenciesService = inject(CurrencyService);
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
@@ -88,6 +98,7 @@ export class BankImportersComponent implements OnInit {
 
     loadBankImporters(): void {
         this.accountService.loadAccounts().subscribe();
+        this.currenciesService.loadCurrencies().subscribe();
         this.bankImporterService.loadBankImporters().subscribe();
     }
 
@@ -135,6 +146,65 @@ export class BankImportersComponent implements OnInit {
                         });
                     },
                 });
+            }
+        });
+    }
+
+    openUploadDialog(bankImporter: BankImporter): void {
+        const dialogRef = this.dialog.open<
+            BankImporterUploadDialogComponent,
+            { bankImporter: BankImporter },
+            BankImporterUploadDialogResult
+        >(BankImporterUploadDialogComponent, {
+            width: '500px',
+            data: { bankImporter },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result && bankImporter.id) {
+                this.bankImporterService
+                    .upload(bankImporter.id, result.file, result.format)
+                    .subscribe({
+                        next: (response) => {
+                            const currencies = this.currenciesService.currencies();
+                            const currencyMap = new Map(currencies.map((c) => [c.id, c.name]));
+
+                            const balances = response.balances?.map((b) => ({
+                                amount: b.amount ?? 0,
+                                currency: b.currencyId
+                                    ? currencyMap.get(b.currencyId) || b.currencyId
+                                    : '?',
+                            }));
+
+                            this.dialog.open<ImportResultDialogComponent, ImportResultDialogData>(
+                                ImportResultDialogComponent,
+                                {
+                                    width: '500px',
+                                    data: {
+                                        title: 'Import Successful',
+                                        message:
+                                            response.description ||
+                                            'Transactions uploaded successfully',
+                                        status: 'success',
+                                        balances,
+                                    },
+                                },
+                            );
+                        },
+                        error: (err) => {
+                            this.dialog.open<ImportResultDialogComponent, ImportResultDialogData>(
+                                ImportResultDialogComponent,
+                                {
+                                    width: '500px',
+                                    data: {
+                                        title: 'Import Failed',
+                                        message: err || 'Failed to upload transactions',
+                                        status: 'error',
+                                    },
+                                },
+                            );
+                        },
+                    });
             }
         });
     }

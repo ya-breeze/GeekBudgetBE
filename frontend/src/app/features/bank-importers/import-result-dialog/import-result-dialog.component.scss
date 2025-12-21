@@ -1,0 +1,30 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 0;
+}
+
+.status-icon {
+    mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+    }
+
+    &.success {
+        color: #4caf50;
+    }
+
+    &.error {
+        color: #f44336;
+    }
+}
+
+.message {
+    font-size: 16px;
+    text-align: center;
+    margin: 0;
+    color: rgba(0, 0, 0, 0.87);
+}

@@ -157,6 +157,7 @@ Class | Method | HTTP request | Description
  - [CurrencyNoID](docs/CurrencyNoID.md)
  - [Entity](docs/Entity.md)
  - [ImportResult](docs/ImportResult.md)
+ - [ImportResultBalancesInner](docs/ImportResultBalancesInner.md)
  - [Matcher](docs/Matcher.md)
  - [MatcherAndTransaction](docs/MatcherAndTransaction.md)
  - [MatcherNoID](docs/MatcherNoID.md)

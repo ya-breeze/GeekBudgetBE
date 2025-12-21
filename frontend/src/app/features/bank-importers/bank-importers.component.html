@@ -70,6 +70,16 @@
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef>Actions</th>
                     <td mat-cell *matCellDef="let importer">
+                        @if (importer.type === 'kb' || importer.type === 'revolut') {
+                            <button
+                                mat-icon-button
+                                color="primary"
+                                (click)="openUploadDialog(importer)"
+                                aria-label="Upload"
+                            >
+                                <mat-icon>cloud_upload</mat-icon>
+                            </button>
+                        }
                         <button
                             mat-icon-button
                             (click)="openEditDialog(importer)"

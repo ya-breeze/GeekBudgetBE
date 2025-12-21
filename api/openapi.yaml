@@ -1448,6 +1448,15 @@ components:
           type: string
           description: >-
             Details of import
+        balances:
+          type: array
+          items:
+            type: object
+            properties:
+              amount:
+                type: number
+              currencyId:
+                type: string
 
     BankImporterNoID:
       type: object

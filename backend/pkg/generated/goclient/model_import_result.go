@@ -26,7 +26,8 @@ type ImportResult struct {
 	// Status of import
 	Status *string `json:"status,omitempty"`
 	// Details of import
-	Description *string `json:"description,omitempty"`
+	Description *string                     `json:"description,omitempty"`
+	Balances    []ImportResultBalancesInner `json:"balances,omitempty"`
 }
 
 // NewImportResult instantiates a new ImportResult object
@@ -142,6 +143,38 @@ func (o *ImportResult) SetDescription(v string) {
 	o.Description = &v
 }
 
+// GetBalances returns the Balances field value if set, zero value otherwise.
+func (o *ImportResult) GetBalances() []ImportResultBalancesInner {
+	if o == nil || IsNil(o.Balances) {
+		var ret []ImportResultBalancesInner
+		return ret
+	}
+	return o.Balances
+}
+
+// GetBalancesOk returns a tuple with the Balances field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ImportResult) GetBalancesOk() ([]ImportResultBalancesInner, bool) {
+	if o == nil || IsNil(o.Balances) {
+		return nil, false
+	}
+	return o.Balances, true
+}
+
+// HasBalances returns a boolean if a field has been set.
+func (o *ImportResult) HasBalances() bool {
+	if o != nil && !IsNil(o.Balances) {
+		return true
+	}
+
+	return false
+}
+
+// SetBalances gets a reference to the given []ImportResultBalancesInner and assigns it to the Balances field.
+func (o *ImportResult) SetBalances(v []ImportResultBalancesInner) {
+	o.Balances = v
+}
+
 func (o ImportResult) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -160,6 +193,9 @@ func (o ImportResult) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Balances) {
+		toSerialize["balances"] = o.Balances
 	}
 	return toSerialize, nil
 }

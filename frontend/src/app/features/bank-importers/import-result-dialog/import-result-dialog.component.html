@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content class="content">
+    <div class="status-icon" [class.success]="data.status === 'success'" [class.error]="data.status === 'error'">
+        <mat-icon>{{ data.status === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+    </div>
+    <p class="message">{{ data.message }}</p>
+
+    @if (data.balances?.length) {
+    <div class="balances">
+        <h3>Final Balance:</h3>
+        @for (balance of data.balances; track $index) {
+        <h4>
+            <strong>{{ balance.amount | number: '1.2-2' }}</strong>
+            {{ balance.currency }}
+        </h4>
+        }
+    </div>
+    }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

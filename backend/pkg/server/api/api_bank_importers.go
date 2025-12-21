@@ -172,11 +172,23 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 	if err != nil {
 		return nil, fmt.Errorf("can't fetch bank importer: %w", err)
 	}
+
+	balances := []goserver.ImportResultBalancesInner{}
+	if info != nil {
+		for _, b := range info.Balances {
+			balances = append(balances, goserver.ImportResultBalancesInner{
+				Amount:     float32(b.ClosingBalance),
+				CurrencyId: b.CurrencyId,
+			})
+		}
+	}
+
 	lastImport := goserver.ImportResult{
 		Date:   biData.LastSuccessfulImport,
 		Status: "success",
-		Description: fmt.Sprintf("Fetched %d transactions. Imported %d new transactions. Final balances: %v",
-			totalTransactionsCnt, newTransactionsCnt, info.Balances),
+		Description: fmt.Sprintf("Fetched %d transactions. Imported %d new transactions.",
+			totalTransactionsCnt, newTransactionsCnt),
+		Balances: balances,
 	}
 	biData.LastSuccessfulImport = time.Now()
 	biData.LastImports = append(biData.LastImports, lastImport)

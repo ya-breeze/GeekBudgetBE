@@ -57,6 +57,7 @@ go/model_currency_aggregation.go
 go/model_currency_no_id.go
 go/model_entity.go
 go/model_import_result.go
+go/model_import_result_balances_inner.go
 go/model_matcher.go
 go/model_matcher_and_transaction.go
 go/model_matcher_no_id.go
