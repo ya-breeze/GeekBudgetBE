@@ -16,6 +16,7 @@ type BankImporter struct {
 	AccountID            string
 	Extra                string
 	Type                 string
+	FeeAccountID         string
 	LastSuccessfulImport time.Time
 	LastImports          []goserver.ImportResult                  `gorm:"serializer:json"`
 	Mappings             []goserver.BankImporterNoIdMappingsInner `gorm:"serializer:json"`
@@ -31,6 +32,7 @@ func (t *BankImporter) FromDB() goserver.BankImporter {
 		Description:          t.Description,
 		AccountId:            t.AccountID,
 		Extra:                t.Extra,
+		FeeAccountId:         t.FeeAccountID,
 		Type:                 t.Type,
 		LastSuccessfulImport: t.LastSuccessfulImport,
 		LastImports:          t.LastImports,
@@ -45,6 +47,7 @@ func BankImporterToDB(m goserver.BankImporterNoIdInterface, userID string) *Bank
 		Name:                 m.GetName(),
 		Description:          m.GetDescription(),
 		AccountID:            m.GetAccountId(),
+		FeeAccountID:         m.GetFeeAccountId(),
 		Extra:                m.GetExtra(),
 		Type:                 m.GetType(),
 		LastSuccessfulImport: m.GetLastSuccessfulImport(),
@@ -58,6 +61,7 @@ func BankImporterWithoutID(bankImporter *goserver.BankImporter) *goserver.BankIm
 		Name:                 bankImporter.Name,
 		Description:          bankImporter.Description,
 		AccountId:            bankImporter.AccountId,
+		FeeAccountId:         bankImporter.FeeAccountId,
 		Extra:                bankImporter.Extra,
 		Type:                 bankImporter.Type,
 		LastSuccessfulImport: bankImporter.LastSuccessfulImport,
