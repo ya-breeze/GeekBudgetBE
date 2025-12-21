@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, tap, map } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map, catchError, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { authorize } from '../../api/fn/auth/authorize';
+import { getUser } from '../../api/fn/user/get-user';
 import { AuthData } from '../../api/models/auth-data';
 import { ApiConfiguration } from '../../api/api-configuration';
 
@@ -44,5 +45,18 @@ export class AuthService {
         // Fallback or explicit check.
         // Without access to document.cookie (HttpOnly), we rely on state or 401s
         return this.isAuthenticatedSubject.value;
+    }
+
+    checkAuth(): Observable<boolean> {
+        return getUser(this.http, this.apiConfig.rootUrl).pipe(
+            map(() => {
+                this.isAuthenticatedSubject.next(true);
+                return true;
+            }),
+            catchError(() => {
+                this.isAuthenticatedSubject.next(false);
+                return of(false);
+            }),
+        );
     }
 }

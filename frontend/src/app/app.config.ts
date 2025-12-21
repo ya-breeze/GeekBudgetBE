@@ -2,6 +2,8 @@ import {
     ApplicationConfig,
     provideBrowserGlobalErrorListeners,
     provideZoneChangeDetection,
+    APP_INITIALIZER,
+    inject,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -9,6 +11,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 import { routes } from './app.routes';
+import { AuthService } from './core/auth/services/auth.service';
 // import { authInterceptor } from './core/auth/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/auth/interceptors/error.interceptor';
 import { ApiConfiguration } from './core/api/api-configuration';
@@ -22,6 +25,14 @@ export const appConfig: ApplicationConfig = {
         provideHttpClient(withInterceptors([errorInterceptor])),
         provideAnimationsAsync(),
         provideCharts(withDefaultRegisterables()),
+        {
+            provide: APP_INITIALIZER,
+            useFactory: () => {
+                const authService = inject(AuthService);
+                return () => authService.checkAuth();
+            },
+            multi: true,
+        },
         {
             provide: ApiConfiguration,
             useFactory: () => {

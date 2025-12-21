@@ -105,4 +105,29 @@ describe('AuthService', () => {
             expect(service.isLoggedIn()).toBe(false);
         });
     });
+
+    describe('checkAuth', () => {
+        it('should return true and set authenticated state on success', (done) => {
+            service.checkAuth().subscribe((isLoggedIn) => {
+                expect(isLoggedIn).toBe(true);
+                expect(service.isLoggedIn()).toBe(true);
+                done();
+            });
+
+            const req = httpMock.expectOne(`${apiConfig.rootUrl}/v1/user`);
+            expect(req.request.method).toBe('GET');
+            req.flush({}); // Return empty user object or whatever, success 200
+        });
+
+        it('should return false and set unauthenticated state on failure', (done) => {
+            service.checkAuth().subscribe((isLoggedIn) => {
+                expect(isLoggedIn).toBe(false);
+                expect(service.isLoggedIn()).toBe(false);
+                done();
+            });
+
+            const req = httpMock.expectOne(`${apiConfig.rootUrl}/v1/user`);
+            req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+        });
+    });
 });
