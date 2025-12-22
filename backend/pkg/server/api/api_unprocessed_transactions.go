@@ -116,6 +116,18 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 			continue
 		}
 
+		// skip transactions which are also unprocessed (have undefined accounts)
+		isCandidateUnprocessed := false
+		for _, m := range t.Movements {
+			if m.AccountId == "" {
+				isCandidateUnprocessed = true
+				break
+			}
+		}
+		if isCandidateUnprocessed {
+			continue
+		}
+
 		// compute all increases in the transaction to compare
 		var d float64
 		for _, m := range t.Movements {
