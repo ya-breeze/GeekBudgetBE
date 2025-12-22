@@ -275,9 +275,9 @@ export class MatcherEditDialogComponent implements OnInit {
             outputDescription: formValue.outputDescription!,
             outputTags: formValue.outputTags
                 ? formValue.outputTags
-                    .split(',')
-                    .map((t) => t.trim())
-                    .filter((t) => !!t)
+                      .split(',')
+                      .map((t) => t.trim())
+                      .filter((t) => !!t)
                 : [],
         };
 

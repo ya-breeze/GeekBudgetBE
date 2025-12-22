@@ -67,7 +67,7 @@ var _ = Describe("BankImporters API", func() {
 				DescriptionRegexp: descRegex,
 			}
 
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
+			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{runtimeMatcher}, nil)
 
 			// Expect auto-confirmation
@@ -117,7 +117,7 @@ var _ = Describe("BankImporters API", func() {
 				DescriptionRegexp: descRegex,
 			}
 
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
+			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{runtimeMatcher}, nil)
 
 			// Expect normal transaction creation without auto-conversion
@@ -142,6 +142,81 @@ var _ = Describe("BankImporters API", func() {
 			}
 
 			_, err = sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions)
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	Describe("Deduplication Logic", func() {
+		It("should filter out duplicates from DB and within batch", func() {
+			// 1. Setup existing transactions in DB
+			existingTx := goserver.Transaction{
+				Id:          uuid.New().String(),
+				ExternalIds: []string{"ext-existing"},
+				Date:        time.Now().AddDate(0, 0, -1),
+			}
+
+			// Mock DB return
+			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).
+				Return([]goserver.Transaction{existingTx}, nil)
+
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
+
+			// 2. Setup imported transactions
+			// - txNew: completely new
+			// - txDuplicateDB: matches existingTx by ExternalID
+			// - txBatch1: first occurrence in batch
+			// - txBatch2: duplicate of txBatch1 in batch (should be skipped)
+
+			txNew := goserver.TransactionNoId{
+				Date:        time.Now(),
+				Description: "New Tx",
+				ExternalIds: []string{"ext-new"},
+				Movements:   []goserver.Movement{{Amount: 10, CurrencyId: "USD"}},
+			}
+
+			txDuplicateDB := goserver.TransactionNoId{
+				Date:        time.Now().AddDate(0, 0, -1), // Date doesn't strictly matter for ExternalID match but good for realism
+				Description: "Duplicate DB",
+				ExternalIds: []string{"ext-existing"},
+				Movements:   []goserver.Movement{{Amount: 20, CurrencyId: "USD"}},
+			}
+
+			txBatch1 := goserver.TransactionNoId{
+				Date:        time.Now(),
+				Description: "Batch Tx",
+				ExternalIds: []string{"ext-batch"},
+				Movements:   []goserver.Movement{{Amount: 30, CurrencyId: "USD"}},
+			}
+			// Exact copy of txBatch1
+			txBatch2 := txBatch1
+
+			importedTransactions := []goserver.TransactionNoId{txNew, txDuplicateDB, txBatch1, txBatch2}
+
+			// Expect CreateTransaction ONLY for txNew and txBatch1
+			// DuplicateDB and Batch2 should be skipped
+
+			savedTxs := 0
+			// We can capture the arguments to verify WHICH ones are saved
+			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).DoAndReturn(func(uid string, t *goserver.TransactionNoId) (goserver.Transaction, error) {
+				if t.Description == "Duplicate DB" {
+					Fail("Should not save duplicate from DB")
+				}
+				// We can't easily distinguish Batch1 and Batch2 by content since they are identical,
+				// but the logic guarantees only one is saved.
+				savedTxs++
+				return goserver.Transaction{Id: uuid.New().String()}, nil
+			}).Times(2) // We expect exactly 2 calls
+
+			// Mock updateLastImportFields
+			mockDB.EXPECT().GetBankImporter(userID, "imp-dedup").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil)
+			mockDB.EXPECT().UpdateBankImporter(userID, "imp-dedup", gomock.Any()).DoAndReturn(func(uid, id string, bi goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+				// Verify counts in description?
+				// The implementation calls updateLastImportFields with totalTransactionsCnt=4, newTransactionsCnt=2
+				// We can just return success
+				return goserver.BankImporter{}, nil
+			})
+
+			_, err := sut.saveImportedTransactions(userID, "imp-dedup", &goserver.BankAccountInfo{}, importedTransactions)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
@@ -286,8 +361,8 @@ var _ = Describe("BankImporters API", func() {
 
 			// addImportResult will also call UpdateBankImporter...
 			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil).After(updateCall1)
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
-			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
+			// mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil) // Not called for empty transactions
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil).AnyTimes() // Might not be called either, but safe to allow any times or just remove if strict
 
 			_, err := sut.Fetch(ctx, userID, importerID, true)
 			Expect(err).ToNot(HaveOccurred())

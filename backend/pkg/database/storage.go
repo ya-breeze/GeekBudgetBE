@@ -61,6 +61,7 @@ type Storage interface {
 	DeleteTransaction(userID string, id string) error
 	DeleteDuplicateTransaction(userID string, id, duplicateID string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
+	GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
 
 	GetBankImporters(userID string) ([]goserver.BankImporter, error)
 	CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
@@ -458,6 +459,35 @@ func (s *storage) DeleteCurrency(userID string, id string) error {
 
 func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error) {
 	req := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID)
+	if !dateFrom.IsZero() {
+		req = req.Where("date >= ?", dateFrom)
+	}
+	if !dateTo.IsZero() {
+		req = req.Where("date < ?", dateTo)
+	}
+	req = req.Order("date")
+
+	result, err := req.Rows()
+	if err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	defer result.Close()
+
+	transactions := make([]goserver.Transaction, 0)
+	for result.Next() {
+		var tr models.Transaction
+		if err := s.db.ScanRows(result, &tr); err != nil {
+			return nil, fmt.Errorf(StorageError, err)
+		}
+
+		transactions = append(transactions, tr.FromDB())
+	}
+
+	return transactions, nil
+}
+
+func (s *storage) GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error) {
+	req := s.db.Model(&models.Transaction{}).Unscoped().Where("user_id = ?", userID)
 	if !dateFrom.IsZero() {
 		req = req.Where("date >= ?", dateFrom)
 	}

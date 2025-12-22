@@ -302,9 +302,22 @@ func (s *BankImportersAPIServiceImpl) addImportResult(
 func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	userID, id string, info *goserver.BankAccountInfo, transactions []goserver.TransactionNoId,
 ) (*goserver.ImportResult, error) {
-	// Fetch all transactions from the database
-	// TODO don't fetch - just search by external ID
-	dbTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
+	if len(transactions) == 0 {
+		return s.updateLastImportFields(userID, id, info, 0, 0)
+	}
+
+	// Calculate the date range for fetching existing transactions
+	// We want to fetch transactions starting from the earliest date in the import batch minus a margin
+	earliestDate := transactions[0].Date
+	for _, t := range transactions {
+		if t.Date.Before(earliestDate) {
+			earliestDate = t.Date
+		}
+	}
+	fetchFrom := earliestDate.AddDate(0, 0, -7) // 7 days safety margin
+
+	// Fetch all transactions from the database (including deleted ones)
+	dbTransactions, err := s.db.GetTransactionsIncludingDeleted(userID, fetchFrom, time.Time{})
 	if err != nil {
 		return nil, fmt.Errorf("can't fetch transactions from DB: %w", err)
 	}
@@ -314,6 +327,10 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		s.logger.With("error", err).Error("Failed to get matchers")
 		return nil, fmt.Errorf("can't get matchers: %w", err)
 	}
+
+	// Keep track of visited transactions within this batch to handle self-duplicates
+	visitedStableHashes := make(map[string]bool)
+	visitedExternalIDs := make(map[string]bool)
 
 	// save transactions to the database
 	cnt := 0
@@ -329,6 +346,25 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		found := false
 		tStableHash := bankimporters.ComputeStableHash(&t)
 
+		// 0. Check against already visited in this batch (Self-Deduplication)
+		if visitedStableHashes[tStableHash] {
+			found = true
+			s.logger.With("stableHash", tStableHash).Info("Duplicate transaction within import batch (stable hash)")
+		} else {
+			for _, extID := range t.ExternalIds {
+				if visitedExternalIDs[extID] {
+					found = true
+					s.logger.With("externalID", extID).Info("Duplicate transaction within import batch (external ID)")
+					break
+				}
+			}
+		}
+
+		if found {
+			continue
+		}
+
+		// Check against DB transactions
 		for _, dbt := range dbTransactions {
 			// 1. Check for exact match of any external ID
 			for _, extID := range t.ExternalIds {
@@ -352,16 +388,15 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			if dbtStableHash == tStableHash {
 				found = true
 				s.logger.With("stableHash", tStableHash).Info("Transaction already was imported (stable hash match)")
-
-				// Optional: Update the existing transaction with the new legacy hash?
-				// If we matched by stable hash, it means the legacy hash is missing from dbt.
-				// We probably should add it to dbt.ExternalIds to prevent future re-computations?
-				// But mutating dbt here is complex (need to save to DB).
-				// For now, accept it as duplicate and skip.
 				break
 			}
 		}
 		if found {
+			// Mark as visited so we don't process potential subsequent duplicates of this one in the same batch
+			visitedStableHashes[tStableHash] = true
+			for _, extID := range t.ExternalIds {
+				visitedExternalIDs[extID] = true
+			}
 			continue
 		}
 
@@ -413,6 +448,13 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			return nil, fmt.Errorf("can't save transaction: %w", err)
 		}
 		s.logger.Info("Imported transaction saved to DB")
+
+		// Mark as visited
+		visitedStableHashes[tStableHash] = true
+		for _, extID := range t.ExternalIds {
+			visitedExternalIDs[extID] = true
+		}
+
 		cnt++
 	}
 	s.logger.With("count", cnt).Info("All new imported transactions saved to DB")
