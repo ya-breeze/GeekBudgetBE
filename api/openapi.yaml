@@ -1527,6 +1527,11 @@ components:
                 type: string
                 description: >-
                   Tag which should be set if mapping is matched
+        isStopped:
+          type: boolean
+          description: >-
+            If true, automatic fetching is stopped for this importer. This is usually set automatically
+            when fetch fails, and reset when user manually triggers fetch or updates the importer.
       required:
         - name
         - accountId

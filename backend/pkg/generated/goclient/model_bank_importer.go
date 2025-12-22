@@ -42,6 +42,8 @@ type BankImporter struct {
 	LastImports []ImportResult `json:"lastImports,omitempty"`
 	// List of mappings which are used to enrich transactions with additional tags
 	Mappings []BankImporterNoIDMappingsInner `json:"mappings,omitempty"`
+	// If true, automatic fetching is stopped for this importer. This is usually set automatically when fetch fails, and reset when user manually triggers fetch or updates the importer.
+	IsStopped *bool `json:"isStopped,omitempty"`
 }
 
 type _BankImporter BankImporter
@@ -394,6 +396,38 @@ func (o *BankImporter) SetMappings(v []BankImporterNoIDMappingsInner) {
 	o.Mappings = v
 }
 
+// GetIsStopped returns the IsStopped field value if set, zero value otherwise.
+func (o *BankImporter) GetIsStopped() bool {
+	if o == nil || IsNil(o.IsStopped) {
+		var ret bool
+		return ret
+	}
+	return *o.IsStopped
+}
+
+// GetIsStoppedOk returns a tuple with the IsStopped field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *BankImporter) GetIsStoppedOk() (*bool, bool) {
+	if o == nil || IsNil(o.IsStopped) {
+		return nil, false
+	}
+	return o.IsStopped, true
+}
+
+// HasIsStopped returns a boolean if a field has been set.
+func (o *BankImporter) HasIsStopped() bool {
+	if o != nil && !IsNil(o.IsStopped) {
+		return true
+	}
+
+	return false
+}
+
+// SetIsStopped gets a reference to the given bool and assigns it to the IsStopped field.
+func (o *BankImporter) SetIsStopped(v bool) {
+	o.IsStopped = &v
+}
+
 func (o BankImporter) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -430,6 +464,9 @@ func (o BankImporter) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Mappings) {
 		toSerialize["mappings"] = o.Mappings
+	}
+	if !IsNil(o.IsStopped) {
+		toSerialize["isStopped"] = o.IsStopped
 	}
 	return toSerialize, nil
 }

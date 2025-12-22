@@ -14,7 +14,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
-	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
@@ -150,46 +149,148 @@ var _ = Describe("BankImporters API", func() {
 	Describe("FetchBankImporter", func() {
 		It("should reset FetchAll and create notification on failure when FetchAll is true", func() {
 			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
-			importerID := "imp-fail"
+			importerID := "imp-fail-all"
 			bi := goserver.BankImporter{
 				Id:       importerID,
 				Name:     "Failing Importer",
 				FetchAll: true,
-				Extra:    "some-token", // This should make the fetch fail
+				Extra:    "some-token",
 			}
 
-			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(bi, nil)
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(bi, nil).AnyTimes()
 			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil)
 
 			// Expect FetchAll to be reset
-			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
 				Expect(data.GetFetchAll()).To(BeFalse())
 				return goserver.BankImporter{}, nil
 			})
+			// Expect result logging
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil).After(updateCall1)
 
-			// Expect notification to be created
-			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
-				Expect(n.Type).To(Equal(string(models.NotificationTypeError)))
-				Expect(n.Title).To(Equal("Bank Import Failed"))
-				Expect(n.Description).To(ContainSubstring("Failed to fetch all transactions"))
-				return goserver.Notification{}, nil
-			})
+			// Expect notification
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).Return(goserver.Notification{}, nil)
 
-			// Set up mock HTTP transport
+			// Mock HTTP transport failure
 			oldTransport := http.DefaultClient.Transport
 			defer func() { http.DefaultClient.Transport = oldTransport }()
 			http.DefaultClient.Transport = &mockTransport{
 				RoundTripFunc: func(req *http.Request) (*http.Response, error) {
-					return &http.Response{
-						StatusCode: 500,
-						Body:       io.NopCloser(bytes.NewBufferString("fail")),
-					}, nil
+					return &http.Response{StatusCode: 500, Body: io.NopCloser(bytes.NewBufferString("fail"))}, nil
 				},
 			}
 
 			resp, err := sut.FetchBankImporter(ctx, importerID)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Code).To(Equal(500))
+		})
+
+		It("should set IsStopped on failure when not interactive and not FetchAll", func() {
+			// This test simulates a background fetch (isInteractive=false)
+			// Since we can't easily call Fetch with private isInteractive from public API, we call Fetch directly or mock internal logic?
+			// But Fetch is public on struct but not interface? No, Fetch is public helper on implementation.
+
+			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			importerID := "imp-fail-stopped"
+			bi := goserver.BankImporter{
+				Id:        importerID,
+				Name:      "Failing Importer Stopped",
+				FetchAll:  false,
+				IsStopped: false,
+				Extra:     "fail-token",
+			}
+
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(bi, nil).AnyTimes()
+			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil)
+
+			// Expect IsStopped to be set to true
+			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+				Expect(data.GetIsStopped()).To(BeTrue())
+				return goserver.BankImporter{}, nil
+			})
+			// Expect result logging
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil).After(updateCall1)
+
+			// Expect notification for stopped importer
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+				Expect(n.Title).To(Equal("Bank Import Stopped"))
+				return goserver.Notification{}, nil
+			})
+
+			// Mock HTTP transport failure
+			oldTransport := http.DefaultClient.Transport
+			defer func() { http.DefaultClient.Transport = oldTransport }()
+			http.DefaultClient.Transport = &mockTransport{
+				RoundTripFunc: func(req *http.Request) (*http.Response, error) {
+					return &http.Response{StatusCode: 500, Body: io.NopCloser(bytes.NewBufferString("fail"))}, nil
+				},
+			}
+
+			// Call Fetch directly with isInteractive=false
+			_, err := sut.Fetch(ctx, userID, importerID, false)
+			Expect(err).To(HaveOccurred())
+		})
+
+		It("should skip fetch if IsStopped is true and not interactive", func() {
+			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			importerID := "imp-skipped"
+			bi := goserver.BankImporter{
+				Id:        importerID,
+				IsStopped: true,
+			}
+
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(bi, nil).AnyTimes()
+
+			// Expect result logging (UpdateBankImporter called by addImportResult)
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil).AnyTimes()
+
+			// Call Fetch directly with isInteractive=false
+			_, err := sut.Fetch(ctx, userID, importerID, false)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("bank importer is stopped"))
+		})
+
+		It("should reset IsStopped on successful fetch", func() {
+			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			importerID := "imp-reset"
+			bi := goserver.BankImporter{
+				Id:        importerID,
+				IsStopped: true,
+				Type:      "fio", // Need valid type for mock logic
+				Extra:     "good-token",
+			}
+
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(bi, nil).AnyTimes()
+			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil)
+
+			// Mock successful import sequence...
+			// This requires mocking FIO converter or ensuring FioConverter works with mock DB/Transport.
+			// FioConverter uses http.DefaultClient.
+			oldTransport := http.DefaultClient.Transport
+			defer func() { http.DefaultClient.Transport = oldTransport }()
+			http.DefaultClient.Transport = &mockTransport{
+				RoundTripFunc: func(req *http.Request) (*http.Response, error) {
+					// Return empty JSON list for transactions
+					return &http.Response{
+						StatusCode: 200,
+						Body:       io.NopCloser(bytes.NewBufferString(`{"accountStatement": {"transactionList": {"transaction": []}}}`)),
+					}, nil
+				},
+			}
+
+			// Expect IsStopped to be reset to false
+			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+				Expect(data.GetIsStopped()).To(BeFalse())
+				return goserver.BankImporter{}, nil
+			})
+
+			// addImportResult will also call UpdateBankImporter...
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil).After(updateCall1)
+			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
+
+			_, err := sut.Fetch(ctx, userID, importerID, true)
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 })

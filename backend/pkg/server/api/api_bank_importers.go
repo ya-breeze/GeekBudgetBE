@@ -107,10 +107,10 @@ func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 }
 
 func (s *BankImportersAPIServiceImpl) Fetch(
-	ctx context.Context, userID, importerID string,
+	ctx context.Context, userID, importerID string, isInteractive bool,
 ) (*goserver.ImportResult, error) {
 	s.logger.Info("Fetching bank importer", "userID", userID, "bankImporterID", importerID)
-	info, transactions, err := s.fetchFioTransactions(ctx, userID, importerID)
+	info, transactions, err := s.fetchFioTransactions(ctx, userID, importerID, isInteractive)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to fetch for bank importer")
 		// Log failed import
@@ -140,7 +140,7 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
-	lastImport, err := s.Fetch(ctx, userID, id)
+	lastImport, err := s.Fetch(ctx, userID, id, true)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to fetch")
 		return goserver.Response(500, nil), nil
@@ -150,13 +150,18 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 }
 
 func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
-	ctx context.Context, userID, id string,
+	ctx context.Context, userID, id string, isInteractive bool,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	s.logger.With("user", userID).Info("Fetching transactions for bank importer")
 
 	biData, err := s.db.GetBankImporter(userID, id)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't fetch bank importer: %w", err)
+	}
+
+	if !isInteractive && biData.IsStopped {
+		s.logger.With("userID", userID, "bankImporterID", id).Info("Bank importer is stopped, skipping fetch")
+		return nil, nil, fmt.Errorf("bank importer is stopped")
 	}
 
 	currencies, err := s.db.GetCurrencies(userID)
@@ -174,6 +179,16 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 	s.logger.Info("Importing transactions")
 	info, transactions, err := bi.Import(ctx)
 	if err != nil {
+		// Stop fetching if it was not interactive and fetch all is false
+		if !biData.FetchAll && !isInteractive {
+			s.logger.With("bankImporterID", id).With("userID", userID).Info("Bank importer failed, stopping further fetches")
+			biData.IsStopped = true
+			_, updateErr := s.db.UpdateBankImporter(userID, id, &biData)
+			if updateErr != nil {
+				s.logger.With("error", updateErr).Error("Failed to set IsStopped after import failure")
+			}
+		}
+
 		if biData.FetchAll {
 			s.logger.With("bankImporterID", id).With("userID", userID).Info("All transactions fetch failed. Disabling FetchAll and creating notification")
 			biData.FetchAll = false
@@ -192,11 +207,31 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 			if notifyErr != nil {
 				s.logger.With("error", notifyErr).Error("Failed to create notification for import failure")
 			}
+		} else if !isInteractive {
+			// Create notification for stopped importer
+			_, notifyErr := s.db.CreateNotification(userID, &goserver.Notification{
+				Date:        time.Now(),
+				Type:        string(models.NotificationTypeError),
+				Title:       "Bank Import Stopped",
+				Description: fmt.Sprintf("Failed to fetch transactions for %q. Automatic fetching has been stopped. Please check the importer settings. Error: %s", biData.Name, err),
+			})
+			if notifyErr != nil {
+				s.logger.With("error", notifyErr).Error("Failed to create notification for stopped importer")
+			}
 		}
 
 		return nil, nil, fmt.Errorf("can't import transactions: %w", err)
 	}
 	s.logger.With("info", info, "transactions", len(transactions)).Info("Imported transactions")
+
+	if biData.IsStopped {
+		s.logger.With("bankImporterID", id).With("userID", userID).Info("Bank importer fetched successfully, resetting IsStopped")
+		biData.IsStopped = false
+		_, err = s.db.UpdateBankImporter(userID, id, &biData)
+		if err != nil {
+			s.logger.With("error", err).Error("Failed to reset IsStopped after successful import")
+		}
+	}
 
 	if biData.FetchAll {
 		s.logger.With("bankImporterID", id).With("userID", userID).Info("All transactions fetched. Disabling FetchAll")

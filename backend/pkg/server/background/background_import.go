@@ -54,7 +54,7 @@ func StartBankImporters(
 						logger.Info("Skipping bank importer type", "type", pair.BankImporterType)
 						continue
 					}
-					i, err := importer.Fetch(ctx, pair.UserID, pair.BankImporterID)
+					i, err := importer.Fetch(ctx, pair.UserID, pair.BankImporterID, false)
 					if err != nil {
 						logger.With("error", err).Error("Failed to import bank transactions")
 						continue

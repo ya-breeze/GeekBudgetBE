@@ -45,6 +45,9 @@ type BankImporter struct {
 
 	// List of mappings which are used to enrich transactions with additional tags
 	Mappings []BankImporterNoIdMappingsInner `json:"mappings,omitempty"`
+
+	// If true, automatic fetching is stopped for this importer. This is usually set automatically when fetch fails, and reset when user manually triggers fetch or updates the importer.
+	IsStopped bool `json:"isStopped,omitempty"`
 }
 
 type BankImporterInterface interface {
@@ -59,6 +62,7 @@ type BankImporterInterface interface {
 	GetLastSuccessfulImport() time.Time
 	GetLastImports() []ImportResult
 	GetMappings() []BankImporterNoIdMappingsInner
+	GetIsStopped() bool
 }
 
 func (c *BankImporter) GetId() string {
@@ -93,6 +97,9 @@ func (c *BankImporter) GetLastImports() []ImportResult {
 }
 func (c *BankImporter) GetMappings() []BankImporterNoIdMappingsInner {
 	return c.Mappings
+}
+func (c *BankImporter) GetIsStopped() bool {
+	return c.IsStopped
 }
 
 // AssertBankImporterRequired checks if the required fields are not zero-ed

@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **LastSuccessfulImport** | Pointer to **time.Time** | Date of last successful import. | [optional] 
 **LastImports** | Pointer to [**[]ImportResult**](ImportResult.md) | List of last imports. It could be shown to user to explain what was imported recently | [optional] 
 **Mappings** | Pointer to [**[]BankImporterNoIDMappingsInner**](BankImporterNoIDMappingsInner.md) | List of mappings which are used to enrich transactions with additional tags | [optional] 
+**IsStopped** | Pointer to **bool** | If true, automatic fetching is stopped for this importer. This is usually set automatically when fetch fails, and reset when user manually triggers fetch or updates the importer. | [optional] 
 
 ## Methods
 
@@ -294,6 +295,31 @@ SetMappings sets Mappings field to given value.
 `func (o *BankImporter) HasMappings() bool`
 
 HasMappings returns a boolean if a field has been set.
+
+### GetIsStopped
+
+`func (o *BankImporter) GetIsStopped() bool`
+
+GetIsStopped returns the IsStopped field if non-nil, zero value otherwise.
+
+### GetIsStoppedOk
+
+`func (o *BankImporter) GetIsStoppedOk() (*bool, bool)`
+
+GetIsStoppedOk returns a tuple with the IsStopped field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIsStopped
+
+`func (o *BankImporter) SetIsStopped(v bool)`
+
+SetIsStopped sets IsStopped field to given value.
+
+### HasIsStopped
+
+`func (o *BankImporter) HasIsStopped() bool`
+
+HasIsStopped returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
