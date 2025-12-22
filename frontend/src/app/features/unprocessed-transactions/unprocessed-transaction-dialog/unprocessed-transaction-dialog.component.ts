@@ -202,17 +202,47 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     private loadMatchers() {
         const t = this.transaction();
-        const missingIds = t.matched
-            .map((m) => m.matcherId)
-            .filter((id) => !this.matchersMap().has(id));
+        const globalMatchers = this.allMatchers();
 
-        new Set(missingIds).forEach((id) => {
+        const idsToFetch = t.matched.map((m) => m.matcherId);
+
+        // 1. Optimistic Load: Use global cache immediately to avoid empty state
+        this.matchersMap.update((currentMap) => {
+            const newMap = new Map(currentMap);
+            idsToFetch.forEach((id) => {
+                if (!newMap.has(id)) {
+                    const found = globalMatchers.find((gm) => gm.id === id);
+                    if (found) {
+                        newMap.set(id, found);
+                    }
+                }
+            });
+            return newMap;
+        });
+
+        // 2. Fresh Fetch: Always reload relevant matchers to get latest confirmation stats (e.g. history counts)
+        new Set(idsToFetch).forEach((id) => {
             getMatcher(this.http, this.apiConfig.rootUrl, { id: id }).subscribe({
                 next: (response) => {
+                    const freshMatcher = response.body;
+
+                    // Update Local Map
                     this.matchersMap.update((map) => {
                         const newMap = new Map(map);
-                        newMap.set(id, response.body);
+                        newMap.set(id, freshMatcher);
                         return newMap;
+                    });
+
+                    // Update Global Cache to keep it fresh
+                    this.matcherService.matchers.update((currentMatchers) => {
+                        const index = currentMatchers.findIndex((m) => m.id === id);
+                        if (index > -1) {
+                            const updated = [...currentMatchers];
+                            updated[index] = freshMatcher;
+                            return updated;
+                        } else {
+                            return [...currentMatchers, freshMatcher];
+                        }
                     });
                 },
                 error: (err) => console.error('Failed to load matcher', id, err),
@@ -227,6 +257,9 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
         this.descriptionControl.setValue(transaction.transaction.description || '');
         this.initializeManualState();
+
+        // Reload matchers for the updated transaction
+        this.loadMatchers();
     }
 
     setLoading(isLoading: boolean) {
@@ -399,6 +432,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.service.getUnprocessedTransaction(this.transaction().transaction.id).subscribe({
             next: (updatedTransaction) => {
                 this.transaction.set(updatedTransaction);
+                this.loadMatchers();
                 this.loading.set(false);
             },
             error: () => {
