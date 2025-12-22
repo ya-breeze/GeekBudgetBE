@@ -29,5 +29,18 @@
                 </button>
             }
         </mat-menu>
+
+        <div class="right-section">
+            <button
+                mat-icon-button
+                (click)="navigateTo('/notifications')"
+                aria-label="Notifications"
+                [matBadge]="notificationsCount().length"
+                [matBadgeHidden]="notificationsCount().length === 0"
+                matBadgeColor="warn"
+            >
+                <mat-icon>notifications</mat-icon>
+            </button>
+        </div>
     }
 </mat-toolbar>

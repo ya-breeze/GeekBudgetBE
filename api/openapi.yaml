@@ -1701,6 +1701,12 @@ components:
           items:
             type: number
             format: double
+        total:
+          type: number
+          format: double
+        changePercent:
+          type: number
+          format: double
       required:
         - accountId
         - amounts

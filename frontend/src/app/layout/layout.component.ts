@@ -6,6 +6,7 @@ import { FooterComponent } from './footer/footer.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { LayoutService } from './services/layout.service';
 import { UnprocessedTransactionService } from '../features/unprocessed-transactions/services/unprocessed-transaction.service';
+import { NotificationService } from '../features/notifications/services/notification.service';
 
 @Component({
     selector: 'app-layout',
@@ -16,10 +17,12 @@ import { UnprocessedTransactionService } from '../features/unprocessed-transacti
 export class LayoutComponent implements OnInit {
     private readonly layoutService = inject(LayoutService);
     private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
+    private readonly notificationService = inject(NotificationService);
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
     ngOnInit(): void {
         this.unprocessedTransactionService.loadUnprocessedTransactions().subscribe();
+        this.notificationService.startPolling();
     }
 
     toggleSidenav(): void {

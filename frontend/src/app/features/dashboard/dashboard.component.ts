@@ -296,29 +296,12 @@ export class DashboardComponent implements OnInit {
                 const account = assetAccounts.find((a) => a.id === accAgg.accountId);
                 if (!account) return;
 
-                // Calculate balances
-                // Amounts are net changes per interval. Sum them up for total balance.
-                const totalBalance = accAgg.amounts.reduce((sum, val) => sum + val, 0);
-
-                // Calculate last month balance (total minus last interval)
-                // Check if we have at least 1 interval
-                let trendPercent = 0;
+                // Use values computed on backend
+                const totalBalance = accAgg.total || 0;
+                const trendPercent = accAgg.changePercent || 0;
                 let trendDirection: 'up' | 'down' | 'neutral' = 'neutral';
-
-                if (accAgg.amounts.length > 0) {
-                    // Assuming the last interval is the current partially complete month or just the last month
-                    const lastAmount = accAgg.amounts[accAgg.amounts.length - 1];
-                    const previousBalance = totalBalance - lastAmount;
-
-                    if (previousBalance !== 0) {
-                        trendPercent = (lastAmount / Math.abs(previousBalance)) * 100;
-                    } else if (lastAmount !== 0) {
-                        trendPercent = 100; // From 0 to something
-                    }
-
-                    if (trendPercent > 0) trendDirection = 'up';
-                    else if (trendPercent < 0) trendDirection = 'down';
-                }
+                if (trendPercent > 0.01) trendDirection = 'up';
+                else if (trendPercent < -0.01) trendDirection = 'down';
 
                 const currency = this.currencyService
                     .currencies()
@@ -443,7 +426,13 @@ export class DashboardComponent implements OnInit {
             includeHidden: includeHidden,
         };
 
-        const balanceParams: { to: string; outputCurrencyId?: string; includeHidden?: boolean } = {
+        const balanceParams: {
+            from: string;
+            to: string;
+            outputCurrencyId?: string;
+            includeHidden?: boolean;
+        } = {
+            from: twelveMonthsAgo.toISOString(),
             to: now.toISOString(),
             includeHidden: includeHidden,
         };

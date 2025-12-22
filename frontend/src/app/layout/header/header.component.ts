@@ -3,7 +3,9 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatBadgeModule } from '@angular/material/badge';
 import { LayoutService } from '../services/layout.service';
+import { NotificationService } from '../../features/notifications/services/notification.service';
 import { Router } from '@angular/router';
 
 interface MenuItem {
@@ -14,13 +16,16 @@ interface MenuItem {
 
 @Component({
     selector: 'app-header',
-    imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatMenuModule],
+    imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatMenuModule, MatBadgeModule],
     templateUrl: './header.component.html',
     styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
     private readonly layoutService = inject(LayoutService);
+    private readonly notificationService = inject(NotificationService);
     private readonly router = inject(Router);
+
+    protected readonly notificationsCount = this.notificationService.notifications;
 
     readonly menuToggle = output<void>();
 

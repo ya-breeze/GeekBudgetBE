@@ -6,6 +6,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **AccountId** | **string** |  | 
 **Amounts** | **[]float64** |  | 
+**Total** | Pointer to **float64** |  | [optional] 
+**ChangePercent** | Pointer to **float64** |  | [optional] 
 
 ## Methods
 
@@ -65,6 +67,56 @@ and a boolean to check if the value has been set.
 
 SetAmounts sets Amounts field to given value.
 
+
+### GetTotal
+
+`func (o *AccountAggregation) GetTotal() float64`
+
+GetTotal returns the Total field if non-nil, zero value otherwise.
+
+### GetTotalOk
+
+`func (o *AccountAggregation) GetTotalOk() (*float64, bool)`
+
+GetTotalOk returns a tuple with the Total field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTotal
+
+`func (o *AccountAggregation) SetTotal(v float64)`
+
+SetTotal sets Total field to given value.
+
+### HasTotal
+
+`func (o *AccountAggregation) HasTotal() bool`
+
+HasTotal returns a boolean if a field has been set.
+
+### GetChangePercent
+
+`func (o *AccountAggregation) GetChangePercent() float64`
+
+GetChangePercent returns the ChangePercent field if non-nil, zero value otherwise.
+
+### GetChangePercentOk
+
+`func (o *AccountAggregation) GetChangePercentOk() (*float64, bool)`
+
+GetChangePercentOk returns a tuple with the ChangePercent field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetChangePercent
+
+`func (o *AccountAggregation) SetChangePercent(v float64)`
+
+SetChangePercent sets ChangePercent field to given value.
+
+### HasChangePercent
+
+`func (o *AccountAggregation) HasChangePercent() bool`
+
+HasChangePercent returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

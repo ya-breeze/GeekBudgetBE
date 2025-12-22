@@ -7,6 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../core/auth/services/auth.service';
 import { UnprocessedTransactionService } from '../../features/unprocessed-transactions/services/unprocessed-transaction.service';
+import { NotificationService } from '../../features/notifications/services/notification.service';
 
 interface MenuItem {
     label: string;
@@ -32,6 +33,7 @@ interface MenuItem {
 export class SidebarComponent {
     private readonly authService = inject(AuthService);
     private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
+    private readonly notificationService = inject(NotificationService);
 
     menuToggle = output<void>();
 
@@ -61,7 +63,12 @@ export class SidebarComponent {
         { label: 'Matchers', icon: 'rule', route: '/matchers' },
         { label: 'Reports', icon: 'assessment', route: '/reports' },
 
-        { label: 'Notifications', icon: 'notifications', route: '/notifications' },
+        {
+            label: 'Notifications',
+            icon: 'notifications',
+            route: '/notifications',
+            badge: () => this.notificationService.notifications().length,
+        },
     ]);
 
     logout(): void {

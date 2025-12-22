@@ -22,8 +22,10 @@ var _ MappedNullable = &AccountAggregation{}
 
 // AccountAggregation struct for AccountAggregation
 type AccountAggregation struct {
-	AccountId string    `json:"accountId"`
-	Amounts   []float64 `json:"amounts"`
+	AccountId     string    `json:"accountId"`
+	Amounts       []float64 `json:"amounts"`
+	Total         *float64  `json:"total,omitempty"`
+	ChangePercent *float64  `json:"changePercent,omitempty"`
 }
 
 type _AccountAggregation AccountAggregation
@@ -95,6 +97,70 @@ func (o *AccountAggregation) SetAmounts(v []float64) {
 	o.Amounts = v
 }
 
+// GetTotal returns the Total field value if set, zero value otherwise.
+func (o *AccountAggregation) GetTotal() float64 {
+	if o == nil || IsNil(o.Total) {
+		var ret float64
+		return ret
+	}
+	return *o.Total
+}
+
+// GetTotalOk returns a tuple with the Total field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountAggregation) GetTotalOk() (*float64, bool) {
+	if o == nil || IsNil(o.Total) {
+		return nil, false
+	}
+	return o.Total, true
+}
+
+// HasTotal returns a boolean if a field has been set.
+func (o *AccountAggregation) HasTotal() bool {
+	if o != nil && !IsNil(o.Total) {
+		return true
+	}
+
+	return false
+}
+
+// SetTotal gets a reference to the given float64 and assigns it to the Total field.
+func (o *AccountAggregation) SetTotal(v float64) {
+	o.Total = &v
+}
+
+// GetChangePercent returns the ChangePercent field value if set, zero value otherwise.
+func (o *AccountAggregation) GetChangePercent() float64 {
+	if o == nil || IsNil(o.ChangePercent) {
+		var ret float64
+		return ret
+	}
+	return *o.ChangePercent
+}
+
+// GetChangePercentOk returns a tuple with the ChangePercent field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountAggregation) GetChangePercentOk() (*float64, bool) {
+	if o == nil || IsNil(o.ChangePercent) {
+		return nil, false
+	}
+	return o.ChangePercent, true
+}
+
+// HasChangePercent returns a boolean if a field has been set.
+func (o *AccountAggregation) HasChangePercent() bool {
+	if o != nil && !IsNil(o.ChangePercent) {
+		return true
+	}
+
+	return false
+}
+
+// SetChangePercent gets a reference to the given float64 and assigns it to the ChangePercent field.
+func (o *AccountAggregation) SetChangePercent(v float64) {
+	o.ChangePercent = &v
+}
+
 func (o AccountAggregation) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -107,6 +173,12 @@ func (o AccountAggregation) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["accountId"] = o.AccountId
 	toSerialize["amounts"] = o.Amounts
+	if !IsNil(o.Total) {
+		toSerialize["total"] = o.Total
+	}
+	if !IsNil(o.ChangePercent) {
+		toSerialize["changePercent"] = o.ChangePercent
+	}
 	return toSerialize, nil
 }
 

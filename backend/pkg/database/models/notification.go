@@ -43,9 +43,13 @@ func (t *Notification) FromDB() goserver.Notification {
 }
 
 func NotificationToDB(m *goserver.Notification, userID string) (*Notification, error) {
-	id, err := uuid.Parse(m.Id)
-	if err != nil {
-		return nil, err
+	var id uuid.UUID
+	var err error
+	if m.Id != "" {
+		id, err = uuid.Parse(m.Id)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Notification{

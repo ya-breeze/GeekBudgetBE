@@ -46,15 +46,34 @@ describe('DashboardComponent', () => {
                     {
                         accountId: 'asset1',
                         amounts: [1000, 200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // 1200 total
+                        total: 1200,
+                        changePercent: 20,
                     },
                     {
                         accountId: 'acc1', // expense account
                         amounts: [50, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        total: 110,
+                        changePercent: 20,
                     },
                     // For filtering test
-                    { accountId: 'visible', amounts: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-                    { accountId: 'hidden', amounts: [200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-                    { accountId: 'default', amounts: [300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+                    {
+                        accountId: 'visible',
+                        amounts: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        total: 100,
+                        changePercent: 0,
+                    },
+                    {
+                        accountId: 'hidden',
+                        amounts: [200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        total: 200,
+                        changePercent: 0,
+                    },
+                    {
+                        accountId: 'default',
+                        amounts: [300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        total: 300,
+                        changePercent: 0,
+                    },
                 ],
             },
         ],

@@ -15,11 +15,17 @@ type AccountAggregation struct {
 	AccountId string `json:"accountId"`
 
 	Amounts []float64 `json:"amounts"`
+
+	Total float64 `json:"total,omitempty"`
+
+	ChangePercent float64 `json:"changePercent,omitempty"`
 }
 
 type AccountAggregationInterface interface {
 	GetAccountId() string
 	GetAmounts() []float64
+	GetTotal() float64
+	GetChangePercent() float64
 }
 
 func (c *AccountAggregation) GetAccountId() string {
@@ -27,6 +33,12 @@ func (c *AccountAggregation) GetAccountId() string {
 }
 func (c *AccountAggregation) GetAmounts() []float64 {
 	return c.Amounts
+}
+func (c *AccountAggregation) GetTotal() float64 {
+	return c.Total
+}
+func (c *AccountAggregation) GetChangePercent() float64 {
+	return c.ChangePercent
 }
 
 // AssertAccountAggregationRequired checks if the required fields are not zero-ed

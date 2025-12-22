@@ -109,12 +109,22 @@ func Logger(logger *slog.Logger, inner http.Handler, name string) http.Handler {
 			"duration", duration.String(),
 		}
 
-		// Add error body if status >= 400
-		if lrw.statusCode >= 400 && lrw.body.Len() > 0 {
-			logFields = append(logFields, "error", lrw.body.String())
+		// Add error details if status >= 400
+		if lrw.statusCode >= 400 {
+			errorDetails := lrw.body.String()
+			if errorDetails == "" {
+				errorDetails = "(empty response body)"
+			}
+			logFields = append(logFields, "error_details", errorDetails)
 		}
 
 		// Log request end
-		logger.Info("Request end", logFields...)
+		if lrw.statusCode >= 500 {
+			logger.Error("Request end", logFields...)
+		} else if lrw.statusCode >= 400 {
+			logger.Warn("Request end", logFields...)
+		} else {
+			logger.Info("Request end", logFields...)
+		}
 	})
 }

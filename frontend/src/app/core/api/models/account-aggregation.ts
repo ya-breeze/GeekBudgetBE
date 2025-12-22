@@ -4,4 +4,6 @@
 export interface AccountAggregation {
     accountId: string;
     amounts: Array<number>;
+    changePercent?: number;
+    total?: number;
 }

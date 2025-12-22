@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"log/slog"
+	"math"
 	"slices"
 	"time"
 
@@ -37,6 +38,45 @@ func (s *AggregationsAPIServiceImpl) GetIncomes(ctx context.Context, from time.T
 	}
 
 	return goserver.Response(200, aggregation), nil
+}
+
+func (s *AggregationsAPIServiceImpl) calculatePostAggregationData(res *goserver.Aggregation, isCumulative bool) {
+	for i := range res.Currencies {
+		for j := range res.Currencies[i].Accounts {
+			acc := &res.Currencies[i].Accounts[j]
+			if len(acc.Amounts) == 0 {
+				continue
+			}
+
+			if isCumulative {
+				acc.Total = acc.Amounts[len(acc.Amounts)-1]
+				if len(acc.Amounts) >= 2 {
+					prev := acc.Amounts[len(acc.Amounts)-2]
+					curr := acc.Amounts[len(acc.Amounts)-1]
+					if prev != 0 {
+						acc.ChangePercent = (curr - prev) / math.Abs(prev) * 100
+					} else if curr != 0 {
+						acc.ChangePercent = 100
+					}
+				}
+			} else {
+				sum := 0.0
+				for _, v := range acc.Amounts {
+					sum += v
+				}
+				acc.Total = sum
+				if len(acc.Amounts) >= 2 {
+					prev := acc.Amounts[len(acc.Amounts)-2]
+					curr := acc.Amounts[len(acc.Amounts)-1]
+					if prev != 0 {
+						acc.ChangePercent = (curr - prev) / math.Abs(prev) * 100
+					} else if curr != 0 {
+						acc.ChangePercent = 100
+					}
+				}
+			}
+		}
+	}
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
@@ -75,6 +115,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
 		},
 		s.logger)
 
+	s.calculatePostAggregationData(&res, false)
 	return &res, nil
 }
 
@@ -136,6 +177,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		},
 		s.logger)
 
+	s.calculatePostAggregationData(&res, false)
 	return &res, nil
 }
 
@@ -248,6 +290,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 		}
 	}
 
+	s.calculatePostAggregationData(&res, true)
 	return &res, nil
 }
 

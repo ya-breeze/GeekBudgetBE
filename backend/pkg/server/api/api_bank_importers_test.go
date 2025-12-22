@@ -1,6 +1,10 @@
 package api
 
 import (
+	"bytes"
+	"context"
+	"io"
+	"net/http"
 	"regexp"
 	"time"
 
@@ -10,9 +14,19 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
+
+type mockTransport struct {
+	RoundTripFunc func(req *http.Request) (*http.Response, error)
+}
+
+func (m *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	return m.RoundTripFunc(req)
+}
 
 var _ = Describe("BankImporters API", func() {
 	var (
@@ -130,6 +144,52 @@ var _ = Describe("BankImporters API", func() {
 
 			_, err = sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions)
 			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	Describe("FetchBankImporter", func() {
+		It("should reset FetchAll and create notification on failure when FetchAll is true", func() {
+			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			importerID := "imp-fail"
+			bi := goserver.BankImporter{
+				Id:       importerID,
+				Name:     "Failing Importer",
+				FetchAll: true,
+				Extra:    "some-token", // This should make the fetch fail
+			}
+
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(bi, nil)
+			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil)
+
+			// Expect FetchAll to be reset
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+				Expect(data.GetFetchAll()).To(BeFalse())
+				return goserver.BankImporter{}, nil
+			})
+
+			// Expect notification to be created
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+				Expect(n.Type).To(Equal(string(models.NotificationTypeError)))
+				Expect(n.Title).To(Equal("Bank Import Failed"))
+				Expect(n.Description).To(ContainSubstring("Failed to fetch all transactions"))
+				return goserver.Notification{}, nil
+			})
+
+			// Set up mock HTTP transport
+			oldTransport := http.DefaultClient.Transport
+			defer func() { http.DefaultClient.Transport = oldTransport }()
+			http.DefaultClient.Transport = &mockTransport{
+				RoundTripFunc: func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: 500,
+						Body:       io.NopCloser(bytes.NewBufferString("fail")),
+					}, nil
+				},
+			}
+
+			resp, err := sut.FetchBankImporter(ctx, importerID)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(500))
 		})
 	})
 })

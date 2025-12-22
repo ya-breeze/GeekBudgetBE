@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,19 +34,28 @@ import { LayoutService } from '../../layout/services/layout.service';
             } @else {
                 <mat-list>
                     @for (notification of notifications(); track notification.id) {
-                        <mat-list-item>
+                        <mat-list-item
+                            (click)="toggleExpand(notification)"
+                            [class.expanded-item]="expandedIds().has(notification.id)"
+                            class="notification-item"
+                        >
                             <mat-icon matListItemIcon [class]="getIconClass(notification.type)">
                                 {{ getIcon(notification.type) }}
                             </mat-icon>
                             <div matListItemTitle>{{ notification.title }}</div>
-                            <div matListItemLine>{{ notification.description }}</div>
+                            <div
+                                class="description"
+                                [class.expanded]="expandedIds().has(notification.id)"
+                            >
+                                {{ notification.description }}
+                            </div>
                             <div matListItemLine class="date">
                                 {{ notification.date | date: 'short' }}
                             </div>
                             <button
                                 mat-icon-button
                                 matListItemMeta
-                                (click)="deleteNotification(notification)"
+                                (click)="deleteNotification(notification, $event)"
                             >
                                 <mat-icon>delete</mat-icon>
                             </button>
@@ -89,6 +98,40 @@ import { LayoutService } from '../../layout/services/layout.service';
         .icon-no-match {
             color: #f44336;
         }
+        .notification-item {
+            cursor: pointer;
+        }
+        .description {
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+        .description.expanded {
+            -webkit-line-clamp: unset;
+            display: block;
+        }
+        /* Crucial: Override MDC list item fixed height to allow expansion */
+        .notification-item {
+            height: auto !important;
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+        /* Ensure the content container handles variable height */
+        ::ng-deep .mdc-list-item__content {
+            height: auto !important;
+            align-self: flex-start !important; /* Fix alignment for variable height */
+        }
+        /* Allow lines to wrap and expand */
+        ::ng-deep .mat-mdc-list-item-unscoped-content {
+            display: flex;
+            flex-direction: column;
+            white-space: normal !important;
+        }
     `,
 })
 export class NotificationsComponent implements OnInit {
@@ -100,12 +143,14 @@ export class NotificationsComponent implements OnInit {
 
     protected readonly notifications = this.notificationService.notifications;
     protected readonly loading = this.notificationService.loading;
+    protected readonly expandedIds: WritableSignal<Set<string>> = signal(new Set<string>());
 
     ngOnInit(): void {
         this.notificationService.loadNotifications().subscribe();
     }
 
-    deleteNotification(notification: Notification): void {
+    deleteNotification(notification: Notification, event: Event): void {
+        event.stopPropagation();
         if (notification.id) {
             this.notificationService.delete(notification.id).subscribe({
                 next: () => {
@@ -120,14 +165,32 @@ export class NotificationsComponent implements OnInit {
         }
     }
 
+    toggleExpand(notification: Notification): void {
+        const id = notification.id;
+        if (!id) return;
+        this.expandedIds.update((set) => {
+            const newSet = new Set(set);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    }
+
     getIcon(type: string): string {
         switch (type) {
             case 'balanceMatch':
                 return 'check_circle';
             case 'balanceDoesntMatch':
                 return 'error';
-            default:
+            case 'error':
+                return 'report';
+            case 'info':
                 return 'info';
+            default:
+                return 'notifications';
         }
     }
 
@@ -136,7 +199,10 @@ export class NotificationsComponent implements OnInit {
             case 'balanceMatch':
                 return 'icon-match';
             case 'balanceDoesntMatch':
+            case 'error':
                 return 'icon-no-match';
+            case 'info':
+                return 'icon-other';
             default:
                 return 'icon-other';
         }
