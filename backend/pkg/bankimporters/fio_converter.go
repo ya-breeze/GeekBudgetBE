@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -22,10 +21,10 @@ type FioConverter struct {
 	bankImporter goserver.BankImporter
 	r            *regexp.Regexp
 	location     *time.Location
-	currencies   []goserver.Currency
+	cp           CurrencyProvider
 }
 
-func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter, currencies []goserver.Currency,
+func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cp CurrencyProvider,
 ) (*FioConverter, error) {
 	// Example:
 	// 0: 0 - "Nákup: IKEA ZLICIN RESTAURA,  Skandinavska 15a, Praha 13, 155 00, CZE, dne 31.8.2024, částka  383.00 CZK"
@@ -47,7 +46,7 @@ func NewFioConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cu
 		bankImporter: bankImporter,
 		r:            r,
 		location:     loc,
-		currencies:   currencies,
+		cp:           cp,
 	}, nil
 }
 
@@ -58,10 +57,10 @@ func (fc *FioConverter) Import(ctx context.Context) (*goserver.BankAccountInfo, 
 		return nil, nil, fmt.Errorf("can't fetch FIO transactions: %w", err)
 	}
 
-	return fc.ParseTransactions(body)
+	return fc.ParseTransactions(ctx, body)
 }
 
-func (fc *FioConverter) ParseTransactions(data []byte) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
+func (fc *FioConverter) ParseTransactions(ctx context.Context, data []byte) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	fc.logger.Info("Parsing FIO transactions")
 
 	var fio FioTransactions
@@ -72,7 +71,7 @@ func (fc *FioConverter) ParseTransactions(data []byte) (*goserver.BankAccountInf
 	// Convert transactions
 	res := make([]goserver.TransactionNoId, 0, len(fio.AccountStatement.TransactionList.Transaction))
 	for _, t := range fio.AccountStatement.TransactionList.Transaction {
-		tr, err := fc.ConvertFioToTransaction(fc.bankImporter, t)
+		tr, err := fc.ConvertFioToTransaction(ctx, fc.bankImporter, t)
 		if err != nil {
 			return nil, nil, fmt.Errorf("can't convert FIO transaction: %w", err)
 		}
@@ -85,18 +84,14 @@ func (fc *FioConverter) ParseTransactions(data []byte) (*goserver.BankAccountInf
 }
 
 //nolint:funlen,cyclop // to be refactored
-func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio FioTransaction,
+func (fc *FioConverter) ConvertFioToTransaction(ctx context.Context, bi goserver.BankImporter, fio FioTransaction,
 ) (goserver.TransactionNoId, error) {
 	var res goserver.TransactionNoId
 
-	currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-		return c.Name == fio.Currency.Value
-	})
-	if currencyIdx == -1 {
-		// TODO Add currency with given name
-		return res, fmt.Errorf("can't find currency %q", fio.Currency.Value)
+	strCurrencyID, err := fc.cp.GetCurrencyIdByName(ctx, fio.Currency.Value)
+	if err != nil {
+		return res, fmt.Errorf("can't resolve currency %q: %w", fio.Currency.Value, err)
 	}
-	strCurrencyID := fc.currencies[currencyIdx].Id
 
 	tokens := fc.r.FindAllStringSubmatch(fio.Comment.Value, -1)
 	if tokens == nil {
@@ -147,15 +142,12 @@ func (fc *FioConverter) ConvertFioToTransaction(bi goserver.BankImporter, fio Fi
 		amountFio := fio.Amount.Value
 		amountUnknown := fio.Amount.Value.Neg()
 		if paidCurrency != fio.Currency.Value {
-			paidCurrencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-				return c.Name == paidCurrency
-			})
-			if paidCurrencyIdx == -1 {
-				// TODO Add currency with given name
-				return res, fmt.Errorf("can't find currency %q", paidCurrency)
+			var err error
+			strPaidCurrencyID, err = fc.cp.GetCurrencyIdByName(ctx, paidCurrency)
+			if err != nil {
+				return res, fmt.Errorf("can't resolve paid currency %q: %w", paidCurrency, err)
 			}
 			amountUnknown = m
-			strPaidCurrencyID = fc.currencies[paidCurrencyIdx].Id
 		} else {
 			strPaidCurrencyID = strCurrencyID
 		}

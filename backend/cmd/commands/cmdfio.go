@@ -106,20 +106,21 @@ func parseFIO(log *slog.Logger) *cobra.Command {
 				}
 			}
 
+			cp := bankimporters.NewSimpleCurrencyProvider([]goserver.Currency{
+				{Id: "__CZK_ID__", Name: "CZK"},
+				{Id: "__EUR_ID__", Name: "EUR"},
+				{Id: "__USD_ID__", Name: "USD"},
+			})
 			fc, err := bankimporters.NewFioConverter(
 				log,
 				goserver.BankImporter{
 					AccountId: "__accountID__",
-				}, []goserver.Currency{
-					{Id: "__CZK_ID__", Name: "CZK"},
-					{Id: "__EUR_ID__", Name: "EUR"},
-					{Id: "__USD_ID__", Name: "USD"},
-				})
+				}, cp)
 			if err != nil {
 				return fmt.Errorf("can't create FioConverter: %w", err)
 			}
 
-			info, transactions, err := fc.ParseTransactions(data)
+			info, transactions, err := fc.ParseTransactions(cmd.Context(), data)
 			if err != nil {
 				return fmt.Errorf("can't parse FIO transactions: %w", err)
 			}

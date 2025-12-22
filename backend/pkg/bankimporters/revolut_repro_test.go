@@ -1,6 +1,7 @@
 package bankimporters_test
 
 import (
+	"context"
 	"log/slog"
 	"os"
 
@@ -19,15 +20,16 @@ var _ = Describe("RevolutConverter Repro", func() {
 	BeforeEach(func() {
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 		var err error
+		cp := bankimporters.NewSimpleCurrencyProvider([]goserver.Currency{
+			{Id: "CZK-ID", Name: "CZK"},
+			{Id: "USD-ID", Name: "USD"},
+		})
 		converter, err = bankimporters.NewRevolutConverter(
 			logger,
 			goserver.BankImporter{
 				AccountId: "test-account-id",
 			},
-			[]goserver.Currency{
-				{Id: "CZK-ID", Name: "CZK"},
-				{Id: "USD-ID", Name: "USD"},
-			},
+			cp,
 		)
 		Expect(err).ToNot(HaveOccurred())
 	})
@@ -44,12 +46,12 @@ CARD_PAYMENT,Current,2023-01-01 10:00:00,2023-01-02 10:00:00,Coffee Shop,-50.00,
 		csv2 := `Type,Product,Started Date,Completed Date,Description,Amount,Fee,Currency,State,Balance
 CARD_PAYMENT,Current,2023-01-01 10:00:00,2023-01-02 10:00:00,"Coffee Shop ",-50.00,0.00,CZK,COMPLETED,1000.00`
 
-		info1, trans1, err := converter.ParseTransactions("csv", csv1)
+		info1, trans1, err := converter.ParseTransactions(context.Background(), "csv", csv1)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(trans1).To(HaveLen(1))
 		Expect(info1).ToNot(BeNil())
 
-		info2, trans2, err := converter.ParseTransactions("csv", csv2)
+		info2, trans2, err := converter.ParseTransactions(context.Background(), "csv", csv2)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(trans2).To(HaveLen(1))
 		Expect(info2).ToNot(BeNil())

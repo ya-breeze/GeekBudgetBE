@@ -1,6 +1,7 @@
 package bankimporters_test
 
 import (
+	"context"
 	"encoding/csv"
 	"log/slog"
 	"os"
@@ -22,15 +23,16 @@ var _ = Describe("KB converter", func() {
 	loc, _ := time.LoadLocation("Europe/Prague")
 
 	BeforeEach(func() {
+		cp := bankimporters.NewSimpleCurrencyProvider([]goserver.Currency{
+			{Id: "__CZK_ID__", Name: "CZK"},
+			{Id: "__EUR_ID__", Name: "EUR"},
+			{Id: "__USD_ID__", Name: "USD"},
+		})
 		rc, err = bankimporters.NewKBConverter(
 			log,
 			goserver.BankImporter{
 				AccountId: "__accountID__",
-			}, []goserver.Currency{
-				{Id: "__CZK_ID__", Name: "CZK"},
-				{Id: "__EUR_ID__", Name: "EUR"},
-				{Id: "__USD_ID__", Name: "USD"},
-			})
+			}, cp)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -41,7 +43,7 @@ var _ = Describe("KB converter", func() {
 			record, err := r.Read()
 			Expect(err).ToNot(HaveOccurred())
 			record = rc.PrepareRow(record)
-			transaction, err := rc.ConvertToTransaction(record)
+			transaction, err := rc.ConvertToTransaction(context.Background(), record)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(transaction.Date).To(Equal(expectedTransaction.Date))
 			Expect(transaction.Description).To(Equal(expectedTransaction.Description))

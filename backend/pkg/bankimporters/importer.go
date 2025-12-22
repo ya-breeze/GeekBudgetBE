@@ -1,8 +1,14 @@
 package bankimporters
 
 import (
+	"context"
+
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
+
+type CurrencyProvider interface {
+	GetCurrencyIdByName(ctx context.Context, name string) (string, error)
+}
 
 type Importer interface {
 	// Import transactions from the source and returns them.

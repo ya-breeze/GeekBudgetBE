@@ -141,7 +141,9 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 		return nil, nil, fmt.Errorf("can't fetch currencies: %w", err)
 	}
 
-	bi, err := bankimporters.NewFioConverter(s.logger, biData, currencies)
+	cp := bankimporters.NewDefaultCurrencyProvider(s.db, userID, currencies)
+
+	bi, err := bankimporters.NewFioConverter(s.logger, biData, cp)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't create FioConverter: %w", err)
 	}
@@ -345,17 +347,19 @@ func (s *BankImportersAPIServiceImpl) Upload(
 		return nil, fmt.Errorf("can't get currencies: %w", err)
 	}
 
+	cp := bankimporters.NewDefaultCurrencyProvider(s.db, userID, currencies)
+
 	var bi bankimporters.Importer
 
 	switch biData.Type {
 	case "revolut":
-		bi, err = bankimporters.NewRevolutConverter(s.logger, biData, currencies)
+		bi, err = bankimporters.NewRevolutConverter(s.logger, biData, cp)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to create RevolutConverter")
 			return nil, fmt.Errorf("can't create RevolutConverter: %w", err)
 		}
 	case "kb":
-		bi, err = bankimporters.NewKBConverter(s.logger, biData, currencies)
+		bi, err = bankimporters.NewKBConverter(s.logger, biData, cp)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to create KbConverter")
 			return nil, fmt.Errorf("can't create KbConverter: %w", err)

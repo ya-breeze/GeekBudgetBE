@@ -55,20 +55,21 @@ func parseKB(log *slog.Logger) *cobra.Command {
 				}
 			}
 
+			cp := bankimporters.NewSimpleCurrencyProvider([]goserver.Currency{
+				{Id: "__CZK_ID__", Name: "CZK"},
+				{Id: "__EUR_ID__", Name: "EUR"},
+				{Id: "__USD_ID__", Name: "USD"},
+			})
 			rc, err := bankimporters.NewKBConverter(
 				log,
 				goserver.BankImporter{
 					AccountId: "__accountID__",
-				}, []goserver.Currency{
-					{Id: "__CZK_ID__", Name: "CZK"},
-					{Id: "__EUR_ID__", Name: "EUR"},
-					{Id: "__USD_ID__", Name: "USD"},
-				})
+				}, cp)
 			if err != nil {
 				return fmt.Errorf("can't create KB converter: %w", err)
 			}
 
-			info, transactions, err := rc.ParseTransactions(string(data))
+			info, transactions, err := rc.ParseTransactions(cmd.Context(), string(data))
 			if err != nil {
 				return fmt.Errorf("can't parse KB transactions: %w", err)
 			}

@@ -1,6 +1,7 @@
 package bankimporters
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -42,10 +43,10 @@ type RevolutConverter struct {
 	logger       *slog.Logger
 	bankImporter goserver.BankImporter
 	location     *time.Location
-	currencies   []goserver.Currency
+	cp           CurrencyProvider
 }
 
-func NewRevolutConverter(logger *slog.Logger, bankImporter goserver.BankImporter, currencies []goserver.Currency,
+func NewRevolutConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cp CurrencyProvider,
 ) (*RevolutConverter, error) {
 	loc, err := time.LoadLocation("Europe/Prague")
 	if err != nil {
@@ -56,17 +57,17 @@ func NewRevolutConverter(logger *slog.Logger, bankImporter goserver.BankImporter
 		logger:       logger,
 		bankImporter: bankImporter,
 		location:     loc,
-		currencies:   currencies,
+		cp:           cp,
 	}, nil
 }
 
 func (fc *RevolutConverter) ParseAndImport(
 	format, data string,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
-	return fc.ParseTransactions(format, data)
+	return fc.ParseTransactions(context.Background(), format, data)
 }
 
-func (fc *RevolutConverter) ParseTransactions(format, data string,
+func (fc *RevolutConverter) ParseTransactions(ctx context.Context, format, data string,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	fc.logger.Info("Parsing Revolut transactions", "format", format)
 
@@ -95,13 +96,13 @@ func (fc *RevolutConverter) ParseTransactions(format, data string,
 			continue
 		}
 
-		err = fc.updateBalances(&info, filledOpeningBalances, record)
+		err = fc.updateBalances(ctx, &info, filledOpeningBalances, record)
 		if err != nil {
 			return nil, nil, fmt.Errorf("can't update balances: %w", err)
 		}
 
 		var tr goserver.TransactionNoId
-		tr, err = fc.convertToTransaction(fc.bankImporter, record)
+		tr, err = fc.convertToTransaction(ctx, fc.bankImporter, record)
 		if err != nil {
 			return nil, nil, fmt.Errorf("can't convert Revolut transaction: %w", err)
 		}
@@ -158,7 +159,7 @@ func (fc *RevolutConverter) shouldSkipRecord(i int, record []string) bool {
 }
 
 func (fc *RevolutConverter) updateBalances(
-	info *goserver.BankAccountInfo, filledOpeningBalances map[string]bool, record []string,
+	ctx context.Context, info *goserver.BankAccountInfo, filledOpeningBalances map[string]bool, record []string,
 ) error {
 	balance, err := decimal.NewFromString(record[RevolutIndexBalance])
 	if err != nil {
@@ -166,19 +167,17 @@ func (fc *RevolutConverter) updateBalances(
 	}
 
 	// Fill opening/closing balances
-	currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-		return c.Name == record[RevolutIndexCurrency]
-	})
-	if currencyIdx == -1 {
-		return fmt.Errorf("can't find currency %q", record[RevolutIndexCurrency])
+	currencyId, err := fc.cp.GetCurrencyIdByName(ctx, record[RevolutIndexCurrency])
+	if err != nil {
+		return fmt.Errorf("can't resolve currency %q: %w", record[RevolutIndexCurrency], err)
 	}
 
 	balanceIdx := slices.IndexFunc(info.Balances, func(b goserver.BankAccountInfoBalancesInner) bool {
-		return b.CurrencyId == fc.currencies[currencyIdx].Id
+		return b.CurrencyId == currencyId
 	})
 	if balanceIdx == -1 {
 		info.Balances = append(info.Balances, goserver.BankAccountInfoBalancesInner{
-			CurrencyId: fc.currencies[currencyIdx].Id,
+			CurrencyId: currencyId,
 		})
 		balanceIdx = len(info.Balances) - 1
 	}
@@ -198,18 +197,15 @@ func (fc *RevolutConverter) updateBalances(
 	return nil
 }
 
-func (fc *RevolutConverter) convertToTransaction(_ goserver.BankImporter, record []string,
+func (fc *RevolutConverter) convertToTransaction(ctx context.Context, _ goserver.BankImporter, record []string,
 ) (goserver.TransactionNoId, error) {
 	var err error
 	var res goserver.TransactionNoId
 
-	currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-		return c.Name == record[RevolutIndexCurrency]
-	})
-	if currencyIdx == -1 {
-		return res, fmt.Errorf("can't find currency %q", record[RevolutIndexCurrency])
+	strCurrencyID, err := fc.cp.GetCurrencyIdByName(ctx, record[RevolutIndexCurrency])
+	if err != nil {
+		return res, fmt.Errorf("can't resolve currency %q: %w", record[RevolutIndexCurrency], err)
 	}
-	strCurrencyID := fc.currencies[currencyIdx].Id
 
 	res.Date, err = time.ParseInLocation("2006-01-02 15:04:05", record[RevolutIndexStartedDate], fc.location)
 	if err != nil {

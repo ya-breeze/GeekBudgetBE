@@ -2,12 +2,12 @@ package bankimporters
 
 import (
 	"bufio"
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -66,10 +66,10 @@ type KBConverter struct {
 	logger       *slog.Logger
 	bankImporter goserver.BankImporter
 	location     *time.Location
-	currencies   []goserver.Currency
+	cp           CurrencyProvider
 }
 
-func NewKBConverter(logger *slog.Logger, bankImporter goserver.BankImporter, currencies []goserver.Currency,
+func NewKBConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cp CurrencyProvider,
 ) (*KBConverter, error) {
 	loc, err := time.LoadLocation("Europe/Prague")
 	if err != nil {
@@ -80,17 +80,17 @@ func NewKBConverter(logger *slog.Logger, bankImporter goserver.BankImporter, cur
 		logger:       logger,
 		bankImporter: bankImporter,
 		location:     loc,
-		currencies:   currencies,
+		cp:           cp,
 	}, nil
 }
 
 func (fc *KBConverter) ParseAndImport(
 	format, data string,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
-	return fc.ParseTransactions(data)
+	return fc.ParseTransactions(context.Background(), data)
 }
 
-func (fc *KBConverter) ParseTransactions(data string,
+func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
 	info := goserver.BankAccountInfo{}
 
@@ -151,7 +151,7 @@ func (fc *KBConverter) ParseTransactions(data string,
 	res := make([]goserver.TransactionNoId, 0, len(records))
 	for _, record := range records {
 		var tr goserver.TransactionNoId
-		tr, err = fc.ConvertToTransaction(record)
+		tr, err = fc.ConvertToTransaction(ctx, record)
 		if err != nil {
 			return nil, nil, fmt.Errorf("can't convert KB transaction: %w", err)
 		}
@@ -170,11 +170,9 @@ func (fc *KBConverter) ParseTransactions(data string,
 
 		// Let's verify if we can find the currency ID for the balance
 		// We used "CZK" as placeholder, let's see if we can resolve it to ID
-		currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-			return c.Name == "CZK" // Default from example
-		})
-		if currencyIdx != -1 {
-			info.Balances[0].CurrencyId = fc.currencies[currencyIdx].Id
+		currencyId, err := fc.cp.GetCurrencyIdByName(ctx, "CZK") // Default from example
+		if err == nil {
+			info.Balances[0].CurrencyId = currencyId
 		}
 	}
 
@@ -182,17 +180,14 @@ func (fc *KBConverter) ParseTransactions(data string,
 }
 
 //nolint:funlen,cyclop // TODO: refactor
-func (fc *KBConverter) ConvertToTransaction(record []string) (goserver.TransactionNoId, error) {
+func (fc *KBConverter) ConvertToTransaction(ctx context.Context, record []string) (goserver.TransactionNoId, error) {
 	var err error
 	var res goserver.TransactionNoId
 
-	currencyIdx := slices.IndexFunc(fc.currencies, func(c goserver.Currency) bool {
-		return c.Name == "CZK"
-	})
-	if currencyIdx == -1 {
-		return res, fmt.Errorf("can't find currency %q", "CZK")
+	strCurrencyID, err := fc.cp.GetCurrencyIdByName(ctx, "CZK")
+	if err != nil {
+		return res, fmt.Errorf("can't resolve currency %q: %w", "CZK", err)
 	}
-	strCurrencyID := fc.currencies[currencyIdx].Id
 
 	res.Date, err = time.ParseInLocation("02.01.2006", record[KBIndexDate], fc.location)
 	if err != nil {
