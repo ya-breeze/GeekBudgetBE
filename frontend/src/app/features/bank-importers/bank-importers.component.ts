@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DatePipe } from '@angular/common';
 import { BankImporterService } from './services/bank-importer.service';
 import { BankImporter } from '../../core/api/models/bank-importer';
@@ -36,6 +37,7 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
         MatDialogModule,
         MatSnackBarModule,
         MatChipsModule,
+        MatTooltipModule,
         DatePipe,
         AccountDisplayComponent,
     ],
@@ -230,6 +232,31 @@ export class BankImportersComponent implements OnInit {
                 });
             }
         }
+    }
+
+    resumeBankImporter(bankImporter: BankImporter): void {
+        if (!bankImporter.id) return;
+
+        // Create full object for update (BankImporterNoId)
+        const updateData: any = {
+            name: bankImporter.name,
+            type: bankImporter.type,
+            accountId: bankImporter.accountId,
+            feeAccountId: bankImporter.feeAccountId,
+            description: bankImporter.description,
+            extra: bankImporter.extra,
+            fetchAll: bankImporter.fetchAll,
+            isStopped: false, // Resume
+        };
+
+        this.bankImporterService.update(bankImporter.id, updateData).subscribe({
+            next: () => {
+                this.snackBar.open('Resuming bank importer...', 'Close', { duration: 3000 });
+            },
+            error: () => {
+                this.snackBar.open('Failed to resume bank importer', 'Close', { duration: 3000 });
+            },
+        });
     }
 
     getBankTypeLabel(type?: string): string {

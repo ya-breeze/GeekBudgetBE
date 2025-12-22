@@ -21,7 +21,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartType } from 'chart.js';
+import { ChartConfiguration } from 'chart.js';
 import { map } from 'rxjs';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
 import { getBalances } from '../../../core/api/fn/aggregations/get-balances';
@@ -171,7 +171,6 @@ export class BalanceReportComponent implements OnInit {
             // 1. Create rows for each account
             const tableDataSource: any[] = accountSummaries.map((acc) => {
                 const row: any = { account: acc.accountName, accountImage: acc.accountImage };
-                const accountTotal = 0;
                 acc.history.forEach((val, i) => {
                     const key = intervalKeys[i];
                     row[key] = val;
@@ -188,7 +187,6 @@ export class BalanceReportComponent implements OnInit {
 
             // 2. Create a "Total" row for the bottom
             const totalRow: any = { account: 'Total Assets' };
-            const grandTotal = 0;
             intervalKeys.forEach((key, i) => {
                 let intervalSum = 0;
                 accountSummaries.forEach((acc) => {

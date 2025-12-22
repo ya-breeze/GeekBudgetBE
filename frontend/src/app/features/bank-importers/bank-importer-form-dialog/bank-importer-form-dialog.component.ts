@@ -67,6 +67,7 @@ export class BankImporterFormDialogComponent implements OnInit {
             description: [this.data.bankImporter?.description || '', [Validators.maxLength(500)]],
             extra: [this.data.bankImporter?.extra || ''],
             fetchAll: [this.data.bankImporter?.fetchAll || false],
+            isStopped: [this.data.bankImporter?.isStopped || false],
         });
     }
 
@@ -85,6 +86,7 @@ export class BankImporterFormDialogComponent implements OnInit {
                 description: formValue.description || undefined,
                 extra: formValue.extra || undefined,
                 fetchAll: formValue.fetchAll,
+                isStopped: formValue.isStopped,
             };
             this.dialogRef.close(bankImporter);
         }

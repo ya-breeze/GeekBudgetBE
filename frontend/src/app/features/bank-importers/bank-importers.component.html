@@ -59,6 +59,12 @@
                                         : '-'
                                 }}
                             </div>
+                            @if (importer.isStopped) {
+                                <div class="status-warn">
+                                    <mat-icon color="warn" class="small-icon">warning</mat-icon>
+                                    Stopped
+                                </div>
+                            }
                             @if (importer.lastImports?.length) {
                                 <div
                                     class="summary"
@@ -74,6 +80,17 @@
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef>Actions</th>
                     <td mat-cell *matCellDef="let importer">
+                        @if (importer.isStopped) {
+                            <button
+                                mat-icon-button
+                                color="primary"
+                                (click)="resumeBankImporter(importer)"
+                                aria-label="Resume"
+                                matTooltip="Resume automatic fetching"
+                            >
+                                <mat-icon>play_arrow</mat-icon>
+                            </button>
+                        }
                         @if (importer.type === 'kb' || importer.type === 'revolut') {
                             <button
                                 mat-icon-button

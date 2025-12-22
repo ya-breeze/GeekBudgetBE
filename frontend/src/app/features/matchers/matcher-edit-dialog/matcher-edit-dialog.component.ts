@@ -16,7 +16,6 @@ import { Matcher } from '../../../core/api/models/matcher';
 import { MatcherNoId } from '../../../core/api/models/matcher-no-id';
 import { Transaction } from '../../../core/api/models/transaction';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
-import { AccountDisplayComponent } from '../../../shared/components/account-display/account-display.component';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
 
 @Component({
@@ -36,9 +35,7 @@ import { ApiConfiguration } from '../../../core/api/api-configuration';
         MatProgressSpinnerModule,
         MatProgressSpinnerModule,
         MatCheckboxModule,
-        MatCheckboxModule,
         AccountSelectComponent,
-        AccountDisplayComponent,
     ],
     templateUrl: './matcher-edit-dialog.component.html',
     styleUrls: ['./matcher-edit-dialog.component.scss'],
@@ -278,9 +275,9 @@ export class MatcherEditDialogComponent implements OnInit {
             outputDescription: formValue.outputDescription!,
             outputTags: formValue.outputTags
                 ? formValue.outputTags
-                      .split(',')
-                      .map((t) => t.trim())
-                      .filter((t) => !!t)
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter((t) => !!t)
                 : [],
         };
 

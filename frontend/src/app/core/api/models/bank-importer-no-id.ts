@@ -25,6 +25,11 @@ export interface BankImporterNoId {
     fetchAll?: boolean;
 
     /**
+     * If true, automatic fetching is stopped for this importer. This is usually set automatically when fetch fails, and reset when user manually triggers fetch or updates the importer.
+     */
+    isStopped?: boolean;
+
+    /**
      * List of last imports. It could be shown to user to explain what was imported recently
      */
     lastImports?: Array<ImportResult>;

@@ -24,9 +24,6 @@ describe('AccountService', () => {
         httpMock.verify();
     });
 
-    // Helper to match partial URLs
-    const matchUrl = (url: string, fragment: string) => url.includes(fragment);
-
     it('should be created', () => {
         expect(service).toBeTruthy();
     });
@@ -124,7 +121,7 @@ describe('AccountService', () => {
             };
 
             service.loadYearlyExpenses('USD').subscribe({
-                next: (agg) => {
+                next: (_agg) => {
                     const avgs = service.averages();
                     const avg = avgs.find((a) => a.accountId === 'acc1');
                     expect(avg).toBeTruthy();
