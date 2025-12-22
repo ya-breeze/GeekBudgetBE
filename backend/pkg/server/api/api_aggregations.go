@@ -158,14 +158,6 @@ func (s *AggregationsAPIServiceImpl) GetBalances(
 func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
 ) (*goserver.Aggregation, error) {
-	// For balances, if dateFrom is zero, we want to start from the beginning to get full balance
-	// But Aggregation struct expects a specific range.
-	// If the user wants "current balance", they usually ask for a range up to now.
-	// However, to calculate the *cumulative* balance correctly, we strictly speaking need the opening balance
-	// plus all movements.
-	// But the Aggregation API returns *intervals*. The frontend sums them up.
-	// So if dateFrom is missing, we should probably set it to a reasonable start date (e.g. user start date)
-	// or 1970 equivalent.
 	if dateFrom.IsZero() {
 		// Use a very old date to capture all history
 		dateFrom = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -189,18 +181,147 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
 	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
 
+	filter := func(a goserver.Account) bool {
+		return isAssetAccount(a) && (includeHidden || !a.HideFromReports)
+	}
+
 	res := Aggregate(
 		ctx, accounts, transactions,
 		dateFrom, dateTo,
 		utils.GranularityMonth,
 		outputCurrencyID, currenciesRatesFetcher,
 		currencyMap,
-		func(a goserver.Account) bool {
-			return isAssetAccount(a) && (includeHidden || !a.HideFromReports)
-		}, // Filter for asset accounts excluding hidden if needed
+		filter,
 		s.logger)
 
+	// Calculate initial balances (before dateFrom) to make the graph cumulative
+	initialBalances, err := s.calculateInitialBalances(
+		ctx, userID, accounts, dateFrom, outputCurrencyID, currencyMap, currenciesRatesFetcher, filter)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to calculate initial balances")
+		return nil, nil
+	}
+
+	// Apply cumulative sum
+	for i := range res.Currencies {
+		currencyID := res.Currencies[i].CurrencyId
+		for j := range res.Currencies[i].Accounts {
+			accountID := res.Currencies[i].Accounts[j].AccountId
+
+			// Get initial balance for this account and currency
+			runningBalance := 0.0
+			if accountBalances, ok := initialBalances[currencyID]; ok {
+				runningBalance = accountBalances[accountID]
+			}
+
+			for k := range res.Currencies[i].Accounts[j].Amounts {
+				runningBalance += res.Currencies[i].Accounts[j].Amounts[k]
+				res.Currencies[i].Accounts[j].Amounts[k] = runningBalance
+			}
+		}
+	}
+
+	// There is a case where Account has initial balance but NO transactions in the selected period.
+	// We need to add these accounts to the result as well, otherwise the line will be missing.
+	for currencyID, accountBalances := range initialBalances {
+		// Find or create currency in result
+		currIdx := slices.IndexFunc(res.Currencies, func(c goserver.CurrencyAggregation) bool { return c.CurrencyId == currencyID })
+		if currIdx == -1 {
+			res.Currencies = append(res.Currencies, goserver.CurrencyAggregation{CurrencyId: currencyID, Accounts: []goserver.AccountAggregation{}})
+			currIdx = len(res.Currencies) - 1
+		}
+
+		for accountID, initialAmount := range accountBalances {
+			// Find or create account in result
+			accIdx := slices.IndexFunc(res.Currencies[currIdx].Accounts, func(a goserver.AccountAggregation) bool { return a.AccountId == accountID })
+			if accIdx == -1 {
+				// If account wasn't in the result (no transactions in period), add it with flat line = initialAmount
+				amounts := make([]float64, len(res.Intervals))
+				for k := range amounts {
+					amounts[k] = initialAmount
+				}
+				res.Currencies[currIdx].Accounts = append(res.Currencies[currIdx].Accounts, goserver.AccountAggregation{
+					AccountId: accountID,
+					Amounts:   amounts,
+				})
+			}
+		}
+	}
+
 	return &res, nil
+}
+
+func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
+	ctx context.Context, userID string, accounts []goserver.Account, dateFrom time.Time,
+	outputCurrencyID string, currencyMap map[string]string,
+	currenciesRatesFetcher *common.CurrenciesRatesFetcher,
+	filter AccountFilter,
+) (map[string]map[string]float64, error) {
+	// Map: CurrencyID -> AccountID -> Amount
+	balances := make(map[string]map[string]float64)
+
+	// 1. Sum up Opening Balances from Accounts
+	for _, account := range accounts {
+		if !filter(account) {
+			continue
+		}
+		for _, balance := range account.BankInfo.Balances {
+			// Convert opening balance to output currency
+			movement := goserver.Movement{
+				Amount:     balance.OpeningBalance,
+				CurrencyId: balance.CurrencyId,
+				AccountId:  account.Id,
+			}
+			// Reuse convertMovementAmount logic? It requires slightly different params but logic is same.
+			// We use dateFrom as the reference date for conversion.
+			convertedAmount, targetCurrencyID := convertMovementAmount(
+				ctx, movement, dateFrom, outputCurrencyID, currencyMap[outputCurrencyID],
+				currencyMap, currenciesRatesFetcher, s.logger)
+
+			if _, ok := balances[targetCurrencyID]; !ok {
+				balances[targetCurrencyID] = make(map[string]float64)
+			}
+			balances[targetCurrencyID][account.Id] += convertedAmount
+		}
+	}
+
+	// 2. Sum up Past Transactions (if any)
+	beginningOfTime := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	if dateFrom.After(beginningOfTime) {
+		pastTransactions, err := s.db.GetTransactions(userID, beginningOfTime, dateFrom)
+		if err != nil {
+			return nil, err
+		}
+
+		// Aggregate past transactions into a single bucket
+		// We use GranularityYear just to satisfy the function signature, but we'll sum up everything.
+		resPast := Aggregate(
+			ctx, accounts, pastTransactions,
+			beginningOfTime, dateFrom,
+			utils.GranularityYear,
+			outputCurrencyID, currenciesRatesFetcher,
+			currencyMap,
+			filter,
+			s.logger)
+
+		// Merge past aggregation results into balances
+		for _, currAgg := range resPast.Currencies {
+			targetCurrencyID := currAgg.CurrencyId
+			if _, ok := balances[targetCurrencyID]; !ok {
+				balances[targetCurrencyID] = make(map[string]float64)
+			}
+
+			for _, accAgg := range currAgg.Accounts {
+				total := 0.0
+				for _, amount := range accAgg.Amounts {
+					total += amount
+				}
+				balances[targetCurrencyID][accAgg.AccountId] += total
+			}
+		}
+	}
+
+	return balances, nil
 }
 
 func buildCurrencyMap(logger *slog.Logger, storage database.Storage, userID string) map[string]string {

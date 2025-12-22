@@ -1,0 +1,132 @@
+.balance-report-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    h1 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        font-weight: 500;
+    }
+
+    .subtitle {
+        margin: 0 0 24px 0;
+        color: #666;
+        font-size: 16px;
+    }
+
+    .filter-card {
+        margin-bottom: 32px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+        .filter-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+
+            mat-form-field {
+                flex: 1;
+                min-width: 200px;
+            }
+
+            button {
+                height: 56px;
+                padding: 0 24px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+        }
+    }
+
+    .currency-title {
+        margin: 40px 0 24px 0;
+        font-size: 20px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .currency-toggle {
+            font-size: 14px;
+        }
+    }
+
+    .charts-section {
+        margin-bottom: 32px;
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+            .chart-container {
+                height: 400px;
+                position: relative;
+            }
+        }
+    }
+
+    .summary-card {
+        margin-bottom: 48px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .summary-table {
+            width: 100%;
+
+            .amount-cell {
+                text-align: right;
+                padding-left: 16px;
+            }
+
+            .total-label {
+                font-weight: 600;
+            }
+
+            .total-amount {
+                font-weight: 600;
+                color: #2e7d32;
+            }
+
+            .total-row-cell {
+                font-weight: 600;
+                background-color: rgba(46, 125, 50, 0.04);
+            }
+
+            .total-row {
+                background-color: rgba(46, 125, 50, 0.02);
+            }
+
+            tr.mat-mdc-header-row {
+                height: 56px;
+            }
+
+            tr.mat-mdc-row {
+                height: 48px;
+            }
+        }
+    }
+
+    .loading-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 64px;
+    }
+
+    .no-data-card {
+        text-align: center;
+        padding: 48px;
+        color: #666;
+    }
+}

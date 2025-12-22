@@ -52,7 +52,7 @@ import { LayoutService } from '../../layout/services/layout.service';
                             <p>Track account balances and net worth over time.</p>
                         </mat-card-content>
                         <mat-card-actions>
-                            <button mat-button color="primary" disabled>Coming Soon</button>
+                            <a mat-button color="primary" routerLink="balance">View Report</a>
                         </mat-card-actions>
                     </mat-card>
 

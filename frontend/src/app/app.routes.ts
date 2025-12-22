@@ -93,6 +93,13 @@ export const routes: Routes = [
                                 (m) => m.ExpenseReportComponent,
                             ),
                     },
+                    {
+                        path: 'balance',
+                        loadComponent: () =>
+                            import('./features/reports/balance-report/balance-report.component').then(
+                                (m) => m.BalanceReportComponent,
+                            ),
+                    },
                 ],
             },
             {
