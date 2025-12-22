@@ -11,7 +11,7 @@ import (
 func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := utils.CreateTemplateData(req, "unprocessed")
@@ -26,7 +26,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 	accounts, err := r.db.GetAccounts(userID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Accounts"] = accounts
@@ -34,7 +34,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 	currencies, err := r.db.GetCurrencies(userID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 	unprocessed, cnt, err := s.PrepareUnprocessedTransactions(req.Context(), userID, true, id)
 	if err != nil {
 		r.logger.Error("Failed to get unprocessed", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if len(unprocessed) != 0 {
@@ -122,25 +122,25 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 
 	if err := tmpl.ExecuteTemplate(w, "unprocessed.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (r *WebAppRouter) unprocessedDeleteHandler(w http.ResponseWriter, req *http.Request) {
 	userID, code, err := r.GetUserIDFromSession(req)
 	if err != nil {
-		http.Error(w, http.StatusText(code), code)
+		r.RespondError(w, http.StatusText(code), code)
 		return
 	}
 
 	id := req.URL.Query().Get("id")
 	if id == "" {
-		http.Error(w, "no id", http.StatusBadRequest)
+		r.RespondError(w, "no id", http.StatusBadRequest)
 		return
 	}
 	duplicateOf := req.URL.Query().Get("duplicateOf")
 	if duplicateOf == "" {
-		http.Error(w, "no duplicateOf", http.StatusBadRequest)
+		r.RespondError(w, "no duplicateOf", http.StatusBadRequest)
 		return
 	}
 
@@ -148,7 +148,7 @@ func (r *WebAppRouter) unprocessedDeleteHandler(w http.ResponseWriter, req *http
 	err = s.Delete(req.Context(), userID, id, duplicateOf)
 	if err != nil {
 		r.logger.Error("Failed to delete unprocessed", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

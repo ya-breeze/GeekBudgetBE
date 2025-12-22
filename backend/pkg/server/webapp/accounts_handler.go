@@ -12,7 +12,7 @@ import (
 func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := utils.CreateTemplateData(req, "accounts")
@@ -27,14 +27,14 @@ func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request)
 	accounts, err := r.db.GetAccounts(userID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Accounts"] = &accounts
 
 	if err := tmpl.ExecuteTemplate(w, "accounts.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -42,7 +42,7 @@ func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request)
 func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := map[string]interface{}{}
@@ -57,7 +57,7 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 	accounts, err := r.db.GetAccounts(userID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Accounts"] = &accounts
@@ -97,7 +97,7 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 					})
 					if err != nil {
 						r.logger.Error("Failed to create account", "error", err)
-						http.Error(w, err.Error(), http.StatusInternalServerError)
+						r.RespondError(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
 				}
@@ -111,7 +111,7 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 			})
 			if err != nil {
 				r.logger.Error("Failed to update account", "error", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
@@ -124,6 +124,6 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 
 	if err := tmpl.ExecuteTemplate(w, "accounts_edit.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }

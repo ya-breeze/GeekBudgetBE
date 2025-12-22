@@ -12,7 +12,7 @@ import (
 func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := utils.CreateTemplateData(req, "home")
@@ -27,7 +27,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	accounts, err := r.db.GetAccounts(userID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Accounts"] = accounts
@@ -35,7 +35,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	currencies, err := r.db.GetCurrencies(userID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	dateFrom, dateTo, err := getTimeRange(req, utils.GranularityMonth)
 	if err != nil {
 		r.logger.Error("Failed to get time range", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	dateFrom = dateFrom.AddDate(0, -12, 0)
@@ -66,7 +66,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, outputCurrencyID, utils.GranularityMonth, false)
 	if err != nil {
 		r.logger.Error("Failed to get aggregated expenses", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -127,11 +127,11 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	templateName, ok := data["Template"].(string)
 	if !ok {
 		r.logger.Error("Failed to assert template name")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		r.RespondError(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	if err := tmpl.ExecuteTemplate(w, templateName, data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err, "template", templateName)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }

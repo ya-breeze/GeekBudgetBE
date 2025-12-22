@@ -15,7 +15,7 @@ import (
 //nolint:cyclop,funlen // refactor
 func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -23,7 +23,7 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 	password := req.Form.Get("password")
 
 	if username == "" || password == "" {
-		http.Error(w, "Username and password are required", http.StatusBadRequest)
+		r.RespondError(w, "Username and password are required", http.StatusBadRequest)
 		return
 	}
 
@@ -31,39 +31,39 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 	userID, err := r.db.GetUserID(username)
 	if err != nil {
 		r.logger.Warn("failed to get user ID", "username", username)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	user, err := r.db.GetUser(userID)
 	if err != nil {
 		r.logger.Warn("failed to get user", "ID", userID)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	if user == nil {
 		r.logger.Warn("user not found", "ID", userID)
-		http.Error(w, "User not found", http.StatusBadRequest)
+		r.RespondError(w, "User not found", http.StatusBadRequest)
 		return
 	}
 
 	// check that password is correct and create JWT token
 	hashed, err := base64.StdEncoding.DecodeString(user.HashedPassword)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 	if !auth.CheckPasswordHash([]byte(password), hashed) {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		r.RespondError(w, err.Error(), http.StatusUnauthorized)
 	}
 	token, err := auth.CreateJWT(userID, r.cfg.Issuer, r.cfg.JWTSecret)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	// set JWT token in cookie
 	session, err := r.cookies.Get(req, r.cfg.CookieName)
 	if err != nil {
 		r.logger.Warn("failed to get session", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	session.Values["token"] = token
@@ -76,7 +76,7 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 	err = session.Save(req, w)
 	if err != nil {
 		r.logger.Warn("failed to save session", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 
 func (r *WebAppRouter) logoutHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -100,14 +100,14 @@ func (r *WebAppRouter) logoutHandler(w http.ResponseWriter, req *http.Request) {
 
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	data := utils.CreateTemplateData(req, "login")
 
 	if err := tmpl.ExecuteTemplate(w, "login.tpl", data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -140,7 +140,7 @@ func (r *WebAppRouter) ValidateUserID(
 	if err != nil {
 		if errTmpl := tmpl.ExecuteTemplate(w, "login.tpl", nil); errTmpl != nil {
 			r.logger.Warn("failed to execute login template", "error", errTmpl)
-			http.Error(w, errTmpl.Error(), http.StatusInternalServerError)
+			r.RespondError(w, errTmpl.Error(), http.StatusInternalServerError)
 		}
 		return "", fmt.Errorf("failed to get user ID from session: %w", err)
 	}

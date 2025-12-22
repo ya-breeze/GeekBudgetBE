@@ -22,6 +22,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/webapp"
 )
 
@@ -34,7 +35,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 		return fmt.Errorf("failed to open storage: %w", err)
 	}
 
-	forcedImportChan := make(chan background.ForcedImport, 100)
+	forcedImportChan := make(chan common.ForcedImport, 100)
 	_, finishChan, err := Serve(ctx, logger, storage, cfg, forcedImportChan)
 	if err != nil {
 		return fmt.Errorf("failed to serve: %w", err)
@@ -95,7 +96,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 func Serve(
 	ctx context.Context, logger *slog.Logger,
 	storage database.Storage, cfg *config.Config,
-	forcedImports chan<- background.ForcedImport,
+	forcedImports chan<- common.ForcedImport,
 ) (net.Addr, chan int, error) {
 	commit := func() string {
 		if info, ok := debug.ReadBuildInfo(); ok {
@@ -562,7 +563,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 }
 
 func createMiddlewares(
-	logger *slog.Logger, cfg *config.Config, forcedImports chan<- background.ForcedImport,
+	logger *slog.Logger, cfg *config.Config, forcedImports chan<- common.ForcedImport,
 ) []mux.MiddlewareFunc {
 	return []mux.MiddlewareFunc{
 		CORSMiddleware(),

@@ -28,6 +28,12 @@ type WebAppRouter struct {
 	cookies *sessions.CookieStore
 }
 
+// RespondError logs the error and sends an error response
+func (r *WebAppRouter) RespondError(w http.ResponseWriter, msg string, code int) {
+	r.logger.Error(msg, "status", code)
+	http.Error(w, msg, code)
+}
+
 func NewWebAppRouter(
 	commit string, logger *slog.Logger, cfg *config.Config, db database.Storage,
 ) *WebAppRouter {
@@ -271,7 +277,7 @@ func (r *WebAppRouter) imageHandler(w http.ResponseWriter, req *http.Request) {
 	image, err := r.db.GetImage(id)
 	if err != nil {
 		r.logger.With("error", err, "id", id).Error("Failed to get image")
-		http.Error(w, "Image not found", http.StatusNotFound)
+		r.RespondError(w, "Image not found", http.StatusNotFound)
 		return
 	}
 

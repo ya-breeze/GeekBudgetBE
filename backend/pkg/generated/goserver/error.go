@@ -14,6 +14,7 @@ package goserver
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -59,6 +60,7 @@ func DefaultErrorHandler(w http.ResponseWriter, _ *http.Request, err error, resu
 	var parsingErr *ParsingError
 	if ok := errors.As(err, &parsingErr); ok {
 		// Handle parsing errors
+		slog.Error("Parsing error", "error", err, "status", http.StatusBadRequest)
 		_ = EncodeJSONResponse(err.Error(), func(i int) *int { return &i }(http.StatusBadRequest), w)
 		return
 	}
@@ -66,10 +68,16 @@ func DefaultErrorHandler(w http.ResponseWriter, _ *http.Request, err error, resu
 	var requiredErr *RequiredError
 	if ok := errors.As(err, &requiredErr); ok {
 		// Handle missing required errors
+		slog.Error("Required field error", "error", err, "status", http.StatusUnprocessableEntity)
 		_ = EncodeJSONResponse(err.Error(), func(i int) *int { return &i }(http.StatusUnprocessableEntity), w)
 		return
 	}
 
 	// Handle all other errors
+	if result != nil {
+		slog.Error("Controller error", "error", err, "status", result.Code)
+	} else {
+		slog.Error("Controller error", "error", err)
+	}
 	_ = EncodeJSONResponse(err.Error(), &result.Code, w)
 }

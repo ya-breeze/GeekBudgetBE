@@ -10,7 +10,7 @@ import (
 
 func (r *WebAppRouter) unprocessedConvertHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	transactionID := req.Form.Get("transaction_id")
@@ -18,14 +18,14 @@ func (r *WebAppRouter) unprocessedConvertHandler(w http.ResponseWriter, req *htt
 	userID, code, err := r.GetUserIDFromSession(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
-		http.Error(w, err.Error(), code)
+		r.RespondError(w, err.Error(), code)
 		return
 	}
 
 	t, err := r.db.GetTransaction(userID, transactionID)
 	if err != nil {
 		r.logger.Error("Failed to get transaction", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (r *WebAppRouter) unprocessedConvertHandler(w http.ResponseWriter, req *htt
 	_, err = s.Convert(req.Context(), userID, transactionID, &t)
 	if err != nil {
 		r.logger.Error("Failed to convert unprocessed transaction", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

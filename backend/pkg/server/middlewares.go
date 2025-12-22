@@ -11,7 +11,6 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
@@ -61,6 +60,7 @@ func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc 
 			logger.Debug("Bearer token auth failed", "error", err)
 
 			// 3. Unauthorized
+			logger.Warn("Unauthorized access attempt", "path", req.URL.Path)
 			http.Error(writer, "Unauthorized", http.StatusUnauthorized)
 		})
 	}
@@ -126,11 +126,11 @@ func CORSMiddleware() mux.MiddlewareFunc {
 	}
 }
 
-func ForcedImportMiddleware(logger *slog.Logger, forcedImports chan<- background.ForcedImport) mux.MiddlewareFunc {
+func ForcedImportMiddleware(logger *slog.Logger, forcedImports chan<- common.ForcedImport) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 			// Store forced import in the context
-			ctx := context.WithValue(req.Context(), background.ForcedImportKey, forcedImports)
+			ctx := context.WithValue(req.Context(), common.ForcedImportKey, forcedImports)
 			req = req.WithContext(ctx)
 
 			next.ServeHTTP(writer, req)

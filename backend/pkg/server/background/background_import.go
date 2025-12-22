@@ -9,25 +9,12 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
-
-type ForcedImportKeyType string
-
-const ForcedImportKey ForcedImportKeyType = "forced_import_channel"
-
-type ForcedImport struct {
-	UserID         string
-	BankImporterID string
-}
-
-func GetForcedImportChannel(ctx context.Context) chan<- ForcedImport {
-	res, _ := ctx.Value(ForcedImportKey).(chan<- ForcedImport)
-	return res
-}
 
 //nolint:funlen,gocognit,cyclop // TODO refactor
 func StartBankImporters(
-	ctx context.Context, logger *slog.Logger, db database.Storage, forcedImports <-chan ForcedImport,
+	ctx context.Context, logger *slog.Logger, db database.Storage, forcedImports <-chan common.ForcedImport,
 ) <-chan struct{} {
 	logger.Info("Starting bank importers...")
 

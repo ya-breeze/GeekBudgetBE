@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := utils.CreateTemplateData(req, "bank_importers")
@@ -29,7 +29,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 	bankimporters, err := r.db.GetBankImporters(userID)
 	if err != nil {
 		r.logger.Error("Failed to get bank importers", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	r.logger.Info("Bank importers", "bankimporters", bankimporters)
@@ -41,15 +41,18 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 				bankImporter.FetchAll = true
 				if _, err = r.db.UpdateBankImporter(userID, bankImporter.Id, &bankImporter); err != nil {
 					r.logger.Error("Failed to update bank importer", "error", err)
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					r.RespondError(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
 				bankimporters[i] = bankImporter
 
 				// schedule forced import
-				background.GetForcedImportChannel(req.Context()) <- background.ForcedImport{
-					UserID:         userID,
-					BankImporterID: bankImporter.Id,
+				background := common.GetForcedImportChannel(req.Context())
+				if background != nil {
+					background <- common.ForcedImport{
+						UserID:         userID,
+						BankImporterID: bankImporter.Id,
+					}
 				}
 			}
 		}
@@ -58,7 +61,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 
 	if err := tmpl.ExecuteTemplate(w, "bank_importers.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -66,7 +69,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := utils.CreateTemplateData(req, "bank_importers")
@@ -80,20 +83,20 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 
 	if err = req.ParseMultipartForm(10 << 20); err != nil {
 		r.logger.Error("Failed to parse form", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	_, file, err := req.FormFile("file")
 	if err != nil {
 		r.logger.Error("Failed to get file", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	fileData, fileName, err := readFileHeader(file)
 	if err != nil {
 		r.logger.Error("Failed to read file", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	format := fileName[strings.LastIndex(fileName, ".")+1:]
@@ -101,7 +104,7 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 	bankImporterID := req.FormValue("id")
 	if bankImporterID == "" {
 		r.logger.Error("No bank importer ID", "error", err)
-		http.Error(w, "No bank importer ID", http.StatusBadRequest)
+		r.RespondError(w, "No bank importer ID", http.StatusBadRequest)
 		return
 	}
 
@@ -109,7 +112,7 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 	lastImport, err := parser.Upload(userID, bankImporterID, format, fileData)
 	if err != nil {
 		r.logger.Error("Failed to upload bank importer", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["LastImport"] = lastImport
@@ -117,7 +120,7 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 
 	if err := tmpl.ExecuteTemplate(w, "bank_importers_upload.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 

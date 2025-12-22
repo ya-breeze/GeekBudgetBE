@@ -39,6 +39,14 @@ func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, in
 		return goserver.Response(500, nil), nil
 	}
 
+	if forcedImports := common.GetForcedImportChannel(ctx); forcedImports != nil {
+		s.logger.Info("Triggering forced import for new bank importer", "userID", userID, "bankImporterID", res.Id)
+		forcedImports <- common.ForcedImport{
+			UserID:         userID,
+			BankImporterID: res.Id,
+		}
+	}
+
 	return goserver.Response(200, res), nil
 }
 
@@ -87,6 +95,14 @@ func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
+	if forcedImports := common.GetForcedImportChannel(ctx); forcedImports != nil {
+		s.logger.Info("Triggering forced import for updated bank importer", "userID", userID, "bankImporterID", id)
+		forcedImports <- common.ForcedImport{
+			UserID:         userID,
+			BankImporterID: id,
+		}
+	}
+
 	return goserver.Response(200, res), nil
 }
 
@@ -97,6 +113,12 @@ func (s *BankImportersAPIServiceImpl) Fetch(
 	info, transactions, err := s.fetchFioTransactions(ctx, userID, importerID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to fetch for bank importer")
+		// Log failed import
+		_ = s.addImportResult(userID, importerID, goserver.ImportResult{
+			Date:        time.Now(),
+			Status:      "error",
+			Description: err.Error(),
+		})
 		return nil, err
 	}
 
@@ -191,11 +213,6 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 	userID string, id string, info *goserver.BankAccountInfo, totalTransactionsCnt int, newTransactionsCnt int,
 ) (*goserver.ImportResult, error) {
-	biData, err := s.db.GetBankImporter(userID, id)
-	if err != nil {
-		return nil, fmt.Errorf("can't fetch bank importer: %w", err)
-	}
-
 	balances := []goserver.ImportResultBalancesInner{}
 	if info != nil {
 		for _, b := range info.Balances {
@@ -207,23 +224,44 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 	}
 
 	lastImport := goserver.ImportResult{
-		Date:   biData.LastSuccessfulImport,
+		Date:   time.Now(),
 		Status: "success",
 		Description: fmt.Sprintf("Fetched %d transactions. Imported %d new transactions.",
 			totalTransactionsCnt, newTransactionsCnt),
 		Balances: balances,
 	}
-	biData.LastSuccessfulImport = time.Now()
-	biData.LastImports = append(biData.LastImports, lastImport)
+
+	if err := s.addImportResult(userID, id, lastImport); err != nil {
+		return nil, err
+	}
+
+	return &lastImport, nil
+}
+
+func (s *BankImportersAPIServiceImpl) addImportResult(
+	userID, id string, result goserver.ImportResult,
+) error {
+	biData, err := s.db.GetBankImporter(userID, id)
+	if err != nil {
+		return fmt.Errorf("can't fetch bank importer: %w", err)
+	}
+
+	if result.Date.IsZero() {
+		result.Date = time.Now()
+	}
+
+	if result.Status == "success" {
+		biData.LastSuccessfulImport = result.Date
+	}
+	biData.LastImports = append(biData.LastImports, result)
 	if len(biData.LastImports) > 10 {
 		biData.LastImports = biData.LastImports[1:]
 	}
 	_, err = s.db.UpdateBankImporter(userID, id, &biData)
 	if err != nil {
-		return nil, fmt.Errorf("can't update BankImporter: %w", err)
+		return fmt.Errorf("can't update BankImporter: %w", err)
 	}
-
-	return &lastImport, nil
+	return nil
 }
 
 func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
@@ -387,12 +425,22 @@ func (s *BankImportersAPIServiceImpl) Upload(
 		}
 	default:
 		s.logger.With("type", biData.Type).Error("Unsupported bank importer type")
+		_ = s.addImportResult(userID, id, goserver.ImportResult{
+			Date:        time.Now(),
+			Status:      "error",
+			Description: fmt.Sprintf("Unsupported bank importer type: %s", biData.Type),
+		})
 		return nil, fmt.Errorf("unsupported bank importer type: %s", biData.Type)
 	}
 
 	info, transactions, err := bi.ParseAndImport(format, string(data))
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to parse and import data")
+		_ = s.addImportResult(userID, id, goserver.ImportResult{
+			Date:        time.Now(),
+			Status:      "error",
+			Description: fmt.Sprintf("Failed to parse and import data: %s", err),
+		})
 		return nil, fmt.Errorf("can't parse and import data: %w", err)
 	}
 

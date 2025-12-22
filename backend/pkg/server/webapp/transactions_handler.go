@@ -35,7 +35,7 @@ func getTimeRange(req *http.Request, granularity utils.Granularity) (time.Time, 
 func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := utils.CreateTemplateData(req, "transactions")
@@ -53,7 +53,7 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 	accounts, err := r.db.GetAccounts(userID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Accounts"] = accounts
@@ -61,21 +61,21 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 	currencies, err := r.db.GetCurrencies(userID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	dateFrom, dateTo, err := getTimeRange(req, utils.GranularityMonth)
 	if err != nil {
 		r.logger.Error("Failed to get time range", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	transactions, err := r.db.GetTransactions(userID, dateFrom, dateTo)
 	if err != nil {
 		r.logger.Error("Failed to get transactions", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 
 	if err := tmpl.ExecuteTemplate(w, "transactions.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -108,13 +108,13 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := map[string]interface{}{}
 
 	if err = req.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	transactionID := req.FormValue("id")
@@ -129,7 +129,7 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 	accounts, err := r.db.GetAccounts(userID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Accounts"] = accounts
@@ -138,7 +138,7 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 	currencies, err = r.db.GetCurrencies(userID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -147,7 +147,7 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 		transaction, err = r.db.GetTransaction(userID, transactionID)
 		if err != nil {
 			r.logger.Error("Failed to get transaction", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			r.RespondError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -163,7 +163,7 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 			transaction.Movements[i].Amount, err = strconv.ParseFloat(amountStr, 64)
 			if err != nil {
 				r.logger.Error("Failed to parse amount", "error", err)
-				http.Error(w, "Invalid amount", http.StatusBadRequest)
+				r.RespondError(w, "Invalid amount", http.StatusBadRequest)
 				return
 			}
 		}
@@ -172,14 +172,14 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 			r.logger.Info("creating transaction", "transaction", transaction)
 			if transaction, err = r.db.CreateTransaction(userID, &transaction); err != nil {
 				r.logger.Error("Failed to create transaction", "error", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			r.logger.Info("updating transaction", "transaction", transaction)
 			if transaction, err = r.db.UpdateTransaction(userID, transactionID, &transaction); err != nil {
 				r.logger.Error("Failed to save transaction", "error", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
@@ -188,6 +188,6 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 
 	if err := tmpl.ExecuteTemplate(w, "transaction_edit.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }

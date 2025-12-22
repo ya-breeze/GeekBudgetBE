@@ -17,7 +17,7 @@ import (
 func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := utils.CreateTemplateData(req, "matchers")
@@ -32,40 +32,40 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 	matchers, err := r.db.GetMatchers(userID)
 	if err != nil {
 		r.logger.Error("Failed to get matchers", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Matchers"] = &matchers
 
 	if err := tmpl.ExecuteTemplate(w, "matchers.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 //nolint:dupl
 func (r *WebAppRouter) matchersDeleteHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	userID, _, err := r.GetUserIDFromSession(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	id := req.FormValue("id")
 	if id == "" {
-		http.Error(w, "ID is required", http.StatusBadRequest)
+		r.RespondError(w, "ID is required", http.StatusBadRequest)
 		return
 	}
 
 	if err := r.db.DeleteMatcher(userID, id); err != nil {
 		r.logger.Error("Failed to delete matcher", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -76,13 +76,13 @@ func (r *WebAppRouter) matchersDeleteHandler(w http.ResponseWriter, req *http.Re
 func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := r.loadTemplates()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := map[string]interface{}{}
 
 	if err = req.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	matcherID := req.FormValue("id")
@@ -91,14 +91,14 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 	userID, _, err := r.GetUserIDFromSession(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	accounts, err := r.db.GetAccounts(userID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data["Accounts"] = accounts
@@ -109,7 +109,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		t, err = r.db.GetTransaction(userID, transactionID)
 		if err != nil {
 			r.logger.Error("Failed to get transaction", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			r.RespondError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -117,7 +117,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		currencies, err = r.db.GetCurrencies(userID)
 		if err != nil {
 			r.logger.Error("Failed to get currencies", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			r.RespondError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -130,7 +130,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		matcher, err = r.db.GetMatcher(userID, matcherID)
 		if err != nil {
 			r.logger.Error("Failed to get matcher", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			r.RespondError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
@@ -152,7 +152,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		}
 
 		if matcher.OutputAccountId == "" {
-			http.Error(w, "Account is required", http.StatusBadRequest)
+			r.RespondError(w, "Account is required", http.StatusBadRequest)
 			return
 		}
 
@@ -160,14 +160,14 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 			r.logger.Info("creating matcher", "matcher", matcher)
 			if matcher, err = r.db.CreateMatcher(userID, &matcher); err != nil {
 				r.logger.Error("Failed to create matcher", "error", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			r.logger.Info("updating matcher", "matcher", matcher)
 			if matcher, err = r.db.UpdateMatcher(userID, matcherID, &matcher); err != nil {
 				r.logger.Error("Failed to save matcher", "error", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
@@ -176,7 +176,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 
 	if err := tmpl.ExecuteTemplate(w, "matcher_edit.tpl", data); err != nil {
 		r.logger.Warn("failed to execute template", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	// http.Redirect(w, req, "/web/matchers", http.StatusFound)
@@ -197,14 +197,14 @@ func removeEmptyValues(arr []string) []string {
 // This is a web wrapper around the API endpoint that handles authentication via session cookies
 func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		r.RespondError(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	userID, code, err := r.GetUserIDFromSession(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
-		http.Error(w, "Unauthorized", code)
+		r.RespondError(w, "Unauthorized", code)
 		return
 	}
 
@@ -212,7 +212,7 @@ func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Requ
 	var checkRequest goserver.CheckMatcherRequest
 	if decodeErr := json.NewDecoder(req.Body).Decode(&checkRequest); decodeErr != nil {
 		r.logger.Error("Failed to decode request body", "error", decodeErr)
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		r.RespondError(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
@@ -224,7 +224,7 @@ func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Requ
 	result, err := matchersService.CheckMatcher(ctx, checkRequest)
 	if err != nil {
 		r.logger.Error("Failed to check matcher", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		r.RespondError(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -241,26 +241,26 @@ func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Requ
 //nolint:dupl
 func (r *WebAppRouter) matcherDeleteHandler(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	userID, _, err := r.GetUserIDFromSession(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	id := req.FormValue("id")
 	if id == "" {
-		http.Error(w, "ID is required", http.StatusBadRequest)
+		r.RespondError(w, "ID is required", http.StatusBadRequest)
 		return
 	}
 
 	if err := r.db.DeleteMatcher(userID, id); err != nil {
 		r.logger.Error("Failed to delete matcher", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

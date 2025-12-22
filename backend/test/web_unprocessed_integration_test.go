@@ -19,7 +19,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
@@ -35,7 +35,7 @@ var _ = Describe("Web unprocessed convert integration", func() {
 	logger := test.CreateTestLogger()
 
 	BeforeEach(func() {
-		forcedImportChan := make(chan background.ForcedImport)
+		forcedImportChan := make(chan common.ForcedImport)
 
 		ctx, cancel = context.WithCancel(context.Background())
 		hashed, err := auth.HashPassword([]byte(Pass1))

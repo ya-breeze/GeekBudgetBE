@@ -14,7 +14,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -40,7 +40,7 @@ var _ = Describe("Matchers API", func() {
 	now := time.Now()
 
 	BeforeEach(func() {
-		forcedImportChan := make(chan background.ForcedImport)
+		forcedImportChan := make(chan common.ForcedImport)
 
 		ctx, cancel = context.WithCancel(context.Background())
 		hashed, err := auth.HashPassword([]byte(Pass1))
