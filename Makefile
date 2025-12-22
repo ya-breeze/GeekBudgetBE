@@ -21,6 +21,8 @@ run-backend:
 	GB_DISABLEIMPORTERS=true \
 	GB_COOKIESECURE=false \
 	GB_DBPATH=$(ROOT_DIR)geekbudget.db \
+	GB_JWT_SECRET=secret \
+	GB_SESSIONSECRET=secret \
 	${ROOT_DIR}/backend/bin/geekbudget server
 
 .PHONY: run-frontend

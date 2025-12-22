@@ -54,6 +54,11 @@ func setDefaultsFromStruct(s interface{}) {
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
 		defaultValue := field.Tag.Get("default")
-		viper.SetDefault(field.Name, defaultValue)
+		// Use the field name as the default key for the configuration
+		name := field.Name
+		if tag := field.Tag.Get("mapstructure"); tag != "" {
+			name = tag
+		}
+		viper.SetDefault(name, defaultValue)
 	}
 }
