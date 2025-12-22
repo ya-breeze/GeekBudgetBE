@@ -79,7 +79,7 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	// Align minDate to start of month
 	minDate = time.Date(minDate.Year(), minDate.Month(), 1, 0, 0, 0, 0, minDate.Location())
 
-	transactions, err := s.db.GetTransactions(userID, minDate, to)
+	transactions, err := s.db.GetTransactions(userID, minDate, to, false)
 	if err != nil {
 		s.logger.Error("Failed to fetch transactions", "error", err)
 		return goserver.Response(http.StatusInternalServerError, nil), err

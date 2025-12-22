@@ -140,6 +140,18 @@
                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
                     <td mat-cell *matCellDef="let transaction">
                         <div class="description-cell">
+                            @if (
+                                transaction.suspiciousReasons &&
+                                transaction.suspiciousReasons.length > 0
+                            ) {
+                                <mat-icon
+                                    class="suspicious-icon"
+                                    [matTooltip]="
+                                        'Suspicious: ' + transaction.suspiciousReasons.join(', ')
+                                    "
+                                    >warning</mat-icon
+                                >
+                            }
                             <span>{{ transaction.description || '-' }}</span>
                             @if (transaction.matcherId) {
                                 @if (matcherMap().get(transaction.matcherId!)?.image) {

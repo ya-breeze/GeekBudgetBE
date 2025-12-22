@@ -19,6 +19,11 @@ export interface UploadBankImporter$Params {
      * format of the data
      */
     format: 'csv' | 'xlsx';
+
+    /**
+     * If true, mark missing transactions as suspicious
+     */
+    containsAllTransactions?: boolean;
     body?: {
         file?: Blob;
     };
@@ -34,6 +39,7 @@ export function uploadBankImporter(
     if (params) {
         rb.path('id', params.id, {});
         rb.query('format', params.format, {});
+        rb.query('containsAllTransactions', params.containsAllTransactions, {});
         rb.body(params.body, 'multipart/form-data');
     }
 

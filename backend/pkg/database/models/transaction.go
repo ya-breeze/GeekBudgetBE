@@ -35,6 +35,8 @@ type Transaction struct {
 	// IsAuto is true if this transaction was converted automatically by the matcher
 	IsAuto bool
 
+	SuspiciousReasons []string `gorm:"serializer:json"`
+
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
@@ -60,6 +62,7 @@ func (t *Transaction) FromDB() goserver.Transaction {
 		Movements:          t.Movements,
 		MatcherId:          matcherID,
 		IsAuto:             t.IsAuto,
+		SuspiciousReasons:  t.SuspiciousReasons,
 	}
 }
 
@@ -82,6 +85,7 @@ func (t *Transaction) WithoutID() *goserver.TransactionNoId {
 		Movements:          t.Movements,
 		MatcherId:          matcherID,
 		IsAuto:             t.IsAuto,
+		SuspiciousReasons:  t.SuspiciousReasons,
 	}
 }
 
@@ -107,6 +111,7 @@ func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID strin
 		Movements:          transaction.GetMovements(),
 		MatcherID:          matcherID,
 		IsAuto:             transaction.GetIsAuto(),
+		SuspiciousReasons:  transaction.GetSuspiciousReasons(),
 		UserID:             userID,
 	}
 }
@@ -126,5 +131,6 @@ func TransactionWithoutID(transaction *goserver.Transaction) *goserver.Transacti
 		Movements:          transaction.Movements,
 		MatcherId:          transaction.MatcherId,
 		IsAuto:             transaction.IsAuto,
+		SuspiciousReasons:  transaction.SuspiciousReasons,
 	}
 }

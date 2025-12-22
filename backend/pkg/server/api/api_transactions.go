@@ -24,13 +24,14 @@ func (s *TransactionsAPIServiceImpl) GetTransactions(
 	descriptionParam string,
 	amountFromParam, amountToParam float64,
 	dateFrom, dateTo time.Time,
+	onlySuspicious bool,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, onlySuspicious)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return goserver.Response(500, nil), nil

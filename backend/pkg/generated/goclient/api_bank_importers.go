@@ -537,16 +537,23 @@ func (a *BankImportersAPIService) UpdateBankImporterExecute(r ApiUpdateBankImpor
 }
 
 type ApiUploadBankImporterRequest struct {
-	ctx        context.Context
-	ApiService *BankImportersAPIService
-	id         string
-	format     *string
-	file       *os.File
+	ctx                     context.Context
+	ApiService              *BankImportersAPIService
+	id                      string
+	format                  *string
+	containsAllTransactions *bool
+	file                    *os.File
 }
 
 // format of the data
 func (r ApiUploadBankImporterRequest) Format(format string) ApiUploadBankImporterRequest {
 	r.format = &format
+	return r
+}
+
+// If true, mark missing transactions as suspicious
+func (r ApiUploadBankImporterRequest) ContainsAllTransactions(containsAllTransactions bool) ApiUploadBankImporterRequest {
+	r.containsAllTransactions = &containsAllTransactions
 	return r
 }
 
@@ -601,6 +608,12 @@ func (a *BankImportersAPIService) UploadBankImporterExecute(r ApiUploadBankImpor
 	}
 
 	parameterAddToHeaderOrQuery(localVarQueryParams, "format", r.format, "")
+	if r.containsAllTransactions != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "containsAllTransactions", r.containsAllTransactions, "")
+	} else {
+		var defaultValue bool = false
+		r.containsAllTransactions = &defaultValue
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"multipart/form-data"}
 

@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { BankImporter } from '../../../core/api/models/bank-importer';
 
@@ -15,6 +16,7 @@ export interface BankImporterUploadDialogData {
 export interface BankImporterUploadDialogResult {
     file: File;
     format: 'csv' | 'xlsx';
+    containsAllTransactions: boolean;
 }
 
 interface ImporterConfig {
@@ -60,6 +62,7 @@ const IMPORTER_CONFIGS: Record<string, ImporterConfig> = {
         MatSelectModule,
         MatInputModule,
         MatIconModule,
+        MatCheckboxModule,
         ReactiveFormsModule,
         FormsModule,
     ],
@@ -76,6 +79,7 @@ export class BankImporterUploadDialogComponent {
 
     protected readonly selectedFormat = signal<'csv' | 'xlsx'>(this.config.defaultFormat);
     protected readonly selectedFile = signal<File | null>(null);
+    protected readonly containsAllTransactions = signal(false);
     protected readonly isDragging = signal(false);
 
     protected onFileSelected(event: Event): void {
@@ -130,6 +134,7 @@ export class BankImporterUploadDialogComponent {
             this.dialogRef.close({
                 file: file,
                 format: this.selectedFormat(),
+                containsAllTransactions: this.containsAllTransactions(),
             });
         }
     }

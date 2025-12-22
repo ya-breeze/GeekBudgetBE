@@ -109,7 +109,8 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 	}
 
 	parser := api.NewBankImportersAPIServiceImpl(r.logger, r.db)
-	lastImport, err := parser.Upload(userID, bankImporterID, format, fileData)
+	containsAllTransactions := req.URL.Query().Get("containsAllTransactions") == "true"
+	lastImport, err := parser.Upload(userID, bankImporterID, format, fileData, containsAllTransactions)
 	if err != nil {
 		r.logger.Error("Failed to upload bank importer", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)

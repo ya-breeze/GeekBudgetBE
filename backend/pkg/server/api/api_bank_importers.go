@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math"
 	"os"
 	"slices"
 	"time"
@@ -110,7 +111,7 @@ func (s *BankImportersAPIServiceImpl) Fetch(
 	ctx context.Context, userID, importerID string, isInteractive bool,
 ) (*goserver.ImportResult, error) {
 	s.logger.Info("Fetching bank importer", "userID", userID, "bankImporterID", importerID)
-	info, transactions, err := s.fetchFioTransactions(ctx, userID, importerID, isInteractive)
+	info, transactions, wasFetchAll, err := s.fetchFioTransactions(ctx, userID, importerID, isInteractive)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to fetch for bank importer")
 		// Log failed import
@@ -122,7 +123,7 @@ func (s *BankImportersAPIServiceImpl) Fetch(
 		return nil, err
 	}
 
-	lastImport, err := s.saveImportedTransactions(userID, importerID, info, transactions)
+	lastImport, err := s.saveImportedTransactions(userID, importerID, info, transactions, wasFetchAll)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to save imported transactions")
 		return nil, err
@@ -151,33 +152,35 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 
 func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 	ctx context.Context, userID, id string, isInteractive bool,
-) (*goserver.BankAccountInfo, []goserver.TransactionNoId, error) {
+) (*goserver.BankAccountInfo, []goserver.TransactionNoId, bool, error) {
 	s.logger.With("user", userID).Info("Fetching transactions for bank importer")
 
 	biData, err := s.db.GetBankImporter(userID, id)
 	if err != nil {
-		return nil, nil, fmt.Errorf("can't fetch bank importer: %w", err)
+		return nil, nil, false, fmt.Errorf("can't fetch bank importer: %w", err)
 	}
 
 	if !isInteractive && biData.IsStopped {
 		s.logger.With("userID", userID, "bankImporterID", id).Info("Bank importer is stopped, skipping fetch")
-		return nil, nil, fmt.Errorf("bank importer is stopped")
+		return nil, nil, false, fmt.Errorf("bank importer is stopped")
 	}
 
 	currencies, err := s.db.GetCurrencies(userID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("can't fetch currencies: %w", err)
+		return nil, nil, false, fmt.Errorf("can't fetch currencies: %w", err)
 	}
 
 	cp := bankimporters.NewDefaultCurrencyProvider(s.db, userID, currencies)
 
 	bi, err := bankimporters.NewFioConverter(s.logger, biData, cp)
 	if err != nil {
-		return nil, nil, fmt.Errorf("can't create FioConverter: %w", err)
+		return nil, nil, false, fmt.Errorf("can't create FioConverter: %w", err)
 	}
 
 	s.logger.Info("Importing transactions")
 	info, transactions, err := bi.Import(ctx)
+	wasFetchAll := biData.FetchAll
+
 	if err != nil {
 		// Stop fetching if it was not interactive and fetch all is false
 		if !biData.FetchAll && !isInteractive {
@@ -220,7 +223,7 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 			}
 		}
 
-		return nil, nil, fmt.Errorf("can't import transactions: %w", err)
+		return nil, nil, false, fmt.Errorf("can't import transactions: %w", err)
 	}
 	s.logger.With("info", info, "transactions", len(transactions)).Info("Imported transactions")
 
@@ -238,15 +241,15 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 		biData.FetchAll = false
 		_, err = s.db.UpdateBankImporter(userID, id, &biData)
 		if err != nil {
-			return nil, nil, fmt.Errorf("can't update BankImporter: %w", err)
+			return nil, nil, false, fmt.Errorf("can't update BankImporter: %w", err)
 		}
 	}
 
-	return info, transactions, nil
+	return info, transactions, wasFetchAll, nil
 }
 
 func (s *BankImportersAPIServiceImpl) updateLastImportFields(
-	userID string, id string, info *goserver.BankAccountInfo, totalTransactionsCnt int, newTransactionsCnt int,
+	userID string, id string, info *goserver.BankAccountInfo, totalTransactionsCnt int, newTransactionsCnt int, suspiciousCnt int,
 ) (*goserver.ImportResult, error) {
 	balances := []goserver.ImportResultBalancesInner{}
 	if info != nil {
@@ -263,7 +266,8 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 		Status: "success",
 		Description: fmt.Sprintf("Fetched %d transactions. Imported %d new transactions.",
 			totalTransactionsCnt, newTransactionsCnt),
-		Balances: balances,
+		Balances:        balances,
+		SuspiciousCount: int32(suspiciousCnt),
 	}
 
 	if err := s.addImportResult(userID, id, lastImport); err != nil {
@@ -300,10 +304,10 @@ func (s *BankImportersAPIServiceImpl) addImportResult(
 }
 
 func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
-	userID, id string, info *goserver.BankAccountInfo, transactions []goserver.TransactionNoId,
+	userID, id string, info *goserver.BankAccountInfo, transactions []goserver.TransactionNoId, checkMissing bool,
 ) (*goserver.ImportResult, error) {
 	if len(transactions) == 0 {
-		return s.updateLastImportFields(userID, id, info, 0, 0)
+		return s.updateLastImportFields(userID, id, info, 0, 0, 0)
 	}
 
 	// Calculate the date range for fetching existing transactions
@@ -314,7 +318,10 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			earliestDate = t.Date
 		}
 	}
-	fetchFrom := earliestDate.AddDate(0, 0, -7) // 7 days safety margin
+	var fetchFrom time.Time
+	if !checkMissing {
+		fetchFrom = earliestDate.AddDate(0, 0, -7) // 7 days safety margin
+	}
 
 	// Fetch all transactions from the database (including deleted ones)
 	dbTransactions, err := s.db.GetTransactionsIncludingDeleted(userID, fetchFrom, time.Time{})
@@ -326,6 +333,11 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
 		return nil, fmt.Errorf("can't get matchers: %w", err)
+	}
+
+	biData, err := s.db.GetBankImporter(userID, id)
+	if err != nil {
+		return nil, fmt.Errorf("can't get bank importer: %w", err)
 	}
 
 	// Keep track of visited transactions within this batch to handle self-duplicates
@@ -459,8 +471,106 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	}
 	s.logger.With("count", cnt).Info("All new imported transactions saved to DB")
 
+	suspiciousCnt := 0
+	if checkMissing {
+		// Create lookup maps for incoming transactions
+		incomingStableHashes := make(map[string]bool)
+		incomingExternalIDs := make(map[string]bool)
+
+		for _, t := range transactions {
+			incomingStableHashes[bankimporters.ComputeStableHash(&t)] = true
+			for _, extID := range t.ExternalIds {
+				incomingExternalIDs[extID] = true
+			}
+		}
+
+		for _, dbt := range dbTransactions {
+			// Check if transaction belongs to this account
+			isAccountMatch := false
+			for _, m := range dbt.Movements {
+				if m.AccountId == biData.AccountId {
+					isAccountMatch = true
+					break
+				}
+			}
+			if !isAccountMatch {
+				continue
+			}
+
+			// Check if it exists in incoming transactions
+			found := false
+			// 1. External ID check
+			for _, extID := range dbt.ExternalIds {
+				if incomingExternalIDs[extID] {
+					found = true
+					break
+				}
+			}
+			if found {
+				continue
+			}
+
+			// 2. Stable Hash check
+			dbtNoId := goserver.TransactionNoId{
+				Date:        dbt.Date,
+				Movements:   dbt.Movements,
+				ExternalIds: dbt.ExternalIds, // ComputeStableHash uses ExternalIds? No, usually date/movements. logic check.
+			}
+			// Check ComputeStableHash impl. It uses Date, Amount, Currency.
+			// Re-construct logic from deduplication loop.
+			// User logic:
+			// dbtNoId := goserver.TransactionNoId{
+			// 	Date:      dbt.Date,
+			// 	Movements: dbt.Movements,
+			// }
+			dbtStableHash := bankimporters.ComputeStableHash(&dbtNoId)
+			if incomingStableHashes[dbtStableHash] {
+				found = true
+			}
+
+			// 3. Duplicate check: if some transaction doesn't exist in fetched/uploaded list
+			// then BE should also check list of duplicates of the existing transaction.
+			// If any of them is present in fetch/upload list then transaction is not suspicious.
+			if !found {
+				for _, t := range transactions {
+					if isDuplicate(&t, &dbt) {
+						found = true
+						s.logger.With("dbtID", dbt.Id, "incomingDesc", t.Description).Info("Transaction found in incoming batch as a duplicate, not marking as suspicious")
+						break
+					}
+				}
+			}
+
+			if !found && len(dbt.SuspiciousReasons) == 0 {
+				// Mark as suspicious
+				// Mark as suspicious
+				dbtNoIdFull := models.TransactionWithoutID(&dbt)
+				dbtNoIdFull.SuspiciousReasons = []string{"Not present in importer transactions"}
+
+				_, err := s.db.UpdateTransaction(userID, dbt.Id, dbtNoIdFull)
+				if err != nil {
+					// Ignore if not found (deleted)
+					s.logger.With("error", err, "transactionID", dbt.Id).Warn("Failed to mark transaction as suspicious (might be deleted)")
+				} else {
+					suspiciousCnt++
+				}
+			}
+		}
+		if suspiciousCnt > 0 {
+			_, err := s.db.CreateNotification(userID, &goserver.Notification{
+				Date:        time.Now(),
+				Type:        string(models.NotificationTypeInfo),
+				Title:       "Suspicious Transactions Detected",
+				Description: fmt.Sprintf("Import from %q found %d transactions that were not present in the bank data. Please review them.", biData.Name, suspiciousCnt),
+			})
+			if err != nil {
+				s.logger.With("error", err).Error("Failed to create notification for suspicious transactions")
+			}
+		}
+	}
+
 	// update last import fields
-	lastImport, err := s.updateLastImportFields(userID, id, info, len(transactions), cnt)
+	lastImport, err := s.updateLastImportFields(userID, id, info, len(transactions), cnt, suspiciousCnt)
 	if err != nil {
 		return nil, fmt.Errorf("can't update last import fields: %w", err)
 	}
@@ -469,7 +579,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 }
 
 func (s *BankImportersAPIServiceImpl) Upload(
-	userID, id, format string, data []byte,
+	userID, id, format string, data []byte, containsAllTransactions bool,
 ) (*goserver.ImportResult, error) {
 	biData, err := s.db.GetBankImporter(userID, id)
 	if err != nil {
@@ -521,7 +631,7 @@ func (s *BankImportersAPIServiceImpl) Upload(
 		return nil, fmt.Errorf("can't parse and import data: %w", err)
 	}
 
-	lastImport, err := s.saveImportedTransactions(userID, id, info, transactions)
+	lastImport, err := s.saveImportedTransactions(userID, id, info, transactions, containsAllTransactions)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to save imported transactions")
 		return nil, fmt.Errorf("can't save imported transactions: %w", err)
@@ -531,7 +641,7 @@ func (s *BankImportersAPIServiceImpl) Upload(
 }
 
 func (s *BankImportersAPIServiceImpl) UploadBankImporter(
-	ctx context.Context, id, format string, file *os.File,
+	ctx context.Context, id, format string, containsAllTransactions bool, file *os.File,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
@@ -544,7 +654,7 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
-	lastImport, err := s.Upload(userID, id, format, data)
+	lastImport, err := s.Upload(userID, id, format, data, containsAllTransactions)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to upload")
 		return goserver.Response(500, nil), nil
@@ -563,4 +673,39 @@ func isPerfectMatch(m *goserver.Matcher) bool {
 		}
 	}
 	return true
+}
+
+func getIncreases(movements []goserver.Movement) float64 {
+	var pos, neg float64
+	for _, m := range movements {
+		if m.Amount > 0 {
+			pos += m.Amount
+		} else {
+			neg -= m.Amount
+		}
+	}
+	// Return the maximum of positive and negative sums.
+	// For a balanced double-entry transaction, pos == neg.
+	// For a single-entry or simplified test transaction, one of them might be 0.
+	if pos > neg {
+		return pos
+	}
+	return neg
+}
+
+func isDuplicate(t1 *goserver.TransactionNoId, t2 *goserver.Transaction) bool {
+	// 1. Time check (+/- 2 days)
+	delta := t1.Date.Sub(t2.Date)
+	if delta < 0 {
+		delta = -delta
+	}
+	if delta > 2*time.Hour*24 {
+		return false
+	}
+
+	// 2. Amount check (sum of increases)
+	inc1 := getIncreases(t1.Movements)
+	inc2 := getIncreases(t2.Movements)
+
+	return math.Abs(inc1-inc2) < 0.01
 }

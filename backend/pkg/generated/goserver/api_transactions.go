@@ -145,7 +145,23 @@ func (c *TransactionsAPIController) GetTransactions(w http.ResponseWriter, r *ht
 		dateToParam = param
 	} else {
 	}
-	result, err := c.service.GetTransactions(r.Context(), descriptionParam, amountFromParam, amountToParam, dateFromParam, dateToParam)
+	var onlySuspiciousParam bool
+	if query.Has("onlySuspicious") {
+		param, err := parseBoolParameter(
+			query.Get("onlySuspicious"),
+			WithParse[bool](parseBool),
+		)
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "onlySuspicious", Err: err}, nil)
+			return
+		}
+
+		onlySuspiciousParam = param
+	} else {
+		var param bool = false
+		onlySuspiciousParam = param
+	}
+	result, err := c.service.GetTransactions(r.Context(), descriptionParam, amountFromParam, amountToParam, dateFromParam, dateToParam, onlySuspiciousParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

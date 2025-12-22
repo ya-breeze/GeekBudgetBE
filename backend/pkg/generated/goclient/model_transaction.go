@@ -42,7 +42,8 @@ type Transaction struct {
 	// ID of the matcher used for this conversion (if any)
 	MatcherId *string `json:"matcherId,omitempty"`
 	// If true, this transaction was converted automatically by the matcher
-	IsAuto *bool `json:"isAuto,omitempty"`
+	IsAuto            *bool    `json:"isAuto,omitempty"`
+	SuspiciousReasons []string `json:"suspiciousReasons,omitempty"`
 }
 
 type _Transaction Transaction
@@ -491,6 +492,38 @@ func (o *Transaction) SetIsAuto(v bool) {
 	o.IsAuto = &v
 }
 
+// GetSuspiciousReasons returns the SuspiciousReasons field value if set, zero value otherwise.
+func (o *Transaction) GetSuspiciousReasons() []string {
+	if o == nil || IsNil(o.SuspiciousReasons) {
+		var ret []string
+		return ret
+	}
+	return o.SuspiciousReasons
+}
+
+// GetSuspiciousReasonsOk returns a tuple with the SuspiciousReasons field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Transaction) GetSuspiciousReasonsOk() ([]string, bool) {
+	if o == nil || IsNil(o.SuspiciousReasons) {
+		return nil, false
+	}
+	return o.SuspiciousReasons, true
+}
+
+// HasSuspiciousReasons returns a boolean if a field has been set.
+func (o *Transaction) HasSuspiciousReasons() bool {
+	if o != nil && !IsNil(o.SuspiciousReasons) {
+		return true
+	}
+
+	return false
+}
+
+// SetSuspiciousReasons gets a reference to the given []string and assigns it to the SuspiciousReasons field.
+func (o *Transaction) SetSuspiciousReasons(v []string) {
+	o.SuspiciousReasons = v
+}
+
 func (o Transaction) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -536,6 +569,9 @@ func (o Transaction) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.IsAuto) {
 		toSerialize["isAuto"] = o.IsAuto
+	}
+	if !IsNil(o.SuspiciousReasons) {
+		toSerialize["suspiciousReasons"] = o.SuspiciousReasons
 	}
 	return toSerialize, nil
 }

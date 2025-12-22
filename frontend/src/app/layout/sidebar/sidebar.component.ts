@@ -54,6 +54,8 @@ export class SidebarComponent {
         },
         { label: 'Budget', icon: 'savings', route: '/budget' },
         { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },
+        { label: 'Reports', icon: 'assessment', route: '/reports' },
+        { label: 'Suspicious', icon: 'report_problem', route: '/suspicious' },
 
         { label: 'Settings', icon: 'settings', route: '/settings' },
         { label: 'Accounts', icon: 'account_balance', route: '/accounts' },
@@ -61,7 +63,6 @@ export class SidebarComponent {
         { label: 'Bank Importers', icon: 'cloud_upload', route: '/bank-importers' },
 
         { label: 'Matchers', icon: 'rule', route: '/matchers' },
-        { label: 'Reports', icon: 'assessment', route: '/reports' },
 
         {
             label: 'Notifications',

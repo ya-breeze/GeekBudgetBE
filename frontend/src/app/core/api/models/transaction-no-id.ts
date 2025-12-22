@@ -34,6 +34,7 @@ export interface TransactionNoId {
     partnerInternalId?: string;
     partnerName?: string;
     place?: string;
+    suspiciousReasons?: Array<string>;
     tags?: Array<string>;
 
     /**

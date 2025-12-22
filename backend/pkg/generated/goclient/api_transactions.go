@@ -326,13 +326,14 @@ func (a *TransactionsAPIService) GetTransactionExecute(r ApiGetTransactionReques
 }
 
 type ApiGetTransactionsRequest struct {
-	ctx         context.Context
-	ApiService  *TransactionsAPIService
-	description *string
-	amountFrom  *float64
-	amountTo    *float64
-	dateFrom    *time.Time
-	dateTo      *time.Time
+	ctx            context.Context
+	ApiService     *TransactionsAPIService
+	description    *string
+	amountFrom     *float64
+	amountTo       *float64
+	dateFrom       *time.Time
+	dateTo         *time.Time
+	onlySuspicious *bool
 }
 
 // Filter by description
@@ -362,6 +363,12 @@ func (r ApiGetTransactionsRequest) DateFrom(dateFrom time.Time) ApiGetTransactio
 // Don&#39;t return transactions with date after this
 func (r ApiGetTransactionsRequest) DateTo(dateTo time.Time) ApiGetTransactionsRequest {
 	r.dateTo = &dateTo
+	return r
+}
+
+// If true, return only suspicious transactions
+func (r ApiGetTransactionsRequest) OnlySuspicious(onlySuspicious bool) ApiGetTransactionsRequest {
+	r.onlySuspicious = &onlySuspicious
 	return r
 }
 
@@ -418,6 +425,12 @@ func (a *TransactionsAPIService) GetTransactionsExecute(r ApiGetTransactionsRequ
 	}
 	if r.dateTo != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "dateTo", r.dateTo, "")
+	}
+	if r.onlySuspicious != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "onlySuspicious", r.onlySuspicious, "")
+	} else {
+		var defaultValue bool = false
+		r.onlySuspicious = &defaultValue
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **Movements** | [**[]Movement**](Movement.md) |  | 
 **MatcherId** | Pointer to **string** | ID of the matcher used for this conversion (if any) | [optional] 
 **IsAuto** | Pointer to **bool** | If true, this transaction was converted automatically by the matcher | [optional] 
+**SuspiciousReasons** | Pointer to **[]string** |  | [optional] 
 
 ## Methods
 
@@ -372,6 +373,31 @@ SetIsAuto sets IsAuto field to given value.
 `func (o *Transaction) HasIsAuto() bool`
 
 HasIsAuto returns a boolean if a field has been set.
+
+### GetSuspiciousReasons
+
+`func (o *Transaction) GetSuspiciousReasons() []string`
+
+GetSuspiciousReasons returns the SuspiciousReasons field if non-nil, zero value otherwise.
+
+### GetSuspiciousReasonsOk
+
+`func (o *Transaction) GetSuspiciousReasonsOk() (*[]string, bool)`
+
+GetSuspiciousReasonsOk returns a tuple with the SuspiciousReasons field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetSuspiciousReasons
+
+`func (o *Transaction) SetSuspiciousReasons(v []string)`
+
+SetSuspiciousReasons sets SuspiciousReasons field to given value.
+
+### HasSuspiciousReasons
+
+`func (o *Transaction) HasSuspiciousReasons() bool`
+
+HasSuspiciousReasons returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

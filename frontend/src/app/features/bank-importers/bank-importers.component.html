@@ -91,6 +91,17 @@
                                 <mat-icon>play_arrow</mat-icon>
                             </button>
                         }
+                        @if (importer.type === 'fio') {
+                            <button
+                                mat-icon-button
+                                color="primary"
+                                (click)="fetchBankImporter(importer)"
+                                aria-label="Fetch"
+                                matTooltip="Fetch transactions from bank"
+                            >
+                                <mat-icon>refresh</mat-icon>
+                            </button>
+                        }
                         @if (importer.type === 'kb' || importer.type === 'revolut') {
                             <button
                                 mat-icon-button

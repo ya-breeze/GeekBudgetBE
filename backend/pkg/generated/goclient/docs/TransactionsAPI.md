@@ -213,7 +213,7 @@ Name | Type | Description  | Notes
 
 ## GetTransactions
 
-> []Transaction GetTransactions(ctx).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).DateFrom(dateFrom).DateTo(dateTo).Execute()
+> []Transaction GetTransactions(ctx).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).DateFrom(dateFrom).DateTo(dateTo).OnlySuspicious(onlySuspicious).Execute()
 
 get all transactions which matches given filters
 
@@ -236,10 +236,11 @@ func main() {
 	amountTo := float64(1.2) // float64 | Don't return transactions with amount more than this (optional)
 	dateFrom := time.Now() // time.Time | Don't return transactions with date before this (optional)
 	dateTo := time.Now() // time.Time | Don't return transactions with date after this (optional)
+	onlySuspicious := true // bool | If true, return only suspicious transactions (optional) (default to false)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.TransactionsAPI.GetTransactions(context.Background()).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).DateFrom(dateFrom).DateTo(dateTo).Execute()
+	resp, r, err := apiClient.TransactionsAPI.GetTransactions(context.Background()).Description(description).AmountFrom(amountFrom).AmountTo(amountTo).DateFrom(dateFrom).DateTo(dateTo).OnlySuspicious(onlySuspicious).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `TransactionsAPI.GetTransactions``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -265,6 +266,7 @@ Name | Type | Description  | Notes
  **amountTo** | **float64** | Don&#39;t return transactions with amount more than this | 
  **dateFrom** | **time.Time** | Don&#39;t return transactions with date before this | 
  **dateTo** | **time.Time** | Don&#39;t return transactions with date after this | 
+ **onlySuspicious** | **bool** | If true, return only suspicious transactions | [default to false]
 
 ### Return type
 

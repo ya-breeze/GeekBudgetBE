@@ -342,7 +342,7 @@ Name | Type | Description  | Notes
 
 ## UploadBankImporter
 
-> ImportResult UploadBankImporter(ctx, id).Format(format).File(file).Execute()
+> ImportResult UploadBankImporter(ctx, id).Format(format).ContainsAllTransactions(containsAllTransactions).File(file).Execute()
 
 Upload new transactions from bank
 
@@ -361,11 +361,12 @@ import (
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the bank importer
 	format := "format_example" // string | format of the data
+	containsAllTransactions := true // bool | If true, mark missing transactions as suspicious (optional) (default to false)
 	file := os.NewFile(1234, "some_file") // *os.File |  (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.BankImportersAPI.UploadBankImporter(context.Background(), id).Format(format).File(file).Execute()
+	resp, r, err := apiClient.BankImportersAPI.UploadBankImporter(context.Background(), id).Format(format).ContainsAllTransactions(containsAllTransactions).File(file).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.UploadBankImporter``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -392,6 +393,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
  **format** | **string** | format of the data | 
+ **containsAllTransactions** | **bool** | If true, mark missing transactions as suspicious | [default to false]
  **file** | ***os.File** |  | 
 
 ### Return type

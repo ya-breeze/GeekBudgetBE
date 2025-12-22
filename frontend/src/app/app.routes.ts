@@ -40,6 +40,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: 'suspicious',
+                loadComponent: () =>
+                    import('./features/transactions/suspicious-transactions/suspicious-transactions.component').then(
+                        (m) => m.SuspiciousTransactionsComponent,
+                    ),
+            },
+            {
                 path: 'accounts',
                 loadComponent: () =>
                     import('./features/accounts/accounts.component').then(

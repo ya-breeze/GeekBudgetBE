@@ -95,7 +95,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
 		return nil, nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, nil
@@ -156,7 +156,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		return nil, nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, nil
@@ -214,7 +214,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 		return nil, nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, nil
@@ -331,7 +331,7 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 	// 2. Sum up Past Transactions (if any)
 	beginningOfTime := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 	if dateFrom.After(beginningOfTime) {
-		pastTransactions, err := s.db.GetTransactions(userID, beginningOfTime, dateFrom)
+		pastTransactions, err := s.db.GetTransactions(userID, beginningOfTime, dateFrom, false)
 		if err != nil {
 			return nil, err
 		}

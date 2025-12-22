@@ -10,6 +10,7 @@ import { createBankImporter } from '../../../core/api/fn/bank-importers/create-b
 import { updateBankImporter } from '../../../core/api/fn/bank-importers/update-bank-importer';
 import { deleteBankImporter } from '../../../core/api/fn/bank-importers/delete-bank-importer';
 import { uploadBankImporter } from '../../../core/api/fn/bank-importers/upload-bank-importer';
+import { fetchBankImporter } from '../../../core/api/fn/bank-importers/fetch-bank-importer';
 
 @Injectable({
     providedIn: 'root',
@@ -103,13 +104,19 @@ export class BankImporterService {
         );
     }
 
-    upload(id: string, file: File, format: 'csv' | 'xlsx'): Observable<ImportResult> {
+    upload(
+        id: string,
+        file: File,
+        format: 'csv' | 'xlsx',
+        containsAllTransactions: boolean,
+    ): Observable<ImportResult> {
         this.loading.set(true);
         this.error.set(null);
 
         return uploadBankImporter(this.http, this.apiConfig.rootUrl, {
             id,
             format,
+            containsAllTransactions,
             body: { file },
         }).pipe(
             map((response) => response.body),
@@ -121,6 +128,26 @@ export class BankImporterService {
                 },
                 error: (err) => {
                     this.error.set(err.message || 'Failed to upload bank importer file');
+                    this.loading.set(false);
+                },
+            }),
+        );
+    }
+
+    fetchBankImporter(id: string): Observable<ImportResult> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        return fetchBankImporter(this.http, this.apiConfig.rootUrl, { id }).pipe(
+            map((response) => response.body),
+            tap({
+                next: () => {
+                    this.loading.set(false);
+                    // Reload importers to update last import status
+                    this.loadBankImporters().subscribe();
+                },
+                error: (err) => {
+                    this.error.set(err.message || 'Failed to fetch bank importer transactions');
                     this.loading.set(false);
                 },
             }),

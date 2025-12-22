@@ -643,4 +643,35 @@ describe('TransactionsComponent', () => {
             expect(component.getMatcherName('unknown')).toBe('Unknown Matcher');
         });
     });
+
+    describe('Template Rendering', () => {
+        it('should display suspicious icon when transaction has suspicious reasons', () => {
+            const suspiciousTx: Transaction = {
+                id: 'suspicious1',
+                date: '2024-01-01',
+                description: 'Suspicious Tx',
+                movements: [],
+                suspiciousReasons: ['Not present in import'],
+            };
+            mockTransactionService.transactions.set([suspiciousTx]);
+            fixture.detectChanges();
+
+            const icon = fixture.nativeElement.querySelector('.suspicious-icon');
+            expect(icon).toBeTruthy();
+        });
+
+        it('should NOT display suspicious icon when transaction has NO suspicious reasons', () => {
+            const cleanTx: Transaction = {
+                id: 'clean1',
+                date: '2024-01-01',
+                description: 'Clean Tx',
+                movements: [],
+            };
+            mockTransactionService.transactions.set([cleanTx]);
+            fixture.detectChanges();
+
+            const icon = fixture.nativeElement.querySelector('.suspicious-icon');
+            expect(icon).toBeFalsy();
+        });
+    });
 });

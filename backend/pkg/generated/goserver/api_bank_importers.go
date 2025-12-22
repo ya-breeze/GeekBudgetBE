@@ -220,6 +220,22 @@ func (c *BankImportersAPIController) UploadBankImporter(w http.ResponseWriter, r
 		c.errorHandler(w, r, &RequiredError{Field: "format"}, nil)
 		return
 	}
+	var containsAllTransactionsParam bool
+	if query.Has("containsAllTransactions") {
+		param, err := parseBoolParameter(
+			query.Get("containsAllTransactions"),
+			WithParse[bool](parseBool),
+		)
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "containsAllTransactions", Err: err}, nil)
+			return
+		}
+
+		containsAllTransactionsParam = param
+	} else {
+		var param bool = false
+		containsAllTransactionsParam = param
+	}
 	var fileParam *os.File
 	{
 		param, err := ReadFormFileToTempFile(r, "file")
@@ -231,7 +247,7 @@ func (c *BankImportersAPIController) UploadBankImporter(w http.ResponseWriter, r
 		fileParam = param
 	}
 
-	result, err := c.service.UploadBankImporter(r.Context(), idParam, formatParam, fileParam)
+	result, err := c.service.UploadBankImporter(r.Context(), idParam, formatParam, containsAllTransactionsParam, fileParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

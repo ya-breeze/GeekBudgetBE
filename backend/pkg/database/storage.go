@@ -53,7 +53,7 @@ type Storage interface {
 	UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
 	DeleteCurrency(userID string, id string) error
 
-	GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
+	GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error)
 	CreateTransaction(userID string, transaction goserver.TransactionNoIdInterface) (goserver.Transaction, error)
 	UpdateTransaction(
 		userID string, id string, transaction goserver.TransactionNoIdInterface,
@@ -457,8 +457,12 @@ func (s *storage) DeleteCurrency(userID string, id string) error {
 	return nil
 }
 
-func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error) {
+func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error) {
 	req := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID)
+	if onlySuspicious {
+		// Filter transactions where suspicious_reasons is not null and not an empty JSON array
+		req = req.Where("suspicious_reasons IS NOT NULL AND suspicious_reasons != '[]' AND suspicious_reasons != ''")
+	}
 	if !dateFrom.IsZero() {
 		req = req.Where("date >= ?", dateFrom)
 	}

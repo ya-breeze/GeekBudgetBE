@@ -87,13 +87,13 @@ var _ = Describe("Balances Aggregation API", func() {
 		// Expect GetTransactions checks
 		// 1. Range query (Sep-Nov) -> Returns T2
 		mockStorage.EXPECT().
-			GetTransactions(userID, dateFrom, dateTo).
+			GetTransactions(userID, dateFrom, dateTo, false).
 			Return([]goserver.Transaction{t2}, nil)
 
 		// 2. Past query (2000 - Sep) -> Returns T1
 		beginningOfTime := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 		mockStorage.EXPECT().
-			GetTransactions(userID, beginningOfTime, dateFrom).
+			GetTransactions(userID, beginningOfTime, dateFrom, false).
 			Return([]goserver.Transaction{t1}, nil)
 
 		// Call SUT

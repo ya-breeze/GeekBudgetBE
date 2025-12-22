@@ -43,6 +43,19 @@
             </mat-select>
         </mat-form-field>
     }
+
+    <div class="options-area">
+        <mat-checkbox
+            [ngModel]="containsAllTransactions()"
+            (ngModelChange)="containsAllTransactions.set($event)"
+        >
+            Contains all transactions
+        </mat-checkbox>
+        <p class="checkbox-hint">
+            If checked, any existing transactions not present in this file will be marked as
+            suspicious.
+        </p>
+    </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()">Cancel</button>

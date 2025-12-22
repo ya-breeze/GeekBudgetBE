@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,6 +26,7 @@ import { LayoutService } from '../../layout/services/layout.service';
 
 import { CurrencyService } from '../currencies/services/currency.service';
 import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
+import { ImportResult } from '../../core/api/models/import-result';
 
 @Component({
     selector: 'app-bank-importers',
@@ -51,6 +53,7 @@ export class BankImportersComponent implements OnInit {
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
     private readonly currenciesService = inject(CurrencyService);
+    private readonly router = inject(Router);
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
@@ -169,33 +172,15 @@ export class BankImportersComponent implements OnInit {
         dialogRef.afterClosed().subscribe((result) => {
             if (result && bankImporter.id) {
                 this.bankImporterService
-                    .upload(bankImporter.id, result.file, result.format)
+                    .upload(
+                        bankImporter.id,
+                        result.file,
+                        result.format,
+                        result.containsAllTransactions,
+                    )
                     .subscribe({
                         next: (response) => {
-                            const currencies = this.currenciesService.currencies();
-                            const currencyMap = new Map(currencies.map((c) => [c.id, c.name]));
-
-                            const balances = response.balances?.map((b) => ({
-                                amount: b.amount ?? 0,
-                                currency: b.currencyId
-                                    ? currencyMap.get(b.currencyId) || b.currencyId
-                                    : '?',
-                            }));
-
-                            this.dialog.open<ImportResultDialogComponent, ImportResultDialogData>(
-                                ImportResultDialogComponent,
-                                {
-                                    width: '500px',
-                                    data: {
-                                        title: 'Import Successful',
-                                        message:
-                                            response.description ||
-                                            'Transactions uploaded successfully',
-                                        status: 'success',
-                                        balances,
-                                    },
-                                },
-                            );
+                            this.handleImportResponse(response);
                         },
                         error: (err) => {
                             this.dialog.open<ImportResultDialogComponent, ImportResultDialogData>(
@@ -213,6 +198,67 @@ export class BankImportersComponent implements OnInit {
                     });
             }
         });
+    }
+
+    fetchBankImporter(bankImporter: BankImporter): void {
+        if (!bankImporter.id) return;
+
+        this.bankImporterService.fetchBankImporter(bankImporter.id).subscribe({
+            next: (response) => {
+                this.handleImportResponse(response);
+            },
+            error: (err) => {
+                this.dialog.open<ImportResultDialogComponent, ImportResultDialogData>(
+                    ImportResultDialogComponent,
+                    {
+                        width: '500px',
+                        data: {
+                            title: 'Fetch Failed',
+                            message: err || 'Failed to fetch transitions from bank',
+                            status: 'error',
+                        },
+                    },
+                );
+            },
+        });
+    }
+
+    private handleImportResponse(response: ImportResult): void {
+        const currencies = this.currenciesService.currencies();
+        const currencyMap = new Map(currencies.map((c) => [c.id, c.name]));
+
+        const balances = response.balances?.map((b) => ({
+            amount: b.amount ?? 0,
+            currency: b.currencyId ? currencyMap.get(b.currencyId) || b.currencyId : '?',
+        }));
+
+        if (response.suspiciousCount && response.suspiciousCount > 0) {
+            this.snackBar
+                .open(
+                    `${response.suspiciousCount} transactions were marked as suspicious!`,
+                    'View',
+                    {
+                        duration: 10000,
+                    },
+                )
+                .onAction()
+                .subscribe(() => {
+                    this.router.navigate(['/suspicious']);
+                });
+        }
+
+        this.dialog.open<ImportResultDialogComponent, ImportResultDialogData>(
+            ImportResultDialogComponent,
+            {
+                width: '500px',
+                data: {
+                    title: 'Import Successful',
+                    message: response.description || 'Transactions uploaded successfully',
+                    status: 'success',
+                    balances,
+                },
+            },
+        );
     }
 
     deleteBankImporter(bankImporter: BankImporter): void {
@@ -368,7 +414,7 @@ export class BankImportersComponent implements OnInit {
         }
 
         if (typeof a === 'number' && typeof b === 'number') {
-            return (a - b) * factor;
+            return ((a as number) - (b as number)) * factor;
         }
 
         if (a instanceof Date && b instanceof Date) {

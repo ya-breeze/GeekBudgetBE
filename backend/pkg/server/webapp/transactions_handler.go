@@ -72,7 +72,7 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	transactions, err := r.db.GetTransactions(userID, dateFrom, dateTo)
+	transactions, err := r.db.GetTransactions(userID, dateFrom, dateTo, false)
 	if err != nil {
 		r.logger.Error("Failed to get transactions", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)

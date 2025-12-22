@@ -75,7 +75,7 @@ var _ = Describe("Expenses Aggregation API", func() {
 		}
 
 		mockStorage.EXPECT().GetAccounts("user1").Return([]goserver.Account{accountA}, nil)
-		mockStorage.EXPECT().GetTransactions("user1", from, to).Return(transactions, nil)
+		mockStorage.EXPECT().GetTransactions("user1", from, to, false).Return(transactions, nil)
 		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{{Id: "USD", Name: "USD"}}, nil)
 
 		resp, err := sut.GetExpenses(ctx, from, to, "", "year", false)

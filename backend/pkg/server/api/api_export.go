@@ -41,7 +41,7 @@ func (s *ExportAPIServiceImpl) Export(ctx context.Context) (goserver.ImplRespons
 		return goserver.Response(500, nil), nil
 	}
 
-	res.Transactions, err = s.db.GetTransactions(userID, time.Time{}, time.Time{})
+	res.Transactions, err = s.db.GetTransactions(userID, time.Time{}, time.Time{}, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return goserver.Response(500, nil), nil

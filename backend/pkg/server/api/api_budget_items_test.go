@@ -77,7 +77,7 @@ var _ = Describe("BudgetItems API", func() {
 		}, nil)
 		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{}, nil)
 		// It will fetch transactions from MinDate (Jan 1) to requested To date.
-		mockStorage.EXPECT().GetTransactions("user1", gomock.Any(), gomock.Any()).Return(transactions, nil)
+		mockStorage.EXPECT().GetTransactions("user1", gomock.Any(), gomock.Any(), false).Return(transactions, nil)
 
 		// Call SUT for Jan and Feb status
 		resp, err := sut.GetBudgetStatus(ctx, startOfMonth, startOfMonth.AddDate(0, 2, 0), "", false)
@@ -128,7 +128,7 @@ var _ = Describe("BudgetItems API", func() {
 			{Id: "acc-b", HideFromReports: false},
 		}, nil)
 		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{}, nil)
-		mockStorage.EXPECT().GetTransactions("user1", gomock.Any(), gomock.Any()).Return(transactions, nil)
+		mockStorage.EXPECT().GetTransactions("user1", gomock.Any(), gomock.Any(), false).Return(transactions, nil)
 
 		resp, err := sut.GetBudgetStatus(ctx, startOfMonth, startOfMonth.AddDate(0, 2, 0), "", false)
 		Expect(err).ToNot(HaveOccurred())

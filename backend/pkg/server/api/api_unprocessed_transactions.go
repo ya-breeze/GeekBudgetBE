@@ -49,7 +49,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 	}
 
 	var transactions []goserver.Transaction
-	allTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{})
+	allTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{}, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, 0, err
@@ -195,7 +195,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
 	// Optimize duplicate search by time window +/- 2 days
 	dateFrom := transaction.Date.Add(-48 * time.Hour)
 	dateTo := transaction.Date.Add(48 * time.Hour)
-	candidateTransactions, err := s.db.GetTransactions(userID, dateFrom, dateTo)
+	candidateTransactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions for duplicate check")
 		return goserver.Response(500, nil), nil

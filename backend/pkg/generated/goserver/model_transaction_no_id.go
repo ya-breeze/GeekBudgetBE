@@ -47,6 +47,8 @@ type TransactionNoId struct {
 
 	// If true, this transaction was converted automatically by the matcher
 	IsAuto bool `json:"isAuto,omitempty"`
+
+	SuspiciousReasons []string `json:"suspiciousReasons,omitempty"`
 }
 
 type TransactionNoIdInterface interface {
@@ -63,6 +65,7 @@ type TransactionNoIdInterface interface {
 	GetMovements() []Movement
 	GetMatcherId() string
 	GetIsAuto() bool
+	GetSuspiciousReasons() []string
 }
 
 func (c *TransactionNoId) GetDate() time.Time {
@@ -103,6 +106,9 @@ func (c *TransactionNoId) GetMatcherId() string {
 }
 func (c *TransactionNoId) GetIsAuto() bool {
 	return c.IsAuto
+}
+func (c *TransactionNoId) GetSuspiciousReasons() []string {
+	return c.SuspiciousReasons
 }
 
 // AssertTransactionNoIdRequired checks if the required fields are not zero-ed

@@ -612,18 +612,18 @@ func (mr *MockStorageMockRecorder) GetTransaction(arg0, arg1 interface{}) *gomoc
 }
 
 // GetTransactions mocks base method.
-func (m *MockStorage) GetTransactions(arg0 string, arg1, arg2 time.Time) ([]goserver.Transaction, error) {
+func (m *MockStorage) GetTransactions(arg0 string, arg1, arg2 time.Time, arg3 bool) ([]goserver.Transaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTransactions", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetTransactions", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]goserver.Transaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTransactions indicates an expected call of GetTransactions.
-func (mr *MockStorageMockRecorder) GetTransactions(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetTransactions(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransactions", reflect.TypeOf((*MockStorage)(nil).GetTransactions), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransactions", reflect.TypeOf((*MockStorage)(nil).GetTransactions), arg0, arg1, arg2, arg3)
 }
 
 // GetTransactionsIncludingDeleted mocks base method.

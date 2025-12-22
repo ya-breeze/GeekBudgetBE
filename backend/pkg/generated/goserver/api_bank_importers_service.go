@@ -31,7 +31,7 @@ type BankImportersAPIService interface {
 	// FetchBankImporter - fetch new transactions from bank
 	FetchBankImporter(ctx context.Context, id string) (ImplResponse, error)
 	// UploadBankImporter - Upload new transactions from bank
-	UploadBankImporter(ctx context.Context, id string, format string, file *os.File) (ImplResponse, error)
+	UploadBankImporter(ctx context.Context, id string, format string, containsAllTransactions bool, file *os.File) (ImplResponse, error)
 }
 
 // BankImportersAPIService is a service that implements the logic for the BankImportersAPIServicer
@@ -104,7 +104,7 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(ctx context.Context, id 
 }
 
 // UploadBankImporter - Upload new transactions from bank
-func (s *BankImportersAPIServiceImpl) UploadBankImporter(ctx context.Context, id string, format string, file *os.File) (ImplResponse, error) {
+func (s *BankImportersAPIServiceImpl) UploadBankImporter(ctx context.Context, id string, format string, containsAllTransactions bool, file *os.File) (ImplResponse, error) {
 	// TODO - update UploadBankImporter with the required logic for this service method.
 	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

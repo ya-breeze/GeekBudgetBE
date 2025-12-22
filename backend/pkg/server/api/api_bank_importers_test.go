@@ -14,6 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
@@ -84,7 +85,7 @@ var _ = Describe("BankImporters API", func() {
 			})
 
 			// Mock updateLastImportFields
-			mockDB.EXPECT().GetBankImporter(userID, "imp1").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil)
+			mockDB.EXPECT().GetBankImporter(userID, "imp1").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil).AnyTimes()
 			mockDB.EXPECT().UpdateBankImporter(userID, "imp1", gomock.Any()).Return(goserver.BankImporter{}, nil)
 
 			transactions := []goserver.TransactionNoId{
@@ -96,7 +97,7 @@ var _ = Describe("BankImporters API", func() {
 				},
 			}
 
-			_, err = sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions)
+			_, err = sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions, false)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -129,7 +130,7 @@ var _ = Describe("BankImporters API", func() {
 			})
 
 			// Mock updateLastImportFields
-			mockDB.EXPECT().GetBankImporter(userID, "imp1").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil)
+			mockDB.EXPECT().GetBankImporter(userID, "imp1").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil).AnyTimes()
 			mockDB.EXPECT().UpdateBankImporter(userID, "imp1", gomock.Any()).Return(goserver.BankImporter{}, nil)
 
 			transactions := []goserver.TransactionNoId{
@@ -141,7 +142,7 @@ var _ = Describe("BankImporters API", func() {
 				},
 			}
 
-			_, err = sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions)
+			_, err = sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions, false)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
@@ -208,7 +209,7 @@ var _ = Describe("BankImporters API", func() {
 			}).Times(2) // We expect exactly 2 calls
 
 			// Mock updateLastImportFields
-			mockDB.EXPECT().GetBankImporter(userID, "imp-dedup").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil)
+			mockDB.EXPECT().GetBankImporter(userID, "imp-dedup").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil).AnyTimes()
 			mockDB.EXPECT().UpdateBankImporter(userID, "imp-dedup", gomock.Any()).DoAndReturn(func(uid, id string, bi goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
 				// Verify counts in description?
 				// The implementation calls updateLastImportFields with totalTransactionsCnt=4, newTransactionsCnt=2
@@ -216,7 +217,75 @@ var _ = Describe("BankImporters API", func() {
 				return goserver.BankImporter{}, nil
 			})
 
-			_, err := sut.saveImportedTransactions(userID, "imp-dedup", &goserver.BankAccountInfo{}, importedTransactions)
+			_, err := sut.saveImportedTransactions(userID, "imp-dedup", &goserver.BankAccountInfo{}, importedTransactions, false)
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	Describe("Suspicious Logic", func() {
+		It("should mark missing transactions as suspicious when checkMissing is true", func() {
+			importerID := "imp-suspicious"
+			accountID := "acc-suspicious"
+
+			// 1. Setup existing transactions in DB (Active) both belonging to the account
+			txPresent := goserver.Transaction{
+				Id:          uuid.New().String(),
+				ExternalIds: []string{"ext-present"},
+				Date:        time.Now(),
+				Movements:   []goserver.Movement{{AccountId: accountID, Amount: -100, CurrencyId: "USD"}},
+			}
+			txMissing := goserver.Transaction{
+				Id:          uuid.New().String(),
+				ExternalIds: []string{"ext-missing"},
+				Date:        time.Now(),
+				Movements:   []goserver.Movement{{AccountId: accountID, Amount: -200, CurrencyId: "USD"}},
+			}
+			txOtherAccount := goserver.Transaction{
+				Id:          uuid.New().String(),
+				ExternalIds: []string{"ext-other"},
+				Date:        time.Now(),
+				Movements:   []goserver.Movement{{AccountId: "other-acc", Amount: -300, CurrencyId: "USD"}},
+			}
+
+			// Mock DB return
+			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).
+				Return([]goserver.Transaction{txPresent, txMissing, txOtherAccount}, nil)
+
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
+
+			// Mock GetBankImporter to return account ID
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(goserver.BankImporter{Id: importerID, AccountId: accountID}, nil).AnyTimes()
+
+			// 2. Setup imported transactions (Only txPresent)
+			importedTransactions := []goserver.TransactionNoId{
+				{
+					Date:        txPresent.Date,
+					Description: "Present Tx",
+					ExternalIds: []string{"ext-present"},
+					Movements:   txPresent.Movements,
+				},
+			}
+
+			// Expect UpdateTransaction for txMissing with Suspicious=true
+			mockDB.EXPECT().UpdateTransaction(userID, txMissing.Id, gomock.Any()).DoAndReturn(func(uid, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
+				Expect(t.GetSuspiciousReasons()).To(Equal([]string{"Not present in importer transactions"}))
+				return goserver.Transaction{}, nil
+			})
+
+			// Expect NO update for txPresent (it matches) and txOtherAccount (wrong account)
+			// (Mock controller ensures unexpected calls fail)
+
+			// Expect notification for suspicious transactions
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+				Expect(n.Title).To(Equal("Suspicious Transactions Detected"))
+				Expect(n.Type).To(Equal(string(models.NotificationTypeInfo)))
+				return goserver.Notification{}, nil
+			})
+
+			// Mock updateLastImportFields
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil)
+
+			_, err := sut.saveImportedTransactions(userID, importerID, &goserver.BankAccountInfo{}, importedTransactions, true)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

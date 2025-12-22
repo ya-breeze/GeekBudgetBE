@@ -34,6 +34,11 @@ export interface GetTransactions$Params {
      * Don't return transactions with date after this
      */
     dateTo?: string;
+
+    /**
+     * If true, return only suspicious transactions
+     */
+    onlySuspicious?: boolean;
 }
 
 export function getTransactions(
@@ -49,6 +54,7 @@ export function getTransactions(
         rb.query('amountTo', params.amountTo, {});
         rb.query('dateFrom', params.dateFrom, {});
         rb.query('dateTo', params.dateTo, {});
+        rb.query('onlySuspicious', params.onlySuspicious, {});
     }
 
     return http

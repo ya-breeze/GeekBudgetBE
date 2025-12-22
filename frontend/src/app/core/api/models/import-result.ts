@@ -21,4 +21,9 @@ export interface ImportResult {
      * Status of import
      */
     status?: 'success' | 'error';
+
+    /**
+     * Number of transactions marked as suspicious during this import
+     */
+    suspiciousCount?: number;
 }

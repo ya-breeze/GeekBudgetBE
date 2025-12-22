@@ -62,4 +62,18 @@
         width: 100%;
         margin-top: 8px;
     }
+
+    .options-area {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .checkbox-hint {
+            margin: 0;
+            font-size: 0.8rem;
+            color: rgba(0, 0, 0, 0.54);
+            padding-left: 32px;
+        }
+    }
 }

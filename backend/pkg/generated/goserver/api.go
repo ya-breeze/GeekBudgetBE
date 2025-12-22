@@ -191,7 +191,7 @@ type BankImportersAPIServicer interface {
 	UpdateBankImporter(context.Context, string, BankImporterNoId) (ImplResponse, error)
 	DeleteBankImporter(context.Context, string) (ImplResponse, error)
 	FetchBankImporter(context.Context, string) (ImplResponse, error)
-	UploadBankImporter(context.Context, string, string, *os.File) (ImplResponse, error)
+	UploadBankImporter(context.Context, string, string, bool, *os.File) (ImplResponse, error)
 }
 
 // BudgetItemsAPIServicer defines the api actions for the BudgetItemsAPI service
@@ -264,7 +264,7 @@ type NotificationsAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type TransactionsAPIServicer interface {
-	GetTransactions(context.Context, string, float64, float64, time.Time, time.Time) (ImplResponse, error)
+	GetTransactions(context.Context, string, float64, float64, time.Time, time.Time, bool) (ImplResponse, error)
 	CreateTransaction(context.Context, TransactionNoId) (ImplResponse, error)
 	GetTransaction(context.Context, string) (ImplResponse, error)
 	UpdateTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)

@@ -459,6 +459,13 @@ paths:
           schema:
             type: string
             enum: [csv, xlsx]
+        - name: "containsAllTransactions"
+          in: "query"
+          description: "If true, mark missing transactions as suspicious"
+          required: false
+          schema:
+            type: boolean
+            default: false
       requestBody:
         content:
           multipart/form-data:
@@ -513,6 +520,13 @@ paths:
           schema:
             type: "string"
             format: "date-time"
+        - name: onlySuspicious
+          in: "query"
+          description: "If true, return only suspicious transactions"
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: transactions
@@ -1450,6 +1464,10 @@ components:
           type: string
           description: >-
             Details of import
+        suspiciousCount:
+          type: integer
+          description: >-
+            Number of transactions marked as suspicious during this import
         balances:
           type: array
           items:
@@ -1589,6 +1607,10 @@ components:
         isAuto:
           type: boolean
           description: If true, this transaction was converted automatically by the matcher
+        suspiciousReasons:
+          type: array
+          items:
+            type: string
       required:
         - date
         - movements
