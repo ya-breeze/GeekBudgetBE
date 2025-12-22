@@ -4,7 +4,7 @@
 import { Entity } from '../models/entity';
 export type Notification = Entity & {
     date: string;
-    type: 'other' | 'balanceMatch' | 'balanceDoesntMatch';
+    type: 'other' | 'balanceMatch' | 'balanceDoesntMatch' | 'error' | 'info';
     url?: string;
     title: string;
     description: string;

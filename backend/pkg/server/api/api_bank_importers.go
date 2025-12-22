@@ -10,6 +10,7 @@ import (
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
@@ -151,6 +152,26 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 	s.logger.Info("Importing transactions")
 	info, transactions, err := bi.Import(ctx)
 	if err != nil {
+		if biData.FetchAll {
+			s.logger.With("bankImporterID", id).With("userID", userID).Info("All transactions fetch failed. Disabling FetchAll and creating notification")
+			biData.FetchAll = false
+			_, updateErr := s.db.UpdateBankImporter(userID, id, &biData)
+			if updateErr != nil {
+				s.logger.With("error", updateErr).Error("Failed to reset FetchAll after import failure")
+			}
+
+			// Create notification
+			_, notifyErr := s.db.CreateNotification(userID, &goserver.Notification{
+				Date:        time.Now(),
+				Type:        string(models.NotificationTypeError),
+				Title:       "Bank Import Failed",
+				Description: fmt.Sprintf("Failed to fetch all transactions for %q. The 'Fetch All' flag has been reset. Error: %s", biData.Name, err),
+			})
+			if notifyErr != nil {
+				s.logger.With("error", notifyErr).Error("Failed to create notification for import failure")
+			}
+		}
+
 		return nil, nil, fmt.Errorf("can't import transactions: %w", err)
 	}
 	s.logger.With("info", info, "transactions", len(transactions)).Info("Imported transactions")

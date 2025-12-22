@@ -1396,6 +1396,8 @@ components:
                 - other
                 - balanceMatch
                 - balanceDoesntMatch
+                - error
+                - info
             url:
               type: string
             title:

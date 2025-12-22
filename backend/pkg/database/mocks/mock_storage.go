@@ -170,6 +170,21 @@ func (mr *MockStorageMockRecorder) CreateMatcherRuntimeFromNoId(arg0 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMatcherRuntimeFromNoId", reflect.TypeOf((*MockStorage)(nil).CreateMatcherRuntimeFromNoId), arg0)
 }
 
+// CreateNotification mocks base method.
+func (m *MockStorage) CreateNotification(arg0 string, arg1 *goserver.Notification) (goserver.Notification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateNotification", arg0, arg1)
+	ret0, _ := ret[0].(goserver.Notification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateNotification indicates an expected call of CreateNotification.
+func (mr *MockStorageMockRecorder) CreateNotification(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNotification", reflect.TypeOf((*MockStorage)(nil).CreateNotification), arg0, arg1)
+}
+
 // CreateTransaction mocks base method.
 func (m *MockStorage) CreateTransaction(arg0 string, arg1 goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
 	m.ctrl.T.Helper()
@@ -296,6 +311,20 @@ func (m *MockStorage) DeleteMatcher(arg0, arg1 string) error {
 func (mr *MockStorageMockRecorder) DeleteMatcher(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMatcher", reflect.TypeOf((*MockStorage)(nil).DeleteMatcher), arg0, arg1)
+}
+
+// DeleteNotification mocks base method.
+func (m *MockStorage) DeleteNotification(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNotification", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNotification indicates an expected call of DeleteNotification.
+func (mr *MockStorageMockRecorder) DeleteNotification(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNotification", reflect.TypeOf((*MockStorage)(nil).DeleteNotification), arg0, arg1)
 }
 
 // DeleteTransaction mocks base method.
@@ -550,6 +579,21 @@ func (m *MockStorage) GetMatchersRuntime(arg0 string) ([]database.MatcherRuntime
 func (mr *MockStorageMockRecorder) GetMatchersRuntime(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMatchersRuntime", reflect.TypeOf((*MockStorage)(nil).GetMatchersRuntime), arg0)
+}
+
+// GetNotifications mocks base method.
+func (m *MockStorage) GetNotifications(arg0 string) ([]goserver.Notification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotifications", arg0)
+	ret0, _ := ret[0].([]goserver.Notification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNotifications indicates an expected call of GetNotifications.
+func (mr *MockStorageMockRecorder) GetNotifications(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotifications", reflect.TypeOf((*MockStorage)(nil).GetNotifications), arg0)
 }
 
 // GetTransaction mocks base method.

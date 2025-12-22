@@ -8,11 +8,21 @@ import (
 	"gorm.io/gorm"
 )
 
+type NotificationType string
+
+const (
+	NotificationTypeOther              NotificationType = "other"
+	NotificationTypeBalanceMatch       NotificationType = "balanceMatch"
+	NotificationTypeBalanceDoesntMatch NotificationType = "balanceDoesntMatch"
+	NotificationTypeError              NotificationType = "error"
+	NotificationTypeInfo               NotificationType = "info"
+)
+
 type Notification struct {
 	gorm.Model
 
 	Date        time.Time
-	Type        string
+	Type        NotificationType
 	URL         string
 	Title       string
 	Description string
@@ -25,7 +35,7 @@ func (t *Notification) FromDB() goserver.Notification {
 	return goserver.Notification{
 		Id:          t.ID.String(),
 		Date:        t.Date,
-		Type:        t.Type,
+		Type:        string(t.Type),
 		Url:         t.URL,
 		Title:       t.Title,
 		Description: t.Description,
@@ -43,7 +53,7 @@ func NotificationToDB(m *goserver.Notification, userID string) (*Notification, e
 		UserID: userID,
 
 		Date:        m.Date,
-		Type:        m.Type,
+		Type:        NotificationType(m.Type),
 		URL:         m.Url,
 		Title:       m.Title,
 		Description: m.Description,
