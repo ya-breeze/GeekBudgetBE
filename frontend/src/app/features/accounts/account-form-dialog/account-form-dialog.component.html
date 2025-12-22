@@ -61,13 +61,85 @@
                     Show in Dashboard Summary
                 </mat-slide-toggle>
             </div>
+
+            <div class="balances-section full-width">
+                <div class="balances-header">
+                    <h3>Starting Balances</h3>
+                    <button
+                        mat-stroked-button
+                        type="button"
+                        (click)="addBalance()"
+                        class="add-balance-button"
+                    >
+                        <mat-icon>add</mat-icon>
+                        Add Currency
+                    </button>
+                </div>
+
+                <div formArrayName="balances">
+                    @for (balance of balances.controls; track $index; let i = $index) {
+                        <div [formGroupName]="i" class="balance-row">
+                            <mat-form-field appearance="outline" class="balance-currency">
+                                <mat-label>Currency</mat-label>
+                                <mat-select formControlName="currencyId" required>
+                                    @for (currency of currencies(); track currency.id) {
+                                        <mat-option [value]="currency.id">{{
+                                            currency.name
+                                        }}</mat-option>
+                                    }
+                                </mat-select>
+                                @if (balance.get('currencyId')?.hasError('required')) {
+                                    <mat-error>Currency is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="balance-amount">
+                                <mat-label>Starting Balance</mat-label>
+                                <input
+                                    matInput
+                                    type="number"
+                                    formControlName="openingBalance"
+                                    placeholder="0.00"
+                                />
+                            </mat-form-field>
+
+                            <button
+                                mat-icon-button
+                                type="button"
+                                color="warn"
+                                (click)="removeBalance(i)"
+                                class="remove-balance-button"
+                                [disabled]="balances.length === 1"
+                            >
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Bank ID</mat-label>
+                <input matInput formControlName="bankId" placeholder="e.g., FIO, KB" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Bank Account ID</mat-label>
+                <input
+                    matInput
+                    formControlName="bankAccountId"
+                    placeholder="e.g., 123456789/2010"
+                />
+            </mat-form-field>
         }
 
-        <div class="full-width mb-2">
-            <mat-slide-toggle formControlName="hideFromReports">
-                Hide from Reports and Budget
-            </mat-slide-toggle>
-        </div>
+        @if (form.get('type')?.value === 'expense') {
+            <div class="full-width mb-2">
+                <mat-slide-toggle formControlName="hideFromReports">
+                    Hide from Reports and Budget
+                </mat-slide-toggle>
+            </div>
+        }
 
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Description</mat-label>

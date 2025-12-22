@@ -95,7 +95,7 @@ export class BalanceReportComponent implements OnInit {
             y: {
                 stacked: true,
                 beginAtZero: false,
-            }
+            },
         },
         plugins: {
             legend: {
@@ -105,8 +105,8 @@ export class BalanceReportComponent implements OnInit {
             tooltip: {
                 mode: 'index',
                 intersect: false,
-            }
-        }
+            },
+        },
     };
 
     protected readonly currencyReports = computed<CurrencyReport[]>(() => {
@@ -115,9 +115,7 @@ export class BalanceReportComponent implements OnInit {
 
         const accounts = this.accountService.accounts();
         const currencies = this.currencyService.currencies();
-        const currenciesById = new Map<string, Currency>(
-            currencies.map((c) => [c.id, c])
-        );
+        const currenciesById = new Map<string, Currency>(currencies.map((c) => [c.id, c]));
 
         const reports: CurrencyReport[] = [];
 
@@ -134,7 +132,7 @@ export class BalanceReportComponent implements OnInit {
                 accountSummaries.push({
                     accountId: accAgg.accountId,
                     accountName: account.name,
-                    history: accAgg.amounts
+                    history: accAgg.amounts,
                 });
             });
 
@@ -146,11 +144,11 @@ export class BalanceReportComponent implements OnInit {
                 'rgba(52, 152, 219, 0.5)', // Blue
                 'rgba(155, 89, 182, 0.5)', // Amethyst
                 'rgba(241, 194, 50, 0.5)', // Sun Flower
-                'rgba(231, 76, 60, 0.5)',  // Alizarin
+                'rgba(231, 76, 60, 0.5)', // Alizarin
             ];
 
             const chartData: ChartConfiguration['data'] = {
-                labels: data.intervals.map(i => this.formatMonth(i)),
+                labels: data.intervals.map((i) => this.formatMonth(i)),
                 datasets: accountSummaries.map((acc, index) => ({
                     label: acc.accountName,
                     data: acc.history,
@@ -158,8 +156,8 @@ export class BalanceReportComponent implements OnInit {
                     backgroundColor: colors[index % colors.length],
                     borderColor: colors[index % colors.length].replace('0.5', '1'),
                     pointRadius: 2,
-                    tension: 0.3
-                }))
+                    tension: 0.3,
+                })),
             };
 
             // Table Data (Rotated: Accounts as Rows, Months as Columns)
@@ -169,15 +167,15 @@ export class BalanceReportComponent implements OnInit {
             // 1. Create rows for each account
             const tableDataSource: any[] = accountSummaries.map((acc) => {
                 const row: any = { account: acc.accountName };
-                let accountTotal = 0;
+                const accountTotal = 0;
                 acc.history.forEach((val, i) => {
                     const key = intervalKeys[i];
                     row[key] = val;
                 });
                 // The total is the last value in the history (since it's cumulative)
-                // Wait, if it's cumulative balance, the "Total" at the end of the year 
-                // is just the last month's balance? 
-                // Or should it be the average? 
+                // Wait, if it's cumulative balance, the "Total" at the end of the year
+                // is just the last month's balance?
+                // Or should it be the average?
                 // Usually for balance reports, the last point is the "current" balance.
                 // Let's use the last available value as the "Total/Current" balance.
                 row.total = acc.history.length > 0 ? acc.history[acc.history.length - 1] : 0;
@@ -186,10 +184,10 @@ export class BalanceReportComponent implements OnInit {
 
             // 2. Create a "Total" row for the bottom
             const totalRow: any = { account: 'Total Assets' };
-            let grandTotal = 0;
+            const grandTotal = 0;
             intervalKeys.forEach((key, i) => {
                 let intervalSum = 0;
-                accountSummaries.forEach(acc => {
+                accountSummaries.forEach((acc) => {
                     intervalSum += acc.history[i] || 0;
                 });
                 totalRow[key] = intervalSum;
@@ -207,7 +205,7 @@ export class BalanceReportComponent implements OnInit {
                 intervals: data.intervals,
                 chartData,
                 tableDataSource,
-                tableColumns
+                tableColumns,
             });
         });
 
@@ -264,7 +262,7 @@ export class BalanceReportComponent implements OnInit {
         const params: any = {
             from: formValue.startDate.toISOString(),
             to: formValue.endDate.toISOString(),
-            includeHidden: this.includeHidden()
+            includeHidden: this.includeHidden(),
         };
 
         if (this.selectedOutputCurrencyId()) {
@@ -272,7 +270,7 @@ export class BalanceReportComponent implements OnInit {
         }
 
         getBalances(this.http, this.apiConfig.rootUrl, params)
-            .pipe(map(r => r.body))
+            .pipe(map((r) => r.body))
             .subscribe({
                 next: (data) => {
                     this.balanceData.set(data);
@@ -281,7 +279,7 @@ export class BalanceReportComponent implements OnInit {
                 error: (err) => {
                     console.error('Error loading Balance Report:', err);
                     this.loading.set(false);
-                }
+                },
             });
     }
 

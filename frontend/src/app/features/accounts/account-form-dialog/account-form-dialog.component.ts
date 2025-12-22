@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,6 +10,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { Account } from '../../../core/api/models/account';
 import { AccountNoId } from '../../../core/api/models/account-no-id';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
+import { CurrencyService } from '../../currencies/services/currency.service';
+import { UserService } from '../../../core/services/user.service';
+import { OnInit } from '@angular/core';
 
 export interface AccountFormDialogData {
     mode: 'create' | 'edit';
@@ -31,14 +34,17 @@ export interface AccountFormDialogData {
     templateUrl: './account-form-dialog.component.html',
     styleUrl: './account-form-dialog.component.scss',
 })
-export class AccountFormDialogComponent {
+export class AccountFormDialogComponent implements OnInit {
     private readonly dialogRef = inject(MatDialogRef<AccountFormDialogComponent>);
     private readonly data = inject<AccountFormDialogData>(MAT_DIALOG_DATA);
     private readonly fb = inject(FormBuilder);
     private readonly apiConfig = inject(ApiConfiguration);
+    private readonly currencyService = inject(CurrencyService);
+    private readonly userService = inject(UserService);
 
     protected readonly form: FormGroup;
     protected readonly isEditMode = this.data.mode === 'edit';
+    protected readonly currencies = this.currencyService.currencies;
     protected readonly accountTypes = [
         { value: 'expense', label: 'Expense' },
         { value: 'income', label: 'Income' },
@@ -56,6 +62,9 @@ export class AccountFormDialogComponent {
             description: [this.data.account?.description || '', [Validators.maxLength(500)]],
             showInDashboardSummary: [this.data.account?.showInDashboardSummary ?? true],
             hideFromReports: [this.data.account?.hideFromReports ?? false],
+            bankId: [this.data.account?.bankInfo?.bankId || ''],
+            bankAccountId: [this.data.account?.bankInfo?.accountId || ''],
+            balances: this.fb.array([]),
         });
 
         if (this.data.account?.image) {
@@ -64,6 +73,52 @@ export class AccountFormDialogComponent {
                 : this.apiConfig.rootUrl;
             this.imagePreview = `${root}/images/${this.data.account.image}`;
         }
+    }
+
+    ngOnInit(): void {
+        this.currencyService.loadCurrencies().subscribe();
+        this.userService.loadUser().subscribe((user) => {
+            // Initialize balances
+            if (
+                this.data.account?.bankInfo?.balances &&
+                this.data.account.bankInfo.balances.length > 0
+            ) {
+                // Editing existing account with balances
+                this.data.account.bankInfo.balances.forEach((balance) => {
+                    this.addBalance(balance);
+                });
+            } else if (
+                this.data.account?.type === 'asset' ||
+                this.form.get('type')?.value === 'asset'
+            ) {
+                // New asset account or creating asset - add one default balance
+                this.addBalance({
+                    currencyId: user.favoriteCurrencyId || '',
+                    openingBalance: 0,
+                });
+            }
+        });
+    }
+
+    get balances(): FormArray {
+        return this.form.get('balances') as FormArray;
+    }
+
+    addBalance(initialData?: {
+        currencyId?: string;
+        openingBalance?: number;
+        closingBalance?: number;
+    }): void {
+        const balanceGroup = this.fb.group({
+            currencyId: [initialData?.currencyId || '', [Validators.required]],
+            openingBalance: [initialData?.openingBalance || 0],
+            closingBalance: [initialData?.closingBalance],
+        });
+        this.balances.push(balanceGroup);
+    }
+
+    removeBalance(index: number): void {
+        this.balances.removeAt(index);
     }
 
     onFileSelected(event: Event): void {
@@ -89,9 +144,30 @@ export class AccountFormDialogComponent {
 
     onSubmit(): void {
         if (this.form.valid) {
-            const formValue: AccountNoId = this.form.value;
+            const formValue = this.form.value;
+            const account: AccountNoId = {
+                name: formValue.name,
+                type: formValue.type,
+                description: formValue.description,
+                showInDashboardSummary: formValue.showInDashboardSummary,
+                hideFromReports: formValue.hideFromReports,
+                bankInfo:
+                    formValue.type === 'asset'
+                        ? {
+                              ...this.data.account?.bankInfo,
+                              bankId: formValue.bankId || undefined,
+                              accountId: formValue.bankAccountId || undefined,
+                              balances: formValue.balances?.map((b: any) => ({
+                                  currencyId: b.currencyId || undefined,
+                                  openingBalance: b.openingBalance || 0,
+                                  closingBalance: b.closingBalance,
+                              })),
+                          }
+                        : undefined,
+            };
+
             this.dialogRef.close({
-                account: formValue,
+                account: account,
                 image: this.selectedFile,
                 deleteImage: this.deleteImage,
             });
