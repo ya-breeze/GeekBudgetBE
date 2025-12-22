@@ -30,10 +30,12 @@ import { Currency } from '../../../core/api/models/currency';
 import { AccountService } from '../../accounts/services/account.service';
 import { CurrencyService } from '../../currencies/services/currency.service';
 import { UserService } from '../../../core/services/user.service';
+import { AccountDisplayComponent } from '../../../shared/components/account-display/account-display.component';
 
 interface AccountSummary {
     accountId: string;
     accountName: string;
+    accountImage?: string;
     history: number[];
 }
 
@@ -66,6 +68,7 @@ interface CurrencyReport {
         MatSlideToggleModule,
         DecimalPipe,
         BaseChartDirective,
+        AccountDisplayComponent,
     ],
     templateUrl: './balance-report.component.html',
     styleUrl: './balance-report.component.scss',
@@ -132,6 +135,7 @@ export class BalanceReportComponent implements OnInit {
                 accountSummaries.push({
                     accountId: accAgg.accountId,
                     accountName: account.name,
+                    accountImage: account.image,
                     history: accAgg.amounts,
                 });
             });
@@ -166,7 +170,7 @@ export class BalanceReportComponent implements OnInit {
 
             // 1. Create rows for each account
             const tableDataSource: any[] = accountSummaries.map((acc) => {
-                const row: any = { account: acc.accountName };
+                const row: any = { account: acc.accountName, accountImage: acc.accountImage };
                 const accountTotal = 0;
                 acc.history.forEach((val, i) => {
                     const key = intervalKeys[i];

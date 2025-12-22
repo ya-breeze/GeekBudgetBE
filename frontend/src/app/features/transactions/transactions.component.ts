@@ -28,6 +28,7 @@ import { MatcherService } from '../matchers/services/matcher.service';
 import { Matcher } from '../../core/api/models/matcher';
 
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
 
 @Component({
     selector: 'app-transactions',
@@ -47,6 +48,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
         DatePipe,
         FormsModule,
         ImageUrlPipe,
+        AccountDisplayComponent,
     ],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
@@ -412,6 +414,29 @@ export class TransactionsComponent implements OnInit {
         }
 
         return outputAccountNames.join(', ');
+    }
+
+    /**
+     * Get target accounts objects for display in the Accounts column with icons
+     * @param transaction The transaction to get target accounts from
+     * @returns A list of accounts
+     */
+    getTargetAccountList(transaction: Transaction): Account[] {
+        if (!transaction.movements || transaction.movements.length === 0) {
+            return [];
+        }
+
+        const accountMap = this.accountMap();
+
+        // Get output movements (destinations of money - positive amounts)
+        const outputMovements = transaction.movements.filter((movement) => movement.amount > 0);
+
+        return outputMovements
+            .map((movement) => {
+                if (!movement.accountId) return null;
+                return accountMap.get(movement.accountId);
+            })
+            .filter((account): account is Account => !!account);
     }
 
     /**

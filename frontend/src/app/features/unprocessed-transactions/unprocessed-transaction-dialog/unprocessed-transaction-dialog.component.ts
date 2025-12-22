@@ -37,6 +37,7 @@ import { getMatcher } from '../../../core/api/fn/matchers/get-matcher';
 import { Matcher } from '../../../core/api/models/matcher';
 import { startWith, map } from 'rxjs';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
+import { AccountDisplayComponent } from '../../../shared/components/account-display/account-display.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
@@ -74,6 +75,7 @@ export type UnprocessedTransactionDialogResult =
         AccountSelectComponent,
         OverlayModule,
         MatChipsModule,
+        AccountDisplayComponent,
     ],
     templateUrl: './unprocessed-transaction-dialog.component.html',
     styleUrl: './unprocessed-transaction-dialog.component.scss',
@@ -368,6 +370,11 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
             this.expandedMatchId.set(null); // exclusive
             this.editState.set(null);
         }
+    }
+
+    getAccount(accountId: string | undefined): Account | undefined {
+        if (!accountId) return undefined;
+        return this.accounts().find((a) => a.id === accountId);
     }
 
     getAccountName(accountId: string | undefined): string {

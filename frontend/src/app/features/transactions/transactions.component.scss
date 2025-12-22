@@ -1,11 +1,11 @@
 .transactions-container {
-    padding: 0;
+    padding: 24px;
+    height: 100%;
+    overflow: auto;
 }
 
 .page-title {
-    margin: 0 0 16px 0;
-    font-size: 24px;
-    font-weight: 500;
+    margin-bottom: 24px;
 }
 
 .header {
@@ -13,40 +13,27 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+}
 
-    .month-navigation {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+.month-navigation {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 
-        .current-month {
-            font-size: 16px;
-            font-weight: 500;
-            min-width: 150px;
-            text-align: center;
-            color: rgba(0, 0, 0, 0.87);
-        }
-
-        button {
-            width: 32px;
-            height: 32px;
-            line-height: 32px;
-        }
-    }
-
-    > button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .current-month {
+        font-size: 1.2rem;
+        font-weight: 500;
+        min-width: 150px;
+        text-align: center;
     }
 }
 
 .filter-section {
     background: white;
+    padding: 16px;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
     .filter-header {
         display: flex;
@@ -56,43 +43,27 @@
 
         h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 500;
-            color: rgba(0, 0, 0, 0.87);
-        }
-
-        button {
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
     }
 
     .filter-controls {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
+    }
 
-        .filter-field {
-            width: 100%;
-        }
+    .filter-field {
+        width: 100%;
+        margin-bottom: 0;
     }
 
     .filter-summary {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid rgba(0, 0, 0, 0.12);
-
-        mat-chip-set {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        mat-chip {
-            font-size: 13px;
-        }
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #eee;
     }
 }
 
@@ -100,62 +71,77 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 300px;
+    height: 200px;
 }
 
 .table-container {
     background: white;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .transactions-table {
     width: 100%;
 
-    th {
-        font-weight: 600;
+    .mat-column-date {
+        width: 100px;
     }
 
-    .mat-row:hover {
-        background-color: rgba(0, 0, 0, 0.04);
+    .mat-column-actions {
+        width: 100px;
+        text-align: right;
+    }
+}
+
+.effective-amount-cell {
+    white-space: pre-line;
+}
+
+.description-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    span {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    .description-cell {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .matcher-icon-small {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        object-fit: cover;
 
-        .match-icon {
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
-            cursor: help;
-
-            &.auto {
-                color: #7b1fa2; // Purple-ish
-            }
-
-            &.manual {
-                color: #00796b; // Teal
-            }
+        &.auto {
+            border: 2px solid #4caf50; // Green for auto
         }
 
-        .matcher-icon-small {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid transparent;
-            cursor: help;
-
-            &.auto {
-                border-color: #7b1fa2; // Purple-ish for auto match
-            }
-
-            &.manual {
-                border-color: #00796b; // Teal for manual match
-            }
+        &.manual {
+            border: 2px solid #ff9800; // Orange for manual
         }
     }
+
+    .match-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+
+        &.auto {
+            color: #4caf50;
+        }
+
+        &.manual {
+            color: #ff9800;
+        }
+    }
+}
+
+.accounts-cell-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }

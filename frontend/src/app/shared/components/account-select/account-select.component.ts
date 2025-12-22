@@ -25,6 +25,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith, map } from 'rxjs';
 import { Account } from '../../../core/api/models/account';
 import { AccountService } from '../../../features/accounts/services/account.service';
+import { AccountDisplayComponent } from '../account-display/account-display.component';
 
 export interface AccountGroup {
     name: string;
@@ -42,6 +43,7 @@ export interface AccountGroup {
         MatInputModule,
         MatAutocompleteModule,
         MatOptionModule,
+        AccountDisplayComponent,
     ],
     providers: [
         {

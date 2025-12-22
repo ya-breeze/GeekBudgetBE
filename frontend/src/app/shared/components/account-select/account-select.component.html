@@ -18,7 +18,11 @@
             <mat-optgroup [label]="group.name">
                 @for (account of group.accounts; track account.id) {
                     <mat-option [value]="account">
-                        {{ account.name }}
+                        <app-account-display
+                            [name]="account.name"
+                            [image]="account.image"
+                            size="small"
+                        ></app-account-display>
                     </mat-option>
                 }
             </mat-optgroup>

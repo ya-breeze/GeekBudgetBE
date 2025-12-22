@@ -19,7 +19,13 @@
                 @for (card of assetCards(); track card.accountId) {
                     <mat-card class="asset-card">
                         <mat-card-header>
-                            <mat-card-title>{{ card.accountName }}</mat-card-title>
+                            <mat-card-title>
+                                <app-account-display
+                                    [name]="card.accountName"
+                                    [image]="card.accountImage"
+                                    size="medium"
+                                ></app-account-display>
+                            </mat-card-title>
                             <button
                                 mat-icon-button
                                 class="hide-button"
@@ -119,9 +125,11 @@
                                     <tr>
                                         <td class="account-cell">
                                             <div class="account-info">
-                                                <span class="account-name">{{
-                                                    row.accountName
-                                                }}</span>
+                                                <app-account-display
+                                                    [name]="row.accountName"
+                                                    [image]="row.accountImage"
+                                                    size="small"
+                                                ></app-account-display>
                                                 @if (
                                                     row.averageSpent > 0 &&
                                                     row.accountId !== 'total'

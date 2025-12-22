@@ -21,7 +21,9 @@ import {
 } from './import-result-dialog/import-result-dialog.component';
 import { AccountService } from '../accounts/services/account.service';
 import { LayoutService } from '../../layout/services/layout.service';
+
 import { CurrencyService } from '../currencies/services/currency.service';
+import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
 
 @Component({
     selector: 'app-bank-importers',
@@ -35,6 +37,7 @@ import { CurrencyService } from '../currencies/services/currency.service';
         MatSnackBarModule,
         MatChipsModule,
         DatePipe,
+        AccountDisplayComponent,
     ],
     templateUrl: './bank-importers.component.html',
     styleUrl: './bank-importers.component.scss',
@@ -74,6 +77,7 @@ export class BankImportersComponent implements OnInit {
         const enrichedImporters = importers.map((importer) => ({
             ...importer,
             accountName: accountMap.get(importer.accountId),
+            accountImage: accounts.find((a) => a.id === importer.accountId)?.image,
             feeAccountName: importer.feeAccountId
                 ? accountMap.get(importer.feeAccountId)
                 : undefined,
@@ -253,8 +257,16 @@ export class BankImportersComponent implements OnInit {
     }
 
     private compareBankImporters(
-        a: BankImporter & { accountName?: string; feeAccountName?: string },
-        b: BankImporter & { accountName?: string; feeAccountName?: string },
+        a: BankImporter & {
+            accountName?: string;
+            accountImage?: string;
+            feeAccountName?: string;
+        },
+        b: BankImporter & {
+            accountName?: string;
+            accountImage?: string;
+            feeAccountName?: string;
+        },
         active: string,
         direction: 'asc' | 'desc',
     ): number {
@@ -264,7 +276,11 @@ export class BankImportersComponent implements OnInit {
     }
 
     private getBankImporterSortValue(
-        importer: BankImporter & { accountName?: string; feeAccountName?: string },
+        importer: BankImporter & {
+            accountName?: string;
+            accountImage?: string;
+            feeAccountName?: string;
+        },
         active: string,
     ): string | Date | null {
         switch (active) {

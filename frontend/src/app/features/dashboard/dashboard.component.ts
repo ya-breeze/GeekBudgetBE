@@ -22,6 +22,7 @@ import { LayoutService } from '../../layout/services/layout.service';
 import { AccountNoId } from '../../core/api/models/account-no-id';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
 
 interface ExpenseTableCell {
     value: number;
@@ -34,6 +35,7 @@ interface ExpenseTableRow {
     monthCells: Map<string, ExpenseTableCell>;
     total: ExpenseTableCell;
     averageSpent: number; // Added averageSpent
+    accountImage?: string;
 }
 
 interface CurrencyTable {
@@ -59,6 +61,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatSlideToggleModule,
         DecimalPipe,
         JsonPipe,
+        AccountDisplayComponent,
     ],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.scss',
@@ -141,6 +144,7 @@ export class DashboardComponent implements OnInit {
             const rowsData: {
                 accountId: string;
                 accountName: string;
+                accountImage?: string;
                 monthValues: Map<string, number>;
                 rowTotal: number;
             }[] = [];
@@ -176,6 +180,7 @@ export class DashboardComponent implements OnInit {
                     rowsData.push({
                         accountId: account.id!,
                         accountName: account.name,
+                        accountImage: account.image,
                         monthValues,
                         rowTotal,
                     });
@@ -231,6 +236,7 @@ export class DashboardComponent implements OnInit {
                         this.accountService
                             .averages()
                             .find((a) => a.accountId === rowData.accountId)?.averageSpent ?? 0,
+                    accountImage: (rowData as any).accountImage,
                 };
             });
 
@@ -315,6 +321,7 @@ export class DashboardComponent implements OnInit {
                     currencyName: currency?.name || currencyAgg.currencyId,
                     trendPercent: Math.abs(trendPercent),
                     trendDirection,
+                    accountImage: account.image,
                 });
             });
         });

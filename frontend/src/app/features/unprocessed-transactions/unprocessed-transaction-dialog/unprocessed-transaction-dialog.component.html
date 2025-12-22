@@ -114,9 +114,17 @@
                             @for (mov of manualMovements(); track $index) {
                                 <div class="movement-row">
                                     @if (isOriginalAccountDefined($index)) {
-                                        <span class="fixed-account">{{
-                                            getAccountName(mov.accountId)
-                                        }}</span>
+                                        @if (getAccount(mov.accountId); as account) {
+                                            <app-account-display
+                                                [name]="account.name"
+                                                [image]="account.image"
+                                                size="small"
+                                            ></app-account-display>
+                                        } @else {
+                                            <span class="fixed-account">{{
+                                                getAccountName(mov.accountId)
+                                            }}</span>
+                                        }
                                     } @else {
                                         <app-account-select
                                             [ngModel]="mov.accountId"
@@ -200,8 +208,23 @@
                                 >
                                     @for (matcher of filteredMatchers(); track matcher.id) {
                                         <mat-option [value]="matcher">
-                                            {{ getAccountName(matcher.outputAccountId) }}:
-                                            {{ matcher.outputDescription }}
+                                            <div
+                                                style="display: flex; align-items: center; gap: 8px"
+                                            >
+                                                @if (
+                                                    getAccount(matcher.outputAccountId);
+                                                    as account
+                                                ) {
+                                                    <app-account-display
+                                                        [name]="account.name"
+                                                        [image]="account.image"
+                                                        size="small"
+                                                    ></app-account-display>
+                                                } @else {
+                                                    {{ getAccountName(matcher.outputAccountId) }}
+                                                }
+                                                <span>: {{ matcher.outputDescription }}</span>
+                                            </div>
                                         </mat-option>
                                     }
                                 </mat-autocomplete>
@@ -339,9 +362,22 @@
                                                                 >
                                                                 </app-account-select>
                                                             } @else {
-                                                                <span class="fixed-account">{{
-                                                                    getAccountName(mov.accountId)
-                                                                }}</span>
+                                                                @if (
+                                                                    getAccount(mov.accountId);
+                                                                    as account
+                                                                ) {
+                                                                    <app-account-display
+                                                                        [name]="account.name"
+                                                                        [image]="account.image"
+                                                                        size="small"
+                                                                    ></app-account-display>
+                                                                } @else {
+                                                                    <span class="fixed-account">{{
+                                                                        getAccountName(
+                                                                            mov.accountId
+                                                                        )
+                                                                    }}</span>
+                                                                }
                                                             }
                                                         </div>
                                                         <div
@@ -455,9 +491,20 @@
                                                 @for (mov of duplicate.movements; track $index) {
                                                     <div class="movement-row">
                                                         <div class="movement-account">
-                                                            <span class="fixed-account">{{
-                                                                getAccountName(mov.accountId)
-                                                            }}</span>
+                                                            @if (
+                                                                getAccount(mov.accountId);
+                                                                as account
+                                                            ) {
+                                                                <app-account-display
+                                                                    [name]="account.name"
+                                                                    [image]="account.image"
+                                                                    size="small"
+                                                                ></app-account-display>
+                                                            } @else {
+                                                                <span class="fixed-account">{{
+                                                                    getAccountName(mov.accountId)
+                                                                }}</span>
+                                                            }
                                                         </div>
                                                         <div
                                                             class="movement-amount"

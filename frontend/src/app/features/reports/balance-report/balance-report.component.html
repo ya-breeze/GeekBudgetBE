@@ -112,7 +112,15 @@
                                     *matCellDef="let row"
                                     [class.total-label]="row.account === 'Total Assets'"
                                 >
-                                    {{ row.account }}
+                                    @if (row.account === 'Total Assets') {
+                                        {{ row.account }}
+                                    } @else {
+                                        <app-account-display
+                                            [name]="row.account"
+                                            [image]="row.accountImage"
+                                            size="small"
+                                        ></app-account-display>
+                                    }
                                 </td>
                             </ng-container>
 

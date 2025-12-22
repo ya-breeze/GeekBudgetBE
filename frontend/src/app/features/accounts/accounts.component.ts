@@ -18,6 +18,7 @@ import {
 } from './account-delete-confirm-dialog/account-delete-confirm-dialog.component';
 import { LayoutService } from '../../layout/services/layout.service';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
 
 @Component({
     selector: 'app-accounts',
@@ -32,6 +33,7 @@ import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
         MatSnackBarModule,
         MatChipsModule,
         ImageUrlPipe,
+        AccountDisplayComponent,
     ],
     templateUrl: './accounts.component.html',
     styleUrl: './accounts.component.scss',

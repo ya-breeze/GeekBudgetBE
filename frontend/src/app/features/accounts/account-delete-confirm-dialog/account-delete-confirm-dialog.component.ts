@@ -7,6 +7,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { Account } from '../../../core/api/models/account';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
+import { AccountDisplayComponent } from '../../../shared/components/account-display/account-display.component';
 
 export interface AccountDeleteConfirmDialogData {
     accountToDelete: Account;
@@ -21,7 +22,14 @@ export interface AccountDeleteConfirmDialogResult {
 @Component({
     selector: 'app-account-delete-confirm-dialog',
     standalone: true,
-    imports: [CommonModule, MatDialogModule, MatButtonModule, FormsModule, AccountSelectComponent],
+    imports: [
+        CommonModule,
+        MatDialogModule,
+        MatButtonModule,
+        FormsModule,
+        AccountSelectComponent,
+        AccountDisplayComponent,
+    ],
     templateUrl: './account-delete-confirm-dialog.component.html',
     styles: [
         `

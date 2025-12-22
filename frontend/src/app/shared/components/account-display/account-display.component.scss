@@ -1,0 +1,44 @@
+.account-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .account-icon {
+        object-fit: contain;
+        border-radius: 4px;
+    }
+
+    &.small {
+        .account-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .account-name {
+            font-size: 14px;
+        }
+    }
+
+    &.medium {
+        .account-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .account-name {
+            font-size: 16px;
+        }
+    }
+
+    &.large {
+        .account-icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        .account-name {
+            font-size: 18px;
+            font-weight: 500;
+        }
+    }
+}

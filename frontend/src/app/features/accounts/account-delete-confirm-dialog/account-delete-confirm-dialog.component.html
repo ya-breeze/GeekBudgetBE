@@ -1,9 +1,15 @@
 <h2 mat-dialog-title>Delete Account</h2>
 <mat-dialog-content>
-    <p>
-        Are you sure you want to delete account <strong>{{ accountToDelete.name }}</strong
-        >?
-    </p>
+    <div class="confirm-message">
+        Are you sure you want to delete account:
+        <app-account-display
+            [name]="accountToDelete.name"
+            [image]="accountToDelete.image"
+            size="medium"
+            class="account-preview"
+        ></app-account-display>
+        ?
+    </div>
     <p class="text-warn">
         This action cannot be undone. All related data might be lost unless reassigned.
     </p>

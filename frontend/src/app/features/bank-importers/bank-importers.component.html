@@ -40,7 +40,11 @@
                 <ng-container matColumnDef="account">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Account</th>
                     <td mat-cell *matCellDef="let importer">
-                        {{ importer.accountName || importer.accountId }}
+                        <app-account-display
+                            [name]="importer.accountName || importer.accountId"
+                            [image]="importer.accountImage"
+                            size="small"
+                        ></app-account-display>
                     </td>
                 </ng-container>
 

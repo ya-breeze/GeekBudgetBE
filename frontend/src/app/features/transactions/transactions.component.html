@@ -36,7 +36,13 @@
                 <mat-label>Filter by Accounts</mat-label>
                 <mat-select [(ngModel)]="selectedAccountIds" multiple>
                     @for (account of accounts(); track account.id) {
-                        <mat-option [value]="account.id">{{ account.name }}</mat-option>
+                        <mat-option [value]="account.id">
+                            <app-account-display
+                                [name]="account.name"
+                                [image]="account.image"
+                                size="small"
+                            ></app-account-display>
+                        </mat-option>
                     }
                 </mat-select>
                 @if (selectedAccountIds().length > 0) {
@@ -193,7 +199,18 @@
                         *matCellDef="let transaction"
                         [title]="formatMovements(transaction)"
                     >
-                        {{ getTargetAccounts(transaction) }}
+                        <div class="accounts-cell-list">
+                            @for (account of getTargetAccountList(transaction); track account.id) {
+                                <app-account-display
+                                    [name]="account.name"
+                                    [image]="account.image"
+                                    size="small"
+                                ></app-account-display>
+                            }
+                            @if (getTargetAccountList(transaction).length === 0) {
+                                -
+                            }
+                        </div>
                     </td>
                 </ng-container>
 
