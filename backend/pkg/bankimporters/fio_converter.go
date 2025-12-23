@@ -80,7 +80,27 @@ func (fc *FioConverter) ParseTransactions(ctx context.Context, data []byte) (*go
 
 	fc.logger.Info("Successfully parser FIO transactions", "count", len(res))
 
-	return &fio.AccountStatement.Info, res, nil
+	info := goserver.BankAccountInfo{
+		AccountId: fio.AccountStatement.Info.AccountId,
+		BankId:    fio.AccountStatement.Info.BankId,
+		Balances: []goserver.BankAccountInfoBalancesInner{
+			{
+				OpeningBalance: fio.AccountStatement.Info.OpeningBalance.Value.InexactFloat64(),
+				ClosingBalance: fio.AccountStatement.Info.ClosingBalance.Value.InexactFloat64(),
+				CurrencyId:     fio.AccountStatement.Info.Currency.Value,
+			},
+		},
+	}
+
+	// Resolve currency ID if CP is available
+	if fc.cp != nil && info.Balances[0].CurrencyId != "" {
+		currencyID, err := fc.cp.GetCurrencyIdByName(ctx, info.Balances[0].CurrencyId)
+		if err == nil {
+			info.Balances[0].CurrencyId = currencyID
+		}
+	}
+
+	return &info, res, nil
 }
 
 //nolint:funlen,cyclop // to be refactored
@@ -258,9 +278,24 @@ type FioTransaction struct {
 	InfoForReceiver  FioStringColumn `json:"column16"` // Zpráva pro příjemce
 }
 
+type FioAccountInfo struct {
+	AccountId      string          `json:"accountId"`
+	BankId         string          `json:"bankId"`
+	Currency       FioStringColumn `json:"currency"`
+	IBAN           string          `json:"iban"`
+	BIC            string          `json:"bic"`
+	OpeningBalance FioFloatColumn  `json:"openingBalance"`
+	ClosingBalance FioFloatColumn  `json:"closingBalance"`
+	DateStart      string          `json:"dateStart"`
+	DateEnd        string          `json:"dateEnd"`
+	YearId         int             `json:"yearId"`
+	IdFrom         int64           `json:"idFrom"`
+	IdTo           int64           `json:"idTo"`
+}
+
 type FioTransactions struct {
 	AccountStatement struct {
-		Info            goserver.BankAccountInfo `json:"info"`
+		Info            FioAccountInfo `json:"info"`
 		TransactionList struct {
 			Transaction []FioTransaction `json:"transaction"`
 		} `json:"transactionList"`

@@ -149,6 +149,7 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 
 	// Convert transactions
 	res := make([]goserver.TransactionNoId, 0, len(records))
+	var sum float64
 	for _, record := range records {
 		var tr goserver.TransactionNoId
 		tr, err = fc.ConvertToTransaction(ctx, record)
@@ -157,9 +158,21 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 		}
 
 		res = append(res, tr)
+
+		// Calculate sum of amounts for the account movements
+		for _, m := range tr.Movements {
+			if m.AccountId == fc.bankImporter.AccountId {
+				sum += m.Amount
+			}
+		}
 	}
 
-	fc.logger.Info("Successfully parsed KB transactions", "count", len(res))
+	fc.logger.Info("Successfully parsed KB transactions", "count", len(res), "sum", sum)
+
+	// If we found a balance, calculate opening balance
+	if len(info.Balances) > 0 {
+		info.Balances[0].OpeningBalance = info.Balances[0].ClosingBalance - sum
+	}
 
 	// If we found a balance, try to update the currency ID if we can infer it or if it's set in the transactions
 	if len(info.Balances) > 0 && len(res) > 0 {

@@ -256,6 +256,10 @@ var _ = Describe("BankImporters API", func() {
 			// Mock GetBankImporter to return account ID
 			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(goserver.BankImporter{Id: importerID, AccountId: accountID}, nil).AnyTimes()
 
+			// Expect GetAccount when checkMissing is true
+			mockDB.EXPECT().GetAccount(userID, accountID).Return(goserver.Account{Id: accountID, BankInfo: goserver.BankAccountInfo{}}, nil)
+			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).Return(goserver.Account{}, nil)
+
 			// 2. Setup imported transactions (Only txPresent)
 			importedTransactions := []goserver.TransactionNoId{
 				{
@@ -285,7 +289,12 @@ var _ = Describe("BankImporters API", func() {
 			// Mock updateLastImportFields
 			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil)
 
-			_, err := sut.saveImportedTransactions(userID, importerID, &goserver.BankAccountInfo{}, importedTransactions, true)
+			info := &goserver.BankAccountInfo{
+				Balances: []goserver.BankAccountInfoBalancesInner{
+					{CurrencyId: "USD", OpeningBalance: 1000, ClosingBalance: 900},
+				},
+			}
+			_, err := sut.saveImportedTransactions(userID, importerID, info, importedTransactions, true)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
@@ -405,7 +414,7 @@ var _ = Describe("BankImporters API", func() {
 			}
 
 			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(bi, nil).AnyTimes()
-			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil)
+			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil).AnyTimes()
 
 			// Mock successful import sequence...
 			// This requires mocking FIO converter or ensuring FioConverter works with mock DB/Transport.

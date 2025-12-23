@@ -569,6 +569,45 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		}
 	}
 
+	// if all transactions are processed then update account bank info
+	if checkMissing && info != nil && len(info.Balances) > 0 {
+		acc, err := s.db.GetAccount(userID, biData.AccountId)
+		if err == nil {
+			accNoId := models.AccountWithoutID(&acc)
+			// Update account bank info from the importer provided info
+			if info.AccountId != "" {
+				accNoId.BankInfo.AccountId = info.AccountId
+			}
+			if info.BankId != "" {
+				accNoId.BankInfo.BankId = info.BankId
+			}
+
+			// Update or append balances
+			for _, b := range info.Balances {
+				found := false
+				for i := range accNoId.BankInfo.Balances {
+					if accNoId.BankInfo.Balances[i].CurrencyId == b.CurrencyId {
+						accNoId.BankInfo.Balances[i] = b
+						found = true
+						break
+					}
+				}
+				if !found {
+					accNoId.BankInfo.Balances = append(accNoId.BankInfo.Balances, b)
+				}
+			}
+
+			_, err = s.db.UpdateAccount(userID, biData.AccountId, accNoId)
+			if err != nil {
+				s.logger.With("error", err).Error("Failed to update account bank info")
+			} else {
+				s.logger.Info("Updated account bank info", "accountId", biData.AccountId)
+			}
+		} else {
+			s.logger.With("error", err, "accountId", biData.AccountId).Error("Failed to get account for bank info update")
+		}
+	}
+
 	// update last import fields
 	lastImport, err := s.updateLastImportFields(userID, id, info, len(transactions), cnt, suspiciousCnt)
 	if err != nil {
