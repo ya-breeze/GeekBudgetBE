@@ -57,6 +57,10 @@ export class UnprocessedTransactionsComponent implements OnInit {
         'duplicates',
     ]);
     protected readonly sortedTransactions = signal<UnprocessedTransaction[]>([]);
+    protected readonly sortState = signal<{ active: string; direction: string }>({
+        active: '',
+        direction: '',
+    });
 
     ngOnInit(): void {
         this.loadUnprocessedTransactions();
@@ -76,15 +80,20 @@ export class UnprocessedTransactionsComponent implements OnInit {
         return transaction.movements?.filter((m: any) => !m.accountId) || [];
     }
 
+    onSortChange(sort: { active: string; direction: string }): void {
+        this.sortState.set(sort);
+    }
+
     getSortedData(): UnprocessedTransaction[] {
         const data = this.unprocessedTransactions();
-        if (!this.sort || !this.sort.active || this.sort.direction === '') {
+        const sort = this.sortState();
+        if (!sort.active || sort.direction === '') {
             return data;
         }
 
         return data.slice().sort((a, b) => {
-            const isAsc = this.sort.direction === 'asc';
-            switch (this.sort.active) {
+            const isAsc = sort.direction === 'asc';
+            switch (sort.active) {
                 case 'date':
                     return this.compare(
                         new Date(a.transaction.date),
