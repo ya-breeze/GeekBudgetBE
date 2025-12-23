@@ -30,6 +30,7 @@ type MatcherNoID struct {
 	PartnerAccountNumberRegExp *string  `json:"partnerAccountNumberRegExp,omitempty"`
 	DescriptionRegExp          *string  `json:"descriptionRegExp,omitempty"`
 	ExtraRegExp                *string  `json:"extraRegExp,omitempty"`
+	PlaceRegExp                *string  `json:"placeRegExp,omitempty"`
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
 	// ID of the matcher image
@@ -297,6 +298,38 @@ func (o *MatcherNoID) SetExtraRegExp(v string) {
 	o.ExtraRegExp = &v
 }
 
+// GetPlaceRegExp returns the PlaceRegExp field value if set, zero value otherwise.
+func (o *MatcherNoID) GetPlaceRegExp() string {
+	if o == nil || IsNil(o.PlaceRegExp) {
+		var ret string
+		return ret
+	}
+	return *o.PlaceRegExp
+}
+
+// GetPlaceRegExpOk returns a tuple with the PlaceRegExp field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *MatcherNoID) GetPlaceRegExpOk() (*string, bool) {
+	if o == nil || IsNil(o.PlaceRegExp) {
+		return nil, false
+	}
+	return o.PlaceRegExp, true
+}
+
+// HasPlaceRegExp returns a boolean if a field has been set.
+func (o *MatcherNoID) HasPlaceRegExp() bool {
+	if o != nil && !IsNil(o.PlaceRegExp) {
+		return true
+	}
+
+	return false
+}
+
+// SetPlaceRegExp gets a reference to the given string and assigns it to the PlaceRegExp field.
+func (o *MatcherNoID) SetPlaceRegExp(v string) {
+	o.PlaceRegExp = &v
+}
+
 // GetConfirmationHistory returns the ConfirmationHistory field value if set, zero value otherwise.
 func (o *MatcherNoID) GetConfirmationHistory() []bool {
 	if o == nil || IsNil(o.ConfirmationHistory) {
@@ -390,6 +423,9 @@ func (o MatcherNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ExtraRegExp) {
 		toSerialize["extraRegExp"] = o.ExtraRegExp
+	}
+	if !IsNil(o.PlaceRegExp) {
+		toSerialize["placeRegExp"] = o.PlaceRegExp
 	}
 	if !IsNil(o.ConfirmationHistory) {
 		toSerialize["confirmationHistory"] = o.ConfirmationHistory

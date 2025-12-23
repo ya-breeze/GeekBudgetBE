@@ -19,4 +19,5 @@ export interface MatcherNoId {
     outputTags?: Array<string>;
     partnerAccountNumberRegExp?: string;
     partnerNameRegExp?: string;
+    placeRegExp?: string;
 }

@@ -103,6 +103,7 @@ export class MatcherEditDialogComponent implements OnInit {
             partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,
             currencyRegExp: formValue.currencyRegExp || undefined,
             extraRegExp: formValue.extraRegExp || undefined,
+            placeRegExp: formValue.placeRegExp || undefined,
             outputAccountId: 'temp', // Not relevant for matching check
             outputDescription: 'temp',
             outputTags: [],
@@ -163,6 +164,7 @@ export class MatcherEditDialogComponent implements OnInit {
         partnerAccountNumberRegExp: [''],
         currencyRegExp: [''],
         extraRegExp: [''],
+        placeRegExp: [''],
         outputAccountId: ['', Validators.required],
         outputDescription: ['', Validators.required],
         outputTags: [''], // Comma separated for simplicity initially
@@ -178,6 +180,7 @@ export class MatcherEditDialogComponent implements OnInit {
                 partnerAccountNumberRegExp: this.data.matcher.partnerAccountNumberRegExp,
                 currencyRegExp: this.data.matcher.currencyRegExp,
                 extraRegExp: this.data.matcher.extraRegExp,
+                placeRegExp: (this.data.matcher as any).placeRegExp, // Cast to any to bypass strict type checking until models are updated in Frontend
                 outputAccountId: this.data.matcher.outputAccountId,
                 outputDescription: this.data.matcher.outputDescription,
                 outputTags: this.data.matcher.outputTags?.join(', '),
@@ -201,6 +204,7 @@ export class MatcherEditDialogComponent implements OnInit {
                 partnerAccountNumberRegExp: t.partnerAccount
                     ? this.escapeRegExp(t.partnerAccount)
                     : '',
+                placeRegExp: t.place ? this.escapeRegExp(t.place) : '',
                 outputDescription: t.description, // Suggest keeping description or edit
             });
         }
@@ -255,6 +259,52 @@ export class MatcherEditDialogComponent implements OnInit {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    // Place RegExp Helpers
+    get isPlaceCaseInsensitive(): boolean {
+        const val = this.form.controls.placeRegExp.value || '';
+        return val.startsWith('(?i)');
+    }
+
+    togglePlaceCaseInsensitive(checked: boolean): void {
+        const val = this.form.controls.placeRegExp.value || '';
+        if (checked) {
+            if (!val.startsWith('(?i)')) {
+                this.form.controls.placeRegExp.setValue('(?i)' + val);
+            }
+        } else {
+            if (val.startsWith('(?i)')) {
+                this.form.controls.placeRegExp.setValue(val.substring(4));
+            }
+        }
+    }
+
+    get isPlaceWholeWord(): boolean {
+        let val = this.form.controls.placeRegExp.value || '';
+        if (val.startsWith('(?i)')) {
+            val = val.substring(4);
+        }
+        return val.startsWith('\\b') && val.endsWith('\\b');
+    }
+
+    togglePlaceWholeWord(checked: boolean): void {
+        let val = this.form.controls.placeRegExp.value || '';
+        let prefix = '';
+        if (val.startsWith('(?i)')) {
+            prefix = '(?i)';
+            val = val.substring(4);
+        }
+
+        if (checked) {
+            if (!val.startsWith('\\b')) val = '\\b' + val;
+            if (!val.endsWith('\\b')) val = val + '\\b';
+        } else {
+            if (val.startsWith('\\b')) val = val.substring(2);
+            if (val.endsWith('\\b')) val = val.substring(0, val.length - 2);
+        }
+
+        this.form.controls.placeRegExp.setValue(prefix + val);
+    }
+
     getAccount(id: string): any {
         return this.accounts().find((a) => a.id === id);
     }
@@ -271,6 +321,7 @@ export class MatcherEditDialogComponent implements OnInit {
             partnerAccountNumberRegExp: formValue.partnerAccountNumberRegExp || undefined,
             currencyRegExp: formValue.currencyRegExp || undefined,
             extraRegExp: formValue.extraRegExp || undefined,
+            placeRegExp: formValue.placeRegExp || undefined,
             outputAccountId: formValue.outputAccountId!,
             outputDescription: formValue.outputDescription!,
             outputTags: formValue.outputTags

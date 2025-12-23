@@ -107,6 +107,7 @@ type MatcherRuntime struct {
 	Matcher              *goserver.Matcher
 	DescriptionRegexp    *regexp.Regexp
 	PartnerAccountRegexp *regexp.Regexp
+	PlaceRegexp          *regexp.Regexp
 }
 
 type storage struct {
@@ -764,6 +765,14 @@ func (s *storage) createMatcherRuntime(m goserver.Matcher) (MatcherRuntime, erro
 		runtime.PartnerAccountRegexp = r
 	}
 
+	if m.PlaceRegExp != "" {
+		r, err := regexp.Compile(m.PlaceRegExp)
+		if err != nil {
+			return MatcherRuntime{}, fmt.Errorf("failed to compile place regexp: %w", err)
+		}
+		runtime.PlaceRegexp = r
+	}
+
 	return runtime, nil
 }
 
@@ -782,6 +791,7 @@ func (s *storage) CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) 
 		PartnerAccountNumberRegExp: m.GetPartnerAccountNumberRegExp(),
 		DescriptionRegExp:          m.GetDescriptionRegExp(),
 		ExtraRegExp:                m.GetExtraRegExp(),
+		PlaceRegExp:                m.GetPlaceRegExp(),
 		ConfirmationHistory:        m.GetConfirmationHistory(),
 	}
 

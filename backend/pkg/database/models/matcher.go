@@ -18,6 +18,7 @@ type Matcher struct {
 	PartnerAccountNumberRegExp string
 	DescriptionRegExp          string
 	ExtraRegExp                string
+	PlaceRegExp                string
 	ConfirmationHistory        []bool `gorm:"serializer:json"`
 	Image                      string
 
@@ -44,6 +45,7 @@ func (m *Matcher) FromDB() goserver.Matcher {
 		PartnerAccountNumberRegExp: m.PartnerAccountNumberRegExp,
 		DescriptionRegExp:          m.DescriptionRegExp,
 		ExtraRegExp:                m.ExtraRegExp,
+		PlaceRegExp:                m.PlaceRegExp,
 		ConfirmationHistory:        m.ConfirmationHistory,
 		ConfirmationsCount:         count,
 		ConfirmationsTotal:         total,
@@ -68,6 +70,7 @@ func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
 		PartnerAccountNumberRegExp: m.GetPartnerAccountNumberRegExp(),
 		DescriptionRegExp:          m.GetDescriptionRegExp(),
 		ExtraRegExp:                m.GetExtraRegExp(),
+		PlaceRegExp:                m.GetPlaceRegExp(),
 		ConfirmationHistory:        history,
 		Image:                      m.GetImage(),
 	}
@@ -83,6 +86,7 @@ func MatcherWithoutID(matcher *goserver.Matcher) *goserver.MatcherNoId {
 		PartnerAccountNumberRegExp: matcher.PartnerAccountNumberRegExp,
 		DescriptionRegExp:          matcher.DescriptionRegExp,
 		ExtraRegExp:                matcher.ExtraRegExp,
+		PlaceRegExp:                matcher.PlaceRegExp,
 		ConfirmationHistory:        matcher.ConfirmationHistory,
 		Image:                      matcher.Image,
 	}

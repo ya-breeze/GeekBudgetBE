@@ -85,9 +85,7 @@
                                 mat-stroked-button
                                 color="primary"
                                 (click)="checkMatch()"
-                                [disabled]="
-                                    testingMatch() || !form.controls.descriptionRegExp.value
-                                "
+                                [disabled]="testingMatch()"
                                 class="test-button"
                             >
                                 @if (testingMatch()) {
@@ -198,6 +196,29 @@
                     <mat-label>Extra RegExp</mat-label>
                     <input matInput formControlName="extraRegExp" />
                 </mat-form-field>
+            </div>
+
+            <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Place RegExp</mat-label>
+                    <input matInput formControlName="placeRegExp" />
+                </mat-form-field>
+            </div>
+            <div class="regex-options place-options">
+                <mat-checkbox
+                    [checked]="isPlaceCaseInsensitive"
+                    (change)="togglePlaceCaseInsensitive($event.checked)"
+                    color="primary"
+                >
+                    Case Insensitive
+                </mat-checkbox>
+                <mat-checkbox
+                    [checked]="isPlaceWholeWord"
+                    (change)="togglePlaceWholeWord($event.checked)"
+                    color="primary"
+                >
+                    Whole Words
+                </mat-checkbox>
             </div>
 
             <!-- Output Section -->

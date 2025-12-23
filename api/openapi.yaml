@@ -1761,6 +1761,8 @@ components:
           type: string
         extraRegExp:
           type: string
+        placeRegExp:
+          type: string
         confirmationHistory:
           type: array
           items:

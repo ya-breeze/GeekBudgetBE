@@ -34,6 +34,11 @@ func Match(matcher *database.MatcherRuntime, transaction *goserver.Transaction) 
 		return MatchResultWrongPartnerAccount
 	}
 
+	if matcher.PlaceRegexp != nil &&
+		!matcher.PlaceRegexp.MatchString(transaction.Place) {
+		return MatchResultWrongPartnerAccount // Using existing error code or add a new one if strictly necessary, but standard MatchResult structure might suffice for boolean check
+	}
+
 	return MatchResultSuccess
 }
 
@@ -69,6 +74,20 @@ func MatchWithDetails(matcher *database.MatcherRuntime, transaction *goserver.Tr
 				transaction.PartnerAccount,
 			)
 			details.PartnerAccountMatched = false
+			details.Matched = false
+			return details
+		}
+	}
+
+	// Check place regex
+	if matcher.PlaceRegexp != nil {
+		if !matcher.PlaceRegexp.MatchString(transaction.Place) {
+			details.Result = MatchResultWrongPartnerAccount // Reusing existing error type or could define new one
+			details.FailureReason = fmt.Sprintf(
+				"Place regex %q doesn't match transaction place %q",
+				matcher.PlaceRegexp.String(),
+				transaction.Place,
+			)
 			details.Matched = false
 			return details
 		}

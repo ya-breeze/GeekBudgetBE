@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **PartnerAccountNumberRegExp** | Pointer to **string** |  | [optional] 
 **DescriptionRegExp** | Pointer to **string** |  | [optional] 
 **ExtraRegExp** | Pointer to **string** |  | [optional] 
+**PlaceRegExp** | Pointer to **string** |  | [optional] 
 **ConfirmationHistory** | Pointer to **[]bool** | List of booleans representing manual confirmations for this matcher (true &#x3D; confirmed, false &#x3D; rejected). Server enforces maximum length configured via application config. | [optional] 
 **Image** | Pointer to **string** | ID of the matcher image | [optional] 
 **ConfirmationsCount** | **int32** | Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct. | 
@@ -246,6 +247,31 @@ SetExtraRegExp sets ExtraRegExp field to given value.
 `func (o *Matcher) HasExtraRegExp() bool`
 
 HasExtraRegExp returns a boolean if a field has been set.
+
+### GetPlaceRegExp
+
+`func (o *Matcher) GetPlaceRegExp() string`
+
+GetPlaceRegExp returns the PlaceRegExp field if non-nil, zero value otherwise.
+
+### GetPlaceRegExpOk
+
+`func (o *Matcher) GetPlaceRegExpOk() (*string, bool)`
+
+GetPlaceRegExpOk returns a tuple with the PlaceRegExp field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetPlaceRegExp
+
+`func (o *Matcher) SetPlaceRegExp(v string)`
+
+SetPlaceRegExp sets PlaceRegExp field to given value.
+
+### HasPlaceRegExp
+
+`func (o *Matcher) HasPlaceRegExp() bool`
+
+HasPlaceRegExp returns a boolean if a field has been set.
 
 ### GetConfirmationHistory
 
