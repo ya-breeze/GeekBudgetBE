@@ -26,7 +26,7 @@ func FetchFioTransactions(logger *slog.Logger, ctx context.Context, token string
 	today := time.Now().Format("2006-01-02")
 	from := time.Now().AddDate(0, 0, -90).Format("2006-01-02")
 	if fetchAll {
-		from = time.Now().AddDate(0, 0, -365*100).Format("2006-01-02")
+		from = time.Now().AddDate(0, 0, -365*20).Format("2006-01-02")
 	}
 	logger.With("to", today).With("from", from).Info("Fetching transactions")
 

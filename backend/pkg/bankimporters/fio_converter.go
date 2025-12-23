@@ -115,9 +115,16 @@ func (fc *FioConverter) ConvertFioToTransaction(ctx context.Context, bi goserver
 
 	tokens := fc.r.FindAllStringSubmatch(fio.Comment.Value, -1)
 	if tokens == nil {
-		t, err := time.ParseInLocation("2006-01-02-0700", fio.Date.Value, fc.location)
-		if err != nil {
-			return res, fmt.Errorf("can't parse date %q: %w", fio.Date.Value, err)
+		var t time.Time
+		var err error
+		// Try parsing as timestamp (milliseconds) first if it's a number
+		if ms, perr := strconv.ParseInt(fio.Date.Value, 10, 64); perr == nil {
+			t = time.Unix(0, ms*int64(time.Millisecond)).In(fc.location)
+		} else {
+			t, err = time.ParseInLocation("2006-01-02-0700", fio.Date.Value, fc.location)
+			if err != nil {
+				return res, fmt.Errorf("can't parse date %q: %w", fio.Date.Value, err)
+			}
 		}
 
 		d := fio.Comment.Value
@@ -250,6 +257,55 @@ type FioStringColumn struct {
 	ID    int    `json:"id"`
 }
 
+// UnmarshalJSON handles both object {"value": "str", ...} and plain string "str" formats.
+// It also handles cases where "value" is a number (timestamp).
+func (f *FioStringColumn) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
+
+	// Try to unmarshal as a plain string first
+	var plainStr string
+	if err := json.Unmarshal(data, &plainStr); err == nil {
+		f.Value = plainStr
+		return nil
+	}
+
+	// Try to unmarshal as a plain number
+	var plainNum float64
+	if err := json.Unmarshal(data, &plainNum); err == nil {
+		f.Value = strconv.FormatFloat(plainNum, 'f', -1, 64)
+		return nil
+	}
+
+	// Otherwise unmarshal as struct with flexible value
+	type flexible struct {
+		Value interface{} `json:"value"`
+		Name  string      `json:"name"`
+		ID    int         `json:"id"`
+	}
+	var fl flexible
+	if err := json.Unmarshal(data, &fl); err != nil {
+		return err
+	}
+
+	f.Name = fl.Name
+	f.ID = fl.ID
+
+	if fl.Value != nil {
+		switch v := fl.Value.(type) {
+		case string:
+			f.Value = v
+		case float64:
+			f.Value = strconv.FormatFloat(v, 'f', -1, 64)
+		default:
+			f.Value = fmt.Sprintf("%v", v)
+		}
+	}
+
+	return nil
+}
+
 type FioIntColumn struct {
 	Value int    `json:"value"`
 	Name  string `json:"name"`
@@ -261,6 +317,26 @@ type FioFloatColumn struct {
 	Name  string          `json:"name"`
 	ID    int             `json:"id"`
 }
+
+// UnmarshalJSON handles both object {"value": 123.45, ...} and plain number 123.45 formats
+func (f *FioFloatColumn) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as a plain number first
+	var plainNum float64
+	if err := json.Unmarshal(data, &plainNum); err == nil {
+		f.Value = decimal.NewFromFloat(plainNum)
+		return nil
+	}
+
+	// Otherwise unmarshal as struct
+	type alias FioFloatColumn
+	var a alias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+	*f = FioFloatColumn(a)
+	return nil
+}
+
 type FioTransaction struct {
 	Date             FioStringColumn `json:"column0"`  // Datum
 	ID               FioIntColumn    `json:"column22"` // ID pohybu
@@ -286,8 +362,8 @@ type FioAccountInfo struct {
 	BIC            string          `json:"bic"`
 	OpeningBalance FioFloatColumn  `json:"openingBalance"`
 	ClosingBalance FioFloatColumn  `json:"closingBalance"`
-	DateStart      string          `json:"dateStart"`
-	DateEnd        string          `json:"dateEnd"`
+	DateStart      interface{}     `json:"dateStart"`
+	DateEnd        interface{}     `json:"dateEnd"`
 	YearId         int             `json:"yearId"`
 	IdFrom         int64           `json:"idFrom"`
 	IdTo           int64           `json:"idTo"`
