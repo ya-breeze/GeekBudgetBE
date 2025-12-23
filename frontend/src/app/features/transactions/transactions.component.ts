@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from './services/transaction.service';
@@ -45,6 +47,8 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
         DatePipe,
         FormsModule,
         ImageUrlPipe,
@@ -63,6 +67,7 @@ export class TransactionsComponent implements OnInit {
     private readonly layoutService = inject(LayoutService);
 
     private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
@@ -116,6 +121,41 @@ export class TransactionsComponent implements OnInit {
     readonly selectedAccountIds = signal<string[]>([]);
     readonly selectedTags = signal<string[]>([]);
     readonly descriptionFilter = signal<string>('');
+
+    constructor() {
+        const router = inject(Router);
+        const route = inject(ActivatedRoute);
+
+        // Sync state to URL
+        effect(() => {
+            const queryParams: any = {
+                month: this.currentMonth(),
+                year: this.currentYear(),
+            };
+
+            const accountIds = this.selectedAccountIds();
+            if (accountIds.length > 0) {
+                queryParams.accountId = accountIds;
+            }
+
+            const tags = this.selectedTags();
+            if (tags.length > 0) {
+                queryParams.tags = tags;
+            }
+
+            const desc = this.descriptionFilter().trim();
+            if (desc) {
+                queryParams.description = desc;
+            }
+
+            router.navigate([], {
+                relativeTo: route,
+                queryParams: queryParams,
+                queryParamsHandling: 'merge',
+                replaceUrl: true, // Use replaceUrl to avoid cluttering history
+            });
+        });
+    }
 
     // Computed property for all unique tags from transactions - public for testing
     readonly availableTags = computed(() => {
@@ -196,21 +236,84 @@ export class TransactionsComponent implements OnInit {
 
     ngOnInit(): void {
         // Read query parameters
+        const params = this.route.snapshot.queryParams;
+
+        if (params['month'] && params['year']) {
+            const month = parseInt(params['month'], 10);
+            const year = parseInt(params['year'], 10);
+            if (!isNaN(month) && !isNaN(year)) {
+                this.currentMonth.set(month);
+                this.currentYear.set(year);
+            }
+        }
+
+        if (params['accountId']) {
+            const accountId = params['accountId'];
+            this.selectedAccountIds.set(Array.isArray(accountId) ? accountId : [accountId]);
+        }
+
+        if (params['tags']) {
+            const tags = params['tags'];
+            this.selectedTags.set(Array.isArray(tags) ? tags : [tags]);
+        }
+
+        if (params['description']) {
+            this.descriptionFilter.set(params['description']);
+        }
+
+        this.loadData();
+
+        // Also listen to query param changes for back/forward navigation
         this.route.queryParams.subscribe((params) => {
-            if (params['month'] && params['year']) {
-                const month = parseInt(params['month'], 10);
-                const year = parseInt(params['year'], 10);
-                if (!isNaN(month) && !isNaN(year)) {
-                    this.currentMonth.set(month);
-                    this.currentYear.set(year);
-                }
+            let changed = false;
+
+            if (
+                params['month'] !== undefined &&
+                parseInt(params['month'], 10) !== this.currentMonth()
+            ) {
+                this.currentMonth.set(parseInt(params['month'], 10));
+                changed = true;
+            }
+            if (
+                params['year'] !== undefined &&
+                parseInt(params['year'], 10) !== this.currentYear()
+            ) {
+                this.currentYear.set(parseInt(params['year'], 10));
+                changed = true;
             }
 
+            if (changed) {
+                this.loadData();
+            }
+
+            // Sync other filters from URL if they differ (for back navigation)
             if (params['accountId']) {
-                this.selectedAccountIds.set([params['accountId']]);
+                const urlIds = Array.isArray(params['accountId'])
+                    ? params['accountId']
+                    : [params['accountId']];
+                if (JSON.stringify(urlIds) !== JSON.stringify(this.selectedAccountIds())) {
+                    this.selectedAccountIds.set(urlIds);
+                }
+            } else if (this.selectedAccountIds().length > 0) {
+                this.selectedAccountIds.set([]);
             }
 
-            this.loadData();
+            if (params['tags']) {
+                const urlTags = Array.isArray(params['tags']) ? params['tags'] : [params['tags']];
+                if (JSON.stringify(urlTags) !== JSON.stringify(this.selectedTags())) {
+                    this.selectedTags.set(urlTags);
+                }
+            } else if (this.selectedTags().length > 0) {
+                this.selectedTags.set([]);
+            }
+
+            if (params['description'] !== undefined) {
+                if (params['description'] !== this.descriptionFilter()) {
+                    this.descriptionFilter.set(params['description']);
+                }
+            } else if (this.descriptionFilter() !== '') {
+                this.descriptionFilter.set('');
+            }
         });
     }
 
@@ -270,6 +373,13 @@ export class TransactionsComponent implements OnInit {
         } else {
             this.currentMonth.set(this.currentMonth() + 1);
         }
+        this.loadData();
+    }
+
+    setMonthAndYear(normalizedMonthAndYear: Date, datepicker: MatDatepicker<Date>): void {
+        this.currentMonth.set(normalizedMonthAndYear.getMonth());
+        this.currentYear.set(normalizedMonthAndYear.getFullYear());
+        datepicker.close();
         this.loadData();
     }
 

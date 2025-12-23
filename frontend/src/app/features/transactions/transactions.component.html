@@ -8,7 +8,16 @@
             <button mat-icon-button (click)="goToPreviousMonth()" aria-label="Previous month">
                 <mat-icon>chevron_left</mat-icon>
             </button>
-            <span class="current-month">{{ currentMonthDisplay() }}</span>
+            <div class="month-picker-trigger" (click)="picker.open()" matTooltip="Select Month">
+                <span class="current-month">{{ currentMonthDisplay() }}</span>
+                <input [matDatepicker]="picker" [hidden]="true" />
+                <mat-datepicker
+                    #picker
+                    startView="multi-year"
+                    (monthSelected)="setMonthAndYear($event, picker)"
+                >
+                </mat-datepicker>
+            </div>
             <button mat-icon-button (click)="goToNextMonth()" aria-label="Next month">
                 <mat-icon>chevron_right</mat-icon>
             </button>
