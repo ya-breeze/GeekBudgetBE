@@ -169,7 +169,9 @@ export class UnprocessedTransactionsComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe(() => {
-            this.loadUnprocessedTransactions();
+            // No need to reload here.
+            // If an action was taken (convert/delete), it called handleSuccess which reloads or updates the list.
+            // If the user cancelled/pressed ESC, we don't want to reload.
         });
     }
 
