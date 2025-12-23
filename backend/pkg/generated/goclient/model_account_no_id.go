@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // checks if the AccountNoID type satisfies the MappedNullable interface at compile time
@@ -32,6 +33,8 @@ type AccountNoID struct {
 	HideFromReports *bool `json:"hideFromReports,omitempty"`
 	// ID of the account image
 	Image *string `json:"image,omitempty"`
+	// If set, unprocessed transactions for this account older than this date will be ignored.
+	IgnoreUnprocessedBefore *time.Time `json:"ignoreUnprocessedBefore,omitempty"`
 }
 
 type _AccountNoID AccountNoID
@@ -271,6 +274,38 @@ func (o *AccountNoID) SetImage(v string) {
 	o.Image = &v
 }
 
+// GetIgnoreUnprocessedBefore returns the IgnoreUnprocessedBefore field value if set, zero value otherwise.
+func (o *AccountNoID) GetIgnoreUnprocessedBefore() time.Time {
+	if o == nil || IsNil(o.IgnoreUnprocessedBefore) {
+		var ret time.Time
+		return ret
+	}
+	return *o.IgnoreUnprocessedBefore
+}
+
+// GetIgnoreUnprocessedBeforeOk returns a tuple with the IgnoreUnprocessedBefore field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountNoID) GetIgnoreUnprocessedBeforeOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.IgnoreUnprocessedBefore) {
+		return nil, false
+	}
+	return o.IgnoreUnprocessedBefore, true
+}
+
+// HasIgnoreUnprocessedBefore returns a boolean if a field has been set.
+func (o *AccountNoID) HasIgnoreUnprocessedBefore() bool {
+	if o != nil && !IsNil(o.IgnoreUnprocessedBefore) {
+		return true
+	}
+
+	return false
+}
+
+// SetIgnoreUnprocessedBefore gets a reference to the given time.Time and assigns it to the IgnoreUnprocessedBefore field.
+func (o *AccountNoID) SetIgnoreUnprocessedBefore(v time.Time) {
+	o.IgnoreUnprocessedBefore = &v
+}
+
 func (o AccountNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -297,6 +332,9 @@ func (o AccountNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Image) {
 		toSerialize["image"] = o.Image
+	}
+	if !IsNil(o.IgnoreUnprocessedBefore) {
+		toSerialize["ignoreUnprocessedBefore"] = o.IgnoreUnprocessedBefore
 	}
 	return toSerialize, nil
 }

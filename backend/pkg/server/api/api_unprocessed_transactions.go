@@ -70,7 +70,20 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 		return nil, err
 	}
 
-	unprocessed := s.filterUnprocessedTransactions(allTransactions)
+	// Load accounts for filtering
+	accounts, err := s.db.GetAccounts(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get accounts for auto-processing filtering")
+		return nil, err
+	}
+	ignoreBeforeMap := make(map[string]time.Time)
+	for _, acc := range accounts {
+		if !acc.IgnoreUnprocessedBefore.IsZero() {
+			ignoreBeforeMap[acc.Id] = acc.IgnoreUnprocessedBefore
+		}
+	}
+
+	unprocessed := s.filterUnprocessedTransactions(allTransactions, ignoreBeforeMap)
 	var processedIDs []string
 
 	for _, t := range unprocessed {
@@ -142,6 +155,19 @@ func (s *UnprocessedTransactionsAPIServiceImpl) Convert(
 func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 	ctx context.Context, userID string, single bool, continuationID string,
 ) ([]goserver.UnprocessedTransaction, int, error) {
+	accounts, err := s.db.GetAccounts(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get accounts for unprocessed filtering")
+		return nil, 0, err
+	}
+
+	ignoreBeforeMap := make(map[string]time.Time)
+	for _, acc := range accounts {
+		if !acc.IgnoreUnprocessedBefore.IsZero() {
+			ignoreBeforeMap[acc.Id] = acc.IgnoreUnprocessedBefore
+		}
+	}
+
 	matchers, err := s.db.GetMatchersRuntime(userID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
@@ -163,7 +189,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 			}
 		}
 	}
-	transactions = s.filterUnprocessedTransactions(transactions)
+	transactions = s.filterUnprocessedTransactions(transactions, ignoreBeforeMap)
 
 	res := make([]goserver.UnprocessedTransaction, 0, len(transactions))
 	for _, t := range transactions {
@@ -381,15 +407,29 @@ func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(
 	return goserver.Response(204, nil), nil
 }
 
-func (s *UnprocessedTransactionsAPIServiceImpl) filterUnprocessedTransactions(transactions []goserver.Transaction,
+func (s *UnprocessedTransactionsAPIServiceImpl) filterUnprocessedTransactions(
+	transactions []goserver.Transaction, ignoreBeforeMap map[string]time.Time,
 ) []goserver.Transaction {
 	res := make([]goserver.Transaction, 0, len(transactions))
 	for _, t := range transactions {
+		hasEmptyAccount := false
+		shouldIgnore := false
+
 		for _, m := range t.Movements {
 			if m.AccountId == "" {
-				res = append(res, t)
-				break
+				hasEmptyAccount = true
+			} else if ignoreDate, ok := ignoreBeforeMap[m.AccountId]; ok {
+				// If any movement has a non-empty account which has ignore date set
+				// and transaction is older than that date, we skip it.
+				if t.Date.Before(ignoreDate) {
+					shouldIgnore = true
+					break
+				}
 			}
+		}
+
+		if hasEmptyAccount && !shouldIgnore {
+			res = append(res, t)
 		}
 	}
 	return res

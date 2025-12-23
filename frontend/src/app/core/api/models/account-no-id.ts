@@ -12,6 +12,11 @@ export interface AccountNoId {
     hideFromReports?: boolean;
 
     /**
+     * If set, unprocessed transactions for this account older than this date will be ignored.
+     */
+    ignoreUnprocessedBefore?: string;
+
+    /**
      * ID of the account image
      */
     image?: string;

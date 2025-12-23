@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -21,10 +23,12 @@ type Account struct {
 
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+
+	IgnoreUnprocessedBefore *time.Time `gorm:"type:datetime"`
 }
 
 func (a *Account) FromDB() goserver.Account {
-	return goserver.Account{
+	res := goserver.Account{
 		Id:                     a.ID.String(),
 		Name:                   a.Name,
 		Type:                   a.Type,
@@ -34,10 +38,15 @@ func (a *Account) FromDB() goserver.Account {
 		HideFromReports:        a.HideFromReports,
 		Image:                  a.Image,
 	}
+
+	if a.IgnoreUnprocessedBefore != nil {
+		res.IgnoreUnprocessedBefore = *a.IgnoreUnprocessedBefore
+	}
+	return res
 }
 
 func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
-	return &Account{
+	res := &Account{
 		UserID:                 userID,
 		Name:                   m.GetName(),
 		Description:            m.GetDescription(),
@@ -47,16 +56,24 @@ func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
 		HideFromReports:        m.GetHideFromReports(),
 		Image:                  m.GetImage(),
 	}
+
+	ignoreBefore := m.GetIgnoreUnprocessedBefore()
+	if !ignoreBefore.IsZero() {
+		res.IgnoreUnprocessedBefore = &ignoreBefore
+	}
+
+	return res
 }
 
 func AccountWithoutID(account *goserver.Account) *goserver.AccountNoId {
 	return &goserver.AccountNoId{
-		Name:                   account.Name,
-		Type:                   account.Type,
-		Description:            account.Description,
-		BankInfo:               account.BankInfo,
-		ShowInDashboardSummary: account.ShowInDashboardSummary,
-		HideFromReports:        account.HideFromReports,
-		Image:                  account.Image,
+		Name:                    account.Name,
+		Type:                    account.Type,
+		Description:             account.Description,
+		BankInfo:                account.BankInfo,
+		ShowInDashboardSummary:  account.ShowInDashboardSummary,
+		HideFromReports:         account.HideFromReports,
+		Image:                   account.Image,
+		IgnoreUnprocessedBefore: account.IgnoreUnprocessedBefore,
 	}
 }

@@ -136,4 +136,71 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		Expect(updated.Id).To(Equal(created.Id))
 		Expect(*updated.Description).To(Equal(m.OutputDescription))
 	})
+
+	It("ignores unprocessed transactions older than account's ignoreUnprocessedBefore date", func() {
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+
+		// 1. Create an account with ignoreUnprocessedBefore set
+		ignoreDate := time.Now().Add(-24 * time.Hour)
+		acc := goclient.AccountNoID{
+			Name:                    "IgnoreTestAccount",
+			Type:                    "asset",
+			IgnoreUnprocessedBefore: &ignoreDate,
+		}
+		createdAccount, _, err := client.AccountsAPI.CreateAccount(ctx).AccountNoID(acc).Execute()
+		Expect(err).ToNot(HaveOccurred())
+
+		// 2. Create a transaction with empty accountId movement BEFORE the ignore date
+		oldDate := ignoreDate.Add(-1 * time.Hour)
+		tOld := goclient.TransactionNoID{
+			Date:        oldDate,
+			Description: utils.StrToRef("Old Unprocessed"),
+			Movements: []goclient.Movement{
+				{
+					AccountId:  nil,
+					CurrencyId: "currencyID",
+					Amount:     100,
+				},
+				{
+					AccountId:  &createdAccount.Id,
+					CurrencyId: "currencyID",
+					Amount:     -100,
+				},
+			},
+		}
+		_, _, err = client.TransactionsAPI.CreateTransaction(ctx).TransactionNoID(tOld).Execute()
+		Expect(err).ToNot(HaveOccurred())
+
+		// 3. Create a transaction with empty accountId movement AFTER the ignore date
+		newDate := ignoreDate.Add(1 * time.Hour)
+		tNew := goclient.TransactionNoID{
+			Date:        newDate,
+			Description: utils.StrToRef("New Unprocessed"),
+			Movements: []goclient.Movement{
+				{
+					AccountId:  nil,
+					CurrencyId: "currencyID",
+					Amount:     200,
+				},
+				{
+					AccountId:  &createdAccount.Id,
+					CurrencyId: "currencyID",
+					Amount:     -200,
+				},
+			},
+		}
+		createdNew, _, err := client.TransactionsAPI.CreateTransaction(ctx).TransactionNoID(tNew).Execute()
+		Expect(err).ToNot(HaveOccurred())
+
+		// 4. Get unprocessed transactions
+		transactions, _, err := client.UnprocessedTransactionsAPI.GetUnprocessedTransactions(ctx).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(transactions).ToNot(BeNil())
+
+		// 5. Verify only transactions AFTER the date are returned
+		// The old one should be filtered out because it has a movement with createdAccount.Id
+		// and its date is before createdAccount.IgnoreUnprocessedBefore
+		Expect(transactions).To(HaveLen(1))
+		Expect(transactions[0].Transaction.Id).To(Equal(createdNew.Id))
+	})
 })

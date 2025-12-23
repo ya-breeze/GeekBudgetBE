@@ -11,6 +11,10 @@
 
 package goserver
 
+import (
+	"time"
+)
+
 type Account struct {
 	Id string `json:"id"`
 
@@ -30,6 +34,9 @@ type Account struct {
 
 	// ID of the account image
 	Image string `json:"image,omitempty"`
+
+	// If set, unprocessed transactions for this account older than this date will be ignored.
+	IgnoreUnprocessedBefore time.Time `json:"ignoreUnprocessedBefore,omitempty"`
 }
 
 type AccountInterface interface {
@@ -41,6 +48,7 @@ type AccountInterface interface {
 	GetShowInDashboardSummary() bool
 	GetHideFromReports() bool
 	GetImage() string
+	GetIgnoreUnprocessedBefore() time.Time
 }
 
 func (c *Account) GetId() string {
@@ -66,6 +74,9 @@ func (c *Account) GetHideFromReports() bool {
 }
 func (c *Account) GetImage() string {
 	return c.Image
+}
+func (c *Account) GetIgnoreUnprocessedBefore() time.Time {
+	return c.IgnoreUnprocessedBefore
 }
 
 // AssertAccountRequired checks if the required fields are not zero-ed

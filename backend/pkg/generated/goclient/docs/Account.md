@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **ShowInDashboardSummary** | **bool** | If true, show this account in dashboard summary. | [default to true]
 **HideFromReports** | Pointer to **bool** | If true, this account should be hidden from reports and budget. | [optional] [default to false]
 **Image** | Pointer to **string** | ID of the account image | [optional] 
+**IgnoreUnprocessedBefore** | Pointer to **time.Time** | If set, unprocessed transactions for this account older than this date will be ignored. | [optional] 
 
 ## Methods
 
@@ -211,6 +212,31 @@ SetImage sets Image field to given value.
 `func (o *Account) HasImage() bool`
 
 HasImage returns a boolean if a field has been set.
+
+### GetIgnoreUnprocessedBefore
+
+`func (o *Account) GetIgnoreUnprocessedBefore() time.Time`
+
+GetIgnoreUnprocessedBefore returns the IgnoreUnprocessedBefore field if non-nil, zero value otherwise.
+
+### GetIgnoreUnprocessedBeforeOk
+
+`func (o *Account) GetIgnoreUnprocessedBeforeOk() (*time.Time, bool)`
+
+GetIgnoreUnprocessedBeforeOk returns a tuple with the IgnoreUnprocessedBefore field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIgnoreUnprocessedBefore
+
+`func (o *Account) SetIgnoreUnprocessedBefore(v time.Time)`
+
+SetIgnoreUnprocessedBefore sets IgnoreUnprocessedBefore field to given value.
+
+### HasIgnoreUnprocessedBefore
+
+`func (o *Account) HasIgnoreUnprocessedBefore() bool`
+
+HasIgnoreUnprocessedBefore returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -7,6 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { Account } from '../../../core/api/models/account';
 import { AccountNoId } from '../../../core/api/models/account-no-id';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
@@ -30,6 +32,8 @@ export interface AccountFormDialogData {
         MatSelectModule,
         MatSlideToggleModule,
         MatIconModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
     ],
     templateUrl: './account-form-dialog.component.html',
     styleUrl: './account-form-dialog.component.scss',
@@ -64,6 +68,11 @@ export class AccountFormDialogComponent implements OnInit {
             hideFromReports: [this.data.account?.hideFromReports ?? false],
             bankId: [this.data.account?.bankInfo?.bankId || ''],
             bankAccountId: [this.data.account?.bankInfo?.accountId || ''],
+            ignoreUnprocessedBefore: [
+                this.data.account?.ignoreUnprocessedBefore
+                    ? new Date(this.data.account.ignoreUnprocessedBefore)
+                    : null,
+            ],
             balances: this.fb.array([]),
         });
 
@@ -164,6 +173,9 @@ export class AccountFormDialogComponent implements OnInit {
                               })),
                           }
                         : undefined,
+                ignoreUnprocessedBefore: formValue.ignoreUnprocessedBefore
+                    ? formValue.ignoreUnprocessedBefore.toISOString()
+                    : undefined,
             };
 
             this.dialogRef.close({

@@ -142,6 +142,22 @@
         }
 
         <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Ignore Unprocessed Before</mat-label>
+            <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="ignoreUnprocessedBefore"
+                placeholder="Choose a date"
+            />
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            @if (form.get('ignoreUnprocessedBefore')?.hasError('matDatepickerParse')) {
+                <mat-error>Invalid date format</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
             <mat-label>Description</mat-label>
             <textarea
                 matInput
