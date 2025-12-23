@@ -341,7 +341,6 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	}
 
 	// Keep track of visited transactions within this batch to handle self-duplicates
-	visitedStableHashes := make(map[string]bool)
 	visitedExternalIDs := make(map[string]bool)
 
 	// save transactions to the database
@@ -356,19 +355,13 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 
 		// search for existing transaction with the same external ID. If found, skip saving
 		found := false
-		tStableHash := bankimporters.ComputeStableHash(&t)
 
 		// 0. Check against already visited in this batch (Self-Deduplication)
-		if visitedStableHashes[tStableHash] {
-			found = true
-			s.logger.With("stableHash", tStableHash).Info("Duplicate transaction within import batch (stable hash)")
-		} else {
-			for _, extID := range t.ExternalIds {
-				if visitedExternalIDs[extID] {
-					found = true
-					s.logger.With("externalID", extID).Info("Duplicate transaction within import batch (external ID)")
-					break
-				}
+		for _, extID := range t.ExternalIds {
+			if visitedExternalIDs[extID] {
+				found = true
+				s.logger.With("externalID", extID).Info("Duplicate transaction within import batch (external ID)")
+				break
 			}
 		}
 
@@ -389,23 +382,9 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			if found {
 				break
 			}
-
-			// 2. Check for stable hash match
-			// We need to construct a TransactionNoId from dbt to compute the hash
-			dbtNoId := goserver.TransactionNoId{
-				Date:      dbt.Date,
-				Movements: dbt.Movements,
-			}
-			dbtStableHash := bankimporters.ComputeStableHash(&dbtNoId)
-			if dbtStableHash == tStableHash {
-				found = true
-				s.logger.With("stableHash", tStableHash).Info("Transaction already was imported (stable hash match)")
-				break
-			}
 		}
 		if found {
 			// Mark as visited so we don't process potential subsequent duplicates of this one in the same batch
-			visitedStableHashes[tStableHash] = true
 			for _, extID := range t.ExternalIds {
 				visitedExternalIDs[extID] = true
 			}
@@ -462,7 +441,6 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		s.logger.Info("Imported transaction saved to DB")
 
 		// Mark as visited
-		visitedStableHashes[tStableHash] = true
 		for _, extID := range t.ExternalIds {
 			visitedExternalIDs[extID] = true
 		}
@@ -473,12 +451,10 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 
 	suspiciousCnt := 0
 	if checkMissing {
-		// Create lookup maps for incoming transactions
-		incomingStableHashes := make(map[string]bool)
+		// Create lookup map for incoming transactions (external IDs only)
 		incomingExternalIDs := make(map[string]bool)
 
 		for _, t := range transactions {
-			incomingStableHashes[bankimporters.ComputeStableHash(&t)] = true
 			for _, extID := range t.ExternalIds {
 				incomingExternalIDs[extID] = true
 			}
@@ -510,25 +486,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 				continue
 			}
 
-			// 2. Stable Hash check
-			dbtNoId := goserver.TransactionNoId{
-				Date:        dbt.Date,
-				Movements:   dbt.Movements,
-				ExternalIds: dbt.ExternalIds, // ComputeStableHash uses ExternalIds? No, usually date/movements. logic check.
-			}
-			// Check ComputeStableHash impl. It uses Date, Amount, Currency.
-			// Re-construct logic from deduplication loop.
-			// User logic:
-			// dbtNoId := goserver.TransactionNoId{
-			// 	Date:      dbt.Date,
-			// 	Movements: dbt.Movements,
-			// }
-			dbtStableHash := bankimporters.ComputeStableHash(&dbtNoId)
-			if incomingStableHashes[dbtStableHash] {
-				found = true
-			}
-
-			// 3. Duplicate check: if some transaction doesn't exist in fetched/uploaded list
+			// 2. Duplicate check: if some transaction doesn't exist in fetched/uploaded list
 			// then BE should also check list of duplicates of the existing transaction.
 			// If any of them is present in fetch/upload list then transaction is not suspicious.
 			if !found {

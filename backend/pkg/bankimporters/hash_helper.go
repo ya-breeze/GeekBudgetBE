@@ -3,26 +3,7 @@ package bankimporters
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
-
-	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
-
-// ComputeStableHash computes a stable identifier based on transaction semantics:
-// Date, Amounts, and Currencies.
-func ComputeStableHash(t *goserver.TransactionNoId) string {
-	if len(t.Movements) == 0 {
-		return ""
-	}
-
-	// Use the main movement amount (usually index 0)
-	amount := t.Movements[0].Amount
-	currency := t.Movements[0].CurrencyId
-	date := t.Date.Unix()
-
-	data := fmt.Sprintf("%d|%.2f|%s", date, amount, currency)
-	return HashString(data)
-}
 
 func HashString(input string) string {
 	// Create a new SHA-256 hash object

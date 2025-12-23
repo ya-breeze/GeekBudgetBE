@@ -35,7 +35,7 @@ var _ = Describe("RevolutConverter Repro", func() {
 	})
 
 	It("generates different hashes for semantically identical transactions with different formatting", func() {
-		// Two CSV records representing the same transaction, but one has quotes and the other doesn't (or slightly different spacing)
+		// Two CSV records representing the same transaction, but one has quotes and the other doesn't
 		// Revolut often changes export format slightly.
 
 		// Original format
@@ -60,14 +60,12 @@ CARD_PAYMENT,Current,2023-01-01 10:00:00,2023-01-02 10:00:00,"Coffee Shop ",-50.
 		Expect(trans1[0].Date).To(Equal(trans2[0].Date))
 		Expect(trans1[0].Movements[0].Amount).To(Equal(trans2[0].Movements[0].Amount))
 		Expect(trans1[0].Description).To(ContainSubstring("Coffee Shop"))
-		// Note: CSV reader handles quotes, so the Description field might actually be identical in Go struct.
-		// Let's verify Description is same
-		// Expect(trans1[0].Description).To(Equal(trans2[0].Description))
+
+		// Transactions now have only 1 external ID (raw record hash)
+		Expect(trans1[0].ExternalIds).To(HaveLen(1))
+		Expect(trans2[0].ExternalIds).To(HaveLen(1))
 
 		// Verify hashes are DIFFERENT because it hashes the source row
 		Expect(trans1[0].ExternalIds[0]).ToNot(Equal(trans2[0].ExternalIds[0]))
-
-		// Verify STABLE hashes are IDENTICAL
-		Expect(trans1[0].ExternalIds[1]).To(Equal(trans2[0].ExternalIds[1]))
 	})
 })

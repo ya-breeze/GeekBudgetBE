@@ -253,7 +253,6 @@ func (fc *RevolutConverter) convertToTransaction(ctx context.Context, _ goserver
 	}
 	res.UnprocessedSources = string(b)
 	res.ExternalIds = append(res.ExternalIds, HashString(res.UnprocessedSources))
-	res.ExternalIds = append(res.ExternalIds, ComputeStableHash(&res))
 
 	return res, nil
 }
