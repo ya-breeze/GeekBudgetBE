@@ -37,6 +37,11 @@ type Transaction struct {
 
 	SuspiciousReasons []string `gorm:"serializer:json"`
 
+	// MergedIntoID is set when this transaction was marked as duplicate of another
+	MergedIntoID *uuid.UUID `gorm:"type:uuid;index"`
+	// MergedAt records when this transaction was merged
+	MergedAt *time.Time
+
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
@@ -45,6 +50,16 @@ func (t *Transaction) FromDB() goserver.Transaction {
 	var matcherID string
 	if t.MatcherID != nil {
 		matcherID = t.MatcherID.String()
+	}
+
+	var mergedIntoID string
+	if t.MergedIntoID != nil {
+		mergedIntoID = t.MergedIntoID.String()
+	}
+
+	var mergedAt time.Time
+	if t.MergedAt != nil {
+		mergedAt = *t.MergedAt
 	}
 
 	return goserver.Transaction{
@@ -63,6 +78,8 @@ func (t *Transaction) FromDB() goserver.Transaction {
 		MatcherId:          matcherID,
 		IsAuto:             t.IsAuto,
 		SuspiciousReasons:  t.SuspiciousReasons,
+		MergedIntoId:       mergedIntoID,
+		MergedAt:           mergedAt,
 	}
 }
 
@@ -71,6 +88,17 @@ func (t *Transaction) WithoutID() *goserver.TransactionNoId {
 	if t.MatcherID != nil {
 		matcherID = t.MatcherID.String()
 	}
+
+	var mergedIntoID string
+	if t.MergedIntoID != nil {
+		mergedIntoID = t.MergedIntoID.String()
+	}
+
+	var mergedAt time.Time
+	if t.MergedAt != nil {
+		mergedAt = *t.MergedAt
+	}
+
 	return &goserver.TransactionNoId{
 		Date:               t.Date,
 		Description:        t.Description,
@@ -86,6 +114,8 @@ func (t *Transaction) WithoutID() *goserver.TransactionNoId {
 		MatcherId:          matcherID,
 		IsAuto:             t.IsAuto,
 		SuspiciousReasons:  t.SuspiciousReasons,
+		MergedIntoId:       mergedIntoID,
+		MergedAt:           mergedAt,
 	}
 }
 
@@ -97,6 +127,21 @@ func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID strin
 			matcherID = &id
 		}
 	}
+
+	var mergedIntoID *uuid.UUID
+	if transaction.GetMergedIntoId() != "" {
+		id, err := uuid.Parse(transaction.GetMergedIntoId())
+		if err == nil {
+			mergedIntoID = &id
+		}
+	}
+
+	var mergedAt *time.Time
+	if !transaction.GetMergedAt().IsZero() {
+		t := transaction.GetMergedAt()
+		mergedAt = &t
+	}
+
 	return &Transaction{
 		Date:               transaction.GetDate(),
 		Description:        transaction.GetDescription(),
@@ -112,6 +157,8 @@ func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID strin
 		MatcherID:          matcherID,
 		IsAuto:             transaction.GetIsAuto(),
 		SuspiciousReasons:  transaction.GetSuspiciousReasons(),
+		MergedIntoID:       mergedIntoID,
+		MergedAt:           mergedAt,
 		UserID:             userID,
 	}
 }
@@ -132,5 +179,7 @@ func TransactionWithoutID(transaction *goserver.Transaction) *goserver.Transacti
 		MatcherId:          transaction.MatcherId,
 		IsAuto:             transaction.IsAuto,
 		SuspiciousReasons:  transaction.SuspiciousReasons,
+		MergedIntoId:       transaction.MergedIntoId,
+		MergedAt:           transaction.MergedAt,
 	}
 }

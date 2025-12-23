@@ -581,6 +581,21 @@ func (mr *MockStorageMockRecorder) GetMatchersRuntime(arg0 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMatchersRuntime", reflect.TypeOf((*MockStorage)(nil).GetMatchersRuntime), arg0)
 }
 
+// GetMergedTransactions mocks base method.
+func (m *MockStorage) GetMergedTransactions(arg0 string) ([]goserver.MergedTransaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMergedTransactions", arg0)
+	ret0, _ := ret[0].([]goserver.MergedTransaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMergedTransactions indicates an expected call of GetMergedTransactions.
+func (mr *MockStorageMockRecorder) GetMergedTransactions(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMergedTransactions", reflect.TypeOf((*MockStorage)(nil).GetMergedTransactions), arg0)
+}
+
 // GetNotifications mocks base method.
 func (m *MockStorage) GetNotifications(arg0 string) ([]goserver.Notification, error) {
 	m.ctrl.T.Helper()
@@ -711,6 +726,20 @@ func (m *MockStorage) SaveCNBRates(arg0 map[string]float64, arg1 time.Time) erro
 func (mr *MockStorageMockRecorder) SaveCNBRates(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCNBRates", reflect.TypeOf((*MockStorage)(nil).SaveCNBRates), arg0, arg1)
+}
+
+// UnmergeTransaction mocks base method.
+func (m *MockStorage) UnmergeTransaction(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnmergeTransaction", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnmergeTransaction indicates an expected call of UnmergeTransaction.
+func (mr *MockStorageMockRecorder) UnmergeTransaction(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnmergeTransaction", reflect.TypeOf((*MockStorage)(nil).UnmergeTransaction), arg0, arg1)
 }
 
 // UpdateAccount mocks base method.

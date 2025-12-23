@@ -34,6 +34,7 @@ type CustomControllers struct {
 	ExportAPIService                  ExportAPIService
 	ImportAPIService                  ImportAPIService
 	MatchersAPIService                MatchersAPIService
+	MergedTransactionsAPIService      MergedTransactionsAPIService
 	NotificationsAPIService           NotificationsAPIService
 	TransactionsAPIService            TransactionsAPIService
 	UnprocessedTransactionsAPIService UnprocessedTransactionsAPIService
@@ -102,6 +103,12 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	MatchersAPIController := NewMatchersAPIController(MatchersAPIService)
 
+	MergedTransactionsAPIService := NewMergedTransactionsAPIService()
+	if controllers.MergedTransactionsAPIService != nil {
+		MergedTransactionsAPIService = controllers.MergedTransactionsAPIService
+	}
+	MergedTransactionsAPIController := NewMergedTransactionsAPIController(MergedTransactionsAPIService)
+
 	NotificationsAPIService := NewNotificationsAPIService()
 	if controllers.NotificationsAPIService != nil {
 		NotificationsAPIService = controllers.NotificationsAPIService
@@ -126,7 +133,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	UserAPIController := NewUserAPIController(UserAPIService)
 
-	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, MergedTransactionsAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
 	router := NewRouter(logger, routers...)
 
 	router.Use(middlewares...)

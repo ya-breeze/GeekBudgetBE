@@ -75,6 +75,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: 'merged-transactions',
+                loadComponent: () =>
+                    import('./features/merged-transactions/merged-transactions.component').then(
+                        (m) => m.MergedTransactionsComponent,
+                    ),
+            },
+            {
                 path: 'matchers',
                 loadComponent: () =>
                     import('./features/matchers/matchers.component').then(

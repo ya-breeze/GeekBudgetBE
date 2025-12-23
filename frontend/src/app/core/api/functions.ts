@@ -53,6 +53,10 @@ export type { UpdateTransaction$Params } from './fn/transactions/update-transact
 export { updateTransaction } from './fn/transactions/update-transaction';
 export type { DeleteTransaction$Params } from './fn/transactions/delete-transaction';
 export { deleteTransaction } from './fn/transactions/delete-transaction';
+export type { GetMergedTransactions$Params } from './fn/merged-transactions/get-merged-transactions';
+export { getMergedTransactions } from './fn/merged-transactions/get-merged-transactions';
+export type { UnmergeMergedTransaction$Params } from './fn/merged-transactions/unmerge-merged-transaction';
+export { unmergeMergedTransaction } from './fn/merged-transactions/unmerge-merged-transaction';
 export type { GetUnprocessedTransactions$Params } from './fn/unprocessed-transactions/get-unprocessed-transactions';
 export { getUnprocessedTransactions } from './fn/unprocessed-transactions/get-unprocessed-transactions';
 export type { ConvertUnprocessedTransaction$Params } from './fn/unprocessed-transactions/convert-unprocessed-transaction';

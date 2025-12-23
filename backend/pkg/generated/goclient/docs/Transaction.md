@@ -19,6 +19,8 @@ Name | Type | Description | Notes
 **MatcherId** | Pointer to **string** | ID of the matcher used for this conversion (if any) | [optional] 
 **IsAuto** | Pointer to **bool** | If true, this transaction was converted automatically by the matcher | [optional] 
 **SuspiciousReasons** | Pointer to **[]string** |  | [optional] 
+**MergedIntoId** | Pointer to **string** | ID of the transaction this one was merged into (if any) | [optional] 
+**MergedAt** | Pointer to **time.Time** | When this transaction was merged | [optional] 
 
 ## Methods
 
@@ -398,6 +400,56 @@ SetSuspiciousReasons sets SuspiciousReasons field to given value.
 `func (o *Transaction) HasSuspiciousReasons() bool`
 
 HasSuspiciousReasons returns a boolean if a field has been set.
+
+### GetMergedIntoId
+
+`func (o *Transaction) GetMergedIntoId() string`
+
+GetMergedIntoId returns the MergedIntoId field if non-nil, zero value otherwise.
+
+### GetMergedIntoIdOk
+
+`func (o *Transaction) GetMergedIntoIdOk() (*string, bool)`
+
+GetMergedIntoIdOk returns a tuple with the MergedIntoId field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMergedIntoId
+
+`func (o *Transaction) SetMergedIntoId(v string)`
+
+SetMergedIntoId sets MergedIntoId field to given value.
+
+### HasMergedIntoId
+
+`func (o *Transaction) HasMergedIntoId() bool`
+
+HasMergedIntoId returns a boolean if a field has been set.
+
+### GetMergedAt
+
+`func (o *Transaction) GetMergedAt() time.Time`
+
+GetMergedAt returns the MergedAt field if non-nil, zero value otherwise.
+
+### GetMergedAtOk
+
+`func (o *Transaction) GetMergedAtOk() (*time.Time, bool)`
+
+GetMergedAtOk returns a tuple with the MergedAt field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMergedAt
+
+`func (o *Transaction) SetMergedAt(v time.Time)`
+
+SetMergedAt sets MergedAt field to given value.
+
+### HasMergedAt
+
+`func (o *Transaction) HasMergedAt() bool`
+
+HasMergedAt returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

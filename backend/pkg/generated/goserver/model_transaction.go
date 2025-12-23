@@ -51,6 +51,12 @@ type Transaction struct {
 	IsAuto bool `json:"isAuto,omitempty"`
 
 	SuspiciousReasons []string `json:"suspiciousReasons,omitempty"`
+
+	// ID of the transaction this one was merged into (if any)
+	MergedIntoId string `json:"mergedIntoId,omitempty"`
+
+	// When this transaction was merged
+	MergedAt time.Time `json:"mergedAt,omitempty"`
 }
 
 type TransactionInterface interface {
@@ -69,6 +75,8 @@ type TransactionInterface interface {
 	GetMatcherId() string
 	GetIsAuto() bool
 	GetSuspiciousReasons() []string
+	GetMergedIntoId() string
+	GetMergedAt() time.Time
 }
 
 func (c *Transaction) GetId() string {
@@ -115,6 +123,12 @@ func (c *Transaction) GetIsAuto() bool {
 }
 func (c *Transaction) GetSuspiciousReasons() []string {
 	return c.SuspiciousReasons
+}
+func (c *Transaction) GetMergedIntoId() string {
+	return c.MergedIntoId
+}
+func (c *Transaction) GetMergedAt() time.Time {
+	return c.MergedAt
 }
 
 // AssertTransactionRequired checks if the required fields are not zero-ed

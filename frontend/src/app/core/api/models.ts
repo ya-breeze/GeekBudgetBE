@@ -22,6 +22,7 @@ export type { ImportResult } from './models/import-result';
 export type { Matcher } from './models/matcher';
 export type { MatcherAndTransaction } from './models/matcher-and-transaction';
 export type { MatcherNoId } from './models/matcher-no-id';
+export type { MergedTransaction } from './models/merged-transaction';
 export type { Movement } from './models/movement';
 export type { Notification } from './models/notification';
 export type { Transaction } from './models/transaction';

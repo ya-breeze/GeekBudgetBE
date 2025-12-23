@@ -1,0 +1,106 @@
+.page-container {
+    padding: 24px;
+    height: 100%;
+    overflow-y: auto;
+    transition: margin-left 0.3s ease;
+
+    &.sidenav-opened {
+        margin-left: 0;
+    }
+}
+
+.page-header {
+    margin-bottom: 24px;
+
+    .header-content {
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .subtitle {
+            margin: 4px 0 0;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 14px;
+        }
+    }
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+
+    p {
+        margin-top: 16px;
+        color: rgba(0, 0, 0, 0.6);
+    }
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: rgba(0, 0, 0, 0.4);
+
+    mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    p {
+        margin-top: 8px;
+    }
+}
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+
+    table {
+        width: 100%;
+    }
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+
+    .description {
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .accounts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+}
+
+.mat-column-actions {
+    width: 60px;
+    text-align: center;
+}
+
+.mat-column-date {
+    width: 120px;
+}
+
+.mat-column-mergedAt {
+    width: 180px;
+}

@@ -1,0 +1,129 @@
+<div class="page-container" [class.sidenav-opened]="sidenavOpened()">
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Merged Transactions</h1>
+            <p class="subtitle">
+                Review and unmerge transactions that were identified as duplicates
+            </p>
+        </div>
+    </div>
+
+    <div class="content-body">
+        @if (loading()) {
+            <div class="loading-container">
+                <mat-spinner diameter="40"></mat-spinner>
+                <p>Loading merged transactions...</p>
+            </div>
+        } @else {
+            @if (mergedTransactions().length === 0) {
+                <div class="empty-state">
+                    <mat-icon>handshake</mat-icon>
+                    <h3>No merged transactions</h3>
+                    <p>All your duplicates have been processed or none were found.</p>
+                </div>
+            } @else {
+                <div class="table-container mat-elevation-z2">
+                    <table mat-table [dataSource]="mergedTransactions()">
+                        <!-- Date Column -->
+                        <ng-container matColumnDef="date">
+                            <th mat-header-cell *matHeaderCellDef>Date</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ element.transaction.date | date: 'mediumDate' }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Merged Description Column -->
+                        <ng-container matColumnDef="mergedDescription">
+                            <th mat-header-cell *matHeaderCellDef>Merged Transaction</th>
+                            <td mat-cell *matCellDef="let element">
+                                <div class="transaction-info">
+                                    <span class="description">{{
+                                        element.transaction.description
+                                    }}</span>
+                                    <div class="accounts">
+                                        @for (
+                                            account of getTargetAccountList(element.transaction);
+                                            track account.id
+                                        ) {
+                                            <app-account-display
+                                                [name]="account.name"
+                                                [image]="account.image"
+                                                size="small"
+                                            ></app-account-display>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <!-- Merged Amount Column -->
+                        <ng-container matColumnDef="mergedAmount">
+                            <th mat-header-cell *matHeaderCellDef>Amount</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ formatEffectiveAmounts(element.transaction) }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Merged At Column -->
+                        <ng-container matColumnDef="mergedAt">
+                            <th mat-header-cell *matHeaderCellDef>Merged At</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ element.mergedAt | date: 'medium' }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Kept Description Column -->
+                        <ng-container matColumnDef="keptDescription">
+                            <th mat-header-cell *matHeaderCellDef>Kept Into</th>
+                            <td mat-cell *matCellDef="let element">
+                                <div class="transaction-info">
+                                    <span class="description">{{
+                                        element.mergedInto.description
+                                    }}</span>
+                                    <div class="accounts">
+                                        @for (
+                                            account of getTargetAccountList(element.mergedInto);
+                                            track account.id
+                                        ) {
+                                            <app-account-display
+                                                [name]="account.name"
+                                                [image]="account.image"
+                                                size="small"
+                                            ></app-account-display>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <!-- Kept Amount Column -->
+                        <ng-container matColumnDef="keptAmount">
+                            <th mat-header-cell *matHeaderCellDef>Kept Amount</th>
+                            <td mat-cell *matCellDef="let element">
+                                {{ formatEffectiveAmounts(element.mergedInto) }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Actions Column -->
+                        <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef>Actions</th>
+                            <td mat-cell *matCellDef="let element">
+                                <button
+                                    mat-icon-button
+                                    color="warn"
+                                    matTooltip="Unmerge"
+                                    (click)="unmerge(element)"
+                                >
+                                    <mat-icon>undo</mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+</div>

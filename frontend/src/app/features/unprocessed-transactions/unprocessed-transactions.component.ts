@@ -265,7 +265,8 @@ export class UnprocessedTransactionsComponent implements OnInit {
             .delete(transaction.transaction.id!, duplicateOfId)
             .subscribe({
                 next: () => {
-                    this.snackBar.open('Transaction deleted', 'Close', { duration: 3000 });
+                    const message = duplicateOfId ? 'Transaction merged' : 'Transaction deleted';
+                    this.snackBar.open(message, 'Close', { duration: 3000 });
                     if (dialogRef) {
                         this.handleSuccess(index, dialogRef);
                     } else {

@@ -67,6 +67,8 @@ type APIClient struct {
 
 	MatchersAPI *MatchersAPIService
 
+	MergedTransactionsAPI *MergedTransactionsAPIService
+
 	NotificationsAPI *NotificationsAPIService
 
 	TransactionsAPI *TransactionsAPIService
@@ -101,6 +103,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.ExportAPI = (*ExportAPIService)(&c.common)
 	c.ImportAPI = (*ImportAPIService)(&c.common)
 	c.MatchersAPI = (*MatchersAPIService)(&c.common)
+	c.MergedTransactionsAPI = (*MergedTransactionsAPIService)(&c.common)
 	c.NotificationsAPI = (*NotificationsAPIService)(&c.common)
 	c.TransactionsAPI = (*TransactionsAPIService)(&c.common)
 	c.UnprocessedTransactionsAPI = (*UnprocessedTransactionsAPIService)(&c.common)

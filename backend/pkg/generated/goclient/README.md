@@ -117,6 +117,8 @@ Class | Method | HTTP request | Description
 *MatchersAPI* | [**GetMatchers**](docs/MatchersAPI.md#getmatchers) | **Get** /v1/matchers | get all matchers
 *MatchersAPI* | [**UpdateMatcher**](docs/MatchersAPI.md#updatematcher) | **Put** /v1/matchers/{id} | update matcher
 *MatchersAPI* | [**UploadMatcherImage**](docs/MatchersAPI.md#uploadmatcherimage) | **Post** /v1/matchers/{id}/image | Upload matcher image
+*MergedTransactionsAPI* | [**GetMergedTransactions**](docs/MergedTransactionsAPI.md#getmergedtransactions) | **Get** /v1/mergedTransactions | get all merged (deduplicated) transactions
+*MergedTransactionsAPI* | [**UnmergeMergedTransaction**](docs/MergedTransactionsAPI.md#unmergemergedtransaction) | **Post** /v1/mergedTransactions/{id}/unmerge | restore a merged transaction
 *NotificationsAPI* | [**DeleteNotification**](docs/NotificationsAPI.md#deletenotification) | **Delete** /v1/notifications/{id} | delete notification
 *NotificationsAPI* | [**GetNotifications**](docs/NotificationsAPI.md#getnotifications) | **Get** /v1/notifications | return all notifications
 *TransactionsAPI* | [**CreateTransaction**](docs/TransactionsAPI.md#createtransaction) | **Post** /v1/transactions | create new transaction
@@ -162,6 +164,7 @@ Class | Method | HTTP request | Description
  - [Matcher](docs/Matcher.md)
  - [MatcherAndTransaction](docs/MatcherAndTransaction.md)
  - [MatcherNoID](docs/MatcherNoID.md)
+ - [MergedTransaction](docs/MergedTransaction.md)
  - [Movement](docs/Movement.md)
  - [Notification](docs/Notification.md)
  - [Transaction](docs/Transaction.md)

@@ -111,6 +111,14 @@ type MatchersAPIRouter interface {
 	CheckMatcher(http.ResponseWriter, *http.Request)
 }
 
+// MergedTransactionsAPIRouter defines the required methods for binding the api requests to a responses for the MergedTransactionsAPI
+// The MergedTransactionsAPIRouter implementation should parse necessary information from the http request,
+// pass the data to a MergedTransactionsAPIServicer to perform the required actions, then write the service results to the http response.
+type MergedTransactionsAPIRouter interface {
+	GetMergedTransactions(http.ResponseWriter, *http.Request)
+	UnmergeMergedTransaction(http.ResponseWriter, *http.Request)
+}
+
 // NotificationsAPIRouter defines the required methods for binding the api requests to a responses for the NotificationsAPI
 // The NotificationsAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a NotificationsAPIServicer to perform the required actions, then write the service results to the http response.
@@ -248,6 +256,15 @@ type MatchersAPIServicer interface {
 	DeleteMatcherImage(context.Context, string) (ImplResponse, error)
 	CheckRegex(context.Context, CheckRegexRequest) (ImplResponse, error)
 	CheckMatcher(context.Context, CheckMatcherRequest) (ImplResponse, error)
+}
+
+// MergedTransactionsAPIServicer defines the api actions for the MergedTransactionsAPI service
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can be ignored with the .openapi-generator-ignore file
+// and updated with the logic required for the API.
+type MergedTransactionsAPIServicer interface {
+	GetMergedTransactions(context.Context) (ImplResponse, error)
+	UnmergeMergedTransaction(context.Context, string) (ImplResponse, error)
 }
 
 // NotificationsAPIServicer defines the api actions for the NotificationsAPI service

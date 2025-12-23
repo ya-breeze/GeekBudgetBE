@@ -62,6 +62,8 @@ type Storage interface {
 	DeleteDuplicateTransaction(userID string, id, duplicateID string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
 	GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
+	GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error)
+	UnmergeTransaction(userID, id string) error
 
 	GetBankImporters(userID string) ([]goserver.BankImporter, error)
 	CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
@@ -459,7 +461,7 @@ func (s *storage) DeleteCurrency(userID string, id string) error {
 }
 
 func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error) {
-	req := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID)
+	req := s.db.Model(&models.Transaction{}).Where("user_id = ? AND merged_into_id IS NULL", userID)
 	if onlySuspicious {
 		// Filter transactions where suspicious_reasons is not null and not an empty JSON array
 		req = req.Where("suspicious_reasons IS NOT NULL AND suspicious_reasons != '[]' AND suspicious_reasons != ''")
@@ -586,8 +588,15 @@ func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID stri
 			return fmt.Errorf(StorageError, err)
 		}
 
-		if err := tx.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error; err != nil {
-			s.log.Warn("Failed to delete transaction", "id", id, "error", err)
+		// Mark as merged instead of deleting
+		now := time.Now()
+		if err := tx.Model(&models.Transaction{}).
+			Where("id = ? AND user_id = ?", id, userID).
+			Updates(map[string]interface{}{
+				"merged_into_id": duplicateID,
+				"merged_at":      &now,
+			}).Error; err != nil {
+			s.log.Warn("Failed to mark transaction as merged", "id", id, "error", err)
 			return fmt.Errorf(StorageError, err)
 		}
 
@@ -606,6 +615,79 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	}
 
 	return transaction.FromDB(), nil
+}
+
+func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error) {
+	var mergedModels []models.Transaction
+	if err := s.db.Where("user_id = ? AND merged_into_id IS NOT NULL", userID).Order("merged_at DESC").Find(&mergedModels).Error; err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+
+	result := make([]goserver.MergedTransaction, 0, len(mergedModels))
+	for _, m := range mergedModels {
+		var kept models.Transaction
+		if err := s.db.Where("id = ? AND user_id = ?", m.MergedIntoID, userID).First(&kept).Error; err != nil {
+			s.log.Warn("Failed to find kept transaction for merged transaction", "merged_id", m.ID, "kept_id", m.MergedIntoID)
+			continue
+		}
+
+		result = append(result, goserver.MergedTransaction{
+			Transaction: m.FromDB(),
+			MergedInto:  kept.FromDB(),
+			MergedAt:    *m.MergedAt,
+		})
+	}
+
+	return result, nil
+}
+
+func (s *storage) UnmergeTransaction(userID, id string) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		var t models.Transaction
+		if err := tx.Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
+			return fmt.Errorf(StorageError, err)
+		}
+
+		if t.MergedIntoID == nil {
+			return fmt.Errorf("transaction %s is not merged", id)
+		}
+
+		keptID := t.MergedIntoID.String()
+
+		// 1. Remove external IDs from kept transaction
+		var kept models.Transaction
+		if err := tx.Where("id = ? AND user_id = ?", keptID, userID).First(&kept).Error; err == nil {
+			newExternalIDs := make([]string, 0)
+			for _, extID := range kept.ExternalIDs {
+				found := false
+				for _, mergedExtID := range t.ExternalIDs {
+					if extID == mergedExtID {
+						found = true
+						break
+					}
+				}
+				if !found {
+					newExternalIDs = append(newExternalIDs, extID)
+				}
+			}
+			kept.ExternalIDs = newExternalIDs
+			if err := tx.Save(&kept).Error; err != nil {
+				return fmt.Errorf("failed to update kept transaction: %w", err)
+			}
+		}
+
+		// 2. Clear merge fields
+		if err := tx.Model(&models.Transaction{}).
+			Where("id = ? AND user_id = ?", id, userID).
+			Updates(map[string]interface{}{
+				"merged_into_id": gorm.Expr("NULL"),
+				"merged_at":      gorm.Expr("NULL"),
+			}).Error; err != nil {
+			return fmt.Errorf("failed to unmerge transaction: %w", err)
+		}
+
+		return nil
+	})
 }
 
 // #region BankImporters

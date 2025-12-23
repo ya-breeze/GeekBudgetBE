@@ -25,6 +25,16 @@ export interface TransactionNoId {
      * ID of the matcher used for this conversion (if any)
      */
     matcherId?: string;
+
+    /**
+     * When this transaction was merged
+     */
+    mergedAt?: string;
+
+    /**
+     * ID of the transaction this one was merged into (if any)
+     */
+    mergedIntoId?: string;
     movements: Array<Movement>;
     partnerAccount?: string;
 

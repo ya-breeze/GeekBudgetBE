@@ -22,6 +22,8 @@ go/api_import.go
 go/api_import_service.go
 go/api_matchers.go
 go/api_matchers_service.go
+go/api_merged_transactions.go
+go/api_merged_transactions_service.go
 go/api_notifications.go
 go/api_notifications_service.go
 go/api_transactions.go
@@ -62,6 +64,7 @@ go/model_import_result_balances_inner.go
 go/model_matcher.go
 go/model_matcher_and_transaction.go
 go/model_matcher_no_id.go
+go/model_merged_transaction.go
 go/model_movement.go
 go/model_notification.go
 go/model_transaction.go

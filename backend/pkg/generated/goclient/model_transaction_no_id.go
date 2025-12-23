@@ -43,6 +43,10 @@ type TransactionNoID struct {
 	// If true, this transaction was converted automatically by the matcher
 	IsAuto            *bool    `json:"isAuto,omitempty"`
 	SuspiciousReasons []string `json:"suspiciousReasons,omitempty"`
+	// ID of the transaction this one was merged into (if any)
+	MergedIntoId *string `json:"mergedIntoId,omitempty"`
+	// When this transaction was merged
+	MergedAt *time.Time `json:"mergedAt,omitempty"`
 }
 
 type _TransactionNoID TransactionNoID
@@ -498,6 +502,70 @@ func (o *TransactionNoID) SetSuspiciousReasons(v []string) {
 	o.SuspiciousReasons = v
 }
 
+// GetMergedIntoId returns the MergedIntoId field value if set, zero value otherwise.
+func (o *TransactionNoID) GetMergedIntoId() string {
+	if o == nil || IsNil(o.MergedIntoId) {
+		var ret string
+		return ret
+	}
+	return *o.MergedIntoId
+}
+
+// GetMergedIntoIdOk returns a tuple with the MergedIntoId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *TransactionNoID) GetMergedIntoIdOk() (*string, bool) {
+	if o == nil || IsNil(o.MergedIntoId) {
+		return nil, false
+	}
+	return o.MergedIntoId, true
+}
+
+// HasMergedIntoId returns a boolean if a field has been set.
+func (o *TransactionNoID) HasMergedIntoId() bool {
+	if o != nil && !IsNil(o.MergedIntoId) {
+		return true
+	}
+
+	return false
+}
+
+// SetMergedIntoId gets a reference to the given string and assigns it to the MergedIntoId field.
+func (o *TransactionNoID) SetMergedIntoId(v string) {
+	o.MergedIntoId = &v
+}
+
+// GetMergedAt returns the MergedAt field value if set, zero value otherwise.
+func (o *TransactionNoID) GetMergedAt() time.Time {
+	if o == nil || IsNil(o.MergedAt) {
+		var ret time.Time
+		return ret
+	}
+	return *o.MergedAt
+}
+
+// GetMergedAtOk returns a tuple with the MergedAt field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *TransactionNoID) GetMergedAtOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.MergedAt) {
+		return nil, false
+	}
+	return o.MergedAt, true
+}
+
+// HasMergedAt returns a boolean if a field has been set.
+func (o *TransactionNoID) HasMergedAt() bool {
+	if o != nil && !IsNil(o.MergedAt) {
+		return true
+	}
+
+	return false
+}
+
+// SetMergedAt gets a reference to the given time.Time and assigns it to the MergedAt field.
+func (o *TransactionNoID) SetMergedAt(v time.Time) {
+	o.MergedAt = &v
+}
+
 func (o TransactionNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -545,6 +613,12 @@ func (o TransactionNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.SuspiciousReasons) {
 		toSerialize["suspiciousReasons"] = o.SuspiciousReasons
+	}
+	if !IsNil(o.MergedIntoId) {
+		toSerialize["mergedIntoId"] = o.MergedIntoId
+	}
+	if !IsNil(o.MergedAt) {
+		toSerialize["mergedAt"] = o.MergedAt
 	}
 	return toSerialize, nil
 }

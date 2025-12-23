@@ -12,6 +12,8 @@ tags:
     description: Operations for base user's data
   - name: transactions
     description: Operations for transactions
+  - name: merged transactions
+    description: Operations for merged (deduplicated) transactions
 paths:
   /v1/authorize:
     post:
@@ -618,6 +620,41 @@ paths:
       responses:
         "200":
           description: no body
+
+  /v1/mergedTransactions:
+    get:
+      tags:
+        - merged transactions
+      summary: get all merged (deduplicated) transactions
+      operationId: getMergedTransactions
+      responses:
+        "200":
+          description: list of merged transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MergedTransaction"
+
+  /v1/mergedTransactions/{id}/unmerge:
+    post:
+      tags:
+        - merged transactions
+      summary: restore a merged transaction
+      operationId: unmergeMergedTransaction
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the merged transaction to restore"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: successfully restored
 
   /v1/unprocessedTransactions:
     get:
@@ -1611,6 +1648,14 @@ components:
           type: array
           items:
             type: string
+        mergedIntoId:
+          type: string
+          format: uuid
+          description: ID of the transaction this one was merged into (if any)
+        mergedAt:
+          type: string
+          format: date-time
+          description: When this transaction was merged
       required:
         - date
         - movements
@@ -1619,6 +1664,22 @@ components:
       allOf:
         - $ref: "#/components/schemas/Entity"
         - $ref: "#/components/schemas/TransactionNoID"
+
+    MergedTransaction:
+      type: object
+      required:
+        - transaction
+        - mergedInto
+        - mergedAt
+      properties:
+        transaction:
+          $ref: "#/components/schemas/Transaction"
+        mergedInto:
+          $ref: "#/components/schemas/Transaction"
+        mergedAt:
+          type: string
+          format: date-time
+          description: When this transaction was merged
 
     Movement:
       type: object
