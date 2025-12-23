@@ -1,5 +1,6 @@
-import { Component, inject, OnInit, computed } from '@angular/core';
+import { Component, inject, OnInit, computed, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -20,6 +21,7 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
     imports: [
         CommonModule,
         MatTableModule,
+        MatSortModule,
         MatButtonModule,
         MatIconModule,
         MatProgressSpinnerModule,
@@ -37,6 +39,8 @@ export class MergedTransactionsComponent implements OnInit {
     private readonly layoutService = inject(LayoutService);
     private readonly currencyService = inject(CurrencyService);
     private readonly accountService = inject(AccountService);
+
+    @ViewChild(MatSort) sort!: MatSort;
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
     protected readonly mergedTransactions = this.mergedTransactionService.mergedTransactions;
@@ -75,6 +79,65 @@ export class MergedTransactionsComponent implements OnInit {
         this.mergedTransactionService.loadMergedTransactions().subscribe();
         this.currencyService.loadCurrencies().subscribe();
         this.accountService.loadAccounts().subscribe();
+    }
+
+    getSortedData(): MergedTransaction[] {
+        const data = this.mergedTransactions();
+        if (!this.sort || !this.sort.active || this.sort.direction === '') {
+            return data;
+        }
+
+        return data.slice().sort((a, b) => {
+            const isAsc = this.sort.direction === 'asc';
+            switch (this.sort.active) {
+                case 'date':
+                    return this.compare(
+                        new Date(a.transaction.date).getTime(),
+                        new Date(b.transaction.date).getTime(),
+                        isAsc,
+                    );
+                case 'mergedDescription':
+                    return this.compare(
+                        a.transaction.description || '',
+                        b.transaction.description || '',
+                        isAsc,
+                    );
+                case 'mergedAmount':
+                    return this.compareAmounts(a.transaction, b.transaction, isAsc);
+                case 'mergedAt':
+                    return this.compare(
+                        new Date(a.mergedAt).getTime(),
+                        new Date(b.mergedAt).getTime(),
+                        isAsc,
+                    );
+                case 'keptDescription':
+                    return this.compare(
+                        a.mergedInto.description || '',
+                        b.mergedInto.description || '',
+                        isAsc,
+                    );
+                case 'keptAmount':
+                    return this.compareAmounts(a.mergedInto, b.mergedInto, isAsc);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    private compare(a: number | string, b: number | string, isAsc: boolean): number {
+        return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+    }
+
+    private compareAmounts(a: any, b: any, isAsc: boolean): number {
+        const aAmount = TransactionUtils.getEffectiveAmounts(a).reduce(
+            (sum, ea) => sum + ea.amount,
+            0,
+        );
+        const bAmount = TransactionUtils.getEffectiveAmounts(b).reduce(
+            (sum, ea) => sum + ea.amount,
+            0,
+        );
+        return this.compare(aAmount, bAmount, isAsc);
     }
 
     unmerge(transaction: MergedTransaction): void {

@@ -459,6 +459,10 @@ export class TransactionsComponent implements OnInit {
         }
     }
 
+    isImported(transaction: Transaction): boolean {
+        return (transaction.externalIds?.length ?? 0) > 0 || !!transaction.unprocessedSources;
+    }
+
     formatMovements(transaction: Transaction): string {
         if (!transaction.movements || transaction.movements.length === 0) {
             return 'No movements';

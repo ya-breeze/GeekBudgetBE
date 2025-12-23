@@ -8,7 +8,6 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../core/auth/services/auth.service';
 import { UnprocessedTransactionService } from '../../features/unprocessed-transactions/services/unprocessed-transaction.service';
 import { NotificationService } from '../../features/notifications/services/notification.service';
-import { MergedTransactionService } from '../../features/merged-transactions/services/merged-transaction.service';
 
 interface MenuItem {
     label: string;
@@ -35,7 +34,6 @@ export class SidebarComponent {
     private readonly authService = inject(AuthService);
     private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
     private readonly notificationService = inject(NotificationService);
-    private readonly mergedTransactionService = inject(MergedTransactionService);
 
     menuToggle = output<void>();
 
@@ -62,7 +60,6 @@ export class SidebarComponent {
             label: 'Merged',
             icon: 'handshake',
             route: '/merged-transactions',
-            badge: () => this.mergedTransactionService.mergedTransactions().length,
         },
 
         { label: 'Settings', icon: 'settings', route: '/settings' },

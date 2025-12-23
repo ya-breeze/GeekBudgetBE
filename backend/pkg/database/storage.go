@@ -19,8 +19,9 @@ import (
 const StorageError = "storage error: %w"
 
 var (
-	ErrNotFound     = errors.New("not found")
-	ErrAccountInUse = errors.New("account is in use")
+	ErrNotFound                           = errors.New("not found")
+	ErrAccountInUse                       = errors.New("account is in use")
+	ErrImportedTransactionCannotBeDeleted = errors.New("imported transaction cannot be deleted")
 )
 
 type ImportInfo struct {
@@ -561,7 +562,19 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 }
 
 func (s *storage) DeleteTransaction(userID string, id string) error {
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error; err != nil {
+	var t models.Transaction
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return fmt.Errorf(StorageError, err)
+	}
+
+	if len(t.ExternalIDs) > 0 || t.UnprocessedSources != "" {
+		return ErrImportedTransactionCannotBeDeleted
+	}
+
+	if err := s.db.Delete(&t).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
 	}
 

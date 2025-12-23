@@ -23,10 +23,10 @@
                 </div>
             } @else {
                 <div class="table-container mat-elevation-z2">
-                    <table mat-table [dataSource]="mergedTransactions()">
+                    <table mat-table [dataSource]="getSortedData()" matSort>
                         <!-- Date Column -->
                         <ng-container matColumnDef="date">
-                            <th mat-header-cell *matHeaderCellDef>Date</th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
                             <td mat-cell *matCellDef="let element">
                                 {{ element.transaction.date | date: 'mediumDate' }}
                             </td>
@@ -34,7 +34,9 @@
 
                         <!-- Merged Description Column -->
                         <ng-container matColumnDef="mergedDescription">
-                            <th mat-header-cell *matHeaderCellDef>Merged Transaction</th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                                Merged Transaction
+                            </th>
                             <td mat-cell *matCellDef="let element">
                                 <div class="transaction-info">
                                     <span class="description">{{
@@ -58,7 +60,7 @@
 
                         <!-- Merged Amount Column -->
                         <ng-container matColumnDef="mergedAmount">
-                            <th mat-header-cell *matHeaderCellDef>Amount</th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
                             <td mat-cell *matCellDef="let element">
                                 {{ formatEffectiveAmounts(element.transaction) }}
                             </td>
@@ -66,7 +68,7 @@
 
                         <!-- Merged At Column -->
                         <ng-container matColumnDef="mergedAt">
-                            <th mat-header-cell *matHeaderCellDef>Merged At</th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Merged At</th>
                             <td mat-cell *matCellDef="let element">
                                 {{ element.mergedAt | date: 'medium' }}
                             </td>
@@ -74,7 +76,7 @@
 
                         <!-- Kept Description Column -->
                         <ng-container matColumnDef="keptDescription">
-                            <th mat-header-cell *matHeaderCellDef>Kept Into</th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Kept Into</th>
                             <td mat-cell *matCellDef="let element">
                                 <div class="transaction-info">
                                     <span class="description">{{
@@ -98,7 +100,7 @@
 
                         <!-- Kept Amount Column -->
                         <ng-container matColumnDef="keptAmount">
-                            <th mat-header-cell *matHeaderCellDef>Kept Amount</th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Kept Amount</th>
                             <td mat-cell *matCellDef="let element">
                                 {{ formatEffectiveAmounts(element.mergedInto) }}
                             </td>

@@ -154,7 +154,7 @@ export class SuspiciousTransactionsComponent implements OnInit {
                         });
                         this.loadData();
                     },
-                    error: (err) => {
+                    error: () => {
                         this.snackBar.open('Failed to update transaction', 'Close', {
                             duration: 3000,
                         });
@@ -174,7 +174,7 @@ export class SuspiciousTransactionsComponent implements OnInit {
                         });
                         this.loadData();
                     },
-                    error: (err) => {
+                    error: () => {
                         this.snackBar.open('Failed to delete transaction', 'Close', {
                             duration: 3000,
                         });
@@ -182,6 +182,10 @@ export class SuspiciousTransactionsComponent implements OnInit {
                 });
             }
         }
+    }
+
+    isImported(transaction: Transaction): boolean {
+        return (transaction.externalIds?.length ?? 0) > 0 || !!transaction.unprocessedSources;
     }
 
     getTargetAccountList(transaction: Transaction): Account[] {

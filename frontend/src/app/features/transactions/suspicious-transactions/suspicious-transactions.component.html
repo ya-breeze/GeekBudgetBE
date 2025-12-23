@@ -83,7 +83,12 @@
                         mat-icon-button
                         color="warn"
                         (click)="deleteTransaction(transaction)"
-                        matTooltip="Delete"
+                        [disabled]="isImported(transaction)"
+                        [matTooltip]="
+                            isImported(transaction)
+                                ? 'Imported transactions cannot be deleted'
+                                : 'Delete'
+                        "
                     >
                         <mat-icon>delete</mat-icon>
                     </button>

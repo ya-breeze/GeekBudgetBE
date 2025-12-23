@@ -104,9 +104,8 @@ var _ = Describe("Transactions API", func() {
 	It("performs CRUD for transaction", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 		t := goclient.TransactionNoID{
-			Date:        now,
-			Tags:        []string{"tag1", "tag2"},
-			ExternalIds: []string{"ext1", "ext2"},
+			Date: now,
+			Tags: []string{"tag1", "tag2"},
 			Movements: []goclient.Movement{
 				{
 					AccountId:  &accounts[2].Id,
@@ -176,5 +175,39 @@ var _ = Describe("Transactions API", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(transactions).ToNot(BeNil())
 		Expect(transactions).To(BeEmpty())
+	})
+
+	It("restricts deletion of imported transactions", func() {
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+		t := goclient.TransactionNoID{
+			Date:        now,
+			Tags:        []string{"imported"},
+			ExternalIds: []string{"ext-id-123"},
+			Movements: []goclient.Movement{
+				{
+					AccountId:  &accounts[0].Id,
+					CurrencyId: currencies[0].Id,
+					Amount:     50,
+				},
+				{
+					AccountId:  &accounts[1].Id,
+					CurrencyId: currencies[0].Id,
+					Amount:     -50,
+				},
+			},
+		}
+
+		// Create imported transaction
+		created, _, err := client.TransactionsAPI.CreateTransaction(ctx).TransactionNoID(t).Execute()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Attempt to delete it - should fail
+		_, err = client.TransactionsAPI.DeleteTransaction(ctx, created.Id).Execute()
+		Expect(err).To(HaveOccurred())
+
+		// Verify it's still there
+		transaction, _, err := client.TransactionsAPI.GetTransaction(ctx, created.Id).Execute()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(transaction.Id).To(Equal(created.Id))
 	})
 })
