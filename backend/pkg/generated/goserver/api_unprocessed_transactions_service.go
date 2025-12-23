@@ -56,8 +56,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(ct
 	// TODO - update ConvertUnprocessedTransaction with the required logic for this service method.
 	// Add api_unprocessed_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
-	// TODO: Uncomment the next line to return response Response(200, Transaction{}) or use other options such as http.Ok ...
-	// return Response(200, Transaction{}), nil
+	// TODO: Uncomment the next line to return response Response(200, ConvertUnprocessedTransaction200Response{}) or use other options such as http.Ok ...
+	// return Response(200, ConvertUnprocessedTransaction200Response{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("ConvertUnprocessedTransaction method not implemented")
 }

@@ -7,8 +7,8 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { Matcher } from '../../models/matcher';
 import { MatcherNoId } from '../../models/matcher-no-id';
+import { UpdateMatcher200Response } from '../../models/update-matcher-200-response';
 
 export interface UpdateMatcher$Params {
     /**
@@ -23,7 +23,7 @@ export function updateMatcher(
     rootUrl: string,
     params: UpdateMatcher$Params,
     context?: HttpContext,
-): Observable<StrictHttpResponse<Matcher>> {
+): Observable<StrictHttpResponse<UpdateMatcher200Response>> {
     const rb = new RequestBuilder(rootUrl, updateMatcher.PATH, 'put');
     if (params) {
         rb.path('id', params.id, {});
@@ -35,7 +35,7 @@ export function updateMatcher(
         .pipe(
             filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
             map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Matcher>;
+                return r as StrictHttpResponse<UpdateMatcher200Response>;
             }),
         );
 }

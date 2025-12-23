@@ -20,6 +20,106 @@ type UnprocessedTransactionsAPIServiceImpl struct {
 	db     database.Storage
 }
 
+func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAgainstMatcher(
+	ctx context.Context, userID string, matcherID string, excludeTransactionID string,
+) ([]string, error) {
+	matcher, err := s.db.GetMatcher(userID, matcherID)
+	if err != nil {
+		s.logger.With("error", err, "matcherId", matcherID).Error("Failed to get matcher for auto-processing")
+		return nil, err
+	}
+
+	// We only auto-process if the matcher is "perfect"
+	// Perfect match defined as: at least 10 confirmations and all of them are true
+	if len(matcher.ConfirmationHistory) < 10 {
+		return nil, nil
+	}
+	for _, confirmed := range matcher.ConfirmationHistory {
+		if !confirmed {
+			return nil, nil
+		}
+	}
+
+	// Get all matchers runtime to reuse the helper
+	matchersRuntime, err := s.db.GetMatchersRuntime(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get matchers runtime")
+		return nil, err
+	}
+
+	// Filter down to just the specific matcher runtime we care about
+	var specificMatcherRuntime *database.MatcherRuntime
+	for i := range matchersRuntime {
+		if matchersRuntime[i].Matcher.Id == matcherID {
+			specificMatcherRuntime = &matchersRuntime[i]
+			break
+		}
+	}
+	if specificMatcherRuntime == nil {
+		err := fmt.Errorf("matcher runtime not found for id %s", matcherID)
+		s.logger.With("error", err).Error("Matcher runtime missing")
+		return nil, err
+	}
+
+	// Get all transactions to find unprocessed ones and for duplicate checking
+	// Optimization: This might be heavy if user has many transactions.
+	// We might want to filter by date or similar in future, but for now we follow the pattern in PrepareUnprocessedTransactions
+	allTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{}, false)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get transactions")
+		return nil, err
+	}
+
+	unprocessed := s.filterUnprocessedTransactions(allTransactions)
+	var processedIDs []string
+
+	for _, t := range unprocessed {
+		if t.Id == excludeTransactionID {
+			continue
+		}
+
+		// Use the common matching logic
+		matchRes := common.Match(specificMatcherRuntime, &t)
+		if matchRes != common.MatchResultSuccess {
+			continue
+		}
+
+		// It matches! Let's convert it.
+		// Construct the update payload
+		transactionNoId := models.TransactionWithoutID(&t)
+		transactionNoId.MatcherId = matcherID
+		transactionNoId.IsAuto = true
+
+		// Apply matcher outputs
+		transactionNoId.Description = matcher.OutputDescription
+		// Apply account IDs if missing in movement
+		for i := range transactionNoId.Movements {
+			if transactionNoId.Movements[i].AccountId == "" {
+				transactionNoId.Movements[i].AccountId = matcher.OutputAccountId
+			}
+		}
+		// Merge tags
+		transactionNoId.Tags = append(transactionNoId.Tags, matcher.OutputTags...)
+		transactionNoId.Tags = sortAndRemoveDuplicates(transactionNoId.Tags)
+
+		// Persist
+		_, err := s.db.UpdateTransaction(userID, t.Id, transactionNoId)
+		if err != nil {
+			s.logger.With("error", err, "transactionId", t.Id).Error("Failed to auto-process transaction")
+			// We continue processing other transactions even if one fails
+			continue
+		}
+
+		processedIDs = append(processedIDs, t.Id)
+	}
+
+	if len(processedIDs) > 0 {
+		s.logger.Info("Auto-processed transactions", "count", len(processedIDs), "matcherId", matcherID)
+	}
+
+	return processedIDs, nil
+}
+
 func NewUnprocessedTransactionsAPIServiceImpl(logger *slog.Logger, db database.Storage,
 ) *UnprocessedTransactionsAPIServiceImpl {
 	return &UnprocessedTransactionsAPIServiceImpl{logger: logger, db: db}
@@ -223,11 +323,21 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 		return goserver.Response(500, nil), nil
 	}
 
+	var autoProcessedIds []string
 	// If a matcher ID is provided, record a confirmation and update transaction
 	if matcherId != "" {
 		if err := s.db.AddMatcherConfirmation(userID, matcherId, true); err != nil {
 			s.logger.With("error", err, "matcherId", matcherId).Error("Failed to add matcher confirmation")
 			// We continue even if confirmation stats fail, as the conversion is the primary action
+		} else {
+			// Confirmation added successfully, now check if we can auto-process others
+			ids, err := s.ProcessUnprocessedTransactionsAgainstMatcher(ctx, userID, matcherId, id)
+			if err != nil {
+				// Log but don't fail the request
+				s.logger.With("error", err).Error("Failed to process unprocessed transactions against matcher")
+			} else {
+				autoProcessedIds = ids
+			}
 		}
 		transactionNoID.MatcherId = matcherId
 	}
@@ -238,7 +348,10 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 		return goserver.Response(500, nil), nil
 	}
 
-	return goserver.Response(200, transaction), nil
+	return goserver.Response(200, goserver.ConvertUnprocessedTransaction200Response{
+		Transaction:      *transaction,
+		AutoProcessedIds: autoProcessedIds,
+	}), nil
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) Delete(

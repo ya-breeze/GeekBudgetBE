@@ -61,11 +61,17 @@ export class UnprocessedTransactionService {
             body,
             matcherId,
         }).pipe(
-            map(() => undefined),
+            map((response) => response.body.autoProcessedIds),
             tap({
-                next: () => {
+                next: (autoProcessedIds) => {
+                    const idsToRemove = new Set<string>();
+                    idsToRemove.add(id);
+                    if (autoProcessedIds) {
+                        autoProcessedIds.forEach((autoId) => idsToRemove.add(autoId));
+                    }
+
                     this.unprocessedTransactions.update((transactions) =>
-                        transactions.filter((t) => t.transaction.id !== id),
+                        transactions.filter((t) => !idsToRemove.has(t.transaction.id)),
                     );
                     this.loading.set(false);
                 },
@@ -74,6 +80,7 @@ export class UnprocessedTransactionService {
                     this.loading.set(false);
                 },
             }),
+            map(() => undefined),
         );
     }
 

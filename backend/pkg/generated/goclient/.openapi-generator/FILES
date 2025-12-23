@@ -41,6 +41,7 @@ docs/CheckMatcher200Response.md
 docs/CheckMatcherRequest.md
 docs/CheckRegex200Response.md
 docs/CheckRegexRequest.md
+docs/ConvertUnprocessedTransaction200Response.md
 docs/CurrenciesAPI.md
 docs/Currency.md
 docs/CurrencyAggregation.md
@@ -62,6 +63,7 @@ docs/TransactionNoID.md
 docs/TransactionsAPI.md
 docs/UnprocessedTransaction.md
 docs/UnprocessedTransactionsAPI.md
+docs/UpdateMatcher200Response.md
 docs/User.md
 docs/UserAPI.md
 docs/UserPatchBody.md
@@ -85,6 +87,7 @@ model_check_matcher_200_response.go
 model_check_matcher_request.go
 model_check_regex_200_response.go
 model_check_regex_request.go
+model_convert_unprocessed_transaction200_response.go
 model_currency.go
 model_currency_aggregation.go
 model_currency_no_id.go
@@ -99,6 +102,7 @@ model_notification.go
 model_transaction.go
 model_transaction_no_id.go
 model_unprocessed_transaction.go
+model_update_matcher200_response.go
 model_user.go
 model_user_patch_body.go
 model_whole_user_data.go

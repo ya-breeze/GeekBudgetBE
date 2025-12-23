@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **Date** | Pointer to **time.Time** | Date of import | [optional] 
 **Status** | Pointer to **string** | Status of import | [optional] 
 **Description** | Pointer to **string** | Details of import | [optional] 
+**SuspiciousCount** | Pointer to **int32** | Number of transactions marked as suspicious during this import | [optional] 
 **Balances** | Pointer to [**[]ImportResultBalancesInner**](ImportResultBalancesInner.md) |  | [optional] 
 
 ## Methods
@@ -102,6 +103,31 @@ SetDescription sets Description field to given value.
 `func (o *ImportResult) HasDescription() bool`
 
 HasDescription returns a boolean if a field has been set.
+
+### GetSuspiciousCount
+
+`func (o *ImportResult) GetSuspiciousCount() int32`
+
+GetSuspiciousCount returns the SuspiciousCount field if non-nil, zero value otherwise.
+
+### GetSuspiciousCountOk
+
+`func (o *ImportResult) GetSuspiciousCountOk() (*int32, bool)`
+
+GetSuspiciousCountOk returns a tuple with the SuspiciousCount field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetSuspiciousCount
+
+`func (o *ImportResult) SetSuspiciousCount(v int32)`
+
+SetSuspiciousCount sets SuspiciousCount field to given value.
+
+### HasSuspiciousCount
+
+`func (o *ImportResult) HasSuspiciousCount() bool`
+
+HasSuspiciousCount returns a boolean if a field has been set.
 
 ### GetBalances
 

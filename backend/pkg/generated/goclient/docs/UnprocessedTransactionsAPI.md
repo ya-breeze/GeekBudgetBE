@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 ## ConvertUnprocessedTransaction
 
-> Transaction ConvertUnprocessedTransaction(ctx, id).TransactionNoID(transactionNoID).MatcherId(matcherId).Execute()
+> ConvertUnprocessedTransaction200Response ConvertUnprocessedTransaction(ctx, id).TransactionNoID(transactionNoID).MatcherId(matcherId).Execute()
 
 convert unprocessed transactions into normal transaction
 
@@ -42,7 +42,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `UnprocessedTransactionsAPI.ConvertUnprocessedTransaction``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `ConvertUnprocessedTransaction`: Transaction
+	// response from `ConvertUnprocessedTransaction`: ConvertUnprocessedTransaction200Response
 	fmt.Fprintf(os.Stdout, "Response from `UnprocessedTransactionsAPI.ConvertUnprocessedTransaction`: %v\n", resp)
 }
 ```
@@ -68,7 +68,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Transaction**](Transaction.md)
+[**ConvertUnprocessedTransaction200Response**](ConvertUnprocessedTransaction200Response.md)
 
 ### Authorization
 

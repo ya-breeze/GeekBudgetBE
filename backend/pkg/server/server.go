@@ -76,14 +76,15 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 }
 
 func createControllers(logger *slog.Logger, cfg *config.Config, db database.Storage) goserver.CustomControllers {
+	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, db)
 	return goserver.CustomControllers{
 		AuthAPIService:                    api.NewAuthAPIService(logger, db, cfg),
 		UserAPIService:                    api.NewUserAPIService(logger, db),
 		AccountsAPIService:                api.NewAccountsAPIService(logger, db, cfg),
 		CurrenciesAPIService:              api.NewCurrenciesAPIServicer(logger, db),
 		TransactionsAPIService:            api.NewTransactionsAPIService(logger, db),
-		UnprocessedTransactionsAPIService: api.NewUnprocessedTransactionsAPIServiceImpl(logger, db),
-		MatchersAPIService:                api.NewMatchersAPIServiceImpl(logger, db, cfg),
+		UnprocessedTransactionsAPIService: unprocessedService,
+		MatchersAPIService:                api.NewMatchersAPIServiceImpl(logger, db, cfg, unprocessedService),
 		BankImportersAPIService:           api.NewBankImportersAPIServiceImpl(logger, db),
 		AggregationsAPIService:            api.NewAggregationsAPIServiceImpl(logger, db),
 		NotificationsAPIService:           api.NewNotificationsAPIServiceImpl(logger, db),

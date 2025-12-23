@@ -179,7 +179,7 @@ describe('MatcherService', () => {
 
             const req = httpMock.expectOne(`${apiConfig.rootUrl}/v1/matchers/1`);
             expect(req.request.method).toBe('PUT');
-            req.flush(updatedMatcher);
+            req.flush({ matcher: updatedMatcher, autoProcessedIds: [] });
         });
     });
 

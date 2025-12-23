@@ -26,8 +26,10 @@ type ImportResult struct {
 	// Status of import
 	Status *string `json:"status,omitempty"`
 	// Details of import
-	Description *string                     `json:"description,omitempty"`
-	Balances    []ImportResultBalancesInner `json:"balances,omitempty"`
+	Description *string `json:"description,omitempty"`
+	// Number of transactions marked as suspicious during this import
+	SuspiciousCount *int32                      `json:"suspiciousCount,omitempty"`
+	Balances        []ImportResultBalancesInner `json:"balances,omitempty"`
 }
 
 // NewImportResult instantiates a new ImportResult object
@@ -143,6 +145,38 @@ func (o *ImportResult) SetDescription(v string) {
 	o.Description = &v
 }
 
+// GetSuspiciousCount returns the SuspiciousCount field value if set, zero value otherwise.
+func (o *ImportResult) GetSuspiciousCount() int32 {
+	if o == nil || IsNil(o.SuspiciousCount) {
+		var ret int32
+		return ret
+	}
+	return *o.SuspiciousCount
+}
+
+// GetSuspiciousCountOk returns a tuple with the SuspiciousCount field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ImportResult) GetSuspiciousCountOk() (*int32, bool) {
+	if o == nil || IsNil(o.SuspiciousCount) {
+		return nil, false
+	}
+	return o.SuspiciousCount, true
+}
+
+// HasSuspiciousCount returns a boolean if a field has been set.
+func (o *ImportResult) HasSuspiciousCount() bool {
+	if o != nil && !IsNil(o.SuspiciousCount) {
+		return true
+	}
+
+	return false
+}
+
+// SetSuspiciousCount gets a reference to the given int32 and assigns it to the SuspiciousCount field.
+func (o *ImportResult) SetSuspiciousCount(v int32) {
+	o.SuspiciousCount = &v
+}
+
 // GetBalances returns the Balances field value if set, zero value otherwise.
 func (o *ImportResult) GetBalances() []ImportResultBalancesInner {
 	if o == nil || IsNil(o.Balances) {
@@ -193,6 +227,9 @@ func (o ImportResult) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.SuspiciousCount) {
+		toSerialize["suspiciousCount"] = o.SuspiciousCount
 	}
 	if !IsNil(o.Balances) {
 		toSerialize["balances"] = o.Balances

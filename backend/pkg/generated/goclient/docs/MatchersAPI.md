@@ -472,7 +472,7 @@ Other parameters are passed through a pointer to a apiGetMatchersRequest struct 
 
 ## UpdateMatcher
 
-> Matcher UpdateMatcher(ctx, id).MatcherNoID(matcherNoID).Execute()
+> UpdateMatcher200Response UpdateMatcher(ctx, id).MatcherNoID(matcherNoID).Execute()
 
 update matcher
 
@@ -499,7 +499,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `MatchersAPI.UpdateMatcher``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `UpdateMatcher`: Matcher
+	// response from `UpdateMatcher`: UpdateMatcher200Response
 	fmt.Fprintf(os.Stdout, "Response from `MatchersAPI.UpdateMatcher`: %v\n", resp)
 }
 ```
@@ -524,7 +524,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Matcher**](Matcher.md)
+[**UpdateMatcher200Response**](UpdateMatcher200Response.md)
 
 ### Authorization
 

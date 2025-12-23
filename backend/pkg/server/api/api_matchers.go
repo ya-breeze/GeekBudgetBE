@@ -16,14 +16,24 @@ import (
 )
 
 type MatchersAPIServiceImpl struct {
-	logger *slog.Logger
-	db     database.Storage
-	cfg    *config.Config
+	logger             *slog.Logger
+	db                 database.Storage
+	cfg                *config.Config
+	unprocessedService *UnprocessedTransactionsAPIServiceImpl
 }
 
-func NewMatchersAPIServiceImpl(logger *slog.Logger, db database.Storage, cfg *config.Config,
+func NewMatchersAPIServiceImpl(
+	logger *slog.Logger,
+	db database.Storage,
+	cfg *config.Config,
+	unprocessedService *UnprocessedTransactionsAPIServiceImpl,
 ) goserver.MatchersAPIServicer {
-	return &MatchersAPIServiceImpl{logger: logger, db: db, cfg: cfg}
+	return &MatchersAPIServiceImpl{
+		logger:             logger,
+		db:                 db,
+		cfg:                cfg,
+		unprocessedService: unprocessedService,
+	}
 }
 
 func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.CheckMatcherRequest,
@@ -155,7 +165,20 @@ func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m
 		return goserver.Response(500, nil), nil
 	}
 
-	return goserver.Response(200, res), nil
+	var autoProcessedIds []string
+	// Check if this matcher is now "perfect" and can auto-process existing transactions
+	autoIds, err := s.unprocessedService.ProcessUnprocessedTransactionsAgainstMatcher(ctx, userID, id, "")
+	if err != nil {
+		// Log but don't fail the request
+		s.logger.With("error", err).Error("Failed to process unprocessed transactions against updated matcher")
+	} else {
+		autoProcessedIds = autoIds
+	}
+
+	return goserver.Response(200, goserver.UpdateMatcher200Response{
+		Matcher:          res,
+		AutoProcessedIds: autoProcessedIds,
+	}), nil
 }
 
 func (s *MatchersAPIServiceImpl) UploadMatcherImage(

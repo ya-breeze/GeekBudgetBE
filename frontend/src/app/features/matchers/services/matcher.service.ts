@@ -68,7 +68,7 @@ export class MatcherService {
         this.error.set(null);
 
         return updateMatcher(this.http, this.apiConfig.rootUrl, { id, body: matcher }).pipe(
-            map((response) => response.body),
+            map((response) => response.body.matcher),
             tap({
                 next: (updatedMatcher) => {
                     this.matchers.update((matchers) =>

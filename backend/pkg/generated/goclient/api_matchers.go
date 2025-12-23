@@ -755,7 +755,7 @@ func (r ApiUpdateMatcherRequest) MatcherNoID(matcherNoID MatcherNoID) ApiUpdateM
 	return r
 }
 
-func (r ApiUpdateMatcherRequest) Execute() (*Matcher, *http.Response, error) {
+func (r ApiUpdateMatcherRequest) Execute() (*UpdateMatcher200Response, *http.Response, error) {
 	return r.ApiService.UpdateMatcherExecute(r)
 }
 
@@ -776,13 +776,13 @@ func (a *MatchersAPIService) UpdateMatcher(ctx context.Context, id string) ApiUp
 
 // Execute executes the request
 //
-//	@return Matcher
-func (a *MatchersAPIService) UpdateMatcherExecute(r ApiUpdateMatcherRequest) (*Matcher, *http.Response, error) {
+//	@return UpdateMatcher200Response
+func (a *MatchersAPIService) UpdateMatcherExecute(r ApiUpdateMatcherRequest) (*UpdateMatcher200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *Matcher
+		localVarReturnValue *UpdateMatcher200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "MatchersAPIService.UpdateMatcher")

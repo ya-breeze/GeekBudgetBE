@@ -664,11 +664,11 @@ paths:
               $ref: "#/components/schemas/TransactionNoID"
       responses:
         "200":
-          description: created transaction
+          description: created transaction and auto-processed IDs
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Transaction"
+                $ref: "#/components/schemas/ConvertUnprocessedTransaction200Response"
 
   /v1/unprocessedTransactions/{id}:
     get:
@@ -955,11 +955,11 @@ paths:
               $ref: "#/components/schemas/MatcherNoID"
       responses:
         "200":
-          description: updated matcher
+          description: updated matcher and auto-processed IDs
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Matcher"
+                $ref: "#/components/schemas/UpdateMatcher200Response"
     delete:
       tags:
         - matchers
@@ -1878,3 +1878,31 @@ components:
         - spent
         - rollover
         - available
+
+    ConvertUnprocessedTransaction200Response:
+      type: object
+      properties:
+        transaction:
+          $ref: "#/components/schemas/Transaction"
+        autoProcessedIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: IDs of other unprocessed transactions that were automatically matched because of this conversion (if matcher became perfect)
+      required:
+        - transaction
+
+    UpdateMatcher200Response:
+      type: object
+      properties:
+        matcher:
+          $ref: "#/components/schemas/Matcher"
+        autoProcessedIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: IDs of unprocessed transactions that were automatically matched because of this matcher update
+      required:
+        - matcher

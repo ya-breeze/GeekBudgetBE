@@ -52,6 +52,7 @@ go/model_check_matcher_200_response.go
 go/model_check_matcher_request.go
 go/model_check_regex_200_response.go
 go/model_check_regex_request.go
+go/model_convert_unprocessed_transaction200_response.go
 go/model_currency.go
 go/model_currency_aggregation.go
 go/model_currency_no_id.go
@@ -66,6 +67,7 @@ go/model_notification.go
 go/model_transaction.go
 go/model_transaction_no_id.go
 go/model_unprocessed_transaction.go
+go/model_update_matcher200_response.go
 go/model_user.go
 go/model_user_patch_body.go
 go/model_whole_user_data.go

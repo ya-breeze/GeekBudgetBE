@@ -48,16 +48,25 @@ export class AccountsComponent implements OnInit {
     protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
     protected readonly sortedAccounts = computed(() => {
         const data = this.accounts();
-        const columns = this.displayedColumns();
 
-        if (!columns.length) {
-            return data;
-        }
+        // Group accounts by type and sort by name within each group
+        const typeOrder: Record<string, number> = { asset: 0, income: 1, expense: 2 };
 
-        const active = this.sortActive() ?? columns[0];
-        const direction = this.sortDirection();
+        return [...data].sort((a, b) => {
+            // First, sort by type
+            const typeA = typeOrder[a.type ?? ''] ?? 999;
+            const typeB = typeOrder[b.type ?? ''] ?? 999;
 
-        return [...data].sort((a, b) => this.compareAccounts(a, b, active, direction));
+            if (typeA !== typeB) {
+                return typeA - typeB;
+            }
+
+            // Within the same type, sort by name (removing leading emojis)
+            const nameA = this.removeLeadingEmoji(a.name ?? '');
+            const nameB = this.removeLeadingEmoji(b.name ?? '');
+
+            return nameA.localeCompare(nameB);
+        });
     });
 
     protected readonly accounts = this.accountService.accounts;

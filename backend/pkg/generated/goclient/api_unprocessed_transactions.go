@@ -42,7 +42,7 @@ func (r ApiConvertUnprocessedTransactionRequest) MatcherId(matcherId string) Api
 	return r
 }
 
-func (r ApiConvertUnprocessedTransactionRequest) Execute() (*Transaction, *http.Response, error) {
+func (r ApiConvertUnprocessedTransactionRequest) Execute() (*ConvertUnprocessedTransaction200Response, *http.Response, error) {
 	return r.ApiService.ConvertUnprocessedTransactionExecute(r)
 }
 
@@ -63,13 +63,13 @@ func (a *UnprocessedTransactionsAPIService) ConvertUnprocessedTransaction(ctx co
 
 // Execute executes the request
 //
-//	@return Transaction
-func (a *UnprocessedTransactionsAPIService) ConvertUnprocessedTransactionExecute(r ApiConvertUnprocessedTransactionRequest) (*Transaction, *http.Response, error) {
+//	@return ConvertUnprocessedTransaction200Response
+func (a *UnprocessedTransactionsAPIService) ConvertUnprocessedTransactionExecute(r ApiConvertUnprocessedTransactionRequest) (*ConvertUnprocessedTransaction200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *Transaction
+		localVarReturnValue *ConvertUnprocessedTransaction200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UnprocessedTransactionsAPIService.ConvertUnprocessedTransaction")

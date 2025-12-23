@@ -7,7 +7,7 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { Transaction } from '../../models/transaction';
+import { ConvertUnprocessedTransaction200Response } from '../../models/convert-unprocessed-transaction-200-response';
 import { TransactionNoId } from '../../models/transaction-no-id';
 
 export interface ConvertUnprocessedTransaction$Params {
@@ -25,7 +25,7 @@ export function convertUnprocessedTransaction(
     rootUrl: string,
     params: ConvertUnprocessedTransaction$Params,
     context?: HttpContext,
-): Observable<StrictHttpResponse<Transaction>> {
+): Observable<StrictHttpResponse<ConvertUnprocessedTransaction200Response>> {
     const rb = new RequestBuilder(rootUrl, convertUnprocessedTransaction.PATH, 'post');
     if (params) {
         rb.path('id', params.id, {});
@@ -38,7 +38,7 @@ export function convertUnprocessedTransaction(
         .pipe(
             filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
             map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Transaction>;
+                return r as StrictHttpResponse<ConvertUnprocessedTransaction200Response>;
             }),
         );
 }

@@ -26,18 +26,18 @@ type ImportResult struct {
 	// Details of import
 	Description string `json:"description,omitempty"`
 
-	Balances []ImportResultBalancesInner `json:"balances,omitempty"`
-
 	// Number of transactions marked as suspicious during this import
 	SuspiciousCount int32 `json:"suspiciousCount,omitempty"`
+
+	Balances []ImportResultBalancesInner `json:"balances,omitempty"`
 }
 
 type ImportResultInterface interface {
 	GetDate() time.Time
 	GetStatus() string
 	GetDescription() string
-	GetBalances() []ImportResultBalancesInner
 	GetSuspiciousCount() int32
+	GetBalances() []ImportResultBalancesInner
 }
 
 func (c *ImportResult) GetDate() time.Time {
@@ -49,11 +49,11 @@ func (c *ImportResult) GetStatus() string {
 func (c *ImportResult) GetDescription() string {
 	return c.Description
 }
-func (c *ImportResult) GetBalances() []ImportResultBalancesInner {
-	return c.Balances
-}
 func (c *ImportResult) GetSuspiciousCount() int32 {
 	return c.SuspiciousCount
+}
+func (c *ImportResult) GetBalances() []ImportResultBalancesInner {
+	return c.Balances
 }
 
 // AssertImportResultRequired checks if the required fields are not zero-ed

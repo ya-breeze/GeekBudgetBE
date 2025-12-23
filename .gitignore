@@ -32,3 +32,4 @@ frontend/.nyc_output/
 frontend/coverage/
 frontend/tmp/
 frontend/*.log
+frontend/test_fe_output.txt
