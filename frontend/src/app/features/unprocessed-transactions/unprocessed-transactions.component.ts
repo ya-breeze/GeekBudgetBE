@@ -188,7 +188,11 @@ export class UnprocessedTransactionsComponent implements OnInit {
             .convert(original.transaction.id!, transactionToConvert, match.matcherId)
             .subscribe({
                 next: () => {
-                    this.snackBar.open('Transaction processed (match applied)', 'Close', {
+                    const message =
+                        match.matcherId === 'manual'
+                            ? 'Transaction processed (manual)'
+                            : 'Transaction processed (match applied)';
+                    this.snackBar.open(message, 'Close', {
                         duration: 3000,
                     });
                     if (dialogRef) {
