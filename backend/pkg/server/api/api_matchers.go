@@ -152,8 +152,20 @@ func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.M
 	return goserver.Response(200, res), nil
 }
 
-func (s *MatchersAPIServiceImpl) DeleteMatcher(context.Context, string) (goserver.ImplResponse, error) {
-	return goserver.Response(500, nil), nil
+func (s *MatchersAPIServiceImpl) DeleteMatcher(ctx context.Context, id string) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		s.logger.Error("UserID not found in context")
+		return goserver.Response(500, nil), nil
+	}
+
+	if err := s.db.DeleteMatcher(userID, id); err != nil {
+		s.logger.With("error", err, "matcherID", id).Error("Failed to delete matcher")
+		return goserver.Response(500, nil), nil
+	}
+
+	s.logger.With("matcherID", id).Info("Matcher deleted")
+	return goserver.Response(204, nil), nil
 }
 
 func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m goserver.MatcherNoId,
