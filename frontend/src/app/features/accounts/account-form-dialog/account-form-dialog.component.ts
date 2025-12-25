@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -45,6 +45,8 @@ export class AccountFormDialogComponent implements OnInit {
     private readonly apiConfig = inject(ApiConfiguration);
     private readonly currencyService = inject(CurrencyService);
     private readonly userService = inject(UserService);
+
+    @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
     protected readonly form: FormGroup;
     protected readonly isEditMode = this.data.mode === 'edit';
@@ -147,6 +149,10 @@ export class AccountFormDialogComponent implements OnInit {
         this.selectedFile = null;
         this.imagePreview = null;
         this.deleteImage = true;
+
+        if (this.fileInput && this.fileInput.nativeElement) {
+            this.fileInput.nativeElement.value = '';
+        }
     }
 
     onSubmit(): void {
@@ -161,15 +167,15 @@ export class AccountFormDialogComponent implements OnInit {
                 bankInfo:
                     formValue.type === 'asset'
                         ? {
-                              ...this.data.account?.bankInfo,
-                              bankId: formValue.bankId || undefined,
-                              accountId: formValue.bankAccountId || undefined,
-                              balances: formValue.balances?.map((b: any) => ({
-                                  currencyId: b.currencyId || undefined,
-                                  openingBalance: b.openingBalance || 0,
-                                  closingBalance: b.closingBalance,
-                              })),
-                          }
+                            ...this.data.account?.bankInfo,
+                            bankId: formValue.bankId || undefined,
+                            accountId: formValue.bankAccountId || undefined,
+                            balances: formValue.balances?.map((b: any) => ({
+                                currencyId: b.currencyId || undefined,
+                                openingBalance: b.openingBalance || 0,
+                                closingBalance: b.closingBalance,
+                            })),
+                        }
                         : undefined,
                 ignoreUnprocessedBefore:
                     formValue.type === 'asset' && formValue.ignoreUnprocessedBefore
