@@ -6,6 +6,7 @@
     .account-icon {
         object-fit: contain;
         border-radius: 4px;
+        cursor: pointer;
     }
 
     &.small {
@@ -40,5 +41,39 @@
             font-size: 18px;
             font-weight: 500;
         }
+    }
+}
+
+.hover-image-hint {
+    background: white;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; // Ensure it doesn't interfere with mouse events
+    animation: fadeIn 0.15s ease-out;
+
+    .hint-large-image {
+        max-width: 200px;
+        max-height: 200px;
+        width: auto;
+        height: auto;
+        border-radius: 4px;
+        object-fit: contain;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
