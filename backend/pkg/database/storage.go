@@ -111,6 +111,8 @@ type MatcherRuntime struct {
 	Matcher              *goserver.Matcher
 	DescriptionRegexp    *regexp.Regexp
 	PartnerAccountRegexp *regexp.Regexp
+	PartnerNameRegexp    *regexp.Regexp
+	CurrencyRegexp       *regexp.Regexp
 	PlaceRegexp          *regexp.Regexp
 }
 
@@ -967,6 +969,22 @@ func (s *storage) createMatcherRuntime(m goserver.Matcher) (MatcherRuntime, erro
 			return MatcherRuntime{}, fmt.Errorf("failed to compile partner account regexp: %w", err)
 		}
 		runtime.PartnerAccountRegexp = r
+	}
+
+	if m.PartnerNameRegExp != "" {
+		r, err := regexp.Compile(m.PartnerNameRegExp)
+		if err != nil {
+			return MatcherRuntime{}, fmt.Errorf("failed to compile partner name regexp: %w", err)
+		}
+		runtime.PartnerNameRegexp = r
+	}
+
+	if m.CurrencyRegExp != "" {
+		r, err := regexp.Compile(m.CurrencyRegExp)
+		if err != nil {
+			return MatcherRuntime{}, fmt.Errorf("failed to compile currency regexp: %w", err)
+		}
+		runtime.CurrencyRegexp = r
 	}
 
 	if m.PlaceRegExp != "" {

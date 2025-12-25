@@ -1,4 +1,3 @@
-
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountFormDialogComponent, AccountFormDialogData } from './account-form-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -23,7 +22,7 @@ describe('AccountFormDialogComponent', () => {
     let mockUserService: jasmine.SpyObj<UserService>;
 
     const mockDialogData: AccountFormDialogData = {
-        mode: 'create'
+        mode: 'create',
     };
 
     beforeEach(async () => {
@@ -33,7 +32,9 @@ describe('AccountFormDialogComponent', () => {
         Object.defineProperty(mockCurrencyService, 'currencies', { get: () => () => [] });
 
         mockUserService = jasmine.createSpyObj('UserService', ['loadUser']);
-        mockUserService.loadUser.and.returnValue(of({ id: '1', email: 'test@example.com', startDate: '2025-01-01' }));
+        mockUserService.loadUser.and.returnValue(
+            of({ id: '1', email: 'test@example.com', startDate: '2025-01-01' }),
+        );
 
         await TestBed.configureTestingModule({
             imports: [
@@ -46,14 +47,14 @@ describe('AccountFormDialogComponent', () => {
                 MatFormFieldModule,
                 MatDatepickerModule,
                 MatNativeDateModule,
-                MatSlideToggleModule
+                MatSlideToggleModule,
             ],
             providers: [
                 { provide: MatDialogRef, useValue: mockDialogRef },
                 { provide: MAT_DIALOG_DATA, useValue: mockDialogData },
                 { provide: CurrencyService, useValue: mockCurrencyService },
-                { provide: UserService, useValue: mockUserService }
-            ]
+                { provide: UserService, useValue: mockUserService },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(AccountFormDialogComponent);
@@ -85,7 +86,7 @@ describe('AccountFormDialogComponent', () => {
 
         // Simulate user selecting a file (browser sets the value)
         // We can't easily set 'files' property due to security, but we can set 'value' logic that we are testing clearing of.
-        // Note: setting value to a non-empty string on input type=file throws security error in browsers, 
+        // Note: setting value to a non-empty string on input type=file throws security error in browsers,
         // but in jsdom/testing environments it might be restricted too.
         // However, the component relies on resetting it to "".
 
@@ -99,7 +100,7 @@ describe('AccountFormDialogComponent', () => {
         // Let's forcefully set a value if permitted, or mock the element.
         Object.defineProperty(nativeInput, 'value', {
             value: 'C:\\fakepath\\test.png',
-            writable: true
+            writable: true,
         });
 
         expect(nativeInput.value).toBe('C:\\fakepath\\test.png');

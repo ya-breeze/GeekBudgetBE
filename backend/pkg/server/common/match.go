@@ -13,6 +13,7 @@ const (
 	MatchResultSuccess MatchResult = iota
 	MatchResultWrongDescription
 	MatchResultWrongPartnerAccount
+	MatchResultWrongPartnerName
 )
 
 // MatchDetails contains detailed information about why a matcher matched or didn't match a transaction
@@ -37,6 +38,11 @@ func Match(matcher *database.MatcherRuntime, transaction *goserver.Transaction) 
 	if matcher.PlaceRegexp != nil &&
 		!matcher.PlaceRegexp.MatchString(transaction.Place) {
 		return MatchResultWrongPartnerAccount // Using existing error code or add a new one if strictly necessary, but standard MatchResult structure might suffice for boolean check
+	}
+
+	if matcher.PartnerNameRegexp != nil &&
+		!matcher.PartnerNameRegexp.MatchString(transaction.PartnerName) {
+		return MatchResultWrongPartnerName
 	}
 
 	return MatchResultSuccess
@@ -74,6 +80,20 @@ func MatchWithDetails(matcher *database.MatcherRuntime, transaction *goserver.Tr
 				transaction.PartnerAccount,
 			)
 			details.PartnerAccountMatched = false
+			details.Matched = false
+			return details
+		}
+	}
+
+	// Check partner name regex
+	if matcher.PartnerNameRegexp != nil {
+		if !matcher.PartnerNameRegexp.MatchString(transaction.PartnerName) {
+			details.Result = MatchResultWrongPartnerName
+			details.FailureReason = fmt.Sprintf(
+				"Partner name regex %q doesn't match transaction partner name %q",
+				matcher.PartnerNameRegexp.String(),
+				transaction.PartnerName,
+			)
 			details.Matched = false
 			return details
 		}
