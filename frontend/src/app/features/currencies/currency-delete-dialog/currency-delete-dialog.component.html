@@ -1,0 +1,35 @@
+<h2 mat-dialog-title>Delete Currency</h2>
+<mat-dialog-content>
+    <p>{{ data.message }}</p>
+
+    @if (data.isUsed) {
+        <p class="warning">
+            This currency is currently in use. Please select a replacement currency to proceed with
+            deletion.
+        </p>
+    }
+
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Replacement Currency{{ data.isUsed ? '' : ' (Optional)' }}</mat-label>
+        <mat-select [formControl]="replacementControl">
+            <mat-option [value]="null">Select Replacement</mat-option>
+            @for (currency of usableCurrencies(); track currency.id) {
+                <mat-option [value]="currency.id">{{ currency.name }}</mat-option>
+            }
+        </mat-select>
+        @if (replacementControl.invalid && replacementControl.touched) {
+            <mat-error>Replacement currency is required</mat-error>
+        }
+    </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button
+        mat-raised-button
+        color="warn"
+        [disabled]="data.isUsed && replacementControl.invalid"
+        (click)="onConfirm()"
+    >
+        Delete
+    </button>
+</mat-dialog-actions>

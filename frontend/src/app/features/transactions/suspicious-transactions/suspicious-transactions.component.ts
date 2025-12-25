@@ -8,7 +8,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
-import { DatePipe } from '@angular/common';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { TransactionService } from '../services/transaction.service';
 import { Transaction } from '../../../core/api/models/transaction';
 import { TransactionFormDialogComponent } from '../transaction-form-dialog/transaction-form-dialog.component';
@@ -33,7 +33,7 @@ import { AccountDisplayComponent } from '../../../shared/components/account-disp
         MatSnackBarModule,
         MatTooltipModule,
         MatChipsModule,
-        DatePipe,
+        AppDatePipe,
         AccountDisplayComponent,
     ],
     templateUrl: './suspicious-transactions.component.html',

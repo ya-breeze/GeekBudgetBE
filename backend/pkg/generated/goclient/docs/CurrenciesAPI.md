@@ -77,7 +77,7 @@ Name | Type | Description  | Notes
 
 ## DeleteCurrency
 
-> DeleteCurrency(ctx, id).Execute()
+> DeleteCurrency(ctx, id).ReplaceWithCurrencyId(replaceWithCurrencyId).Execute()
 
 delete currency
 
@@ -95,10 +95,11 @@ import (
 
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the currency
+	replaceWithCurrencyId := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the currency which should be used instead of the deleted one (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	r, err := apiClient.CurrenciesAPI.DeleteCurrency(context.Background(), id).Execute()
+	r, err := apiClient.CurrenciesAPI.DeleteCurrency(context.Background(), id).ReplaceWithCurrencyId(replaceWithCurrencyId).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `CurrenciesAPI.DeleteCurrency``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -122,6 +123,7 @@ Other parameters are passed through a pointer to a apiDeleteCurrencyRequest stru
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 
+ **replaceWithCurrencyId** | **string** | ID of the currency which should be used instead of the deleted one | 
 
 ### Return type
 

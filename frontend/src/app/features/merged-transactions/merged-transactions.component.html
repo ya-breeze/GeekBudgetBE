@@ -28,7 +28,7 @@
                         <ng-container matColumnDef="date">
                             <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
                             <td mat-cell *matCellDef="let element">
-                                {{ element.transaction.date | date: 'mediumDate' }}
+                                {{ element.transaction.date | appDate: 'mediumDate' }}
                             </td>
                         </ng-container>
 
@@ -70,7 +70,7 @@
                         <ng-container matColumnDef="mergedAt">
                             <th mat-header-cell *matHeaderCellDef mat-sort-header>Merged At</th>
                             <td mat-cell *matCellDef="let element">
-                                {{ element.mergedAt | date: 'medium' }}
+                                {{ element.mergedAt | appDate: 'medium' }}
                             </td>
                         </ng-container>
 

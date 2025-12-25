@@ -227,8 +227,34 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 		return isAssetAccount(a) && (includeHidden || !a.HideFromReports)
 	}
 
+	// Create virtual transactions for opening balances of accounts that open mid-period
+	allTransactions := append([]goserver.Transaction{}, transactions...)
+	for _, account := range accounts {
+		if !filter(account) {
+			continue
+		}
+		if account.OpeningDate.IsZero() {
+			continue
+		}
+
+		// If account opens during the requested range [dateFrom, dateTo]
+		// We use After(dateFrom) because if it opens EXACTLY at dateFrom,
+		// it's already handled by calculateInitialBalances.
+		if account.OpeningDate.After(dateFrom) && account.OpeningDate.Before(dateTo) {
+			s.logger.Debug("Adding virtual opening balance transaction", "account", account.Name, "date", account.OpeningDate)
+			for _, b := range account.BankInfo.Balances {
+				allTransactions = append(allTransactions, goserver.Transaction{
+					Date: account.OpeningDate,
+					Movements: []goserver.Movement{
+						{AccountId: account.Id, CurrencyId: b.CurrencyId, Amount: b.OpeningBalance},
+					},
+				})
+			}
+		}
+	}
+
 	res := Aggregate(
-		ctx, accounts, transactions,
+		ctx, accounts, allTransactions,
 		dateFrom, dateTo,
 		utils.GranularityMonth,
 		outputCurrencyID, currenciesRatesFetcher,
@@ -290,6 +316,18 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 		}
 	}
 
+	// Finally, zero out amounts for intervals where the account is not active
+	for i := range res.Currencies {
+		for j := range res.Currencies[i].Accounts {
+			accountID := res.Currencies[i].Accounts[j].AccountId
+			for k, interval := range res.Intervals {
+				if !isAccountActive(accounts, accountID, interval, filter) {
+					res.Currencies[i].Accounts[j].Amounts[k] = 0
+				}
+			}
+		}
+	}
+
 	s.calculatePostAggregationData(&res, true)
 	return &res, nil
 }
@@ -308,6 +346,17 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 		if !filter(account) {
 			continue
 		}
+
+		// Account is not used BEFORE opening date
+		if !account.OpeningDate.IsZero() && dateFrom.Before(account.OpeningDate) {
+			continue
+		}
+
+		// Account is not used AFTER closing date
+		if !account.ClosingDate.IsZero() && dateFrom.After(account.ClosingDate) {
+			continue
+		}
+
 		for _, balance := range account.BankInfo.Balances {
 			// Convert opening balance to output currency
 			movement := goserver.Movement{
@@ -473,18 +522,49 @@ func Aggregate(
 			currencyMap, currenciesRatesFetcher, intervalIdx, &res, log)
 	}
 
+	// For Balance reports, we should ensure that if an account is closed, its balance becomes 0 or it's hidden.
+	// However, usually we want to see historical balance. But the requirement says "account is not used AFTER closing date".
+	// This could mean it shouldn't appear in aggregations at all if it's outside the range,
+	// or it should have 0 balance after closing.
+	// Based on "it'll not appear in expense/balance aggregations", if the account is closed BEFORE the interval ends,
+	// maybe it should be removed?
+	// Let's refine this: if account.ClosingDate < intervalStart, maybe we should zero it out.
+
 	return res
 }
 
 func getMovements(accounts []goserver.Account, t goserver.Transaction, filter AccountFilter) []goserver.Movement {
 	movements := []goserver.Movement{}
 	for _, m := range t.Movements {
-		if m.AccountId == "" || isAccountType(accounts, m.AccountId, filter) {
+		if m.AccountId == "" || isAccountActive(accounts, m.AccountId, t.Date, filter) {
 			movements = append(movements, m)
 		}
 	}
 
 	return movements
+}
+
+func isAccountActive(accounts []goserver.Account, accountID string, date time.Time, filter AccountFilter) bool {
+	for _, a := range accounts {
+		if a.Id == accountID {
+			if !filter(a) {
+				return false
+			}
+
+			// Account is not used BEFORE opening date
+			if !a.OpeningDate.IsZero() && date.Before(a.OpeningDate) {
+				return false
+			}
+
+			// Account is not used AFTER closing date
+			if !a.ClosingDate.IsZero() && date.After(a.ClosingDate) {
+				return false
+			}
+
+			return true
+		}
+	}
+	return false
 }
 
 func isAccountType(accounts []goserver.Account, accountID string, filter AccountFilter) bool {

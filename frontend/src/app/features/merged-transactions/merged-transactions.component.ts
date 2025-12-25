@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, computed, ViewChild } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,7 +28,7 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
         MatProgressSpinnerModule,
         MatSnackBarModule,
         MatTooltipModule,
-        DatePipe,
+        AppDatePipe,
         AccountDisplayComponent,
     ],
     templateUrl: './merged-transactions.component.html',

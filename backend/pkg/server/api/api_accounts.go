@@ -34,6 +34,7 @@ func (s *AccountsAPIServicerImpl) CreateAccount(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -51,6 +52,7 @@ func (s *AccountsAPIServicerImpl) GetAccounts(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -68,6 +70,7 @@ func (s *AccountsAPIServicerImpl) UpdateAccount(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -85,6 +88,7 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -110,7 +114,7 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 	if err := s.db.DeleteAccount(userID, accountID, &replaceWithAccountId); err != nil {
 		if errors.Is(err, database.ErrAccountInUse) {
 			s.logger.With("error", err).Warn("Cannot delete account in use without replacement")
-			return goserver.Response(400, nil), nil
+			return goserver.Response(400, "account is in use"), nil
 		}
 		s.logger.With("error", err).Error("Failed to delete account")
 		return goserver.Response(500, nil), nil
@@ -124,6 +128,7 @@ func (s *AccountsAPIServicerImpl) GetAccountHistory(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -141,6 +146,7 @@ func (s *AccountsAPIServicerImpl) GetAccount(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -158,6 +164,7 @@ func (s *AccountsAPIServicerImpl) UploadAccountImage(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -221,6 +228,7 @@ func (s *AccountsAPIServicerImpl) DeleteAccountImage(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 

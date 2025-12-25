@@ -332,9 +332,19 @@ paths:
             type: "string"
             format: "uuid"
             example: "123e4567-e89b-12d3-a456-426614174000"
+        - name: "replaceWithCurrencyId"
+          in: "query"
+          description: "ID of the currency which should be used instead of the deleted one"
+          required: false
+          schema:
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
       responses:
         "200":
           description: no body
+        "400":
+          description: currency is used and no replacement provided
 
   /v1/bankImporters:
     get:
@@ -1425,6 +1435,14 @@ components:
           type: string
           format: date-time
           description: "If set, unprocessed transactions for this account older than this date will be ignored."
+        openingDate:
+          type: string
+          format: date-time
+          description: "If set, the account is ignored before this date."
+        closingDate:
+          type: string
+          format: date-time
+          description: "If set, the account is ignored after this date."
       required:
         - name
         - type

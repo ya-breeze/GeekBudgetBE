@@ -22,6 +22,7 @@ var (
 	ErrNotFound                           = errors.New("not found")
 	ErrAccountInUse                       = errors.New("account is in use")
 	ErrImportedTransactionCannotBeDeleted = errors.New("imported transaction cannot be deleted")
+	ErrCurrencyInUse                      = errors.New("currency is in use")
 )
 
 type ImportInfo struct {
@@ -52,7 +53,7 @@ type Storage interface {
 	GetCurrencies(userID string) ([]goserver.Currency, error)
 	GetCurrency(userID string, id string) (goserver.Currency, error)
 	UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
-	DeleteCurrency(userID string, id string) error
+	DeleteCurrency(userID string, id string, replaceWithCurrencyID *string) error
 
 	GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error)
 	CreateTransaction(userID string, transaction goserver.TransactionNoIdInterface) (goserver.Transaction, error)
@@ -453,12 +454,120 @@ func (s *storage) UpdateCurrency(userID string, id string, currency *goserver.Cu
 	return cur.FromDB(), nil
 }
 
-func (s *storage) DeleteCurrency(userID string, id string) error {
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Currency{}).Error; err != nil {
-		return fmt.Errorf(StorageError, err)
-	}
+func (s *storage) DeleteCurrency(userID string, id string, replaceWithCurrencyID *string) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		if replaceWithCurrencyID != nil && *replaceWithCurrencyID != "" {
+			newCurrencyID := *replaceWithCurrencyID
 
-	return nil
+			// 1. Reassign in User (favorite currency)
+			if err := tx.Model(&models.User{}).Where("id = ? AND favorite_currency_id = ?", userID, id).
+				Update("favorite_currency_id", newCurrencyID).Error; err != nil {
+				return fmt.Errorf("failed to reassign user favorite currency: %w", err)
+			}
+
+			// 2. Reassign in Accounts (BankInfo)
+			var accounts []models.Account
+			if err := tx.Where("user_id = ? AND bank_info LIKE ?", userID, "%"+id+"%").Find(&accounts).Error; err != nil {
+				return fmt.Errorf("failed to find accounts for currency reassignment: %w", err)
+			}
+			for _, acc := range accounts {
+				updated := false
+				newBalances := make([]goserver.BankAccountInfoBalancesInner, len(acc.BankInfo.Balances))
+
+				for i, b := range acc.BankInfo.Balances {
+					if b.CurrencyId == id {
+						b.CurrencyId = newCurrencyID
+						updated = true
+					}
+					newBalances[i] = b
+				}
+
+				if updated {
+					acc.BankInfo.Balances = newBalances
+					if err := tx.Save(&acc).Error; err != nil {
+						return fmt.Errorf("failed to save reassigned account %s: %w", acc.ID, err)
+					}
+				}
+			}
+
+			// 3. Reassign in Transactions (Movements)
+			var transactions []models.Transaction
+			if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
+				return fmt.Errorf("failed to find transactions for currency reassignment: %w", err)
+			}
+
+			for _, t := range transactions {
+				updated := false
+				newMovements := make([]goserver.Movement, len(t.Movements))
+				for i, m := range t.Movements {
+					if m.CurrencyId == id {
+						m.CurrencyId = newCurrencyID
+						updated = true
+					}
+					newMovements[i] = m
+				}
+
+				if updated {
+					t.Movements = newMovements
+					if err := tx.Save(&t).Error; err != nil {
+						return fmt.Errorf("failed to save reassigned transaction %s: %w", t.ID, err)
+					}
+				}
+			}
+		} else {
+			// Check if currency is in use
+			var count int64
+
+			// Check User favorite currency
+			if err := tx.Model(&models.User{}).Where("id = ? AND favorite_currency_id = ?", userID, id).Count(&count).Error; err != nil {
+				return fmt.Errorf("failed to check user favorite currency: %w", err)
+			}
+			if count > 0 {
+				return ErrCurrencyInUse
+			}
+
+			// Check Accounts
+			if err := tx.Model(&models.Account{}).Where("user_id = ? AND bank_info LIKE ?", userID, "%"+id+"%").Count(&count).Error; err != nil {
+				return fmt.Errorf("failed to check accounts for currency usage: %w", err)
+			}
+			if count > 0 {
+				var accounts []models.Account
+				if err := tx.Where("user_id = ? AND bank_info LIKE ?", userID, "%"+id+"%").Find(&accounts).Error; err != nil {
+					return fmt.Errorf("failed to fetch accounts for currency usage verification: %w", err)
+				}
+				for _, acc := range accounts {
+					for _, b := range acc.BankInfo.Balances {
+						if b.CurrencyId == id {
+							return ErrCurrencyInUse
+						}
+					}
+				}
+			}
+
+			// Check Transactions
+			if err := tx.Model(&models.Transaction{}).Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Count(&count).Error; err != nil {
+				return fmt.Errorf("failed to check transactions for currency usage: %w", err)
+			}
+			if count > 0 {
+				var transactions []models.Transaction
+				if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
+					return fmt.Errorf("failed to fetch transactions for currency usage verification: %w", err)
+				}
+				for _, t := range transactions {
+					for _, m := range t.Movements {
+						if m.CurrencyId == id {
+							return ErrCurrencyInUse
+						}
+					}
+				}
+			}
+		}
+
+		if err := tx.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Currency{}).Error; err != nil {
+			return fmt.Errorf(StorageError, err)
+		}
+		return nil
+	})
 }
 
 func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error) {

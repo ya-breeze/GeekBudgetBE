@@ -150,12 +150,24 @@ func (c *CurrenciesAPIController) UpdateCurrency(w http.ResponseWriter, r *http.
 // DeleteCurrency - delete currency
 func (c *CurrenciesAPIController) DeleteCurrency(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
+	query, err := parseQuery(r.URL.RawQuery)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
 	idParam := params["id"]
 	if idParam == "" {
 		c.errorHandler(w, r, &RequiredError{"id"}, nil)
 		return
 	}
-	result, err := c.service.DeleteCurrency(r.Context(), idParam)
+	var replaceWithCurrencyIdParam string
+	if query.Has("replaceWithCurrencyId") {
+		param := query.Get("replaceWithCurrencyId")
+
+		replaceWithCurrencyIdParam = param
+	} else {
+	}
+	result, err := c.service.DeleteCurrency(r.Context(), idParam, replaceWithCurrencyIdParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

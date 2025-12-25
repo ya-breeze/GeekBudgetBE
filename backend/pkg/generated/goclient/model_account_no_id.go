@@ -35,6 +35,10 @@ type AccountNoID struct {
 	Image *string `json:"image,omitempty"`
 	// If set, unprocessed transactions for this account older than this date will be ignored.
 	IgnoreUnprocessedBefore *time.Time `json:"ignoreUnprocessedBefore,omitempty"`
+	// If set, the account is ignored before this date.
+	OpeningDate *time.Time `json:"openingDate,omitempty"`
+	// If set, the account is ignored after this date.
+	ClosingDate *time.Time `json:"closingDate,omitempty"`
 }
 
 type _AccountNoID AccountNoID
@@ -306,6 +310,70 @@ func (o *AccountNoID) SetIgnoreUnprocessedBefore(v time.Time) {
 	o.IgnoreUnprocessedBefore = &v
 }
 
+// GetOpeningDate returns the OpeningDate field value if set, zero value otherwise.
+func (o *AccountNoID) GetOpeningDate() time.Time {
+	if o == nil || IsNil(o.OpeningDate) {
+		var ret time.Time
+		return ret
+	}
+	return *o.OpeningDate
+}
+
+// GetOpeningDateOk returns a tuple with the OpeningDate field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountNoID) GetOpeningDateOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.OpeningDate) {
+		return nil, false
+	}
+	return o.OpeningDate, true
+}
+
+// HasOpeningDate returns a boolean if a field has been set.
+func (o *AccountNoID) HasOpeningDate() bool {
+	if o != nil && !IsNil(o.OpeningDate) {
+		return true
+	}
+
+	return false
+}
+
+// SetOpeningDate gets a reference to the given time.Time and assigns it to the OpeningDate field.
+func (o *AccountNoID) SetOpeningDate(v time.Time) {
+	o.OpeningDate = &v
+}
+
+// GetClosingDate returns the ClosingDate field value if set, zero value otherwise.
+func (o *AccountNoID) GetClosingDate() time.Time {
+	if o == nil || IsNil(o.ClosingDate) {
+		var ret time.Time
+		return ret
+	}
+	return *o.ClosingDate
+}
+
+// GetClosingDateOk returns a tuple with the ClosingDate field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *AccountNoID) GetClosingDateOk() (*time.Time, bool) {
+	if o == nil || IsNil(o.ClosingDate) {
+		return nil, false
+	}
+	return o.ClosingDate, true
+}
+
+// HasClosingDate returns a boolean if a field has been set.
+func (o *AccountNoID) HasClosingDate() bool {
+	if o != nil && !IsNil(o.ClosingDate) {
+		return true
+	}
+
+	return false
+}
+
+// SetClosingDate gets a reference to the given time.Time and assigns it to the ClosingDate field.
+func (o *AccountNoID) SetClosingDate(v time.Time) {
+	o.ClosingDate = &v
+}
+
 func (o AccountNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -335,6 +403,12 @@ func (o AccountNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.IgnoreUnprocessedBefore) {
 		toSerialize["ignoreUnprocessedBefore"] = o.IgnoreUnprocessedBefore
+	}
+	if !IsNil(o.OpeningDate) {
+		toSerialize["openingDate"] = o.OpeningDate
+	}
+	if !IsNil(o.ClosingDate) {
+		toSerialize["closingDate"] = o.ClosingDate
 	}
 	return toSerialize, nil
 }

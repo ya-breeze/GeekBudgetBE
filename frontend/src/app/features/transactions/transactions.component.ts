@@ -14,8 +14,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { TransactionService } from './services/transaction.service';
 import { Transaction } from '../../core/api/models/transaction';
 import { TransactionFormDialogComponent } from './transaction-form-dialog/transaction-form-dialog.component';
@@ -49,7 +49,7 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
         MatSelectModule,
         MatDatepickerModule,
         MatNativeDateModule,
-        DatePipe,
+        AppDatePipe,
         FormsModule,
         ImageUrlPipe,
         AccountDisplayComponent,

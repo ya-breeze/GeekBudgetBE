@@ -133,9 +133,16 @@ func (a *CurrenciesAPIService) CreateCurrencyExecute(r ApiCreateCurrencyRequest)
 }
 
 type ApiDeleteCurrencyRequest struct {
-	ctx        context.Context
-	ApiService *CurrenciesAPIService
-	id         string
+	ctx                   context.Context
+	ApiService            *CurrenciesAPIService
+	id                    string
+	replaceWithCurrencyId *string
+}
+
+// ID of the currency which should be used instead of the deleted one
+func (r ApiDeleteCurrencyRequest) ReplaceWithCurrencyId(replaceWithCurrencyId string) ApiDeleteCurrencyRequest {
+	r.replaceWithCurrencyId = &replaceWithCurrencyId
+	return r
 }
 
 func (r ApiDeleteCurrencyRequest) Execute() (*http.Response, error) {
@@ -177,6 +184,9 @@ func (a *CurrenciesAPIService) DeleteCurrencyExecute(r ApiDeleteCurrencyRequest)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.replaceWithCurrencyId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "replaceWithCurrencyId", r.replaceWithCurrencyId, "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 

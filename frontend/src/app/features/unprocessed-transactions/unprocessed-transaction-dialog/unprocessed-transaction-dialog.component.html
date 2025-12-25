@@ -23,7 +23,7 @@
                         <div class="detail-item">
                             <span class="label">Date:</span>
                             <span class="value">{{
-                                transaction().transaction.date | date: 'medium'
+                                transaction().transaction.date | appDate: 'medium'
                             }}</span>
                         </div>
                         <div class="detail-item description-field">
@@ -437,7 +437,7 @@
                                                 {{ duplicate.description }}
                                             </div>
                                             <div class="item-subtitle">
-                                                {{ duplicate.date | date: 'medium' }}
+                                                {{ duplicate.date | appDate: 'medium' }}
                                             </div>
                                         </div>
                                         @if (expandedDuplicateId() !== duplicate.id) {
@@ -477,7 +477,7 @@
                                             <div class="detail-grid">
                                                 <div class="label">Date:</div>
                                                 <div class="value">
-                                                    {{ duplicate.date | date: 'medium' }}
+                                                    {{ duplicate.date | appDate: 'medium' }}
                                                 </div>
 
                                                 <div class="label">Partner:</div>

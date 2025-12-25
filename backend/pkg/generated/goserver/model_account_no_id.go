@@ -35,6 +35,12 @@ type AccountNoId struct {
 
 	// If set, unprocessed transactions for this account older than this date will be ignored.
 	IgnoreUnprocessedBefore time.Time `json:"ignoreUnprocessedBefore,omitempty"`
+
+	// If set, the account is ignored before this date.
+	OpeningDate time.Time `json:"openingDate,omitempty"`
+
+	// If set, the account is ignored after this date.
+	ClosingDate time.Time `json:"closingDate,omitempty"`
 }
 
 type AccountNoIdInterface interface {
@@ -46,6 +52,8 @@ type AccountNoIdInterface interface {
 	GetHideFromReports() bool
 	GetImage() string
 	GetIgnoreUnprocessedBefore() time.Time
+	GetOpeningDate() time.Time
+	GetClosingDate() time.Time
 }
 
 func (c *AccountNoId) GetName() string {
@@ -71,6 +79,12 @@ func (c *AccountNoId) GetImage() string {
 }
 func (c *AccountNoId) GetIgnoreUnprocessedBefore() time.Time {
 	return c.IgnoreUnprocessedBefore
+}
+func (c *AccountNoId) GetOpeningDate() time.Time {
+	return c.OpeningDate
+}
+func (c *AccountNoId) GetClosingDate() time.Time {
+	return c.ClosingDate
 }
 
 // AssertAccountNoIdRequired checks if the required fields are not zero-ed

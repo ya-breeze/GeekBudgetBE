@@ -68,11 +68,9 @@ export class AccountFormDialogComponent implements OnInit {
             hideFromReports: [this.data.account?.hideFromReports ?? false],
             bankId: [this.data.account?.bankInfo?.bankId || ''],
             bankAccountId: [this.data.account?.bankInfo?.accountId || ''],
-            ignoreUnprocessedBefore: [
-                this.data.account?.ignoreUnprocessedBefore
-                    ? new Date(this.data.account.ignoreUnprocessedBefore)
-                    : null,
-            ],
+            ignoreUnprocessedBefore: [this.parseDate(this.data.account?.ignoreUnprocessedBefore)],
+            openingDate: [this.parseDate(this.data.account?.openingDate)],
+            closingDate: [this.parseDate(this.data.account?.closingDate)],
             balances: this.fb.array([]),
         });
 
@@ -173,9 +171,18 @@ export class AccountFormDialogComponent implements OnInit {
                               })),
                           }
                         : undefined,
-                ignoreUnprocessedBefore: formValue.ignoreUnprocessedBefore
-                    ? formValue.ignoreUnprocessedBefore.toISOString()
-                    : undefined,
+                ignoreUnprocessedBefore:
+                    formValue.type === 'asset' && formValue.ignoreUnprocessedBefore
+                        ? formValue.ignoreUnprocessedBefore.toISOString()
+                        : undefined,
+                openingDate:
+                    formValue.type === 'asset' && formValue.openingDate
+                        ? formValue.openingDate.toISOString()
+                        : undefined,
+                closingDate:
+                    formValue.type === 'asset' && formValue.closingDate
+                        ? formValue.closingDate.toISOString()
+                        : undefined,
             };
 
             this.dialogRef.close({
@@ -188,5 +195,12 @@ export class AccountFormDialogComponent implements OnInit {
 
     onCancel(): void {
         this.dialogRef.close();
+    }
+
+    private parseDate(dateStr?: string | null): Date | null {
+        if (!dateStr || dateStr.startsWith('0001-01-01')) {
+            return null;
+        }
+        return new Date(dateStr);
     }
 }

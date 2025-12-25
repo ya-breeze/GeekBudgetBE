@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { DatePipe } from '@angular/common';
+import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { NotificationService } from './services/notification.service';
 import { Notification } from '../../core/api/models/notification';
 import { LayoutService } from '../../layout/services/layout.service';
@@ -19,7 +19,7 @@ import { LayoutService } from '../../layout/services/layout.service';
         MatProgressSpinnerModule,
         MatChipsModule,
         MatSnackBarModule,
-        DatePipe,
+        AppDatePipe,
     ],
     template: `
         <div class="notifications-container">
@@ -50,7 +50,7 @@ import { LayoutService } from '../../layout/services/layout.service';
                                 {{ notification.description }}
                             </div>
                             <div matListItemLine class="date">
-                                {{ notification.date | date: 'short' }}
+                                {{ notification.date | appDate: 'short' }}
                             </div>
                             <button
                                 mat-icon-button

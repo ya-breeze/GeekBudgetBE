@@ -12,6 +12,11 @@ export interface DeleteCurrency$Params {
      * ID of the currency
      */
     id: string;
+
+    /**
+     * ID of the currency which should be used instead of the deleted one
+     */
+    replaceWithCurrencyId?: string;
 }
 
 export function deleteCurrency(
@@ -23,6 +28,7 @@ export function deleteCurrency(
     const rb = new RequestBuilder(rootUrl, deleteCurrency.PATH, 'delete');
     if (params) {
         rb.path('id', params.id, {});
+        rb.query('replaceWithCurrencyId', params.replaceWithCurrencyId, {});
     }
 
     return http.request(rb.build({ responseType: 'text', accept: '*/*', context })).pipe(

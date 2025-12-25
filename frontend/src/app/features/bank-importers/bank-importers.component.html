@@ -55,7 +55,8 @@
                             <div class="date">
                                 {{
                                     importer.lastSuccessfulImport
-                                        ? (importer.lastSuccessfulImport | date: 'short')
+                                        ? (importer.lastSuccessfulImport
+                                          | appDate: 'dd/MM/yyyy HH:mm')
                                         : '-'
                                 }}
                             </div>

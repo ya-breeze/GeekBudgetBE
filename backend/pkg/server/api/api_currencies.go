@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -41,6 +42,7 @@ func (s *CurrenciesAPIServicerImpl) CreateCurrency(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -58,6 +60,7 @@ func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -71,15 +74,25 @@ func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
 }
 
 func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
-	ctx context.Context, currencyID string,
+	ctx context.Context, currencyID string, replaceWithCurrencyID string,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	err := s.db.DeleteCurrency(userID, currencyID)
+	var replaceWithRef *string
+	if replaceWithCurrencyID != "" {
+		replaceWithRef = &replaceWithCurrencyID
+	}
+
+	err := s.db.DeleteCurrency(userID, currencyID, replaceWithRef)
 	if err != nil {
+		if errors.Is(err, database.ErrCurrencyInUse) {
+			s.logger.With("error", err).Warn("Cannot delete currency in use without replacement")
+			return goserver.Response(400, "currency is in use"), nil
+		}
 		s.logger.With("error", err).Error("Failed to delete currency")
 		return goserver.Response(500, nil), nil
 	}

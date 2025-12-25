@@ -28,6 +28,7 @@ func (s *TransactionsAPIServiceImpl) GetTransactions(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -45,6 +46,7 @@ func (s *TransactionsAPIServiceImpl) CreateTransaction(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 	s.logger.Info("Processing transaction create", "user", userID)
@@ -63,6 +65,7 @@ func (s *TransactionsAPIServiceImpl) UpdateTransaction(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 	s.logger.Info("Processing transaction update", "transaction", transactionID, "user", userID)
@@ -81,6 +84,7 @@ func (s *TransactionsAPIServiceImpl) DeleteTransaction(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -98,6 +102,7 @@ func (s *TransactionsAPIServiceImpl) GetTransaction(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 

@@ -40,6 +40,7 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.Ch
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -47,7 +48,7 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.Ch
 	matcherRuntime, err := s.db.CreateMatcherRuntimeFromNoId(&r.Matcher)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create matcher runtime")
-		return goserver.Response(400, nil), nil
+		return goserver.Response(400, "failed to create matcher runtime"), nil
 	}
 
 	// Convert TransactionNoId to Transaction for matching
@@ -105,6 +106,7 @@ func (s *MatchersAPIServiceImpl) CheckRegex(ctx context.Context, r goserver.Chec
 func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -120,6 +122,7 @@ func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.Impl
 func (s *MatchersAPIServiceImpl) GetMatcher(ctx context.Context, id string) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -136,6 +139,7 @@ func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.M
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -156,6 +160,7 @@ func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -186,6 +191,7 @@ func (s *MatchersAPIServiceImpl) UploadMatcherImage(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -247,6 +253,7 @@ func (s *MatchersAPIServiceImpl) DeleteMatcherImage(
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(common.UserIDKey).(string)
 	if !ok {
+		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 

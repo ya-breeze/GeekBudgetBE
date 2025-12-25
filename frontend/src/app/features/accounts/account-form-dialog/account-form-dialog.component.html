@@ -131,6 +131,54 @@
                     placeholder="e.g., 123456789/2010"
                 />
             </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Ignore Unprocessed Before</mat-label>
+                <input
+                    matInput
+                    [matDatepicker]="picker"
+                    formControlName="ignoreUnprocessedBefore"
+                    placeholder="Choose a date"
+                />
+                <mat-hint>MM/DD/YYYY</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                @if (form.get('ignoreUnprocessedBefore')?.hasError('matDatepickerParse')) {
+                    <mat-error>Invalid date format</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Opening Date</mat-label>
+                <input
+                    matInput
+                    [matDatepicker]="openingPicker"
+                    formControlName="openingDate"
+                    placeholder="Choose a date"
+                />
+                <mat-hint>MM/DD/YYYY</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="openingPicker"></mat-datepicker-toggle>
+                <mat-datepicker #openingPicker></mat-datepicker>
+                @if (form.get('openingDate')?.hasError('matDatepickerParse')) {
+                    <mat-error>Invalid date format</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Closing Date</mat-label>
+                <input
+                    matInput
+                    [matDatepicker]="closingPicker"
+                    formControlName="closingDate"
+                    placeholder="Choose a date"
+                />
+                <mat-hint>MM/DD/YYYY</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="closingPicker"></mat-datepicker-toggle>
+                <mat-datepicker #closingPicker></mat-datepicker>
+                @if (form.get('closingDate')?.hasError('matDatepickerParse')) {
+                    <mat-error>Invalid date format</mat-error>
+                }
+            </mat-form-field>
         }
 
         @if (form.get('type')?.value === 'expense') {
@@ -140,22 +188,6 @@
                 </mat-slide-toggle>
             </div>
         }
-
-        <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Ignore Unprocessed Before</mat-label>
-            <input
-                matInput
-                [matDatepicker]="picker"
-                formControlName="ignoreUnprocessedBefore"
-                placeholder="Choose a date"
-            />
-            <mat-hint>MM/DD/YYYY</mat-hint>
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-            @if (form.get('ignoreUnprocessedBefore')?.hasError('matDatepickerParse')) {
-                <mat-error>Invalid date format</mat-error>
-            }
-        </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Description</mat-label>

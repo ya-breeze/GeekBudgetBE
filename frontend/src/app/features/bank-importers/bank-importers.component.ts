@@ -9,7 +9,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { DatePipe } from '@angular/common';
+import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { BankImporterService } from './services/bank-importer.service';
 import { BankImporter } from '../../core/api/models/bank-importer';
 import { BankImporterFormDialogComponent } from './bank-importer-form-dialog/bank-importer-form-dialog.component';
@@ -40,7 +40,7 @@ import { ImportResult } from '../../core/api/models/import-result';
         MatSnackBarModule,
         MatChipsModule,
         MatTooltipModule,
-        DatePipe,
+        AppDatePipe,
         AccountDisplayComponent,
     ],
     templateUrl: './bank-importers.component.html',

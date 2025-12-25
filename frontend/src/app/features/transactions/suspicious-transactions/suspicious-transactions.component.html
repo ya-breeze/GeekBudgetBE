@@ -21,7 +21,7 @@
             <ng-container matColumnDef="date">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
                 <td mat-cell *matCellDef="let transaction">
-                    {{ transaction.date | date: 'shortDate' }}
+                    {{ transaction.date | appDate: 'dd/MM/yyyy' }}
                 </td>
             </ng-container>
 

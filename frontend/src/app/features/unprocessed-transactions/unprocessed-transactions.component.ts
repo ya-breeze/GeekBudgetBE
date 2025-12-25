@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
-import { DatePipe } from '@angular/common';
+import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { UnprocessedTransactionService } from './services/unprocessed-transaction.service';
 import { UnprocessedTransaction } from '../../core/api/models/unprocessed-transaction';
 import { LayoutService } from '../../layout/services/layout.service';
@@ -27,7 +27,7 @@ import {
         MatProgressSpinnerModule,
         MatSnackBarModule,
         MatChipsModule,
-        DatePipe,
+        AppDatePipe,
         MatDialogModule,
     ],
     templateUrl: './unprocessed-transactions.component.html',

@@ -17,7 +17,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { UnprocessedTransaction } from '../../../core/api/models/unprocessed-transaction';
 import { UnprocessedTransactionService } from '../../unprocessed-transactions/services/unprocessed-transaction.service';
 import { MatcherEditDialogComponent } from '../../matchers/matcher-edit-dialog/matcher-edit-dialog.component';
@@ -71,7 +71,7 @@ export type UnprocessedTransactionDialogResult =
         MatTooltipModule,
         FormsModule,
         ReactiveFormsModule,
-        DatePipe,
+        AppDatePipe,
         AccountSelectComponent,
         OverlayModule,
         MatChipsModule,

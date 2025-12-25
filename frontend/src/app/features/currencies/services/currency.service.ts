@@ -79,11 +79,14 @@ export class CurrencyService {
         );
     }
 
-    delete(id: string): Observable<void> {
+    delete(id: string, replaceWithCurrencyId?: string): Observable<void> {
         this.loading.set(true);
         this.error.set(null);
 
-        return deleteCurrency(this.http, this.apiConfig.rootUrl, { id }).pipe(
+        return deleteCurrency(this.http, this.apiConfig.rootUrl, {
+            id,
+            replaceWithCurrencyId,
+        }).pipe(
             map(() => undefined),
             tap({
                 next: () => {

@@ -12,6 +12,8 @@ Name | Type | Description | Notes
 **HideFromReports** | Pointer to **bool** | If true, this account should be hidden from reports and budget. | [optional] [default to false]
 **Image** | Pointer to **string** | ID of the account image | [optional] 
 **IgnoreUnprocessedBefore** | Pointer to **time.Time** | If set, unprocessed transactions for this account older than this date will be ignored. | [optional] 
+**OpeningDate** | Pointer to **time.Time** | If set, the account is ignored before this date. | [optional] 
+**ClosingDate** | Pointer to **time.Time** | If set, the account is ignored after this date. | [optional] 
 
 ## Methods
 
@@ -221,6 +223,56 @@ SetIgnoreUnprocessedBefore sets IgnoreUnprocessedBefore field to given value.
 `func (o *AccountNoID) HasIgnoreUnprocessedBefore() bool`
 
 HasIgnoreUnprocessedBefore returns a boolean if a field has been set.
+
+### GetOpeningDate
+
+`func (o *AccountNoID) GetOpeningDate() time.Time`
+
+GetOpeningDate returns the OpeningDate field if non-nil, zero value otherwise.
+
+### GetOpeningDateOk
+
+`func (o *AccountNoID) GetOpeningDateOk() (*time.Time, bool)`
+
+GetOpeningDateOk returns a tuple with the OpeningDate field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetOpeningDate
+
+`func (o *AccountNoID) SetOpeningDate(v time.Time)`
+
+SetOpeningDate sets OpeningDate field to given value.
+
+### HasOpeningDate
+
+`func (o *AccountNoID) HasOpeningDate() bool`
+
+HasOpeningDate returns a boolean if a field has been set.
+
+### GetClosingDate
+
+`func (o *AccountNoID) GetClosingDate() time.Time`
+
+GetClosingDate returns the ClosingDate field if non-nil, zero value otherwise.
+
+### GetClosingDateOk
+
+`func (o *AccountNoID) GetClosingDateOk() (*time.Time, bool)`
+
+GetClosingDateOk returns a tuple with the ClosingDate field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetClosingDate
+
+`func (o *AccountNoID) SetClosingDate(v time.Time)`
+
+SetClosingDate sets ClosingDate field to given value.
+
+### HasClosingDate
+
+`func (o *AccountNoID) HasClosingDate() bool`
+
+HasClosingDate returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

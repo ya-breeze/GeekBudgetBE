@@ -9,6 +9,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CurrencyService } from './services/currency.service';
 import { Currency } from '../../core/api/models/currency';
 import { CurrencyFormDialogComponent } from './currency-form-dialog/currency-form-dialog.component';
+import { CurrencyDeleteDialogComponent } from './currency-delete-dialog/currency-delete-dialog.component';
 import { LayoutService } from '../../layout/services/layout.service';
 
 @Component({
@@ -109,23 +110,42 @@ export class CurrenciesComponent implements OnInit {
         });
     }
 
-    deleteCurrency(currency: Currency): void {
-        if (confirm(`Are you sure you want to delete "${currency.name}"?`)) {
-            if (currency.id) {
-                this.currencyService.delete(currency.id).subscribe({
+    deleteCurrency(currency: Currency, selectedReplacementId?: string, isRetry = false): void {
+        const dialogRef = this.dialog.open(CurrencyDeleteDialogComponent, {
+            width: '400px',
+            data: {
+                currencyId: currency.id,
+                currencyName: currency.name,
+                message: isRetry
+                    ? `Cannot delete "${currency.name}" because it is in use.`
+                    : `Are you sure you want to delete "${currency.name}"?`,
+                isUsed: isRetry,
+                currencies: this.currencies(),
+                selectedReplacementId,
+            },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result && currency.id) {
+                this.currencyService.delete(currency.id, result.replaceWithCurrencyId).subscribe({
                     next: () => {
                         this.snackBar.open('Currency deleted successfully', 'Close', {
                             duration: 3000,
                         });
                     },
-                    error: () => {
-                        this.snackBar.open('Failed to delete currency', 'Close', {
-                            duration: 3000,
-                        });
+                    error: (err) => {
+                        // Check if it's a 400 error (used)
+                        if (err.status === 400) {
+                            this.deleteCurrency(currency, result.replaceWithCurrencyId, true);
+                        } else {
+                            this.snackBar.open('Failed to delete currency', 'Close', {
+                                duration: 3000,
+                            });
+                        }
                     },
                 });
             }
-        }
+        });
     }
 
     protected onSortChange(sort: Sort): void {

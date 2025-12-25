@@ -91,16 +91,16 @@ describe('CurrenciesComponent', () => {
         expect(dialogSpy).toHaveBeenCalled();
     });
 
-    it('should show confirmation dialog on delete', () => {
+    it('should open delete dialog on delete click', () => {
         const currency = mockCurrencies[0];
-        spyOn(window, 'confirm').and.returnValue(true);
-        currencyService.delete.and.returnValue(of({} as any));
-        currencyService.loadCurrencies.and.returnValue(of([]));
+        const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+        dialogRefSpy.afterClosed.and.returnValue(of({ replaceWithCurrencyId: undefined }));
+        const dialogSpy = spyOn(component['dialog'], 'open').and.returnValue(dialogRefSpy);
 
         component.deleteCurrency(currency);
 
-        expect(window.confirm).toHaveBeenCalled();
-        expect(currencyService.delete).toHaveBeenCalledWith(currency.id);
+        expect(dialogSpy).toHaveBeenCalled();
+        expect(currencyService.delete).toHaveBeenCalledWith(currency.id, undefined);
     });
 
     it('should call create service when dialog returns result', () => {
@@ -123,9 +123,11 @@ describe('CurrenciesComponent', () => {
         expect(currencyService.error()).toBe('Failed to load currencies');
     });
 
-    it('should not delete if confirmation is cancelled', () => {
+    it('should not delete if dialog is cancelled', () => {
         const currency = mockCurrencies[0];
-        spyOn(window, 'confirm').and.returnValue(false);
+        const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+        dialogRefSpy.afterClosed.and.returnValue(of(null));
+        spyOn(component['dialog'], 'open').and.returnValue(dialogRefSpy);
 
         component.deleteCurrency(currency);
 

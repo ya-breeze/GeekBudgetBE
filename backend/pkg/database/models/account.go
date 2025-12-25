@@ -25,6 +25,8 @@ type Account struct {
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 
 	IgnoreUnprocessedBefore *time.Time `gorm:"type:datetime"`
+	OpeningDate             *time.Time `gorm:"type:datetime"`
+	ClosingDate             *time.Time `gorm:"type:datetime"`
 }
 
 func (a *Account) FromDB() goserver.Account {
@@ -41,6 +43,12 @@ func (a *Account) FromDB() goserver.Account {
 
 	if a.IgnoreUnprocessedBefore != nil {
 		res.IgnoreUnprocessedBefore = *a.IgnoreUnprocessedBefore
+	}
+	if a.OpeningDate != nil {
+		res.OpeningDate = *a.OpeningDate
+	}
+	if a.ClosingDate != nil {
+		res.ClosingDate = *a.ClosingDate
 	}
 	return res
 }
@@ -62,6 +70,16 @@ func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
 		res.IgnoreUnprocessedBefore = &ignoreBefore
 	}
 
+	openingDate := m.GetOpeningDate()
+	if !openingDate.IsZero() {
+		res.OpeningDate = &openingDate
+	}
+
+	closingDate := m.GetClosingDate()
+	if !closingDate.IsZero() {
+		res.ClosingDate = &closingDate
+	}
+
 	return res
 }
 
@@ -75,5 +93,7 @@ func AccountWithoutID(account *goserver.Account) *goserver.AccountNoId {
 		HideFromReports:         account.HideFromReports,
 		Image:                   account.Image,
 		IgnoreUnprocessedBefore: account.IgnoreUnprocessedBefore,
+		OpeningDate:             account.OpeningDate,
+		ClosingDate:             account.ClosingDate,
 	}
 }

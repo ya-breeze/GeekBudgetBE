@@ -4,6 +4,11 @@
 import { BankAccountInfo } from '../models/bank-account-info';
 export interface AccountNoId {
     bankInfo?: BankAccountInfo;
+
+    /**
+     * If set, the account is ignored after this date.
+     */
+    closingDate?: string;
     description?: string;
 
     /**
@@ -21,6 +26,11 @@ export interface AccountNoId {
      */
     image?: string;
     name: string;
+
+    /**
+     * If set, the account is ignored before this date.
+     */
+    openingDate?: string;
 
     /**
      * If true, show this account in dashboard summary.

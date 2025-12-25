@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatcherService } from '../services/matcher.service';
 import { AccountService } from '../../accounts/services/account.service';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { Matcher } from '../../../core/api/models/matcher';
 import { MatcherNoId } from '../../../core/api/models/matcher-no-id';
 import { Transaction } from '../../../core/api/models/transaction';
@@ -36,6 +37,7 @@ import { ApiConfiguration } from '../../../core/api/api-configuration';
         MatProgressSpinnerModule,
         MatCheckboxModule,
         AccountSelectComponent,
+        AppDatePipe,
     ],
     templateUrl: './matcher-edit-dialog.component.html',
     styleUrls: ['./matcher-edit-dialog.component.scss'],

@@ -223,7 +223,7 @@ type CurrenciesAPIServicer interface {
 	GetCurrencies(context.Context) (ImplResponse, error)
 	CreateCurrency(context.Context, CurrencyNoId) (ImplResponse, error)
 	UpdateCurrency(context.Context, string, CurrencyNoId) (ImplResponse, error)
-	DeleteCurrency(context.Context, string) (ImplResponse, error)
+	DeleteCurrency(context.Context, string, string) (ImplResponse, error)
 }
 
 // ExportAPIServicer defines the api actions for the ExportAPI service
