@@ -446,4 +446,57 @@ var _ = Describe("BankImporters API", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
+
+	Describe("isDuplicate", func() {
+		It("should not match transactions with same amount but different currencies", func() {
+			t1 := &goserver.TransactionNoId{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 123, CurrencyId: "CZK"},
+				},
+			}
+			t2 := &goserver.Transaction{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 123, CurrencyId: "EUR"},
+				},
+			}
+
+			Expect(isDuplicate(t1, t2)).To(BeFalse(), "123 CZK should not match 123 EUR")
+		})
+
+		It("should match transactions with same amount and same currency", func() {
+			t1 := &goserver.TransactionNoId{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 123, CurrencyId: "CZK"},
+				},
+			}
+			t2 := &goserver.Transaction{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 123, CurrencyId: "CZK"},
+				},
+			}
+
+			Expect(isDuplicate(t1, t2)).To(BeTrue())
+		})
+
+		It("should not match transactions with different amounts in same currency", func() {
+			t1 := &goserver.TransactionNoId{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 123, CurrencyId: "CZK"},
+				},
+			}
+			t2 := &goserver.Transaction{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 124, CurrencyId: "CZK"},
+				},
+			}
+
+			Expect(isDuplicate(t1, t2)).To(BeFalse())
+		})
+	})
 })

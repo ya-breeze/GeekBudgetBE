@@ -680,22 +680,32 @@ func isPerfectMatch(m *goserver.Matcher) bool {
 	return true
 }
 
-func getIncreases(movements []goserver.Movement) float64 {
-	var pos, neg float64
+func getIncreases(movements []goserver.Movement) map[string]float64 {
+	pos := make(map[string]float64)
+	neg := make(map[string]float64)
 	for _, m := range movements {
 		if m.Amount > 0 {
-			pos += m.Amount
+			pos[m.CurrencyId] += m.Amount
 		} else {
-			neg -= m.Amount
+			neg[m.CurrencyId] -= m.Amount
 		}
 	}
-	// Return the maximum of positive and negative sums.
-	// For a balanced double-entry transaction, pos == neg.
-	// For a single-entry or simplified test transaction, one of them might be 0.
-	if pos > neg {
-		return pos
+
+	res := make(map[string]float64)
+	for c, p := range pos {
+		n := neg[c]
+		if p > n {
+			res[c] = p
+		} else {
+			res[c] = n
+		}
 	}
-	return neg
+	for c, n := range neg {
+		if _, ok := res[c]; !ok {
+			res[c] = n
+		}
+	}
+	return res
 }
 
 func isDuplicate(t1 *goserver.TransactionNoId, t2 *goserver.Transaction) bool {
@@ -708,9 +718,20 @@ func isDuplicate(t1 *goserver.TransactionNoId, t2 *goserver.Transaction) bool {
 		return false
 	}
 
-	// 2. Amount check (sum of increases)
+	// 2. Amount check (sum of increases per currency)
 	inc1 := getIncreases(t1.Movements)
 	inc2 := getIncreases(t2.Movements)
 
-	return math.Abs(inc1-inc2) < 0.01
+	if len(inc1) != len(inc2) {
+		return false
+	}
+
+	for c, v1 := range inc1 {
+		v2, ok := inc2[c]
+		if !ok || math.Abs(v1-v2) >= 0.01 {
+			return false
+		}
+	}
+
+	return true
 }
