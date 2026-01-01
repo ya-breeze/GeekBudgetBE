@@ -227,13 +227,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 ) []goserver.Transaction {
 	res := make([]goserver.Transaction, 0)
 
-	// compute all increases for the specified transaction
-	var increases float64
-	for _, m := range transaction.Movements {
-		if m.Amount > 0 {
-			increases += m.Amount
-		}
-	}
+	// compute all increases for the specified transaction (per currency)
+	inc1 := getIncreases(transaction.Movements)
 
 	for _, t := range transactions {
 		if t.Id == transaction.Id {
@@ -261,17 +256,25 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 			continue
 		}
 
-		// compute all increases in the transaction to compare
-		var d float64
-		for _, m := range t.Movements {
-			if m.Amount > 0 {
-				d += m.Amount
-			}
-		}
-		if math.Abs(increases-d) > 1 {
+		// compute all increases in the transaction to compare (per currency)
+		inc2 := getIncreases(t.Movements)
+
+		if len(inc1) != len(inc2) {
 			continue
 		}
-		res = append(res, t)
+
+		match := true
+		for c, v1 := range inc1 {
+			v2, ok := inc2[c]
+			if !ok || math.Abs(v1-v2) > 1 {
+				match = false
+				break
+			}
+		}
+
+		if match {
+			res = append(res, t)
+		}
 	}
 	if len(res) != 0 {
 		s.logger.Info("Found duplicates", "transaction", transaction.Id, "duplicates", len(res))

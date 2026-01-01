@@ -498,5 +498,42 @@ var _ = Describe("BankImporters API", func() {
 
 			Expect(isDuplicate(t1, t2)).To(BeFalse())
 		})
+
+		It("should handle complex multi-movement matches", func() {
+			t1 := &goserver.TransactionNoId{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 100, CurrencyId: "CZK"},
+					{Amount: -100, CurrencyId: "CZK"},
+					{Amount: 50, CurrencyId: "EUR"},
+				},
+			}
+			t2 := &goserver.Transaction{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 100, CurrencyId: "CZK"},
+					{Amount: 50, CurrencyId: "EUR"},
+				},
+			}
+			// Both have 100 CZK increase and 50 EUR increase
+			Expect(isDuplicate(t1, t2)).To(BeTrue())
+		})
+
+		It("should not match if currencies set differs", func() {
+			t1 := &goserver.TransactionNoId{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 100, CurrencyId: "CZK"},
+					{Amount: 50, CurrencyId: "EUR"},
+				},
+			}
+			t2 := &goserver.Transaction{
+				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
+				Movements: []goserver.Movement{
+					{Amount: 100, CurrencyId: "CZK"},
+				},
+			}
+			Expect(isDuplicate(t1, t2)).To(BeFalse())
+		})
 	})
 })
