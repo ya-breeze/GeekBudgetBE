@@ -164,6 +164,9 @@ export class MatchersComponent implements OnInit {
             case 'outputAccount':
                 return matcher.outputAccountName ?? matcher.outputAccountId ?? '';
             case 'outputDescription':
+                if (matcher.simplified) {
+                    return (matcher.keywords || []).join(', ');
+                }
                 return this.removeLeadingEmoji(matcher.outputDescription ?? '');
             case 'confidence': {
                 const total = matcher.confirmationsTotal || 0;

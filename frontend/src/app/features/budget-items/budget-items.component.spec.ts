@@ -180,12 +180,8 @@ describe('BudgetItemsComponent', () => {
         // 2. Unbudgeted & Spent > 0 & Current Month (Should be Red -> over-budget class)
         // 3. Unbudgeted & Spent > 0 & Past Month (Should be Yellow -> unbudgeted-spent class)
 
-        const now = new Date();
-        const currentMonthStr = now.toISOString().substring(0, 7);
-
-        const pastDate = new Date(now);
-        pastDate.setMonth(pastDate.getMonth() - 1);
-        const pastMonthStr = pastDate.toISOString().substring(0, 7);
+        const currentMonthStr = '2025-12';
+        const pastMonthStr = '2025-11';
 
         mockAccountService.accounts.set([{ id: 'acc1', name: 'Test Account', type: 'expense' }]);
 

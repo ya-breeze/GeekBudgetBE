@@ -14,10 +14,20 @@ export interface MatcherNoId {
      * ID of the matcher image
      */
     image?: string;
+
+    /**
+     * List of keywords to match against transaction description, place, and  partner name (case insensitive, whole words). First matched keyword  becomes the output description. Only used when simplified=true.
+     */
+    keywords?: Array<string>;
     outputAccountId: string;
     outputDescription: string;
     outputTags?: Array<string>;
     partnerAccountNumberRegExp?: string;
     partnerNameRegExp?: string;
     placeRegExp?: string;
+
+    /**
+     * If true, use simplified mode with keyword matching instead of regex
+     */
+    simplified?: boolean;
 }

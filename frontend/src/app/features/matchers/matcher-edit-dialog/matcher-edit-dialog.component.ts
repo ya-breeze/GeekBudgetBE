@@ -7,8 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatChipsModule, MatChipInputEvent, MatChipEditedEvent } from '@angular/material/chips';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 import { MatcherService } from '../services/matcher.service';
 import { AccountService } from '../../accounts/services/account.service';
@@ -34,10 +37,11 @@ import { ApiConfiguration } from '../../../core/api/api-configuration';
         MatIconModule,
         MatChipsModule,
         MatProgressSpinnerModule,
-        MatProgressSpinnerModule,
         MatCheckboxModule,
+        MatButtonToggleModule,
         AccountSelectComponent,
         AppDatePipe,
+        MatTooltipModule,
     ],
     templateUrl: './matcher-edit-dialog.component.html',
     styleUrls: ['./matcher-edit-dialog.component.scss'],
@@ -69,6 +73,7 @@ export class MatcherEditDialogComponent implements OnInit {
     protected selectedFile: File | null = null;
     protected imagePreview: string | null = null;
     protected deleteImage = false;
+    protected readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
     onFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
@@ -106,6 +111,8 @@ export class MatcherEditDialogComponent implements OnInit {
             currencyRegExp: formValue.currencyRegExp || undefined,
             extraRegExp: formValue.extraRegExp || undefined,
             placeRegExp: formValue.placeRegExp || undefined,
+            simplified: formValue.simplified || false,
+            keywords: formValue.keywords || [],
             outputAccountId: 'temp', // Not relevant for matching check
             outputDescription: 'temp',
             outputTags: [],
@@ -168,9 +175,28 @@ export class MatcherEditDialogComponent implements OnInit {
         extraRegExp: [''],
         placeRegExp: [''],
         outputAccountId: ['', Validators.required],
-        outputDescription: ['', Validators.required],
+        outputDescription: [''], // Required state managed dynamically
         outputTags: [''], // Comma separated for simplicity initially
+        simplified: [false],
+        keywords: [[] as string[]],
     });
+
+    // Manage outputDescription requirement based on mode
+    constructor() {
+        this.form.get('simplified')?.valueChanges.subscribe((simplified) => {
+            this.updateOutputDescriptionValidation(!!simplified);
+        });
+    }
+
+    private updateOutputDescriptionValidation(simplified: boolean): void {
+        const ctrl = this.form.get('outputDescription');
+        if (simplified) {
+            ctrl?.clearValidators();
+        } else {
+            ctrl?.setValidators([Validators.required]);
+        }
+        ctrl?.updateValueAndValidity();
+    }
 
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
@@ -186,7 +212,10 @@ export class MatcherEditDialogComponent implements OnInit {
                 outputAccountId: this.data.matcher.outputAccountId,
                 outputDescription: this.data.matcher.outputDescription,
                 outputTags: this.data.matcher.outputTags?.join(', '),
+                simplified: this.data.matcher.simplified || false,
+                keywords: this.data.matcher.keywords || [],
             });
+            this.updateOutputDescriptionValidation(this.data.matcher.simplified || false);
 
             if (this.data.matcher.image) {
                 const root = this.apiConfig.rootUrl.endsWith('/')
@@ -261,6 +290,48 @@ export class MatcherEditDialogComponent implements OnInit {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    addKeyword(event: MatChipInputEvent): void {
+        const value = (event.value || '').trim();
+        if (value) {
+            const keywords = this.form.controls.keywords.value || [];
+            if (!keywords.includes(value)) {
+                this.form.controls.keywords.setValue([...keywords, value]);
+            }
+        }
+        event.chipInput!.clear();
+    }
+
+    removeKeyword(keyword: string): void {
+        const keywords = this.form.controls.keywords.value || [];
+        const index = keywords.indexOf(keyword);
+        if (index >= 0) {
+            const newKeywords = [...keywords];
+            newKeywords.splice(index, 1);
+            this.form.controls.keywords.setValue(newKeywords);
+        }
+    }
+
+    editKeyword(keyword: string, event: MatChipEditedEvent): void {
+        const value = event.value.trim();
+        console.log('Editing keyword:', keyword, 'to:', value);
+        if (!value) {
+            this.removeKeyword(keyword);
+            return;
+        }
+
+        const keywords = this.form.controls.keywords.value || [];
+        const index = keywords.indexOf(keyword);
+        if (index >= 0) {
+            const newKeywords = [...keywords];
+            newKeywords[index] = value;
+            this.form.controls.keywords.setValue(newKeywords);
+        }
+    }
+
+    trackByKeyword(index: number, keyword: string): number {
+        return index;
+    }
+
     // Place RegExp Helpers
     get isPlaceCaseInsensitive(): boolean {
         const val = this.form.controls.placeRegExp.value || '';
@@ -324,13 +395,15 @@ export class MatcherEditDialogComponent implements OnInit {
             currencyRegExp: formValue.currencyRegExp || undefined,
             extraRegExp: formValue.extraRegExp || undefined,
             placeRegExp: formValue.placeRegExp || undefined,
+            simplified: formValue.simplified || false,
+            keywords: formValue.keywords || [],
             outputAccountId: formValue.outputAccountId!,
-            outputDescription: formValue.outputDescription!,
+            outputDescription: formValue.outputDescription || '',
             outputTags: formValue.outputTags
                 ? formValue.outputTags
-                      .split(',')
-                      .map((t) => t.trim())
-                      .filter((t) => !!t)
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter((t) => !!t)
                 : [],
         };
 

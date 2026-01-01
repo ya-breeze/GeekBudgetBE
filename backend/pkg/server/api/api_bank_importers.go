@@ -408,14 +408,22 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		}
 
 		for _, matcher := range matchers {
-			if common.Match(&matcher, tempDetails) != common.MatchResultSuccess {
+			matchDetails := common.MatchWithDetails(&matcher, tempDetails)
+			if !matchDetails.Matched {
 				continue
 			}
 
 			if isPerfectMatch(matcher.Matcher) {
 				s.logger.Info("Found perfect match", "matcher", matcher.Matcher.OutputDescription, "transaction", t.Description)
 
-				t.Description = matcher.Matcher.OutputDescription
+				// Apply matcher outputs
+				description := matcher.Matcher.OutputDescription
+				tags := matcher.Matcher.OutputTags
+				if matcher.Matcher.Simplified && matchDetails.MatchedKeyword != "" {
+					description = matchDetails.MatchedOutput
+					tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
+				}
+				t.Description = description
 				for i := range t.Movements {
 					if t.Movements[i].AccountId == "" {
 						t.Movements[i].AccountId = matcher.Matcher.OutputAccountId

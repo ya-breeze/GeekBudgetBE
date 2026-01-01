@@ -1846,6 +1846,18 @@ components:
           type: string
         placeRegExp:
           type: string
+        simplified:
+          type: boolean
+          description: "If true, use simplified mode with keyword matching instead of regex"
+          default: false
+        keywords:
+          type: array
+          items:
+            type: string
+          description: >-
+            List of keywords to match against transaction description, place, and 
+            partner name (case insensitive, whole words). First matched keyword 
+            becomes the output description. Only used when simplified=true.
         confirmationHistory:
           type: array
           items:
@@ -1858,7 +1870,6 @@ components:
           type: string
           description: "ID of the matcher image"
       required:
-        - outputDescription
         - outputAccountId
 
     Matcher:

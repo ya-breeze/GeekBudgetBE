@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -114,6 +115,9 @@ type MatcherRuntime struct {
 	PartnerNameRegexp    *regexp.Regexp
 	CurrencyRegexp       *regexp.Regexp
 	PlaceRegexp          *regexp.Regexp
+	Keywords             []string
+	KeywordOutputs       []string
+	KeywordRegexps       []*regexp.Regexp
 }
 
 type storage struct {
@@ -995,6 +999,31 @@ func (s *storage) createMatcherRuntime(m goserver.Matcher) (MatcherRuntime, erro
 		runtime.PlaceRegexp = r
 	}
 
+	if m.Simplified {
+		runtime.Keywords = make([]string, len(m.Keywords))
+		runtime.KeywordOutputs = make([]string, len(m.Keywords))
+		runtime.KeywordRegexps = make([]*regexp.Regexp, len(m.Keywords))
+		for i, k := range m.Keywords {
+			matcherPart := k
+			outputPart := k
+
+			if idx := strings.Index(k, "|"); idx != -1 {
+				matcherPart = k[:idx]
+				outputPart = k[idx+1:]
+			}
+
+			runtime.Keywords[i] = matcherPart
+			runtime.KeywordOutputs[i] = outputPart
+
+			// Case-insensitive, whole-word matching
+			// We wrap the keyword in \b (word boundary)
+			r, err := regexp.Compile(`(?i)\b` + regexp.QuoteMeta(matcherPart) + `\b`)
+			if err != nil {
+				return MatcherRuntime{}, fmt.Errorf("failed to compile keyword regexp %q: %w", matcherPart, err)
+			}
+			runtime.KeywordRegexps[i] = r
+		}
+	}
 	return runtime, nil
 }
 
@@ -1015,6 +1044,8 @@ func (s *storage) CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) 
 		ExtraRegExp:                m.GetExtraRegExp(),
 		PlaceRegExp:                m.GetPlaceRegExp(),
 		ConfirmationHistory:        m.GetConfirmationHistory(),
+		Simplified:                 m.GetSimplified(),
+		Keywords:                   m.GetKeywords(),
 	}
 
 	return s.createMatcherRuntime(matcher)

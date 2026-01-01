@@ -111,7 +111,7 @@ var _ = Describe("Auto Match API", func() {
 
 		// 2. Create a matcher that targets these transactions
 		matcherNoID := goclient.MatcherNoID{
-			OutputDescription: "Netflix Subscription",
+			OutputDescription: ptrString("Netflix Subscription"),
 			PartnerNameRegExp: ptrString("Netflix"),
 			OutputAccountId:   account.Id,
 			OutputTags:        []string{"subscription"},
@@ -133,7 +133,7 @@ var _ = Describe("Auto Match API", func() {
 
 			txnConvert := goclient.TransactionNoID{
 				Date:        transactions[i].Date,
-				Description: ptrString(matcher.OutputDescription), // Apply matcher output
+				Description: matcher.OutputDescription, // Apply matcher output
 				Movements: []goclient.Movement{
 					{
 						Amount:     transactions[i].Movements[0].Amount,

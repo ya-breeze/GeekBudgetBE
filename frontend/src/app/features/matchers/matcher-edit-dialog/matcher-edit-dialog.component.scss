@@ -112,3 +112,51 @@ mat-dialog-content {
     object-fit: cover;
     border: 1px solid #e0e0e0;
 }
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 8px;
+
+    .section-title {
+        margin: 0;
+    }
+}
+
+.simplified-mode-container {
+    padding: 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 16px;
+
+    .mode-info {
+        font-size: 13px;
+        line-height: 1.5;
+        color: #495057;
+        margin-bottom: 16px;
+
+        strong {
+            color: #212529;
+        }
+    }
+}
+
+mat-button-toggle-group {
+    height: 32px;
+    align-items: center;
+
+    mat-button-toggle {
+        font-size: 12px;
+    }
+}
+
+.half-width {
+    width: calc(50% - 8px);
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}

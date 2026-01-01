@@ -21,6 +21,8 @@ type Matcher struct {
 	PlaceRegExp                string
 	ConfirmationHistory        []bool `gorm:"serializer:json"`
 	Image                      string
+	Simplified                 bool
+	Keywords                   []string `gorm:"serializer:json"`
 
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
@@ -50,6 +52,8 @@ func (m *Matcher) FromDB() goserver.Matcher {
 		ConfirmationsCount:         count,
 		ConfirmationsTotal:         total,
 		Image:                      m.Image,
+		Simplified:                 m.Simplified,
+		Keywords:                   m.Keywords,
 	}
 }
 
@@ -73,6 +77,8 @@ func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
 		PlaceRegExp:                m.GetPlaceRegExp(),
 		ConfirmationHistory:        history,
 		Image:                      m.GetImage(),
+		Simplified:                 m.GetSimplified(),
+		Keywords:                   m.GetKeywords(),
 	}
 }
 
@@ -89,6 +95,8 @@ func MatcherWithoutID(matcher *goserver.Matcher) *goserver.MatcherNoId {
 		PlaceRegExp:                matcher.PlaceRegExp,
 		ConfirmationHistory:        matcher.ConfirmationHistory,
 		Image:                      matcher.Image,
+		Simplified:                 matcher.Simplified,
+		Keywords:                   matcher.Keywords,
 	}
 }
 

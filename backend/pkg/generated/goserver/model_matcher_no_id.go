@@ -12,7 +12,7 @@
 package goserver
 
 type MatcherNoId struct {
-	OutputDescription string `json:"outputDescription"`
+	OutputDescription string `json:"outputDescription,omitempty"`
 
 	OutputAccountId string `json:"outputAccountId"`
 
@@ -29,6 +29,12 @@ type MatcherNoId struct {
 	ExtraRegExp string `json:"extraRegExp,omitempty"`
 
 	PlaceRegExp string `json:"placeRegExp,omitempty"`
+
+	// If true, use simplified mode with keyword matching instead of regex
+	Simplified bool `json:"simplified,omitempty"`
+
+	// List of keywords to match against transaction description, place, and  partner name (case insensitive, whole words). First matched keyword  becomes the output description. Only used when simplified=true.
+	Keywords []string `json:"keywords,omitempty"`
 
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
@@ -47,6 +53,8 @@ type MatcherNoIdInterface interface {
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
 	GetPlaceRegExp() string
+	GetSimplified() bool
+	GetKeywords() []string
 	GetConfirmationHistory() []bool
 	GetImage() string
 }
@@ -78,6 +86,12 @@ func (c *MatcherNoId) GetExtraRegExp() string {
 func (c *MatcherNoId) GetPlaceRegExp() string {
 	return c.PlaceRegExp
 }
+func (c *MatcherNoId) GetSimplified() bool {
+	return c.Simplified
+}
+func (c *MatcherNoId) GetKeywords() []string {
+	return c.Keywords
+}
 func (c *MatcherNoId) GetConfirmationHistory() []bool {
 	return c.ConfirmationHistory
 }
@@ -88,8 +102,7 @@ func (c *MatcherNoId) GetImage() string {
 // AssertMatcherNoIdRequired checks if the required fields are not zero-ed
 func AssertMatcherNoIdRequired(obj MatcherNoId) error {
 	elements := map[string]interface{}{
-		"outputDescription": obj.OutputDescription,
-		"outputAccountId":   obj.OutputAccountId,
+		"outputAccountId": obj.OutputAccountId,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

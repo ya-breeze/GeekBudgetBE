@@ -2,43 +2,43 @@
 
 <mat-dialog-content [class.loading]="loading()">
     @if (loading()) {
-        <div class="loading-overlay">
-            <mat-spinner diameter="40"></mat-spinner>
-        </div>
+    <div class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+    </div>
     }
 
     <div class="dialog-content-wrapper" [class.split-view]="!!data?.transaction">
         <!-- Transaction Context (Split View Only) -->
         @if (data?.transaction; as t) {
-            <div class="transaction-context">
-                <h3>Target Transaction</h3>
-                <div class="detail-item">
-                    <span class="label">Date</span>
-                    <span class="value">{{ t.date | appDate: 'mediumDate' }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="label">Description</span>
-                    <span class="value">{{ t.description }}</span>
-                </div>
-                @if (t.partnerName) {
-                    <div class="detail-item">
-                        <span class="label">Partner Name</span>
-                        <span class="value">{{ t.partnerName }}</span>
-                    </div>
-                }
-                @if (t.partnerAccount) {
-                    <div class="detail-item">
-                        <span class="label">Partner Account</span>
-                        <span class="value">{{ t.partnerAccount }}</span>
-                    </div>
-                }
-                <div class="detail-item">
-                    <span class="label">Amount</span>
-                    <span class="value amount" [class.negative]="(t.movements[0].amount || 0) < 0">
-                        {{ t.movements[0].amount }}
-                    </span>
-                </div>
+        <div class="transaction-context">
+            <h3>Target Transaction</h3>
+            <div class="detail-item">
+                <span class="label">Date</span>
+                <span class="value">{{ t.date | appDate: 'mediumDate' }}</span>
             </div>
+            <div class="detail-item">
+                <span class="label">Description</span>
+                <span class="value">{{ t.description }}</span>
+            </div>
+            @if (t.partnerName) {
+            <div class="detail-item">
+                <span class="label">Partner Name</span>
+                <span class="value">{{ t.partnerName }}</span>
+            </div>
+            }
+            @if (t.partnerAccount) {
+            <div class="detail-item">
+                <span class="label">Partner Account</span>
+                <span class="value">{{ t.partnerAccount }}</span>
+            </div>
+            }
+            <div class="detail-item">
+                <span class="label">Amount</span>
+                <span class="value amount" [class.negative]="(t.movements[0].amount || 0) < 0">
+                    {{ t.movements[0].amount }}
+                </span>
+            </div>
+        </div>
         }
 
         <form [formGroup]="form" class="edit-form">
@@ -46,8 +46,15 @@
             <h3 class="section-title">General</h3>
 
             <!-- Conditions Section -->
-            <h3 class="section-title">Conditions</h3>
+            <div class="section-header-row">
+                <h3 class="section-title">Conditions</h3>
+                <mat-button-toggle-group formControlName="simplified" aria-label="Matcher Mode">
+                    <mat-button-toggle [value]="false">Normal (Regex)</mat-button-toggle>
+                    <mat-button-toggle [value]="true">Simplified (Keywords)</mat-button-toggle>
+                </mat-button-toggle-group>
+            </div>
 
+            @if (!form.value.simplified) {
             <div class="regex-test-container">
                 <mat-form-field appearance="outline" class="regex-input">
                     <mat-label>Description RegExp</mat-label>
@@ -55,123 +62,15 @@
                 </mat-form-field>
 
                 <div class="regex-options">
-                    <mat-checkbox
-                        [checked]="isCaseInsensitive"
-                        (change)="toggleCaseInsensitive($event.checked)"
-                        color="primary"
-                    >
+                    <mat-checkbox [checked]="isCaseInsensitive" (change)="toggleCaseInsensitive($event.checked)"
+                        color="primary">
                         Case Insensitive (starts with (?i))
                     </mat-checkbox>
-                    <mat-checkbox
-                        [checked]="isWholeWord"
-                        (change)="toggleWholeWord($event.checked)"
-                        color="primary"
-                    >
+                    <mat-checkbox [checked]="isWholeWord" (change)="toggleWholeWord($event.checked)" color="primary">
                         Whole Words Only (wrapped in \b)
                     </mat-checkbox>
                 </div>
 
-                <!-- Regexp Tester / Match Checker -->
-                <div class="regexp-tester">
-                    <h3>{{ data?.transaction ? 'Match Verification' : 'Regexp Tester' }}</h3>
-
-                    <div class="tester-controls">
-                        @if (data?.transaction) {
-                            <!-- Read-only display/indicator for transaction mode -->
-                            <div class="test-string-display">
-                                Using transaction details for verification
-                            </div>
-                            <button
-                                mat-stroked-button
-                                color="primary"
-                                (click)="checkMatch()"
-                                [disabled]="testingMatch()"
-                                class="test-button"
-                            >
-                                @if (testingMatch()) {
-                                    <mat-spinner diameter="20"></mat-spinner>
-                                } @else {
-                                    <mat-icon>fact_check</mat-icon>
-                                }
-                                Check Match
-                            </button>
-                        } @else {
-                            <!-- Standard manual tester -->
-                            <mat-form-field appearance="outline" class="test-string-input">
-                                <mat-label>Test String</mat-label>
-                                <input
-                                    matInput
-                                    [ngModel]="testString()"
-                                    (ngModelChange)="testString.set($event)"
-                                    [ngModelOptions]="{ standalone: true }"
-                                />
-                            </mat-form-field>
-                            <button
-                                mat-stroked-button
-                                color="accent"
-                                (click)="testRegex()"
-                                [disabled]="
-                                    testingMatch() ||
-                                    !testString() ||
-                                    !form.controls.descriptionRegExp.value
-                                "
-                                class="test-button"
-                            >
-                                @if (testingMatch()) {
-                                    <mat-spinner diameter="20"></mat-spinner>
-                                } @else {
-                                    <mat-icon>play_arrow</mat-icon>
-                                }
-                                Test
-                            </button>
-                        }
-                    </div>
-
-                    <!-- Results Area -->
-                    @if (data?.transaction) {
-                        @if (matchResult()) {
-                            <div class="test-result">
-                                @if (matchResult()?.result) {
-                                    <span class="match"
-                                        ><mat-icon>check_circle</mat-icon> Matches!</span
-                                    >
-                                    <div class="match-details" *ngIf="matchResult()?.reason">
-                                        {{ matchResult()?.reason }}
-                                    </div>
-                                } @else {
-                                    <span class="no-match"
-                                        ><mat-icon>cancel</mat-icon> No Match</span
-                                    >
-                                    <div class="error-details" *ngIf="matchResult()?.reason">
-                                        Reason: {{ matchResult()?.reason }}
-                                    </div>
-                                }
-                            </div>
-                        }
-                    } @else {
-                        @if (regexResult()) {
-                            <div class="test-result">
-                                @if (!regexResult()?.isValid) {
-                                    <span class="error"
-                                        ><mat-icon>error</mat-icon> Invalid:
-                                        {{ regexResult()?.error }}</span
-                                    >
-                                }
-                                @if (regexResult()?.isValid) {
-                                    @if (regexResult()?.isMatch) {
-                                        <span class="match"
-                                            ><mat-icon>check_circle</mat-icon> Match</span
-                                        >
-                                    } @else {
-                                        <span class="no-match"
-                                            ><mat-icon>cancel</mat-icon> No Match</span
-                                        >
-                                    }
-                                }
-                            </div>
-                        }
-                    }
-                </div>
             </div>
 
             <div class="form-row">
@@ -205,20 +104,127 @@
                 </mat-form-field>
             </div>
             <div class="regex-options place-options">
-                <mat-checkbox
-                    [checked]="isPlaceCaseInsensitive"
-                    (change)="togglePlaceCaseInsensitive($event.checked)"
-                    color="primary"
-                >
+                <mat-checkbox [checked]="isPlaceCaseInsensitive" (change)="togglePlaceCaseInsensitive($event.checked)"
+                    color="primary">
                     Case Insensitive
                 </mat-checkbox>
-                <mat-checkbox
-                    [checked]="isPlaceWholeWord"
-                    (change)="togglePlaceWholeWord($event.checked)"
-                    color="primary"
-                >
+                <mat-checkbox [checked]="isPlaceWholeWord" (change)="togglePlaceWholeWord($event.checked)"
+                    color="primary">
                     Whole Words
                 </mat-checkbox>
+            </div>
+            } @else {
+            <!-- Simplified Mode: Keywords -->
+            <div class="simplified-mode-container">
+                <p class="mode-info">
+                    Enter keywords to match against <strong>Description</strong>,
+                    <strong>Place</strong>, and <strong>Partner Name</strong>. Matching is
+                    case-insensitive and whole-word based. The first matched keyword will be
+                    used as the output description.
+                    <br /><br />
+                    <strong>Advanced format:</strong> Use <code>matcher|output</code> to
+                    define a specific output description for a keyword. For example,
+                    <code>uber|Uber Rides</code> will match "uber" but set the description
+                    to "Uber Rides".
+                </p>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Keywords</mat-label>
+                    <mat-chip-grid #chipGrid aria-label="Enter keywords">
+                        @for (keyword of form.value.keywords; track trackByKeyword($index, keyword)) {
+                        <mat-chip-row [editable]="true" (removed)="removeKeyword(keyword)"
+                            (edited)="editKeyword(keyword, $event)" matTooltip="Double click to edit">
+                            {{ keyword }}
+                            <button matChipRemove [attr.aria-label]="'remove ' + keyword">
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip-row>
+                        }
+                    </mat-chip-grid>
+                    <input placeholder="New keyword..." [matChipInputFor]="chipGrid"
+                        [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="true"
+                        (matChipInputTokenEnd)="addKeyword($event)" />
+                </mat-form-field>
+            </div>
+            }
+
+            <!-- Match Verification / Regexp Tester (Shared) -->
+            <div class="regexp-tester">
+                <h3>{{ data?.transaction ? 'Match Verification' : 'Regexp Tester' }}</h3>
+
+                <div class="tester-controls">
+                    @if (data?.transaction) {
+                    <div class="test-string-display">
+                        Using transaction details for verification
+                    </div>
+                    <button mat-stroked-button color="primary" (click)="checkMatch()" [disabled]="testingMatch()"
+                        class="test-button">
+                        @if (testingMatch()) {
+                        <mat-spinner diameter="20"></mat-spinner>
+                        } @else {
+                        <mat-icon>fact_check</mat-icon>
+                        }
+                        Check Match
+                    </button>
+                    } @else if (!form.value.simplified) {
+                    <mat-form-field appearance="outline" class="test-string-input">
+                        <mat-label>Test String</mat-label>
+                        <input matInput [ngModel]="testString()" (ngModelChange)="testString.set($event)"
+                            [ngModelOptions]="{ standalone: true }" />
+                    </mat-form-field>
+                    <button mat-stroked-button color="accent" (click)="testRegex()" [disabled]="
+                                    testingMatch() ||
+                                    !testString() ||
+                                    !form.controls.descriptionRegExp.value
+                                " class="test-button">
+                        @if (testingMatch()) {
+                        <mat-spinner diameter="20"></mat-spinner>
+                        } @else {
+                        <mat-icon>play_arrow</mat-icon>
+                        }
+                        Test
+                    </button>
+                    } @else {
+                    <div class="mode-info">
+                        Verification is only available when creating a matcher from a transaction.
+                    </div>
+                    }
+                </div>
+
+                <!-- Results Area -->
+                @if (data?.transaction) {
+                @if (matchResult()) {
+                <div class="test-result">
+                    @if (matchResult()?.result) {
+                    <span class="match"><mat-icon>check_circle</mat-icon> Matches!</span>
+                    <div class="match-details" *ngIf="matchResult()?.reason">
+                        {{ matchResult()?.reason }}
+                    </div>
+                    } @else {
+                    <span class="no-match"><mat-icon>cancel</mat-icon> No Match</span>
+                    <div class="error-details" *ngIf="matchResult()?.reason">
+                        Reason: {{ matchResult()?.reason }}
+                    </div>
+                    }
+                </div>
+                }
+                } @else if (!form.value.simplified) {
+                @if (regexResult()) {
+                <div class="test-result">
+                    @if (!regexResult()?.isValid) {
+                    <span class="error"><mat-icon>error</mat-icon> Invalid:
+                        {{ regexResult()?.error }}</span>
+                    }
+                    @if (regexResult()?.isValid) {
+                    @if (regexResult()?.isMatch) {
+                    <span class="match"><mat-icon>check_circle</mat-icon> Match</span>
+                    } @else {
+                    <span class="no-match"><mat-icon>cancel</mat-icon> No Match</span>
+                    }
+                    }
+                </div>
+                }
+                }
             </div>
 
             <!-- Output Section -->
@@ -228,61 +234,39 @@
                 <div class="image-label">Icon</div>
                 <div class="image-container">
                     @if (imagePreview) {
-                        <div class="preview-container">
-                            <img
-                                [src]="imagePreview"
-                                alt="Matcher Icon"
-                                class="matcher-icon-preview"
-                            />
-                            <button
-                                mat-icon-button
-                                color="warn"
-                                (click)="removeImage()"
-                                type="button"
-                            >
-                                <mat-icon>delete</mat-icon>
-                            </button>
-                        </div>
+                    <div class="preview-container">
+                        <img [src]="imagePreview" alt="Matcher Icon" class="matcher-icon-preview" />
+                        <button mat-icon-button color="warn" (click)="removeImage()" type="button">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
                     }
 
-                    <input
-                        #fileInput
-                        type="file"
-                        (change)="onFileSelected($event)"
-                        style="display: none"
-                        accept="image/*"
-                    />
+                    <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none"
+                        accept="image/*" />
                     <button mat-stroked-button (click)="fileInput.click()" type="button">
                         {{ imagePreview ? 'Change Icon' : 'Upload Icon' }}
                     </button>
                 </div>
             </div>
 
-            <app-account-select
-                formControlName="outputAccountId"
-                label="Output Account"
-                [required]="true"
-            ></app-account-select>
+            <app-account-select formControlName="outputAccountId" label="Output Account"
+                [required]="true"></app-account-select>
 
+            @if (!form.value.simplified) {
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Output Description</mat-label>
-                <input
-                    matInput
-                    formControlName="outputDescription"
-                    placeholder="Description to apply"
-                />
+                <input matInput formControlName="outputDescription" placeholder="Description to apply" />
                 @if (form.controls.outputDescription.hasError('required')) {
-                    <mat-error>Output Description is required</mat-error>
+                <mat-error>Output Description is required</mat-error>
                 }
             </mat-form-field>
+            }
 
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Output Tags</mat-label>
-                <input
-                    matInput
-                    formControlName="outputTags"
-                    placeholder="Comma separated tags (e.g. food, transport)"
-                />
+                <input matInput formControlName="outputTags"
+                    placeholder="Comma separated tags (e.g. food, transport)" />
                 <mat-hint>Separate tags with commas</mat-hint>
             </mat-form-field>
         </form>
@@ -291,12 +275,7 @@
 
 <mat-dialog-actions align="end" class="dialog-actions-footer">
     <button mat-button (click)="close()">Cancel</button>
-    <button
-        mat-raised-button
-        color="primary"
-        (click)="save()"
-        [disabled]="form.invalid || loading()"
-    >
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid || loading()">
         Save
     </button>
 </mat-dialog-actions>

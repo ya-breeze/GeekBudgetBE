@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | **string** |  | 
-**OutputDescription** | **string** |  | 
+**OutputDescription** | Pointer to **string** |  | [optional] 
 **OutputAccountId** | **string** |  | 
 **OutputTags** | Pointer to **[]string** |  | [optional] 
 **CurrencyRegExp** | Pointer to **string** |  | [optional] 
@@ -14,6 +14,8 @@ Name | Type | Description | Notes
 **DescriptionRegExp** | Pointer to **string** |  | [optional] 
 **ExtraRegExp** | Pointer to **string** |  | [optional] 
 **PlaceRegExp** | Pointer to **string** |  | [optional] 
+**Simplified** | Pointer to **bool** | If true, use simplified mode with keyword matching instead of regex | [optional] [default to false]
+**Keywords** | Pointer to **[]string** | List of keywords to match against transaction description, place, and  partner name (case insensitive, whole words). First matched keyword  becomes the output description. Only used when simplified&#x3D;true. | [optional] 
 **ConfirmationHistory** | Pointer to **[]bool** | List of booleans representing manual confirmations for this matcher (true &#x3D; confirmed, false &#x3D; rejected). Server enforces maximum length configured via application config. | [optional] 
 **Image** | Pointer to **string** | ID of the matcher image | [optional] 
 **ConfirmationsCount** | **int32** | Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct. | 
@@ -23,7 +25,7 @@ Name | Type | Description | Notes
 
 ### NewMatcher
 
-`func NewMatcher(id string, outputDescription string, outputAccountId string, confirmationsCount int32, confirmationsTotal int32, ) *Matcher`
+`func NewMatcher(id string, outputAccountId string, confirmationsCount int32, confirmationsTotal int32, ) *Matcher`
 
 NewMatcher instantiates a new Matcher object
 This constructor will assign default values to properties that have it defined,
@@ -77,6 +79,11 @@ and a boolean to check if the value has been set.
 
 SetOutputDescription sets OutputDescription field to given value.
 
+### HasOutputDescription
+
+`func (o *Matcher) HasOutputDescription() bool`
+
+HasOutputDescription returns a boolean if a field has been set.
 
 ### GetOutputAccountId
 
@@ -272,6 +279,56 @@ SetPlaceRegExp sets PlaceRegExp field to given value.
 `func (o *Matcher) HasPlaceRegExp() bool`
 
 HasPlaceRegExp returns a boolean if a field has been set.
+
+### GetSimplified
+
+`func (o *Matcher) GetSimplified() bool`
+
+GetSimplified returns the Simplified field if non-nil, zero value otherwise.
+
+### GetSimplifiedOk
+
+`func (o *Matcher) GetSimplifiedOk() (*bool, bool)`
+
+GetSimplifiedOk returns a tuple with the Simplified field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetSimplified
+
+`func (o *Matcher) SetSimplified(v bool)`
+
+SetSimplified sets Simplified field to given value.
+
+### HasSimplified
+
+`func (o *Matcher) HasSimplified() bool`
+
+HasSimplified returns a boolean if a field has been set.
+
+### GetKeywords
+
+`func (o *Matcher) GetKeywords() []string`
+
+GetKeywords returns the Keywords field if non-nil, zero value otherwise.
+
+### GetKeywordsOk
+
+`func (o *Matcher) GetKeywordsOk() (*[]string, bool)`
+
+GetKeywordsOk returns a tuple with the Keywords field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetKeywords
+
+`func (o *Matcher) SetKeywords(v []string)`
+
+SetKeywords sets Keywords field to given value.
+
+### HasKeywords
+
+`func (o *Matcher) HasKeywords() bool`
+
+HasKeywords returns a boolean if a field has been set.
 
 ### GetConfirmationHistory
 

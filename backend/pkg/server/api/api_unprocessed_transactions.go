@@ -92,8 +92,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 		}
 
 		// Use the common matching logic
-		matchRes := common.Match(specificMatcherRuntime, &t)
-		if matchRes != common.MatchResultSuccess {
+		matchDetails := common.MatchWithDetails(specificMatcherRuntime, &t)
+		if !matchDetails.Matched {
 			continue
 		}
 
@@ -104,7 +104,14 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 		transactionNoId.IsAuto = true
 
 		// Apply matcher outputs
-		transactionNoId.Description = matcher.OutputDescription
+		description := matcher.OutputDescription
+		tags := matcher.OutputTags
+		if matcher.Simplified && matchDetails.MatchedKeyword != "" {
+			description = matchDetails.MatchedOutput
+			tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
+		}
+		transactionNoId.Description = description
+		transactionNoId.Tags = tags
 		// Apply account IDs if missing in movement
 		for i := range transactionNoId.Movements {
 			if transactionNoId.Movements[i].AccountId == "" {
@@ -446,12 +453,20 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 	res := make([]goserver.MatcherAndTransaction, 0)
 
 	for _, matcher := range matchers {
-		if common.Match(&matcher, &transaction) != common.MatchResultSuccess {
+		matchDetails := common.MatchWithDetails(&matcher, &transaction)
+		if !matchDetails.Matched {
 			continue
 		}
 
 		outputTransaction := models.TransactionWithoutID(&transaction)
-		outputTransaction.Description = matcher.Matcher.OutputDescription
+		description := matcher.Matcher.OutputDescription
+		tags := matcher.Matcher.OutputTags
+		if matcher.Matcher.Simplified && matchDetails.MatchedKeyword != "" {
+			description = matchDetails.MatchedOutput
+			tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
+		}
+		outputTransaction.Description = description
+		outputTransaction.Tags = tags
 		for i := range outputTransaction.Movements {
 			if outputTransaction.Movements[i].AccountId == "" {
 				outputTransaction.Movements[i].AccountId = matcher.Matcher.OutputAccountId

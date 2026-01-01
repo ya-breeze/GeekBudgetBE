@@ -410,8 +410,8 @@ export class BudgetItemsComponent implements OnInit {
         const avgMap = new Map(averages.map((a) => [a.accountId, a.averageSpent]));
 
         const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
+        const currentYear = now.getUTCFullYear();
+        const currentMonth = now.getUTCMonth();
 
         const rows: MatrixRow[] = accs.map((acc) => {
             let rowTotalPlanned = 0;

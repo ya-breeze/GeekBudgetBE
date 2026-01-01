@@ -64,7 +64,7 @@ func TestMatchWithDetails(t *testing.T) {
 		{
 			name: "AliExpress False Positive Reproduction",
 			matcher: database.MatcherRuntime{
-				DescriptionRegexp: regexp.MustCompile("(?i)\\bAliExpress\\b"),
+				DescriptionRegexp: regexp.MustCompile(`(?i)\bAliExpress\b`),
 			},
 			transaction: goserver.Transaction{
 				Description: "Nákup: ",
@@ -73,6 +73,103 @@ func TestMatchWithDetails(t *testing.T) {
 			wantResult:  MatchResultWrongDescription,
 			wantMatched: false,
 		},
+		{
+			name: "Simplified match: case-insensitive",
+			matcher: database.MatcherRuntime{
+				Matcher:        &goserver.Matcher{Simplified: true},
+				Keywords:       []string{"Uber"},
+				KeywordOutputs: []string{"Uber"},
+				KeywordRegexps: []*regexp.Regexp{
+					regexp.MustCompile(`(?i)\bUber\b`),
+				},
+			},
+			transaction: goserver.Transaction{
+				Description: "uber eats",
+			},
+			wantResult:  MatchResultSuccess,
+			wantMatched: true,
+		},
+		{
+			name: "Simplified match: whole word only",
+			matcher: database.MatcherRuntime{
+				Matcher:        &goserver.Matcher{Simplified: true},
+				Keywords:       []string{"Uber"},
+				KeywordOutputs: []string{"Uber"},
+				KeywordRegexps: []*regexp.Regexp{
+					regexp.MustCompile(`(?i)\bUber\b`),
+				},
+			},
+			transaction: goserver.Transaction{
+				Description: "Uberrimo",
+			},
+			wantResult:  MatchResultWrongDescription,
+			wantMatched: false,
+		},
+		{
+			name: "Simplified match: first keyword wins",
+			matcher: database.MatcherRuntime{
+				Matcher:        &goserver.Matcher{Simplified: true},
+				Keywords:       []string{"Uber", "Eats"},
+				KeywordOutputs: []string{"Uber", "Eats"},
+				KeywordRegexps: []*regexp.Regexp{
+					regexp.MustCompile(`(?i)\bUber\b`),
+					regexp.MustCompile(`(?i)\bEats\b`),
+				},
+			},
+			transaction: goserver.Transaction{
+				Description: "Uber Eats",
+			},
+			wantResult:  MatchResultSuccess,
+			wantMatched: true,
+		},
+		{
+			name: "Simplified match: match place",
+			matcher: database.MatcherRuntime{
+				Matcher:        &goserver.Matcher{Simplified: true},
+				Keywords:       []string{"Prague"},
+				KeywordOutputs: []string{"Prague"},
+				KeywordRegexps: []*regexp.Regexp{
+					regexp.MustCompile(`(?i)\bPrague\b`),
+				},
+			},
+			transaction: goserver.Transaction{
+				Place: "Prague Airport",
+			},
+			wantResult:  MatchResultSuccess,
+			wantMatched: true,
+		},
+		{
+			name: "Simplified match: match partner name",
+			matcher: database.MatcherRuntime{
+				Matcher:        &goserver.Matcher{Simplified: true},
+				Keywords:       []string{"Lidl"},
+				KeywordOutputs: []string{"Lidl"},
+				KeywordRegexps: []*regexp.Regexp{
+					regexp.MustCompile(`(?i)\bLidl\b`),
+				},
+			},
+			transaction: goserver.Transaction{
+				PartnerName: "Lidl Ceska Republika",
+			},
+			wantResult:  MatchResultSuccess,
+			wantMatched: true,
+		},
+		{
+			name: "Simplified match: match|output format",
+			matcher: database.MatcherRuntime{
+				Matcher:        &goserver.Matcher{Simplified: true},
+				Keywords:       []string{"Uber"},
+				KeywordOutputs: []string{"Uber Rides"},
+				KeywordRegexps: []*regexp.Regexp{
+					regexp.MustCompile(`(?i)\bUber\b`),
+				},
+			},
+			transaction: goserver.Transaction{
+				Description: "Uber Eats",
+			},
+			wantResult:  MatchResultSuccess,
+			wantMatched: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -80,6 +177,10 @@ func TestMatchWithDetails(t *testing.T) {
 			got := MatchWithDetails(&tt.matcher, &tt.transaction)
 			assert.Equal(t, tt.wantResult, got.Result)
 			assert.Equal(t, tt.wantMatched, got.Matched)
+			if tt.name == "Simplified match: match|output format" {
+				assert.Equal(t, "Uber", got.MatchedKeyword)
+				assert.Equal(t, "Uber Rides", got.MatchedOutput)
+			}
 		})
 	}
 }
@@ -95,7 +196,7 @@ func TestMatch(t *testing.T) {
 			name: "AliExpress False Positive Reproduction (Match)",
 			matcher: database.MatcherRuntime{
 				DescriptionRegexp: regexp.MustCompile(".*"),
-				PlaceRegexp:       regexp.MustCompile("(?i)\\bAliExpress\\b"),
+				PlaceRegexp:       regexp.MustCompile(`(?i)\bAliExpress\b`),
 			},
 			transaction: goserver.Transaction{
 				Description: "Nákup: ",

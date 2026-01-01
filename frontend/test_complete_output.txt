@@ -1,0 +1,330 @@
+
+> geek-budget-fe@0.0.0 test
+> ng test --watch=false --browsers=ChromeHeadless
+
+Node.js version v25.2.1 detected.
+Odd numbered Node.js versions will not enter LTS status and should not be used for production. For more information, please see https://nodejs.org/en/about/previous-releases/.
+❯ Building...
+✔ Building...
+Initial chunk files                                                                                                        | Names                                                                                                                   |  Raw size
+chunk-CFFV4BYU.js                                                                                                          | -                                                                                                                       |   2.30 MB | 
+polyfills.js                                                                                                               | polyfills                                                                                                               |   1.04 MB | 
+spec-app-features-unprocessed-transactions-unprocessed-transaction-dialog-unprocessed-transaction-dialog.component.spec.js | spec-app-features-unprocessed-transactions-unprocessed-transaction-dialog-unprocessed-transaction-dialog.component.spec | 418.38 kB | 
+chunk-3M2EP2IN.js                                                                                                          | -                                                                                                                       | 289.37 kB | 
+chunk-VQTUFMAK.js                                                                                                          | -                                                                                                                       | 287.29 kB | 
+chunk-OFYNVXHO.js                                                                                                          | -                                                                                                                       | 272.08 kB | 
+chunk-B2MDBLCP.js                                                                                                          | -                                                                                                                       | 271.47 kB | 
+chunk-UUWG5U4J.js                                                                                                          | -                                                                                                                       | 242.99 kB | 
+chunk-M7Z6YVUQ.js                                                                                                          | -                                                                                                                       | 231.90 kB | 
+chunk-7GRDX2XY.js                                                                                                          | -                                                                                                                       | 208.14 kB | 
+chunk-WCD2FM34.js                                                                                                          | -                                                                                                                       | 197.76 kB | 
+chunk-4I75JKNM.js                                                                                                          | -                                                                                                                       | 176.36 kB | 
+chunk-XIMGA46Y.js                                                                                                          | -                                                                                                                       | 145.72 kB | 
+chunk-UDRQB3WS.js                                                                                                          | -                                                                                                                       | 141.85 kB | 
+chunk-WJTJXJSG.js                                                                                                          | -                                                                                                                       |  96.26 kB | 
+jasmine-cleanup-1.js                                                                                                       | jasmine-cleanup-1                                                                                                       |  67.20 kB | 
+spec-app-features-transactions-transactions.component.spec.js                                                              | spec-app-features-transactions-transactions.component.spec                                                              |  64.95 kB | 
+chunk-RQYYI2AW.js                                                                                                          | -                                                                                                                       |  61.81 kB | 
+chunk-BKLAPRYR.js                                                                                                          | -                                                                                                                       |  56.80 kB | 
+chunk-CU5R4DTI.js                                                                                                          | -                                                                                                                       |  52.85 kB | 
+spec-app-features-budget-items-budget-items.component.spec.js                                                              | spec-app-features-budget-items-budget-items.component.spec                                                              |  48.49 kB | 
+spec-app-features-dashboard-dashboard.component.spec.js                                                                    | spec-app-features-dashboard-dashboard.component.spec                                                                    |  45.72 kB | 
+chunk-RLMX5NED.js                                                                                                          | -                                                                                                                       |  43.44 kB | 
+chunk-TVSZZHVV.js                                                                                                          | -                                                                                                                       |  42.34 kB | 
+chunk-5ALWKJUL.js                                                                                                          | -                                                                                                                       |  27.30 kB | 
+chunk-PZKEK226.js                                                                                                          | -                                                                                                                       |  27.01 kB | 
+spec-app-features-currencies-currencies.component.spec.js                                                                  | spec-app-features-currencies-currencies.component.spec                                                                  |  26.59 kB | 
+chunk-5LJE5NZU.js                                                                                                          | -                                                                                                                       |  23.05 kB | 
+spec-app-features-accounts-account-form-dialog-account-form-dialog.component.spec.js                                       | spec-app-features-accounts-account-form-dialog-account-form-dialog.component.spec                                       |  23.00 kB | 
+chunk-PXH7MX65.js                                                                                                          | -                                                                                                                       |  22.59 kB | 
+test_main.js                                                                                                               | test_main                                                                                                               |  21.87 kB | 
+spec-app-features-transactions-suspicious-transactions-suspicious-transactions.component.spec.js                           | spec-app-features-transactions-suspicious-transactions-suspicious-transactions.component.spec                           |  19.02 kB | 
+chunk-II3SON5Q.js                                                                                                          | -                                                                                                                       |  14.09 kB | 
+spec-app-features-transactions-utils-transaction.utils.spec.js                                                             | spec-app-features-transactions-utils-transaction.utils.spec                                                             |  12.44 kB | 
+chunk-GNJLURNG.js                                                                                                          | -                                                                                                                       |  12.24 kB | 
+spec-app-features-bank-importers-services-bank-importer.service.spec.js                                                    | spec-app-features-bank-importers-services-bank-importer.service.spec                                                    |  12.14 kB | 
+spec-app-features-auth-login-login.component.spec.js                                                                       | spec-app-features-auth-login-login.component.spec                                                                       |  12.01 kB | 
+chunk-3UFXE2TV.js                                                                                                          | -                                                                                                                       |  11.52 kB | 
+chunk-YUCABY32.js                                                                                                          | -                                                                                                                       |  10.91 kB | 
+chunk-KNOYDI4S.js                                                                                                          | -                                                                                                                       |   9.77 kB | 
+styles.css                                                                                                                 | styles                                                                                                                  |   8.87 kB | 
+spec-app-features-notifications-services-notification.service.spec.js                                                      | spec-app-features-notifications-services-notification.service.spec                                                      |   8.39 kB | 
+chunk-Q3P3VTUW.js                                                                                                          | -                                                                                                                       |   7.70 kB | 
+chunk-INLRSP4R.js                                                                                                          | -                                                                                                                       |   7.69 kB | 
+spec-app-features-unprocessed-transactions-services-unprocessed-transaction.service.spec.js                                | spec-app-features-unprocessed-transactions-services-unprocessed-transaction.service.spec                                |   7.22 kB | 
+chunk-KRIEMXC5.js                                                                                                          | -                                                                                                                       |   6.58 kB | 
+chunk-KE2B2QZG.js                                                                                                          | -                                                                                                                       |   6.21 kB | 
+spec-app-features-matchers-services-matcher.service.spec.js                                                                | spec-app-features-matchers-services-matcher.service.spec                                                                |   5.93 kB | 
+spec-app-features-accounts-services-account.service.spec.js                                                                | spec-app-features-accounts-services-account.service.spec                                                                |   5.85 kB | 
+chunk-AK4ZHO3Y.js                                                                                                          | -                                                                                                                       |   5.57 kB | 
+spec-app-features-transactions-services-transaction.service.spec.js                                                        | spec-app-features-transactions-services-transaction.service.spec                                                        |   4.80 kB | 
+spec-app-features-currencies-services-currency.service.spec.js                                                             | spec-app-features-currencies-services-currency.service.spec                                                             |   4.76 kB | 
+spec-app-core-auth-services-auth.service.spec.js                                                                           | spec-app-core-auth-services-auth.service.spec                                                                           |   4.43 kB | 
+chunk-67E5JA5E.js                                                                                                          | -                                                                                                                       |   4.37 kB | 
+spec-app-features-budget-items-services-budget-item.service.spec.js                                                        | spec-app-features-budget-items-services-budget-item.service.spec                                                        |   3.56 kB | 
+chunk-RT7YSBAS.js                                                                                                          | -                                                                                                                       |   3.44 kB | 
+chunk-HJIIIUVS.js                                                                                                          | -                                                                                                                       |   3.01 kB | 
+chunk-V6FC2DIM.js                                                                                                          | -                                                                                                                       |   2.42 kB | 
+spec-app-core-auth-guards-no-auth.guard.spec.js                                                                            | spec-app-core-auth-guards-no-auth.guard.spec                                                                            |   2.18 kB | 
+spec-app-core-auth-guards-auth.guard.spec.js                                                                               | spec-app-core-auth-guards-auth.guard.spec                                                                               |   2.15 kB | 
+spec-app-app.spec.js                                                                                                       | spec-app-app.spec                                                                                                       |   2.07 kB | 
+chunk-JRCZOLGJ.js                                                                                                          | -                                                                                                                       | 900 bytes | 
+chunk-PEMM77DU.js                                                                                                          | -                                                                                                                       | 797 bytes | 
+jasmine-cleanup-0.js                                                                                                       | jasmine-cleanup-0                                                                                                       | 519 bytes | 
+
+                                                                                                                           | Initial total                                                                                                           |   7.20 MB
+
+Application bundle generation complete. [1.200 seconds] - 2025-12-31T18:25:40.392Z
+
+[32m31 12 2025 19:25:40.474:INFO [karma-server]: [39mKarma v6.4.4 server started at http://localhost:9876/
+[32m31 12 2025 19:25:40.475:INFO [launcher]: [39mLaunching browsers ChromeHeadless with concurrency unlimited
+[32m31 12 2025 19:25:40.478:INFO [launcher]: [39mStarting browser ChromeHeadless
+[32m31 12 2025 19:25:40.885:INFO [Chrome Headless 143.0.0.0 (Mac OS 10.15.7)]: [39mConnected on socket n8QAV-M6NYesVcqzAAAB with id 67394084
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 0 of 196[32m SUCCESS[39m (0 secs / 0 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 1 of 196[32m SUCCESS[39m (0 secs / 0.005 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 2 of 196[32m SUCCESS[39m (0 secs / 0.008 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 3 of 196[32m SUCCESS[39m (0 secs / 0.009 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 4 of 196[32m SUCCESS[39m (0 secs / 0.009 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 5 of 196[32m SUCCESS[39m (0 secs / 0.01 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 6 of 196[32m SUCCESS[39m (0 secs / 0.011 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 7 of 196[32m SUCCESS[39m (0 secs / 0.012 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 8 of 196[32m SUCCESS[39m (0 secs / 0.013 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 9 of 196[32m SUCCESS[39m (0 secs / 0.066 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 10 of 196[32m SUCCESS[39m (0 secs / 0.073 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 11 of 196[32m SUCCESS[39m (0 secs / 0.078 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 12 of 196[32m SUCCESS[39m (0 secs / 0.083 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 13 of 196[32m SUCCESS[39m (0 secs / 0.092 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 14 of 196[32m SUCCESS[39m (0 secs / 0.097 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 15 of 196[32m SUCCESS[39m (0 secs / 0.1 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 16 of 196[32m SUCCESS[39m (0 secs / 0.107 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 17 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 18 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 19 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 20 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 21 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 22 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 23 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 24 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 25 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 26 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 27 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 28 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 29 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 30 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 31 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 32 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 33 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 34 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 35 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 36 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 37 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 38 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 39 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 40 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 41 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 42 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 43 of 196[32m SUCCESS[39m (0 secs / 0.108 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 44 of 196[32m SUCCESS[39m (0 secs / 0.109 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 45 of 196[32m SUCCESS[39m (0 secs / 0.109 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 46 of 196[32m SUCCESS[39m (0 secs / 0.11 secs)
+[1A[2KLOG: [36m'Yearly Expenses Loaded:', Object{currencies: [Object{currencyId: ..., accounts: ...}]}[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 46 of 196[32m SUCCESS[39m (0 secs / 0.11 secs)
+LOG: 'Yearly Expenses Loaded:', Object{currencies: [Object{currencyId: ..., accounts: ...}]}
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 47 of 196[32m SUCCESS[39m (0 secs / 0.11 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 48 of 196[32m SUCCESS[39m (0 secs / 0.111 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 49 of 196[32m SUCCESS[39m (0 secs / 0.111 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 50 of 196[32m SUCCESS[39m (0 secs / 0.111 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 51 of 196[32m SUCCESS[39m (0 secs / 0.111 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 52 of 196[32m SUCCESS[39m (0 secs / 0.111 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 53 of 196[32m SUCCESS[39m (0 secs / 0.111 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 54 of 196[32m SUCCESS[39m (0 secs / 0.111 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 55 of 196[32m SUCCESS[39m (0 secs / 0.112 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 56 of 196[32m SUCCESS[39m (0 secs / 0.112 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 57 of 196[32m SUCCESS[39m (0 secs / 0.121 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 58 of 196[32m SUCCESS[39m (0 secs / 0.123 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 59 of 196[32m SUCCESS[39m (0 secs / 0.135 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 60 of 196[32m SUCCESS[39m (0 secs / 0.139 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 61 of 196[32m SUCCESS[39m (0 secs / 0.162 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 62 of 196[32m SUCCESS[39m (0 secs / 0.17 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 63 of 196[32m SUCCESS[39m (0 secs / 0.177 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 64 of 196[32m SUCCESS[39m (0 secs / 0.183 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 65 of 196[32m SUCCESS[39m (0 secs / 0.19 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 66 of 196[32m SUCCESS[39m (0 secs / 0.196 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 67 of 196[32m SUCCESS[39m (0 secs / 0.202 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 68 of 196[32m SUCCESS[39m (0 secs / 0.207 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 69 of 196[32m SUCCESS[39m (0 secs / 0.213 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 70 of 196[32m SUCCESS[39m (0 secs / 0.218 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 71 of 196[32m SUCCESS[39m (0 secs / 0.223 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 72 of 196[32m SUCCESS[39m (0 secs / 0.229 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 73 of 196[32m SUCCESS[39m (0 secs / 0.235 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 74 of 196[32m SUCCESS[39m (0 secs / 0.241 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 75 of 196[32m SUCCESS[39m (0 secs / 0.251 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 76 of 196[32m SUCCESS[39m (0 secs / 0.257 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 77 of 196[32m SUCCESS[39m (0 secs / 0.263 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 78 of 196[32m SUCCESS[39m (0 secs / 0.269 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 79 of 196[32m SUCCESS[39m (0 secs / 0.274 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 80 of 196[32m SUCCESS[39m (0 secs / 0.279 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 81 of 196[32m SUCCESS[39m (0 secs / 0.285 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 82 of 196[32m SUCCESS[39m (0 secs / 0.29 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 83 of 196[32m SUCCESS[39m (0 secs / 0.295 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 84 of 196[32m SUCCESS[39m (0 secs / 0.3 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 85 of 196[32m SUCCESS[39m (0 secs / 0.305 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 86 of 196[32m SUCCESS[39m (0 secs / 0.31 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 87 of 196[32m SUCCESS[39m (0 secs / 0.32 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 88 of 196[32m SUCCESS[39m (0 secs / 0.326 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 89 of 196[32m SUCCESS[39m (0 secs / 0.331 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 90 of 196[32m SUCCESS[39m (0 secs / 0.336 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 91 of 196[32m SUCCESS[39m (0 secs / 0.341 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 92 of 196[32m SUCCESS[39m (0 secs / 0.346 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 93 of 196[32m SUCCESS[39m (0 secs / 0.351 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 94 of 196[32m SUCCESS[39m (0 secs / 0.356 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 95 of 196[32m SUCCESS[39m (0 secs / 0.361 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 96 of 196[32m SUCCESS[39m (0 secs / 0.366 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 97 of 196[32m SUCCESS[39m (0 secs / 0.371 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 98 of 196[32m SUCCESS[39m (0 secs / 0.376 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 99 of 196[32m SUCCESS[39m (0 secs / 0.381 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 100 of 196[32m SUCCESS[39m (0 secs / 0.398 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 101 of 196[32m SUCCESS[39m (0 secs / 0.405 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 102 of 196[32m SUCCESS[39m (0 secs / 0.411 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 103 of 196[32m SUCCESS[39m (0 secs / 0.416 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 104 of 196[32m SUCCESS[39m (0 secs / 0.421 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 105 of 196[32m SUCCESS[39m (0 secs / 0.426 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 106 of 196[32m SUCCESS[39m (0 secs / 0.431 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 107 of 196[32m SUCCESS[39m (0 secs / 0.437 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 108 of 196[32m SUCCESS[39m (0 secs / 0.442 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 109 of 196[32m SUCCESS[39m (0 secs / 0.447 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 110 of 196[32m SUCCESS[39m (0 secs / 0.452 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 111 of 196[32m SUCCESS[39m (0 secs / 0.457 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 112 of 196[32m SUCCESS[39m (0 secs / 0.462 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 113 of 196[32m SUCCESS[39m (0 secs / 0.467 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 114 of 196[32m SUCCESS[39m (0 secs / 0.472 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 115 of 196[32m SUCCESS[39m (0 secs / 0.477 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 116 of 196[32m SUCCESS[39m (0 secs / 0.482 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 117 of 196[32m SUCCESS[39m (0 secs / 0.49 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 118 of 196[32m SUCCESS[39m (0 secs / 0.496 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 119 of 196[32m SUCCESS[39m (0 secs / 0.496 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 120 of 196[32m SUCCESS[39m (0 secs / 0.497 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 121 of 196[32m SUCCESS[39m (0 secs / 0.497 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 122 of 196[32m SUCCESS[39m (0 secs / 0.497 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 123 of 196[32m SUCCESS[39m (0 secs / 0.497 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 124 of 196[32m SUCCESS[39m (0 secs / 0.498 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 125 of 196[32m SUCCESS[39m (0 secs / 0.498 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 126 of 196[32m SUCCESS[39m (0 secs / 0.512 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 127 of 196[32m SUCCESS[39m (0 secs / 0.521 secs)
+[1A[2KLOG: [36m'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 127 of 196[32m SUCCESS[39m (0 secs / 0.521 secs)
+LOG: 'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 128 of 196[32m SUCCESS[39m (0 secs / 0.63 secs)
+[1A[2KLOG: [36m'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 128 of 196[32m SUCCESS[39m (0 secs / 0.63 secs)
+LOG: 'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}
+[1A[2KLOG: [36m'Effective width:', 1750[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 128 of 196[32m SUCCESS[39m (0 secs / 0.63 secs)
+LOG: 'Effective width:', 1750
+[1A[2KLOG: [36m'Effective width:', 1350[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 128 of 196[32m SUCCESS[39m (0 secs / 0.63 secs)
+LOG: 'Effective width:', 1350
+[1A[2KLOG: [36m'Effective width:', 1600[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 128 of 196[32m SUCCESS[39m (0 secs / 0.63 secs)
+LOG: 'Effective width:', 1600
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 129 of 196[32m SUCCESS[39m (0 secs / 0.637 secs)
+[1A[2KLOG: [36m'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 129 of 196[32m SUCCESS[39m (0 secs / 0.637 secs)
+LOG: 'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 130 of 196[32m SUCCESS[39m (0 secs / 0.746 secs)
+[1A[2KLOG: [36m'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 130 of 196[32m SUCCESS[39m (0 secs / 0.746 secs)
+LOG: 'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}
+[1A[2KLOG: [36m'Effective width:', 506[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 130 of 196[32m SUCCESS[39m (0 secs / 0.746 secs)
+LOG: 'Effective width:', 506
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 131 of 196[32m SUCCESS[39m (0 secs / 0.761 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 132 of 196[32m SUCCESS[39m (0 secs / 0.77 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 133 of 196[32m SUCCESS[39m (0 secs / 0.78 secs)
+[1A[2KLOG: [36m'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}[39m
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 133 of 196[32m SUCCESS[39m (0 secs / 0.78 secs)
+LOG: 'Dashboard data loaded:', Object{expenseData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}, assetData: Object{from: '2024-01-01', to: '2024-12-01', granularity: 'month', intervals: [..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ..., ...], currencies: [...]}}
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 134 of 196[32m SUCCESS[39m (0 secs / 0.89 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 135 of 196[32m SUCCESS[39m (0 secs / 0.897 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 136 of 196[32m SUCCESS[39m (0 secs / 0.898 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 137 of 196[32m SUCCESS[39m (0 secs / 0.9 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 138 of 196[32m SUCCESS[39m (0 secs / 0.902 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 139 of 196[32m SUCCESS[39m (0 secs / 0.904 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 140 of 196[32m SUCCESS[39m (0 secs / 0.905 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 141 of 196[32m SUCCESS[39m (0 secs / 0.908 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 142 of 196[32m SUCCESS[39m (0 secs / 0.909 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 143 of 196[32m SUCCESS[39m (0 secs / 0.91 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 144 of 196[32m SUCCESS[39m (0 secs / 0.911 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 145 of 196[32m SUCCESS[39m (0 secs / 0.911 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 146 of 196[32m SUCCESS[39m (0 secs / 0.912 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 147 of 196[32m SUCCESS[39m (0 secs / 0.912 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 148 of 196[32m SUCCESS[39m (0 secs / 0.913 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 149 of 196[32m SUCCESS[39m (0 secs / 0.913 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 150 of 196[32m SUCCESS[39m (0 secs / 0.913 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 151 of 196[32m SUCCESS[39m (0 secs / 0.913 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 152 of 196[32m SUCCESS[39m (0 secs / 0.913 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 153 of 196[32m SUCCESS[39m (0 secs / 0.913 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 154 of 196[32m SUCCESS[39m (0 secs / 0.914 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 155 of 196[32m SUCCESS[39m (0 secs / 0.915 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 156 of 196[32m SUCCESS[39m (0 secs / 0.921 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 157 of 196[32m SUCCESS[39m (0 secs / 0.926 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 158 of 196[32m SUCCESS[39m (0 secs / 0.929 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 159 of 196[32m SUCCESS[39m (0 secs / 0.931 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 160 of 196[32m SUCCESS[39m (0 secs / 0.933 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 161 of 196[32m SUCCESS[39m (0 secs / 0.935 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 162 of 196[32m SUCCESS[39m (0 secs / 0.937 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 163 of 196[32m SUCCESS[39m (0 secs / 0.938 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 164 of 196[32m SUCCESS[39m (0 secs / 0.94 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 165 of 196[32m SUCCESS[39m (0 secs / 0.941 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 166 of 196[32m SUCCESS[39m (0 secs / 0.941 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 167 of 196[32m SUCCESS[39m (0 secs / 0.942 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 168 of 196[32m SUCCESS[39m (0 secs / 0.942 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 169 of 196[32m SUCCESS[39m (0 secs / 0.942 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 170 of 196[32m SUCCESS[39m (0 secs / 0.943 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 171 of 196[32m SUCCESS[39m (0 secs / 0.943 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 172 of 196[32m SUCCESS[39m (0 secs / 0.943 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 173 of 196[32m SUCCESS[39m (0 secs / 0.944 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 174 of 196[32m SUCCESS[39m (0 secs / 0.944 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 175 of 196[32m SUCCESS[39m (0 secs / 0.944 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 176 of 196[32m SUCCESS[39m (0 secs / 0.944 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 177 of 196[32m SUCCESS[39m (0 secs / 0.945 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 178 of 196[32m SUCCESS[39m (0 secs / 0.945 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 179 of 196[32m SUCCESS[39m (0 secs / 0.945 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 180 of 196[32m SUCCESS[39m (0 secs / 0.945 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 181 of 196[32m SUCCESS[39m (0 secs / 0.946 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 182 of 196[32m SUCCESS[39m (0 secs / 0.946 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 183 of 196[32m SUCCESS[39m (0 secs / 0.946 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 184 of 196[32m SUCCESS[39m (0 secs / 0.946 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 185 of 196[32m SUCCESS[39m (0 secs / 0.947 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 186 of 196[32m SUCCESS[39m (0 secs / 0.947 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 187 of 196[32m SUCCESS[39m (0 secs / 0.947 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 188 of 196[32m SUCCESS[39m (0 secs / 0.948 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 189 of 196[32m SUCCESS[39m (0 secs / 0.948 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 190 of 196[32m SUCCESS[39m (0 secs / 0.964 secs)
+[1A[2K[31mChrome Headless 143.0.0.0 (Mac OS 10.15.7) BudgetItemsComponent should correctly mark virtual and over-budget status properties FAILED[39m
+	Expected 0 to be 50.
+	    at <Jasmine>
+	    at UserContext.<anonymous> (src/app/features/budget-items/budget-items.component.spec.ts:281:30)
+	    at _ZoneDelegate.invoke (node_modules/zone.js/fesm2015/zone.js:398:28)
+	    at _ProxyZoneSpec.onInvoke (node_modules/zone.js/fesm2015/zone-testing.js:2132:39)
+	    at _ZoneDelegate.invoke (node_modules/zone.js/fesm2015/zone.js:397:34)
+	Expected true to be false.
+	    at <Jasmine>
+	    at UserContext.<anonymous> (src/app/features/budget-items/budget-items.component.spec.ts:283:44)
+	    at _ZoneDelegate.invoke (node_modules/zone.js/fesm2015/zone.js:398:28)
+	    at _ProxyZoneSpec.onInvoke (node_modules/zone.js/fesm2015/zone-testing.js:2132:39)
+	    at _ZoneDelegate.invoke (node_modules/zone.js/fesm2015/zone.js:397:34)
+	Expected false to be true.
+	    at <Jasmine>
+	    at UserContext.<anonymous> (src/app/features/budget-items/budget-items.component.spec.ts:284:33)
+	    at _ZoneDelegate.invoke (node_modules/zone.js/fesm2015/zone.js:398:28)
+	    at _ProxyZoneSpec.onInvoke (node_modules/zone.js/fesm2015/zone-testing.js:2132:39)
+	    at _ZoneDelegate.invoke (node_modules/zone.js/fesm2015/zone.js:397:34)
+Chrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 191 of 196[31m (1 FAILED)[39m (0 secs / 0.972 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 192 of 196[31m (1 FAILED)[39m (0 secs / 0.979 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 193 of 196[31m (1 FAILED)[39m (0 secs / 0.987 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 194 of 196[31m (1 FAILED)[39m (0 secs / 0.994 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 195 of 196[31m (1 FAILED)[39m (0 secs / 1 sec)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 196 of 196[31m (1 FAILED)[39m (0 secs / 1.006 secs)
+[1A[2KChrome Headless 143.0.0.0 (Mac OS 10.15.7): Executed 196 of 196[31m (1 FAILED)[39m (1.172 secs / 1.006 secs)
+[31mTOTAL: 1 FAILED, 195 SUCCESS[39m

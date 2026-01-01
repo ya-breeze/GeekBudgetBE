@@ -1,106 +1,109 @@
 <div class="matchers-container">
     @if (!sidenavOpened()) {
-        <div class="header-actions">
-            <h1 class="page-title">Matchers</h1>
-            <button mat-raised-button color="primary" (click)="openMatcherDialog()">
-                <mat-icon>add</mat-icon> Add Matcher
-            </button>
-        </div>
+    <div class="header-actions">
+        <h1 class="page-title">Matchers</h1>
+        <button mat-raised-button color="primary" (click)="openMatcherDialog()">
+            <mat-icon>add</mat-icon> Add Matcher
+        </button>
+    </div>
     } @else {
-        <!-- Even if sidenav open, we might want the button, but based on existing code it hides title. 
+    <!-- Even if sidenav open, we might want the button, but based on existing code it hides title. 
            Let's assume we want the button accessible. 
            But following existing pattern for title. 
            Let's put the button in a toolbar or just above table if sidenav is closed?
            Actually, the previous code only acted on !sidenavOpened() for title.
            I'll verify if there's a place for it. 
            Let's add a toolbar-like container. -->
-        @if (sidenavOpened()) {
-            <div class="actions-bar">
-                <button mat-raised-button color="primary" (click)="openMatcherDialog()">
-                    <mat-icon>add</mat-icon> Add Matcher
-                </button>
-            </div>
-        }
+    @if (sidenavOpened()) {
+    <div class="actions-bar">
+        <button mat-raised-button color="primary" (click)="openMatcherDialog()">
+            <mat-icon>add</mat-icon> Add Matcher
+        </button>
+    </div>
+    }
     }
 
     @if (loading()) {
-        <div class="loading-container">
-            <mat-spinner></mat-spinner>
-        </div>
+    <div class="loading-container">
+        <mat-spinner></mat-spinner>
+    </div>
     } @else {
-        <div class="table-container">
-            <table
-                mat-table
-                [dataSource]="matchers()"
-                matSort
-                (matSortChange)="onSortChange($event)"
-                [matSortActive]="sortActive() ?? displayedColumns()[0]"
-                [matSortDirection]="sortDirection()"
-                class="matchers-table"
-            >
-                <ng-container matColumnDef="outputAccount">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Output Account</th>
-                    <td mat-cell *matCellDef="let matcher">
-                        <span>{{ matcher.outputAccountName || matcher.outputAccountId }}</span>
-                    </td>
-                </ng-container>
+    <div class="table-container">
+        <table mat-table [dataSource]="matchers()" matSort (matSortChange)="onSortChange($event)"
+            [matSortActive]="sortActive() ?? displayedColumns()[0]" [matSortDirection]="sortDirection()"
+            class="matchers-table">
+            <ng-container matColumnDef="outputAccount">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Output Account</th>
+                <td mat-cell *matCellDef="let matcher">
+                    <span>{{ matcher.outputAccountName || matcher.outputAccountId }}</span>
+                </td>
+            </ng-container>
 
-                <ng-container matColumnDef="outputDescription">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Output Description</th>
-                    <td mat-cell *matCellDef="let matcher">
-                        <div class="matcher-name-container">
-                            @if (matcher.image) {
-                                <img
-                                    [src]="matcher.image | imageUrl"
-                                    alt=""
-                                    class="matcher-icon-small"
-                                />
+            <ng-container matColumnDef="outputDescription">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Matcher / Description</th>
+                <td mat-cell *matCellDef="let matcher">
+                    <div class="merged-matcher-cell">
+                        <div class="mode-icon-container">
+                            @if (matcher.simplified) {
+                            <span class="mode-badge simplified" matTooltip="Simplified Mode">S</span>
+                            } @else {
+                            <span class="mode-badge normal" matTooltip="Normal Mode (Regex)">R</span>
                             }
-                            <span>{{ matcher.outputDescription }}</span>
                         </div>
-                    </td>
-                </ng-container>
 
-                <ng-container matColumnDef="confidence">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Confidence</th>
-                    <td mat-cell *matCellDef="let matcher">
-                        <span
-                            [class]="'confidence-badge ' + getConfidenceBadge(matcher).class"
-                            [matTooltip]="getConfidenceBadge(matcher).tooltip"
-                        >
-                            {{ getConfidenceBadge(matcher).text }}
-                        </span>
-                    </td>
-                </ng-container>
+                        <div class="matcher-content">
+                            <div class="matcher-identity">
+                                @if (matcher.image) {
+                                <img [src]="matcher.image | imageUrl" alt="" class="matcher-icon-small" />
+                                }
+                                @if (matcher.simplified) {
+                                <span class="keywords-list">
+                                    {{ (matcher.keywords || []).slice(0, 3).join(', ') }}
+                                    @if ((matcher.keywords || []).length > 3) {
+                                    ...
+                                    }
+                                </span>
+                                } @else {
+                                <span class="output-description">{{
+                                    matcher.outputDescription
+                                    }}</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </ng-container>
 
-                <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef></th>
-                    <td mat-cell *matCellDef="let matcher">
-                        <button
-                            mat-icon-button
-                            color="warn"
-                            (click)="$event.stopPropagation(); deleteMatcher(matcher)"
-                            matTooltip="Delete"
-                        >
-                            <mat-icon>delete</mat-icon>
-                        </button>
-                    </td>
-                </ng-container>
+            <ng-container matColumnDef="confidence">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Confidence</th>
+                <td mat-cell *matCellDef="let matcher">
+                    <span [class]="'confidence-badge ' + getConfidenceBadge(matcher).class"
+                        [matTooltip]="getConfidenceBadge(matcher).tooltip">
+                        {{ getConfidenceBadge(matcher).text }}
+                    </span>
+                </td>
+            </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-                <tr
-                    mat-row
-                    *matRowDef="let row; columns: displayedColumns()"
-                    (click)="openMatcherDialog(row)"
-                    class="clickable-row"
-                ></tr>
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let matcher">
+                    <button mat-icon-button color="warn" (click)="$event.stopPropagation(); deleteMatcher(matcher)"
+                        matTooltip="Delete">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
 
-                <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" [attr.colspan]="displayedColumns().length">
-                        No matchers found.
-                    </td>
-                </tr>
-            </table>
-        </div>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns()" (click)="openMatcherDialog(row)"
+                class="clickable-row"></tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" [attr.colspan]="displayedColumns().length">
+                    No matchers found.
+                </td>
+            </tr>
+        </table>
+    </div>
     }
 </div>

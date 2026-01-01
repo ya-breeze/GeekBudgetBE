@@ -14,7 +14,7 @@ package goserver
 type Matcher struct {
 	Id string `json:"id"`
 
-	OutputDescription string `json:"outputDescription"`
+	OutputDescription string `json:"outputDescription,omitempty"`
 
 	OutputAccountId string `json:"outputAccountId"`
 
@@ -31,6 +31,12 @@ type Matcher struct {
 	ExtraRegExp string `json:"extraRegExp,omitempty"`
 
 	PlaceRegExp string `json:"placeRegExp,omitempty"`
+
+	// If true, use simplified mode with keyword matching instead of regex
+	Simplified bool `json:"simplified,omitempty"`
+
+	// List of keywords to match against transaction description, place, and  partner name (case insensitive, whole words). First matched keyword  becomes the output description. Only used when simplified=true.
+	Keywords []string `json:"keywords,omitempty"`
 
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
@@ -56,6 +62,8 @@ type MatcherInterface interface {
 	GetDescriptionRegExp() string
 	GetExtraRegExp() string
 	GetPlaceRegExp() string
+	GetSimplified() bool
+	GetKeywords() []string
 	GetConfirmationHistory() []bool
 	GetImage() string
 	GetConfirmationsCount() int32
@@ -92,6 +100,12 @@ func (c *Matcher) GetExtraRegExp() string {
 func (c *Matcher) GetPlaceRegExp() string {
 	return c.PlaceRegExp
 }
+func (c *Matcher) GetSimplified() bool {
+	return c.Simplified
+}
+func (c *Matcher) GetKeywords() []string {
+	return c.Keywords
+}
 func (c *Matcher) GetConfirmationHistory() []bool {
 	return c.ConfirmationHistory
 }
@@ -109,7 +123,6 @@ func (c *Matcher) GetConfirmationsTotal() int32 {
 func AssertMatcherRequired(obj Matcher) error {
 	elements := map[string]interface{}{
 		"id":                 obj.Id,
-		"outputDescription":  obj.OutputDescription,
 		"outputAccountId":    obj.OutputAccountId,
 		"confirmationsCount": obj.ConfirmationsCount,
 		"confirmationsTotal": obj.ConfirmationsTotal,

@@ -101,7 +101,7 @@ var _ = Describe("Unprocessed Transactions API", func() {
 
 		// Create matcher
 		m := goclient.MatcherNoID{
-			OutputDescription: "Billa",
+			OutputDescription: utils.StrToRef("Billa"),
 			OutputAccountId:   "accountID",
 			DescriptionRegExp: utils.StrToRef(`(?i)\bBilla\b`),
 		}
@@ -115,7 +115,7 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		Expect(transactions).To(HaveLen(1))
 		Expect(transactions[0].Transaction.Id).To(Equal(created.Id))
 		Expect(transactions[0].Matched).ToNot(BeEmpty())
-		Expect(*transactions[0].Matched[0].Transaction.Description).To(Equal(m.OutputDescription))
+		Expect(*transactions[0].Matched[0].Transaction.Description).To(Equal(*m.OutputDescription))
 		Expect(*transactions[0].Matched[0].Transaction.Movements[0].AccountId).To(Equal(m.OutputAccountId))
 		Expect(*transactions[0].Matched[0].Transaction.Movements[1].AccountId).To(Equal(*t.Movements[1].AccountId))
 
@@ -134,7 +134,7 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(updated).ToNot(BeNil())
 		Expect(updated.Id).To(Equal(created.Id))
-		Expect(*updated.Description).To(Equal(m.OutputDescription))
+		Expect(*updated.Description).To(Equal(*m.OutputDescription))
 	})
 
 	It("ignores unprocessed transactions older than account's ignoreUnprocessedBefore date", func() {

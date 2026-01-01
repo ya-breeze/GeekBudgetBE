@@ -23,9 +23,24 @@ type MatchDetails struct {
 	FailureReason         string
 	DescriptionMatched    bool
 	PartnerAccountMatched bool
+	MatchedKeyword        string
+	MatchedOutput         string
 }
 
 func Match(matcher *database.MatcherRuntime, transaction *goserver.Transaction) MatchResult {
+	if matcher.Matcher != nil && matcher.Matcher.Simplified {
+		for _, r := range matcher.KeywordRegexps {
+			if r.MatchString(transaction.Description) ||
+				r.MatchString(transaction.Place) ||
+				r.MatchString(transaction.PartnerName) {
+				// We don't have a place to return the keyword in this simple Match function,
+				// but we can at least return success.
+				return MatchResultSuccess
+			}
+		}
+		return MatchResultWrongDescription // Or a new error code?
+	}
+
 	if matcher.DescriptionRegexp != nil && !matcher.DescriptionRegexp.MatchString(transaction.Description) {
 		return MatchResultWrongDescription
 	}
@@ -37,7 +52,7 @@ func Match(matcher *database.MatcherRuntime, transaction *goserver.Transaction) 
 
 	if matcher.PlaceRegexp != nil &&
 		!matcher.PlaceRegexp.MatchString(transaction.Place) {
-		return MatchResultWrongPartnerAccount // Using existing error code or add a new one if strictly necessary, but standard MatchResult structure might suffice for boolean check
+		return MatchResultWrongPartnerAccount
 	}
 
 	if matcher.PartnerNameRegexp != nil &&
@@ -53,6 +68,24 @@ func MatchWithDetails(matcher *database.MatcherRuntime, transaction *goserver.Tr
 	details := MatchDetails{
 		DescriptionMatched:    true,
 		PartnerAccountMatched: true,
+	}
+
+	if matcher.Matcher != nil && matcher.Matcher.Simplified {
+		for i, r := range matcher.KeywordRegexps {
+			if r.MatchString(transaction.Description) ||
+				r.MatchString(transaction.Place) ||
+				r.MatchString(transaction.PartnerName) {
+				details.Result = MatchResultSuccess
+				details.Matched = true
+				details.MatchedKeyword = matcher.Keywords[i]
+				details.MatchedOutput = matcher.KeywordOutputs[i]
+				return details
+			}
+		}
+		details.Result = MatchResultWrongDescription
+		details.Matched = false
+		details.FailureReason = "No keywords matched description, place, or partner name"
+		return details
 	}
 
 	// Check description regex

@@ -22,7 +22,7 @@ var _ MappedNullable = &MatcherNoID{}
 
 // MatcherNoID struct for MatcherNoID
 type MatcherNoID struct {
-	OutputDescription          string   `json:"outputDescription"`
+	OutputDescription          *string  `json:"outputDescription,omitempty"`
 	OutputAccountId            string   `json:"outputAccountId"`
 	OutputTags                 []string `json:"outputTags,omitempty"`
 	CurrencyRegExp             *string  `json:"currencyRegExp,omitempty"`
@@ -31,6 +31,10 @@ type MatcherNoID struct {
 	DescriptionRegExp          *string  `json:"descriptionRegExp,omitempty"`
 	ExtraRegExp                *string  `json:"extraRegExp,omitempty"`
 	PlaceRegExp                *string  `json:"placeRegExp,omitempty"`
+	// If true, use simplified mode with keyword matching instead of regex
+	Simplified *bool `json:"simplified,omitempty"`
+	// List of keywords to match against transaction description, place, and  partner name (case insensitive, whole words). First matched keyword  becomes the output description. Only used when simplified=true.
+	Keywords []string `json:"keywords,omitempty"`
 	// List of booleans representing manual confirmations for this matcher (true = confirmed, false = rejected). Server enforces maximum length configured via application config.
 	ConfirmationHistory []bool `json:"confirmationHistory,omitempty"`
 	// ID of the matcher image
@@ -43,10 +47,11 @@ type _MatcherNoID MatcherNoID
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMatcherNoID(outputDescription string, outputAccountId string) *MatcherNoID {
+func NewMatcherNoID(outputAccountId string) *MatcherNoID {
 	this := MatcherNoID{}
-	this.OutputDescription = outputDescription
 	this.OutputAccountId = outputAccountId
+	var simplified bool = false
+	this.Simplified = &simplified
 	return &this
 }
 
@@ -55,31 +60,41 @@ func NewMatcherNoID(outputDescription string, outputAccountId string) *MatcherNo
 // but it doesn't guarantee that properties required by API are set
 func NewMatcherNoIDWithDefaults() *MatcherNoID {
 	this := MatcherNoID{}
+	var simplified bool = false
+	this.Simplified = &simplified
 	return &this
 }
 
-// GetOutputDescription returns the OutputDescription field value
+// GetOutputDescription returns the OutputDescription field value if set, zero value otherwise.
 func (o *MatcherNoID) GetOutputDescription() string {
-	if o == nil {
+	if o == nil || IsNil(o.OutputDescription) {
 		var ret string
 		return ret
 	}
-
-	return o.OutputDescription
+	return *o.OutputDescription
 }
 
-// GetOutputDescriptionOk returns a tuple with the OutputDescription field value
+// GetOutputDescriptionOk returns a tuple with the OutputDescription field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *MatcherNoID) GetOutputDescriptionOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.OutputDescription) {
 		return nil, false
 	}
-	return &o.OutputDescription, true
+	return o.OutputDescription, true
 }
 
-// SetOutputDescription sets field value
+// HasOutputDescription returns a boolean if a field has been set.
+func (o *MatcherNoID) HasOutputDescription() bool {
+	if o != nil && !IsNil(o.OutputDescription) {
+		return true
+	}
+
+	return false
+}
+
+// SetOutputDescription gets a reference to the given string and assigns it to the OutputDescription field.
 func (o *MatcherNoID) SetOutputDescription(v string) {
-	o.OutputDescription = v
+	o.OutputDescription = &v
 }
 
 // GetOutputAccountId returns the OutputAccountId field value
@@ -330,6 +345,70 @@ func (o *MatcherNoID) SetPlaceRegExp(v string) {
 	o.PlaceRegExp = &v
 }
 
+// GetSimplified returns the Simplified field value if set, zero value otherwise.
+func (o *MatcherNoID) GetSimplified() bool {
+	if o == nil || IsNil(o.Simplified) {
+		var ret bool
+		return ret
+	}
+	return *o.Simplified
+}
+
+// GetSimplifiedOk returns a tuple with the Simplified field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *MatcherNoID) GetSimplifiedOk() (*bool, bool) {
+	if o == nil || IsNil(o.Simplified) {
+		return nil, false
+	}
+	return o.Simplified, true
+}
+
+// HasSimplified returns a boolean if a field has been set.
+func (o *MatcherNoID) HasSimplified() bool {
+	if o != nil && !IsNil(o.Simplified) {
+		return true
+	}
+
+	return false
+}
+
+// SetSimplified gets a reference to the given bool and assigns it to the Simplified field.
+func (o *MatcherNoID) SetSimplified(v bool) {
+	o.Simplified = &v
+}
+
+// GetKeywords returns the Keywords field value if set, zero value otherwise.
+func (o *MatcherNoID) GetKeywords() []string {
+	if o == nil || IsNil(o.Keywords) {
+		var ret []string
+		return ret
+	}
+	return o.Keywords
+}
+
+// GetKeywordsOk returns a tuple with the Keywords field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *MatcherNoID) GetKeywordsOk() ([]string, bool) {
+	if o == nil || IsNil(o.Keywords) {
+		return nil, false
+	}
+	return o.Keywords, true
+}
+
+// HasKeywords returns a boolean if a field has been set.
+func (o *MatcherNoID) HasKeywords() bool {
+	if o != nil && !IsNil(o.Keywords) {
+		return true
+	}
+
+	return false
+}
+
+// SetKeywords gets a reference to the given []string and assigns it to the Keywords field.
+func (o *MatcherNoID) SetKeywords(v []string) {
+	o.Keywords = v
+}
+
 // GetConfirmationHistory returns the ConfirmationHistory field value if set, zero value otherwise.
 func (o *MatcherNoID) GetConfirmationHistory() []bool {
 	if o == nil || IsNil(o.ConfirmationHistory) {
@@ -404,7 +483,9 @@ func (o MatcherNoID) MarshalJSON() ([]byte, error) {
 
 func (o MatcherNoID) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["outputDescription"] = o.OutputDescription
+	if !IsNil(o.OutputDescription) {
+		toSerialize["outputDescription"] = o.OutputDescription
+	}
 	toSerialize["outputAccountId"] = o.OutputAccountId
 	if !IsNil(o.OutputTags) {
 		toSerialize["outputTags"] = o.OutputTags
@@ -427,6 +508,12 @@ func (o MatcherNoID) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.PlaceRegExp) {
 		toSerialize["placeRegExp"] = o.PlaceRegExp
 	}
+	if !IsNil(o.Simplified) {
+		toSerialize["simplified"] = o.Simplified
+	}
+	if !IsNil(o.Keywords) {
+		toSerialize["keywords"] = o.Keywords
+	}
 	if !IsNil(o.ConfirmationHistory) {
 		toSerialize["confirmationHistory"] = o.ConfirmationHistory
 	}
@@ -441,7 +528,6 @@ func (o *MatcherNoID) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"outputDescription",
 		"outputAccountId",
 	}
 
