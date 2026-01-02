@@ -21,6 +21,16 @@ describe('BudgetItemsComponent', () => {
     let mockLayoutService: any;
     let mockSnackBar: any;
     let mockDialog: any;
+    const baseDate = new Date('2025-12-15T12:00:00Z');
+
+    beforeEach(() => {
+        jasmine.clock().install();
+        jasmine.clock().mockDate(baseDate);
+    });
+
+    afterEach(() => {
+        jasmine.clock().uninstall();
+    });
 
     beforeEach(async () => {
         mockBudgetItemService = {
