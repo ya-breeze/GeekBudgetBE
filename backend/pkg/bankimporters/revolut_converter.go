@@ -7,12 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
@@ -88,17 +86,22 @@ func (fc *RevolutConverter) ParseTransactions(ctx context.Context, format, data 
 	}
 
 	// Convert transactions
-	filledOpeningBalances := make(map[string]bool)
+	type currencyState struct {
+		firstBalance float64
+		firstAmount  float64
+		firstDate    time.Time
+		lastBalance  float64
+		lastAmount   float64
+		lastDate     time.Time
+		currencyName string
+	}
+	states := make(map[string]*currencyState)
+
 	info := goserver.BankAccountInfo{}
 	res := make([]goserver.TransactionNoId, 0, len(records))
 	for i, record := range records {
 		if fc.shouldSkipRecord(i, record) {
 			continue
-		}
-
-		err = fc.updateBalances(ctx, &info, filledOpeningBalances, record)
-		if err != nil {
-			return nil, nil, fmt.Errorf("can't update balances: %w", err)
 		}
 
 		var tr goserver.TransactionNoId
@@ -107,6 +110,53 @@ func (fc *RevolutConverter) ParseTransactions(ctx context.Context, format, data 
 			return nil, nil, fmt.Errorf("can't convert Revolut transaction: %w", err)
 		}
 		res = append(res, tr)
+
+		balance, err := strconv.ParseFloat(record[RevolutIndexBalance], 64)
+		if err != nil {
+			return nil, nil, fmt.Errorf("can't parse balance (%v): %w", record, err)
+		}
+		amount, err := strconv.ParseFloat(record[RevolutIndexAmount], 64)
+		if err != nil {
+			return nil, nil, fmt.Errorf("can't parse amount (%v): %w", record, err)
+		}
+		curr := record[RevolutIndexCurrency]
+
+		state, ok := states[curr]
+		if !ok {
+			state = &currencyState{
+				firstBalance: balance,
+				firstAmount:  amount,
+				firstDate:    tr.Date,
+				currencyName: curr,
+			}
+			states[curr] = state
+		}
+		state.lastBalance = balance
+		state.lastAmount = amount
+		state.lastDate = tr.Date
+	}
+
+	for curr, s := range states {
+		currencyID, err := fc.cp.GetCurrencyIdByName(ctx, curr)
+		if err != nil {
+			return nil, nil, fmt.Errorf("can't resolve currency %q: %w", curr, err)
+		}
+
+		var closing, opening float64
+		if s.firstDate.After(s.lastDate) || (s.firstDate.Equal(s.lastDate)) {
+			// Assume newest first if first date is after or equal to last date
+			closing = s.firstBalance
+			opening = s.lastBalance - s.lastAmount
+		} else {
+			// Oldest first
+			closing = s.lastBalance
+			opening = s.firstBalance - s.firstAmount
+		}
+		info.Balances = append(info.Balances, goserver.BankAccountInfoBalancesInner{
+			CurrencyId:     currencyID,
+			ClosingBalance: closing,
+			OpeningBalance: opening,
+		})
 	}
 
 	res, err = fc.joinExchanges(res)
@@ -156,45 +206,6 @@ func (fc *RevolutConverter) shouldSkipRecord(i int, record []string) bool {
 	}
 
 	return false
-}
-
-func (fc *RevolutConverter) updateBalances(
-	ctx context.Context, info *goserver.BankAccountInfo, filledOpeningBalances map[string]bool, record []string,
-) error {
-	balance, err := decimal.NewFromString(record[RevolutIndexBalance])
-	if err != nil {
-		return fmt.Errorf("can't parse balance (%v): %w", record, err)
-	}
-
-	// Fill opening/closing balances
-	currencyId, err := fc.cp.GetCurrencyIdByName(ctx, record[RevolutIndexCurrency])
-	if err != nil {
-		return fmt.Errorf("can't resolve currency %q: %w", record[RevolutIndexCurrency], err)
-	}
-
-	balanceIdx := slices.IndexFunc(info.Balances, func(b goserver.BankAccountInfoBalancesInner) bool {
-		return b.CurrencyId == currencyId
-	})
-	if balanceIdx == -1 {
-		info.Balances = append(info.Balances, goserver.BankAccountInfoBalancesInner{
-			CurrencyId: currencyId,
-		})
-		balanceIdx = len(info.Balances) - 1
-	}
-
-	info.Balances[balanceIdx].ClosingBalance = balance.InexactFloat64()
-	if !filledOpeningBalances[record[RevolutIndexCurrency]] {
-		var amount decimal.Decimal
-		amount, err = decimal.NewFromString(record[RevolutIndexAmount])
-		if err != nil {
-			return fmt.Errorf("can't parse amount (%v): %w", record, err)
-		}
-
-		info.Balances[balanceIdx].OpeningBalance = balance.Sub(amount).InexactFloat64()
-		filledOpeningBalances[record[RevolutIndexCurrency]] = true
-	}
-
-	return nil
 }
 
 func (fc *RevolutConverter) convertToTransaction(ctx context.Context, _ goserver.BankImporter, record []string,

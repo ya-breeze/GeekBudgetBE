@@ -41,6 +41,9 @@ var _ = Describe("BankImporters API", func() {
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockDB = mocks.NewMockStorage(mockCtrl)
 		sut = NewBankImportersAPIServiceImpl(logger, mockDB)
+
+		// Default expectation for balance checks triggered during imports
+		mockDB.EXPECT().CountUnprocessedTransactionsForAccount(gomock.Any(), gomock.Any()).Return(1, nil).AnyTimes()
 	})
 
 	AfterEach(func() {

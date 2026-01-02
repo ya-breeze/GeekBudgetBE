@@ -523,53 +523,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) CheckBalanceForAccount(ctx context.Context, userID, accountID string) error {
-	s.logger.Info("Checking balance for account", "userID", userID, "accountID", accountID)
-
-	count, err := s.db.CountUnprocessedTransactionsForAccount(userID, accountID)
-	if err != nil {
-		return fmt.Errorf("failed to count unprocessed transactions: %w", err)
-	}
-
-	if count > 0 {
-		s.logger.Info("Account still has unprocessed transactions, skipping balance check", "count", count)
-		return nil
-	}
-
-	acc, err := s.db.GetAccount(userID, accountID)
-	if err != nil {
-		return fmt.Errorf("failed to get account: %w", err)
-	}
-
-	for _, b := range acc.BankInfo.Balances {
-		appBalance, err := s.db.GetAccountBalance(userID, accountID, b.CurrencyId)
-		if err != nil {
-			s.logger.With("error", err, "currencyId", b.CurrencyId).Error("Failed to get app balance")
-			continue
-		}
-
-		if math.Abs(appBalance-b.ClosingBalance) > 0.01 {
-			s.logger.Warn("Balance mismatch detected",
-				"account", acc.Name,
-				"currencyId", b.CurrencyId,
-				"appBalance", appBalance,
-				"bankBalance", b.ClosingBalance)
-
-			_, err := s.db.CreateNotification(userID, &goserver.Notification{
-				Date:  time.Now(),
-				Type:  string(models.NotificationTypeBalanceDoesntMatch),
-				Title: "Balance Mismatch Detected",
-				Description: fmt.Sprintf("Account %q has a balance mismatch. App balance: %.2f, Bank balance: %.2f (Currency: %s). Please check your transactions.",
-					acc.Name, appBalance, b.ClosingBalance, b.CurrencyId),
-			})
-			if err != nil {
-				s.logger.With("error", err).Error("Failed to create balance mismatch notification")
-			}
-		} else {
-			s.logger.Info("Balance verified for account", "account", acc.Name, "currencyId", b.CurrencyId, "balance", appBalance)
-		}
-	}
-
-	return nil
+	return common.CheckBalanceForAccount(ctx, s.logger, s.db, userID, accountID)
 }
 
 func sortAndRemoveDuplicates(input []string) []string {

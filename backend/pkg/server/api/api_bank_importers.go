@@ -547,7 +547,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	}
 
 	// if all transactions are processed then update account bank info
-	if checkMissing && info != nil && len(info.Balances) > 0 {
+	if info != nil && len(info.Balances) > 0 {
 		acc, err := s.db.GetAccount(userID, biData.AccountId)
 		if err == nil {
 			accNoId := models.AccountWithoutID(&acc)
@@ -583,6 +583,11 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		} else {
 			s.logger.With("error", err, "accountId", biData.AccountId).Error("Failed to get account for bank info update")
 		}
+	}
+
+	// Trigger balance verification
+	if err := common.CheckBalanceForAccount(context.Background(), s.logger, s.db, userID, biData.AccountId); err != nil {
+		s.logger.With("error", err).Error("Failed to check balance after import")
 	}
 
 	// update last import fields
