@@ -65,6 +65,21 @@ func (mr *MockStorageMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockStorage)(nil).Close))
 }
 
+// CountUnprocessedTransactionsForAccount mocks base method.
+func (m *MockStorage) CountUnprocessedTransactionsForAccount(arg0, arg1 string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountUnprocessedTransactionsForAccount", arg0, arg1)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountUnprocessedTransactionsForAccount indicates an expected call of CountUnprocessedTransactionsForAccount.
+func (mr *MockStorageMockRecorder) CountUnprocessedTransactionsForAccount(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountUnprocessedTransactionsForAccount", reflect.TypeOf((*MockStorage)(nil).CountUnprocessedTransactionsForAccount), arg0, arg1)
+}
+
 // CreateAccount mocks base method.
 func (m *MockStorage) CreateAccount(arg0 string, arg1 *goserver.AccountNoId) (goserver.Account, error) {
 	m.ctrl.T.Helper()
@@ -354,6 +369,21 @@ func (m *MockStorage) GetAccount(arg0, arg1 string) (goserver.Account, error) {
 func (mr *MockStorageMockRecorder) GetAccount(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockStorage)(nil).GetAccount), arg0, arg1)
+}
+
+// GetAccountBalance mocks base method.
+func (m *MockStorage) GetAccountBalance(arg0, arg1, arg2 string) (float64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAccountBalance", arg0, arg1, arg2)
+	ret0, _ := ret[0].(float64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAccountBalance indicates an expected call of GetAccountBalance.
+func (mr *MockStorageMockRecorder) GetAccountBalance(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountBalance", reflect.TypeOf((*MockStorage)(nil).GetAccountBalance), arg0, arg1, arg2)
 }
 
 // GetAccountHistory mocks base method.

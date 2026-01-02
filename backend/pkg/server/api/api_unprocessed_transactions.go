@@ -147,6 +147,14 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 
 	if len(processedIDs) > 0 {
 		s.logger.Info("Auto-processed transactions", "count", len(processedIDs), "matcherId", matcherID)
+
+		// Check balance after auto-processing
+		// We need to know which accounts were affected. For simplicity, we check the matcher's account.
+		if matcher.OutputAccountId != "" {
+			if err := s.CheckBalanceForAccount(ctx, userID, matcher.OutputAccountId); err != nil {
+				s.logger.With("error", err, "accountId", matcher.OutputAccountId).Error("Failed to check balance after auto-processing")
+			}
+		}
 	}
 
 	return processedIDs, nil
@@ -396,6 +404,20 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 		return goserver.Response(500, nil), nil
 	}
 
+	// Check balance after conversion
+	// We need to check all accounts moved in this transaction
+	affectedAccounts := make(map[string]bool)
+	for _, m := range transaction.Movements {
+		if m.AccountId != "" {
+			affectedAccounts[m.AccountId] = true
+		}
+	}
+	for accID := range affectedAccounts {
+		if err := s.CheckBalanceForAccount(ctx, userID, accID); err != nil {
+			s.logger.With("error", err, "accountId", accID).Error("Failed to check balance after conversion")
+		}
+	}
+
 	return goserver.Response(200, goserver.ConvertUnprocessedTransaction200Response{
 		Transaction:      *transaction,
 		AutoProcessedIds: autoProcessedIds,
@@ -498,6 +520,56 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 	}
 
 	return res, nil
+}
+
+func (s *UnprocessedTransactionsAPIServiceImpl) CheckBalanceForAccount(ctx context.Context, userID, accountID string) error {
+	s.logger.Info("Checking balance for account", "userID", userID, "accountID", accountID)
+
+	count, err := s.db.CountUnprocessedTransactionsForAccount(userID, accountID)
+	if err != nil {
+		return fmt.Errorf("failed to count unprocessed transactions: %w", err)
+	}
+
+	if count > 0 {
+		s.logger.Info("Account still has unprocessed transactions, skipping balance check", "count", count)
+		return nil
+	}
+
+	acc, err := s.db.GetAccount(userID, accountID)
+	if err != nil {
+		return fmt.Errorf("failed to get account: %w", err)
+	}
+
+	for _, b := range acc.BankInfo.Balances {
+		appBalance, err := s.db.GetAccountBalance(userID, accountID, b.CurrencyId)
+		if err != nil {
+			s.logger.With("error", err, "currencyId", b.CurrencyId).Error("Failed to get app balance")
+			continue
+		}
+
+		if math.Abs(appBalance-b.ClosingBalance) > 0.01 {
+			s.logger.Warn("Balance mismatch detected",
+				"account", acc.Name,
+				"currencyId", b.CurrencyId,
+				"appBalance", appBalance,
+				"bankBalance", b.ClosingBalance)
+
+			_, err := s.db.CreateNotification(userID, &goserver.Notification{
+				Date:  time.Now(),
+				Type:  string(models.NotificationTypeBalanceDoesntMatch),
+				Title: "Balance Mismatch Detected",
+				Description: fmt.Sprintf("Account %q has a balance mismatch. App balance: %.2f, Bank balance: %.2f (Currency: %s). Please check your transactions.",
+					acc.Name, appBalance, b.ClosingBalance, b.CurrencyId),
+			})
+			if err != nil {
+				s.logger.With("error", err).Error("Failed to create balance mismatch notification")
+			}
+		} else {
+			s.logger.Info("Balance verified for account", "account", acc.Name, "currencyId", b.CurrencyId, "balance", appBalance)
+		}
+	}
+
+	return nil
 }
 
 func sortAndRemoveDuplicates(input []string) []string {

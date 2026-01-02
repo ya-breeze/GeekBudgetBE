@@ -106,6 +106,9 @@ type Storage interface {
 	CreateNotification(userID string, notification *goserver.Notification) (goserver.Notification, error)
 	GetNotifications(userID string) ([]goserver.Notification, error)
 	DeleteNotification(userID string, id string) error
+
+	GetAccountBalance(userID, accountID, currencyID string) (float64, error)
+	CountUnprocessedTransactionsForAccount(userID, accountID string) (int, error)
 }
 
 type MatcherRuntime struct {
@@ -1379,3 +1382,68 @@ func (s *storage) DeleteNotification(userID string, id string) error {
 }
 
 // #endregion Notifications
+
+func (s *storage) GetAccountBalance(userID, accountID, currencyID string) (float64, error) {
+	acc, err := s.GetAccount(userID, accountID)
+	if err != nil {
+		return 0, err
+	}
+
+	var total float64
+	for _, b := range acc.BankInfo.Balances {
+		if b.CurrencyId == currencyID {
+			total += b.OpeningBalance
+			break
+		}
+	}
+
+	// Sum all movements for this account and currency
+	// We use raw SQL to iterate over the movements JSON column in SQLite
+	// Since movements is a JSON array of objects, we need to parse it.
+	// For simplicity and to avoid complex SQLite JSON path expressions that might vary,
+	// we fetch transactions and sum in Go, but filter at DB level if possible.
+	var transactions []models.Transaction
+	err = s.db.Where("user_id = ? AND movements LIKE ?", userID, "%"+accountID+"%").Find(&transactions).Error
+	if err != nil {
+		return 0, fmt.Errorf(StorageError, err)
+	}
+
+	for _, t := range transactions {
+		for _, m := range t.Movements {
+			if m.AccountId == accountID && m.CurrencyId == currencyID {
+				total += m.Amount
+			}
+		}
+	}
+
+	return total, nil
+}
+
+func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID string) (int, error) {
+	var count int
+	// An unprocessed transaction is one that has at least one movement with an empty AccountId.
+	// We also filter by accountID being present in at least one movement.
+	var transactions []models.Transaction
+	err := s.db.Where("user_id = ? AND movements LIKE ? AND movements LIKE ?", userID, "%"+accountID+"%", "%\"accountId\":\"\"%").Find(&transactions).Error
+	if err != nil {
+		return 0, fmt.Errorf(StorageError, err)
+	}
+
+	for _, t := range transactions {
+		hasEmpty := false
+		hasAccount := false
+		for _, m := range t.Movements {
+			if m.AccountId == "" {
+				hasEmpty = true
+			}
+			if m.AccountId == accountID {
+				hasAccount = true
+			}
+		}
+		if hasEmpty && hasAccount {
+			count++
+		}
+	}
+
+	return count, nil
+}

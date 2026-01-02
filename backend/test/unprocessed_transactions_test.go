@@ -203,4 +203,80 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		Expect(transactions).To(HaveLen(1))
 		Expect(transactions[0].Transaction.Id).To(Equal(createdNew.Id))
 	})
+
+	It("triggers balance verification notification on mismatch", func() {
+		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+
+		// 1. Create a currency
+		curReq := goclient.CurrencyNoID{Name: "CZK"}
+		cur, _, _ := client.CurrenciesAPI.CreateCurrency(ctx).CurrencyNoID(curReq).Execute()
+
+		// 2. Create an account with a specific bank balance
+		accReq := goclient.AccountNoID{
+			Name: "BalanceTestAccount",
+			Type: "asset",
+			BankInfo: &goclient.BankAccountInfo{
+				Balances: []goclient.BankAccountInfoBalancesInner{
+					{
+						CurrencyId:     &cur.Id,
+						OpeningBalance: goclient.PtrFloat64(1000.0),
+						ClosingBalance: goclient.PtrFloat64(1500.0),
+					},
+				},
+			},
+		}
+		acc, _, _ := client.AccountsAPI.CreateAccount(ctx).AccountNoID(accReq).Execute()
+
+		// 3. Add an UNPROCESSED transaction that would make the balance mismatch
+		// (Opening 1000 + 400 = 1400, but bank says 1500)
+		tReq := goclient.TransactionNoID{
+			Date:        time.Now(),
+			Description: goclient.PtrString("Mismatch transaction"),
+			Movements: []goclient.Movement{
+				{
+					AccountId:  nil, // Unprocessed
+					CurrencyId: cur.Id,
+					Amount:     400,
+				},
+				{
+					AccountId:  &acc.Id,
+					CurrencyId: cur.Id,
+					Amount:     -400,
+				},
+			},
+		}
+		t, _, _ := client.TransactionsAPI.CreateTransaction(ctx).TransactionNoID(tReq).Execute()
+
+		// 4. Verify no notification yet (because there's still an unprocessed transaction)
+		notifications, _, _ := client.NotificationsAPI.GetNotifications(ctx).Execute()
+		Expect(notifications).To(BeEmpty())
+
+		// 5. Convert the transaction to processed
+		// Now Opening 1000 + 400 = 1400. Bank says 1500. Should trigger notification.
+		conversionReq := goclient.TransactionNoID{
+			Date:        t.Date,
+			Description: t.Description,
+			Movements: []goclient.Movement{
+				{
+					AccountId:  &acc.Id,
+					CurrencyId: cur.Id,
+					Amount:     400,
+				},
+				{
+					AccountId:  nil, // This would be the destination account, e.g., Offset
+					CurrencyId: cur.Id,
+					Amount:     -400,
+				},
+			},
+		}
+		_, _, err := client.UnprocessedTransactionsAPI.ConvertUnprocessedTransaction(ctx, t.Id).TransactionNoID(conversionReq).Execute()
+		Expect(err).ToNot(HaveOccurred())
+
+		// 6. Verify notification is created
+		notifications, _, _ = client.NotificationsAPI.GetNotifications(ctx).Execute()
+		Expect(notifications).To(HaveLen(1))
+		Expect(notifications[0].Title).To(Equal("Balance Mismatch Detected"))
+		Expect(notifications[0].Description).To(ContainSubstring("App balance: 1400.00"))
+		Expect(notifications[0].Description).To(ContainSubstring("Bank balance: 1500.00"))
+	})
 })
