@@ -1,13 +1,16 @@
 package api
 
 import (
+	"context"
 	"time"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -103,6 +106,49 @@ var _ = Describe("UnprocessedTransactions API", func() {
 			duplicates := sut.getDuplicateTransactions(candidates, t1)
 
 			Expect(duplicates).To(BeEmpty())
+		})
+	})
+
+	Describe("ProcessUnprocessedTransactionsAgainstMatcher", func() {
+		It("should skip auto-processing if a transaction matches multiple matchers", func() {
+			userID := "user1"
+			matcher1ID := "m1"
+			matcher2ID := "m2"
+
+			m1 := goserver.Matcher{
+				Id:                  matcher1ID,
+				OutputDescription:   "M1",
+				ConfirmationHistory: []bool{true, true, true, true, true, true, true, true, true, true},
+				DescriptionRegExp:   "Test",
+			}
+			m2 := goserver.Matcher{
+				Id:                  matcher2ID,
+				OutputDescription:   "M2",
+				ConfirmationHistory: []bool{true},
+				DescriptionRegExp:   "Test",
+			}
+
+			mockDB.EXPECT().GetMatcher(userID, matcher1ID).Return(m1, nil)
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{
+				{Matcher: &m1},
+				{Matcher: &m2},
+			}, nil)
+			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), gomock.Any(), false).Return([]goserver.Transaction{
+				{
+					Id:          "tx-conflict",
+					Description: "Test",
+					Movements:   []goserver.Movement{{AccountId: ""}}, // Unprocessed
+				},
+			}, nil)
+			mockDB.EXPECT().GetAccounts(userID).Return([]goserver.Account{}, nil)
+
+			// We expect NO UpdateTransaction because of conflict
+			// (Mock will fail if unexpected calls occur)
+
+			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			ids, err := sut.ProcessUnprocessedTransactionsAgainstMatcher(ctx, userID, matcher1ID, "")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(ids).To(BeEmpty())
 		})
 	})
 })

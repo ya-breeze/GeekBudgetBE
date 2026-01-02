@@ -145,6 +145,56 @@ var _ = Describe("BankImporters API", func() {
 			_, err = sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions, false)
 			Expect(err).ToNot(HaveOccurred())
 		})
+
+		It("should NOT auto-convert when multiple matchers match", func() {
+			// Setup two matchers that both match the same transaction
+			matcher1ID := uuid.New().String()
+			matcher1 := goserver.Matcher{
+				Id:                  matcher1ID,
+				OutputDescription:   "Desc 1",
+				ConfirmationHistory: []bool{true, true, true, true, true, true, true, true, true, true},
+				DescriptionRegExp:   "Test Transaction",
+			}
+			r1, _ := regexp.Compile(matcher1.DescriptionRegExp)
+
+			matcher2ID := uuid.New().String()
+			matcher2 := goserver.Matcher{
+				Id:                  matcher2ID,
+				OutputDescription:   "Desc 2",
+				ConfirmationHistory: []bool{true, true, true, true, true, true, true, true, true, true},
+				DescriptionRegExp:   "Test Transaction",
+			}
+			r2, _ := regexp.Compile(matcher2.DescriptionRegExp)
+
+			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{
+				{Matcher: &matcher1, DescriptionRegexp: r1},
+				{Matcher: &matcher2, DescriptionRegexp: r2},
+			}, nil)
+
+			// Expect NORMAL transaction creation (not auto-converted) because of conflict
+			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).DoAndReturn(func(uid string, t *goserver.TransactionNoId) (goserver.Transaction, error) {
+				Expect(t.IsAuto).To(BeFalse())
+				Expect(t.MatcherId).To(BeEmpty())
+				return goserver.Transaction{Id: uuid.New().String()}, nil
+			})
+
+			// Mock updateLastImportFields
+			mockDB.EXPECT().GetBankImporter(userID, "imp1").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil).AnyTimes()
+			mockDB.EXPECT().UpdateBankImporter(userID, "imp1", gomock.Any()).Return(goserver.BankImporter{}, nil)
+
+			transactions := []goserver.TransactionNoId{
+				{
+					Date:        time.Now(),
+					Description: "Test Transaction",
+					ExternalIds: []string{"ext1"},
+					Movements:   []goserver.Movement{{Amount: -100, CurrencyId: "USD"}},
+				},
+			}
+
+			_, err := sut.saveImportedTransactions(userID, "imp1", &goserver.BankAccountInfo{}, transactions, false)
+			Expect(err).ToNot(HaveOccurred())
+		})
 	})
 
 	Describe("Deduplication Logic", func() {

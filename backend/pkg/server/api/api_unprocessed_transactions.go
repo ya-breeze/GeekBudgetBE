@@ -97,6 +97,18 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 			continue
 		}
 
+		// Conflict check: if it matches multiple matchers, don't auto-process
+		matchesCount := 0
+		for i := range matchersRuntime {
+			if common.MatchWithDetails(&matchersRuntime[i], &t).Matched {
+				matchesCount++
+			}
+		}
+		if matchesCount > 1 {
+			s.logger.With("transactionId", t.Id).Info("Skipping auto-processing due to multiple matcher matches")
+			continue
+		}
+
 		// It matches! Let's convert it.
 		// Construct the update payload
 		transactionNoId := models.TransactionWithoutID(&t)

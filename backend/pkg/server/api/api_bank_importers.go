@@ -407,38 +407,49 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			Movements:          t.Movements,
 		}
 
+		// Find all matchers that match
+		var matches []struct {
+			matcher      database.MatcherRuntime
+			matchDetails common.MatchDetails
+		}
 		for _, matcher := range matchers {
 			matchDetails := common.MatchWithDetails(&matcher, tempDetails)
-			if !matchDetails.Matched {
-				continue
+			if matchDetails.Matched {
+				matches = append(matches, struct {
+					matcher      database.MatcherRuntime
+					matchDetails common.MatchDetails
+				}{matcher, matchDetails})
 			}
+		}
 
-			if isPerfectMatch(matcher.Matcher) {
-				s.logger.Info("Found perfect match", "matcher", matcher.Matcher.OutputDescription, "transaction", t.Description)
+		// Only auto-process if exactly ONE matcher matches and it's a perfect match
+		if len(matches) == 1 && isPerfectMatch(matches[0].matcher.Matcher) {
+			matcher := matches[0].matcher
+			matchDetails := matches[0].matchDetails
 
-				// Apply matcher outputs
-				description := matcher.Matcher.OutputDescription
-				tags := matcher.Matcher.OutputTags
-				if matcher.Matcher.Simplified && matchDetails.MatchedKeyword != "" {
-					description = matchDetails.MatchedOutput
-					tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
-				}
-				t.Description = description
-				for i := range t.Movements {
-					if t.Movements[i].AccountId == "" {
-						t.Movements[i].AccountId = matcher.Matcher.OutputAccountId
-					}
-				}
-				t.Tags = append(t.Tags, matcher.Matcher.OutputTags...)
-				t.Tags = sortAndRemoveDuplicates(t.Tags)
-				t.MatcherId = matcher.Matcher.Id
-				t.IsAuto = true
+			s.logger.Info("Found perfect match", "matcher", matcher.Matcher.OutputDescription, "transaction", t.Description)
 
-				// auto-confirm the matcher
-				if err := s.db.AddMatcherConfirmation(userID, t.MatcherId, true); err != nil {
-					s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", t.MatcherId, "error", err)
+			// Apply matcher outputs
+			description := matcher.Matcher.OutputDescription
+			tags := matcher.Matcher.OutputTags
+			if matcher.Matcher.Simplified && matchDetails.MatchedKeyword != "" {
+				description = matchDetails.MatchedOutput
+				tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
+			}
+			t.Description = description
+			for i := range t.Movements {
+				if t.Movements[i].AccountId == "" {
+					t.Movements[i].AccountId = matcher.Matcher.OutputAccountId
 				}
-				break
+			}
+			t.Tags = append(t.Tags, matcher.Matcher.OutputTags...)
+			t.Tags = sortAndRemoveDuplicates(t.Tags)
+			t.MatcherId = matcher.Matcher.Id
+			t.IsAuto = true
+
+			// auto-confirm the matcher
+			if err := s.db.AddMatcherConfirmation(userID, t.MatcherId, true); err != nil {
+				s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", t.MatcherId, "error", err)
 			}
 		}
 
