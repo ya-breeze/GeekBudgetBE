@@ -589,4 +589,104 @@ var _ = Describe("BankImporters API", func() {
 			Expect(isDuplicate(t1, t2)).To(BeFalse())
 		})
 	})
+
+	Describe("Opening Balance Logic", func() {
+		It("should update OpeningBalance when checkMissing is true", func() {
+			importerID := "imp-full"
+			accountID := "acc-full"
+			currencyID := "USD"
+
+			// Existing account with an opening balance
+			existingAccount := goserver.Account{
+				Id: accountID,
+				BankInfo: goserver.BankAccountInfo{
+					Balances: []goserver.BankAccountInfoBalancesInner{
+						{CurrencyId: currencyID, OpeningBalance: 1000, ClosingBalance: 1500},
+					},
+				},
+			}
+
+			// Imported info with NEW opening balance
+			importedInfo := &goserver.BankAccountInfo{
+				Balances: []goserver.BankAccountInfoBalancesInner{
+					{CurrencyId: currencyID, OpeningBalance: 2000, ClosingBalance: 2500},
+				},
+			}
+
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(goserver.BankImporter{Id: importerID, AccountId: accountID}, nil).AnyTimes()
+			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
+			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil)
+
+			// EXPECT: Entire balance object replaced (OpeningBalance updated to 2000)
+			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
+				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(float64(2000)))
+				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(float64(2500)))
+				return goserver.Account{}, nil
+			})
+
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil)
+
+			transactions := []goserver.TransactionNoId{
+				{
+					Date:        time.Now(),
+					ExternalIds: []string{"ext1"},
+					Movements:   []goserver.Movement{{Amount: 100, CurrencyId: currencyID}},
+				},
+			}
+			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).Return(goserver.Transaction{}, nil)
+
+			_, err := sut.saveImportedTransactions(userID, importerID, importedInfo, transactions, true) // checkMissing=true
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("should NOT update OpeningBalance (only ClosingBalance) when checkMissing is false", func() {
+			importerID := "imp-inc"
+			accountID := "acc-inc"
+			currencyID := "USD"
+
+			// Existing account with an opening balance
+			existingAccount := goserver.Account{
+				Id: accountID,
+				BankInfo: goserver.BankAccountInfo{
+					Balances: []goserver.BankAccountInfoBalancesInner{
+						{CurrencyId: currencyID, OpeningBalance: 1000, ClosingBalance: 1500},
+					},
+				},
+			}
+
+			// Imported info with DIFFERENT opening balance (which should be ignored)
+			importedInfo := &goserver.BankAccountInfo{
+				Balances: []goserver.BankAccountInfoBalancesInner{
+					{CurrencyId: currencyID, OpeningBalance: 2000, ClosingBalance: 2500},
+				},
+			}
+
+			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(goserver.BankImporter{Id: importerID, AccountId: accountID}, nil).AnyTimes()
+			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
+			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
+			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil)
+
+			// EXPECT: OpeningBalance preserved at 1000, but ClosingBalance updated to 2500
+			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
+				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(float64(1000))) // Preserved
+				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(float64(2500))) // Updated
+				return goserver.Account{}, nil
+			})
+
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil)
+
+			transactions := []goserver.TransactionNoId{
+				{
+					Date:        time.Now(),
+					ExternalIds: []string{"ext2"},
+					Movements:   []goserver.Movement{{Amount: 200, CurrencyId: currencyID}},
+				},
+			}
+			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).Return(goserver.Transaction{}, nil)
+
+			_, err := sut.saveImportedTransactions(userID, importerID, importedInfo, transactions, false) // checkMissing=false
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
 })

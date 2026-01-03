@@ -564,7 +564,11 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 				found := false
 				for i := range accNoId.BankInfo.Balances {
 					if accNoId.BankInfo.Balances[i].CurrencyId == b.CurrencyId {
-						accNoId.BankInfo.Balances[i] = b
+						if checkMissing {
+							accNoId.BankInfo.Balances[i] = b
+						} else {
+							accNoId.BankInfo.Balances[i].ClosingBalance = b.ClosingBalance
+						}
 						found = true
 						break
 					}
