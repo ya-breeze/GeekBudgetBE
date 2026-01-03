@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -648,6 +649,11 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 	if err := s.db.Create(t).Error; err != nil {
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
+
+	if err := s.recordTransactionHistory(s.db, userID, t, "CREATED"); err != nil {
+		s.log.Error("Failed to record transaction history", "error", err)
+	}
+
 	s.log.Info("Transaction created", "id", t.ID)
 
 	return t.FromDB(), nil
@@ -670,6 +676,10 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
+	if err := s.recordTransactionHistory(s.db, userID, t, "UPDATED"); err != nil {
+		s.log.Error("Failed to record transaction history", "error", err)
+	}
+
 	t = models.TransactionToDB(input, userID)
 	t.ID = idUUID
 	if err := s.db.Save(&t).Error; err != nil {
@@ -690,6 +700,10 @@ func (s *storage) DeleteTransaction(userID string, id string) error {
 
 	if len(t.ExternalIDs) > 0 || t.UnprocessedSources != "" {
 		return ErrImportedTransactionCannotBeDeleted
+	}
+
+	if err := s.recordTransactionHistory(s.db, userID, &t, "DELETED"); err != nil {
+		s.log.Error("Failed to record transaction history", "error", err)
 	}
 
 	if err := s.db.Delete(&t).Error; err != nil {
@@ -729,6 +743,10 @@ func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID stri
 			}).Error; err != nil {
 			s.log.Warn("Failed to mark transaction as merged", "id", id, "error", err)
 			return fmt.Errorf(StorageError, err)
+		}
+
+		if err := s.recordTransactionHistory(tx, userID, &t, "MERGED"); err != nil {
+			s.log.Error("Failed to record transaction history", "error", err)
 		}
 
 		return nil
@@ -815,6 +833,10 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 				"merged_at":      gorm.Expr("NULL"),
 			}).Error; err != nil {
 			return fmt.Errorf("failed to unmerge transaction: %w", err)
+		}
+
+		if err := s.recordTransactionHistory(tx, userID, &t, "UNMERGED"); err != nil {
+			s.log.Error("Failed to record transaction history", "error", err)
 		}
 
 		return nil
@@ -1446,4 +1468,22 @@ func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID strin
 	}
 
 	return count, nil
+}
+
+func (s *storage) recordTransactionHistory(tx *gorm.DB, userID string, transaction *models.Transaction, action string) error {
+	jsonData, err := json.Marshal(transaction)
+	if err != nil {
+		return fmt.Errorf("failed to marshal transaction for history: %w", err)
+	}
+
+	history := models.TransactionHistory{
+		ID:            uuid.New(),
+		TransactionID: transaction.ID,
+		UserID:        userID,
+		Action:        action,
+		Snapshot:      string(jsonData),
+		CreatedAt:     time.Now(),
+	}
+
+	return tx.Create(&history).Error
 }
