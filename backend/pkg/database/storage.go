@@ -1424,7 +1424,7 @@ func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID strin
 	// An unprocessed transaction is one that has at least one movement with an empty AccountId.
 	// We also filter by accountID being present in at least one movement.
 	var transactions []models.Transaction
-	err := s.db.Where("user_id = ? AND movements LIKE ? AND movements LIKE ?", userID, "%"+accountID+"%", "%\"accountId\":\"\"%").Find(&transactions).Error
+	err := s.db.Where("user_id = ? AND movements LIKE ?", userID, "%"+accountID+"%").Find(&transactions).Error
 	if err != nil {
 		return 0, fmt.Errorf(StorageError, err)
 	}

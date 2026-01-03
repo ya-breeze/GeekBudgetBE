@@ -251,6 +251,13 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		notifications, _, _ := client.NotificationsAPI.GetNotifications(ctx).Execute()
 		Expect(notifications).To(BeEmpty())
 
+		// 4a. Create another account to serve as the "offset" for the processed transaction
+		offsetAccReq := goclient.AccountNoID{
+			Name: "OffsetAccount",
+			Type: "asset",
+		}
+		offsetAcc, _, _ := client.AccountsAPI.CreateAccount(ctx).AccountNoID(offsetAccReq).Execute()
+
 		// 5. Convert the transaction to processed
 		// Now Opening 1000 + 400 = 1400. Bank says 1500. Should trigger notification.
 		conversionReq := goclient.TransactionNoID{
@@ -263,7 +270,7 @@ var _ = Describe("Unprocessed Transactions API", func() {
 					Amount:     400,
 				},
 				{
-					AccountId:  nil, // This would be the destination account, e.g., Offset
+					AccountId:  &offsetAcc.Id, // No longer nil
 					CurrencyId: cur.Id,
 					Amount:     -400,
 				},
