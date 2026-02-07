@@ -137,4 +137,30 @@ Datum zauctovani;Datum provedeni;Protistrana;Nazev protiuctu;Castka;Mena;Origina
 		Expect(transactions[2].Description).To(ContainSubstring("Fee"))
 		Expect(transactions[2].Movements[1].Amount).To(BeNumerically("==", -15.00))
 	})
+
+	It("filters out zero-amount movements", func() {
+		data := `KB+, vypis v csv. formatu;;;;;;;;;;;;;;;;;;
+Datum vytvoreni souboru;21.12.2025;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+Cislo uctu;123-123123;;;;;;;;;;;;;;;;;
+Mena uctu / Hlavni mena uctu;CZK;;;;;;;;;;;;;;;;;
+Mena vypisu;;;;;;;;;;;;;;;;;;
+IBAN;CZ123123123;;;;;;;;;;;;;;;;;
+Nazev uctu;A B;;;;;;;;;;;;;;;;;
+Vypis od;01.01.2025;;;;;;;;;;;;;;;;;
+Vypis do;20.12.2025;;;;;;;;;;;;;;;;;
+Cislo vypisu;;;;;;;;;;;;;;;;;;
+Pocet polozek;1;;;;;;;;;;;;;;;;;
+Mena;CZK;EUR;USD;GBP;AUD;BGN;CAD;CHF;DKK;HUF;JPY;NOK;PLN;RON;SEK;;;
+Pocatecni zustatek;100,00;;;;;;;;;;;;;;;;;
+Konecny zustatek;100,00;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+Datum zauctovani;Datum provedeni;Protistrana;Nazev protiuctu;Castka;Mena;Originalni castka;Originalni mena;Smenny kurz;VS;KS;SS;Identifikace transakce;Typ transakce;Popis pro me;Zprava pro prijemce;Reference platby;BIC / SWIFT;Poplatek
+26.09.2024;26.09.2024;123/45;Zero Corp;0,00;CZK;;;;0;0;0;tx0;Zero payment;Zero;Zero;;;`
+
+		_, transactions, err := rc.ParseAndImport("csv", data)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(transactions).To(HaveLen(1))
+		Expect(transactions[0].Movements).To(BeEmpty())
+	})
 })

@@ -247,16 +247,17 @@ func (fc *KBConverter) ConvertToTransaction(ctx context.Context, record []string
 		return res, fmt.Errorf("can't parse amount %q: %w", record[KBIndexAmount], err)
 	}
 
-	res.Movements = []goserver.Movement{
-		{
+	res.Movements = make([]goserver.Movement, 0, 2)
+	if amount != 0 {
+		res.Movements = append(res.Movements, goserver.Movement{
 			Amount:     -amount,
 			CurrencyId: strCurrencyID,
-		},
-		{
+		})
+		res.Movements = append(res.Movements, goserver.Movement{
 			AccountId:  fc.bankImporter.AccountId,
 			Amount:     amount,
 			CurrencyId: strCurrencyID,
-		},
+		})
 	}
 
 	res.Tags = append(res.Tags, "kb")

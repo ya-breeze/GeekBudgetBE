@@ -292,4 +292,34 @@ var _ = Describe("FIO converter", func() {
 		Expect(transactions[0].Movements[1].Amount).To(BeNumerically("==", 1.00))
 		Expect(transactions[0].PartnerName).To(Equal("Pavel, Novák"))
 	})
+
+	It("filters out zero-amount movements", func() {
+		data := []byte(`{
+			"accountStatement": {
+				"info": {
+					"accountId": "123",
+					"bankId": "2010",
+					"currency": "CZK",
+					"openingBalance": 100.00,
+					"closingBalance": 100.00
+				},
+				"transactionList": {
+					"transaction": [
+						{
+							"column0": {"value": "2024-01-15+0100", "name": "Datum", "id": 0},
+							"column22": {"value": 1, "name": "ID", "id": 22},
+							"column1": {"value": 0.00, "name": "Objem", "id": 1},
+							"column14": {"value": "CZK", "name": "Měna", "id": 14},
+							"column8": {"value": "Zero Amount", "name": "Typ", "id": 8}
+						}
+					]
+				}
+			}
+		}`)
+
+		_, transactions, err := fc.ParseTransactions(context.Background(), data)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(transactions).To(HaveLen(1))
+		Expect(transactions[0].Movements).To(BeEmpty())
+	})
 })

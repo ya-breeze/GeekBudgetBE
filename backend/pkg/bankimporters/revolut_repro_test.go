@@ -68,4 +68,25 @@ CARD_PAYMENT,Current,2023-01-01 10:00:00,2023-01-02 10:00:00,"Coffee Shop ",-50.
 		// Verify hashes are DIFFERENT because it hashes the source row
 		Expect(trans1[0].ExternalIds[0]).ToNot(Equal(trans2[0].ExternalIds[0]))
 	})
+
+	It("filters out zero-amount movements", func() {
+		// CSV with zero amount and zero fee
+		csv := `Type,Product,Started Date,Completed Date,Description,Amount,Fee,Currency,State,Balance
+CARD_PAYMENT,Current,2023-01-01 10:00:00,2023-01-02 10:00:00,Zero Item,0.00,0.00,CZK,COMPLETED,1000.00`
+
+		_, trans, err := converter.ParseTransactions(context.Background(), "csv", csv)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(trans).To(HaveLen(1))
+		// Should have 0 movements because both amount and fee are zero
+		Expect(trans[0].Movements).To(BeEmpty())
+
+		// CSV with non-zero amount but zero fee
+		csv2 := `Type,Product,Started Date,Completed Date,Description,Amount,Fee,Currency,State,Balance
+CARD_PAYMENT,Current,2023-01-01 10:00:00,2023-01-02 10:00:00,Normal Item,100.00,0.00,CZK,COMPLETED,1100.00`
+		_, trans2, err := converter.ParseTransactions(context.Background(), "csv", csv2)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(trans2).To(HaveLen(1))
+		// Should have 2 movements (Source and Account), but NOT Fee
+		Expect(trans2[0].Movements).To(HaveLen(2))
+	})
 })

@@ -237,16 +237,19 @@ func (fc *RevolutConverter) convertToTransaction(ctx context.Context, _ goserver
 		return res, fmt.Errorf("can't parse fee %q: %w", record[RevolutIndexFee], err)
 	}
 
-	res.Movements = []goserver.Movement{
-		{
+	res.Movements = make([]goserver.Movement, 0, 3)
+	if amount != 0 {
+		res.Movements = append(res.Movements, goserver.Movement{
 			Amount:     -amount,
 			CurrencyId: strCurrencyID,
-		},
-		{
+		})
+	}
+	if amount-feeAmount != 0 {
+		res.Movements = append(res.Movements, goserver.Movement{
 			AccountId:  fc.bankImporter.AccountId,
 			Amount:     amount - feeAmount,
 			CurrencyId: strCurrencyID,
-		},
+		})
 	}
 	if feeAmount != 0 {
 		res.Movements = append(res.Movements, goserver.Movement{

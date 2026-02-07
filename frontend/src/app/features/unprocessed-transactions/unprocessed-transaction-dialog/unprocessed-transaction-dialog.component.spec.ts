@@ -249,4 +249,25 @@ describe('UnprocessedTransactionDialogComponent', () => {
             }),
         );
     });
+
+    it('should remove a manual movement ONLY if amount is zero', () => {
+        // 1. Initialize with some movements
+        const testMovements = [
+            { accountId: 'acc-1', amount: 10, currencyId: 'USD' },
+            { accountId: 'acc-2', amount: 0, currencyId: 'USD' },
+            { accountId: 'acc-3', amount: 30, currencyId: 'USD' },
+        ];
+        component['manualMovements'].set(testMovements);
+
+        // 2. Try to remove the first movement (index 0, amount 10) - SHOULD FAIL
+        component.removeManualMovement(0);
+        expect(component['manualMovements']().length).toBe(3);
+
+        // 3. Remove the second movement (index 1, amount 0) - SHOULD SUCCEED
+        component.removeManualMovement(1);
+        const remaining = component['manualMovements']();
+        expect(remaining.length).toBe(2);
+        expect(remaining[0].accountId).toBe('acc-1');
+        expect(remaining[1].accountId).toBe('acc-3');
+    });
 });

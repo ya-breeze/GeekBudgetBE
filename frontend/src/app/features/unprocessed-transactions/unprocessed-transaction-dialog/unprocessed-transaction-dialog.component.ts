@@ -331,6 +331,16 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
         this.manualMovements.set(updated);
     }
 
+    removeManualMovement(index: number) {
+        const current = this.manualMovements();
+        if (current[index]?.amount !== 0) {
+            return;
+        }
+        const updated = [...current];
+        updated.splice(index, 1);
+        this.manualMovements.set(updated);
+    }
+
     isOriginalAccountDefined(index: number): boolean {
         const originalMovements = this.transaction().transaction.movements;
         return !!originalMovements && !!originalMovements[index]?.accountId;

@@ -140,17 +140,21 @@ func (fc *FioConverter) ConvertFioToTransaction(ctx context.Context, bi goserver
 		res = goserver.TransactionNoId{
 			Date:        t,
 			Description: d,
-			Movements: []goserver.Movement{
-				{
-					Amount:     -fio.Amount.Value.InexactFloat64(),
-					CurrencyId: strCurrencyID,
-				},
-				{
-					AccountId:  fc.bankImporter.AccountId,
-					Amount:     fio.Amount.Value.InexactFloat64(),
-					CurrencyId: strCurrencyID,
-				},
-			},
+			Movements: func() []goserver.Movement {
+				m := make([]goserver.Movement, 0, 2)
+				if fio.Amount.Value.InexactFloat64() != 0 {
+					m = append(m, goserver.Movement{
+						Amount:     -fio.Amount.Value.InexactFloat64(),
+						CurrencyId: strCurrencyID,
+					})
+					m = append(m, goserver.Movement{
+						AccountId:  fc.bankImporter.AccountId,
+						Amount:     fio.Amount.Value.InexactFloat64(),
+						CurrencyId: strCurrencyID,
+					})
+				}
+				return m
+			}(),
 		}
 	} else {
 		t, err := time.Parse("2.1.2006", tokens[0][4])
@@ -184,17 +188,23 @@ func (fc *FioConverter) ConvertFioToTransaction(ctx context.Context, bi goserver
 			Place: tokens[0][3],
 			//nolint:staticcheck // comma and space are from regexp
 			Description: fmt.Sprintf("%s: %s", tokens[0][1], strings.Trim(tokens[0][2], ",  ")),
-			Movements: []goserver.Movement{
-				{
-					Amount:     amountUnknown.InexactFloat64(),
-					CurrencyId: strPaidCurrencyID,
-				},
-				{
-					AccountId:  fc.bankImporter.AccountId,
-					Amount:     amountFio.InexactFloat64(),
-					CurrencyId: strCurrencyID,
-				},
-			},
+			Movements: func() []goserver.Movement {
+				m := make([]goserver.Movement, 0, 2)
+				if val := amountUnknown.InexactFloat64(); val != 0 {
+					m = append(m, goserver.Movement{
+						Amount:     val,
+						CurrencyId: strPaidCurrencyID,
+					})
+				}
+				if val := amountFio.InexactFloat64(); val != 0 {
+					m = append(m, goserver.Movement{
+						AccountId:  fc.bankImporter.AccountId,
+						Amount:     val,
+						CurrencyId: strCurrencyID,
+					})
+				}
+				return m
+			}(),
 		}
 	}
 

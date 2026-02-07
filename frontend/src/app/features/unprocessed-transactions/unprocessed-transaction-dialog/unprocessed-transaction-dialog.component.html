@@ -144,6 +144,16 @@
                                         {{ mov.amount | number: '1.2-2' }}
                                         {{ getCurrencyName(mov.currencyId) }}
                                     </div>
+                                    @if (mov.amount === 0) {
+                                        <button
+                                            mat-icon-button
+                                            color="warn"
+                                            (click)="removeManualMovement($index)"
+                                            matTooltip="Remove Movement"
+                                        >
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    }
                                 </div>
                             }
                         </div>
