@@ -1,1 +1,18 @@
-<footer class="footer"></footer>
+<footer class="footer">
+    <div class="status-info" *ngIf="backendStatus">
+        <span class="status-item" title="Backend Commit"
+            >BE: {{ backendStatus.commit | slice: 0 : 7 }}</span
+        >
+        <span class="status-item" title="Backend Build Time"
+            >Built: {{ backendStatus.buildTime | date: 'short' }}</span
+        >
+        <span class="status-item" title="Backend Start Time"
+            >Started: {{ backendStatus.startTime | date: 'short' }}</span
+        >
+    </div>
+    <div class="status-info" *ngIf="frontendBuildTime">
+        <span class="status-item" title="Frontend Build Time"
+            >FE Built: {{ frontendBuildTime | date: 'short' }}</span
+        >
+    </div>
+</footer>

@@ -37,9 +37,6 @@ export class SidebarComponent {
 
     menuToggle = output<void>();
 
-    protected readonly currentYear = signal(new Date().getFullYear());
-    protected readonly version = signal('0.0.1');
-
     onMenuToggle(): void {
         this.menuToggle.emit();
     }

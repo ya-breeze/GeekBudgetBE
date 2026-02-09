@@ -24,6 +24,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/webapp"
+	"github.com/ya-breeze/geekbudgetbe/pkg/version"
 )
 
 func Server(logger *slog.Logger, cfg *config.Config) error {
@@ -105,18 +106,19 @@ func Serve(
 	storage database.Storage, cfg *config.Config,
 	forcedImports chan<- common.ForcedImport,
 ) (net.Addr, chan int, error) {
-	commit := func() string {
-		if info, ok := debug.ReadBuildInfo(); ok {
-			for _, setting := range info.Settings {
-				if setting.Key == "vcs.revision" {
-					return setting.Value
-				}
+	// Initialize version info
+	version.Init()
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				version.Commit = setting.Value
+			case "vcs.time":
+				version.BuildTime = setting.Value
 			}
 		}
-
-		return ""
-	}()
-	logger.Info("Built from git commit: " + commit)
+	}
+	logger.Info("Built from git commit: " + version.Commit)
 
 	if cfg.JWTSecret == "" {
 		logger.Warn("JWT secret is not set. Creating random secret...")
@@ -148,8 +150,9 @@ func Serve(
 	}
 
 	controllers := createControllers(logger, cfg, storage)
-	extraRouters := []goserver.Router{webapp.NewWebAppRouter(commit, logger, cfg, storage)}
+	extraRouters := []goserver.Router{webapp.NewWebAppRouter(version.Commit, logger, cfg, storage)}
 	extraRouters = append(extraRouters, api.NewCustomAuthAPIController(controllers.AuthAPIService, logger, cfg))
+	extraRouters = append(extraRouters, api.NewStatusAPIController())
 
 	return goserver.Serve(ctx, logger, cfg,
 		controllers,
