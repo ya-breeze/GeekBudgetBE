@@ -48,6 +48,8 @@ type Transaction struct {
 	MergedIntoId *string `json:"mergedIntoId,omitempty"`
 	// When this transaction was merged
 	MergedAt *time.Time `json:"mergedAt,omitempty"`
+	// Reason why auto-match was skipped for this transaction
+	AutoMatchSkipReason *string `json:"autoMatchSkipReason,omitempty"`
 }
 
 type _Transaction Transaction
@@ -592,6 +594,38 @@ func (o *Transaction) SetMergedAt(v time.Time) {
 	o.MergedAt = &v
 }
 
+// GetAutoMatchSkipReason returns the AutoMatchSkipReason field value if set, zero value otherwise.
+func (o *Transaction) GetAutoMatchSkipReason() string {
+	if o == nil || IsNil(o.AutoMatchSkipReason) {
+		var ret string
+		return ret
+	}
+	return *o.AutoMatchSkipReason
+}
+
+// GetAutoMatchSkipReasonOk returns a tuple with the AutoMatchSkipReason field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Transaction) GetAutoMatchSkipReasonOk() (*string, bool) {
+	if o == nil || IsNil(o.AutoMatchSkipReason) {
+		return nil, false
+	}
+	return o.AutoMatchSkipReason, true
+}
+
+// HasAutoMatchSkipReason returns a boolean if a field has been set.
+func (o *Transaction) HasAutoMatchSkipReason() bool {
+	if o != nil && !IsNil(o.AutoMatchSkipReason) {
+		return true
+	}
+
+	return false
+}
+
+// SetAutoMatchSkipReason gets a reference to the given string and assigns it to the AutoMatchSkipReason field.
+func (o *Transaction) SetAutoMatchSkipReason(v string) {
+	o.AutoMatchSkipReason = &v
+}
+
 func (o Transaction) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -646,6 +680,9 @@ func (o Transaction) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.MergedAt) {
 		toSerialize["mergedAt"] = o.MergedAt
+	}
+	if !IsNil(o.AutoMatchSkipReason) {
+		toSerialize["autoMatchSkipReason"] = o.AutoMatchSkipReason
 	}
 	return toSerialize, nil
 }

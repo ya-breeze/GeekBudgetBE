@@ -12,6 +12,7 @@ import { UnprocessedTransaction } from '../../core/api/models/unprocessed-transa
 import { LayoutService } from '../../layout/services/layout.service';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import {
     UnprocessedTransactionDialogComponent,
     UnprocessedTransactionDialogResult,
@@ -29,6 +30,7 @@ import {
         MatChipsModule,
         AppDatePipe,
         MatDialogModule,
+        MatTooltipModule,
     ],
     templateUrl: './unprocessed-transactions.component.html',
     styleUrl: './unprocessed-transactions.component.scss',

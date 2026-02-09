@@ -72,6 +72,14 @@
                                 <span class="value">{{ transaction().transaction.extra }}</span>
                             </div>
                         }
+                        @if (transaction().transaction.autoMatchSkipReason) {
+                            <div class="detail-item skip-reason-container">
+                                <mat-icon color="warn">warning</mat-icon>
+                                <span class="skip-reason-text">{{
+                                    transaction().transaction.autoMatchSkipReason
+                                }}</span>
+                            </div>
+                        }
                         <div class="detail-item description-field">
                             <mat-form-field
                                 appearance="outline"

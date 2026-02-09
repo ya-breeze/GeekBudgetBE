@@ -42,6 +42,9 @@ type Transaction struct {
 	// MergedAt records when this transaction was merged
 	MergedAt *time.Time
 
+	// AutoMatchSkipReason records why auto-match was skipped
+	AutoMatchSkipReason string
+
 	UserID string    `gorm:"index"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
@@ -63,23 +66,24 @@ func (t *Transaction) FromDB() goserver.Transaction {
 	}
 
 	return goserver.Transaction{
-		Id:                 t.ID.String(),
-		Date:               t.Date,
-		Description:        t.Description,
-		Place:              t.Place,
-		Tags:               t.Tags,
-		PartnerName:        t.PartnerName,
-		PartnerAccount:     t.PartnerAccount,
-		PartnerInternalId:  t.PartnerInternalID,
-		Extra:              t.Extra,
-		UnprocessedSources: t.UnprocessedSources,
-		ExternalIds:        t.ExternalIDs,
-		Movements:          t.Movements,
-		MatcherId:          matcherID,
-		IsAuto:             t.IsAuto,
-		SuspiciousReasons:  t.SuspiciousReasons,
-		MergedIntoId:       mergedIntoID,
-		MergedAt:           mergedAt,
+		Id:                  t.ID.String(),
+		Date:                t.Date,
+		Description:         t.Description,
+		Place:               t.Place,
+		Tags:                t.Tags,
+		PartnerName:         t.PartnerName,
+		PartnerAccount:      t.PartnerAccount,
+		PartnerInternalId:   t.PartnerInternalID,
+		Extra:               t.Extra,
+		UnprocessedSources:  t.UnprocessedSources,
+		ExternalIds:         t.ExternalIDs,
+		Movements:           t.Movements,
+		MatcherId:           matcherID,
+		IsAuto:              t.IsAuto,
+		SuspiciousReasons:   t.SuspiciousReasons,
+		MergedIntoId:        mergedIntoID,
+		MergedAt:            mergedAt,
+		AutoMatchSkipReason: t.AutoMatchSkipReason,
 	}
 }
 
@@ -143,44 +147,46 @@ func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID strin
 	}
 
 	return &Transaction{
-		Date:               transaction.GetDate(),
-		Description:        transaction.GetDescription(),
-		Place:              transaction.GetPlace(),
-		Tags:               transaction.GetTags(),
-		PartnerName:        transaction.GetPartnerName(),
-		PartnerAccount:     transaction.GetPartnerAccount(),
-		PartnerInternalID:  transaction.GetPartnerInternalId(),
-		Extra:              transaction.GetExtra(),
-		UnprocessedSources: transaction.GetUnprocessedSources(),
-		ExternalIDs:        transaction.GetExternalIds(),
-		Movements:          transaction.GetMovements(),
-		MatcherID:          matcherID,
-		IsAuto:             transaction.GetIsAuto(),
-		SuspiciousReasons:  transaction.GetSuspiciousReasons(),
-		MergedIntoID:       mergedIntoID,
-		MergedAt:           mergedAt,
-		UserID:             userID,
+		Date:                transaction.GetDate(),
+		Description:         transaction.GetDescription(),
+		Place:               transaction.GetPlace(),
+		Tags:                transaction.GetTags(),
+		PartnerName:         transaction.GetPartnerName(),
+		PartnerAccount:      transaction.GetPartnerAccount(),
+		PartnerInternalID:   transaction.GetPartnerInternalId(),
+		Extra:               transaction.GetExtra(),
+		UnprocessedSources:  transaction.GetUnprocessedSources(),
+		ExternalIDs:         transaction.GetExternalIds(),
+		Movements:           transaction.GetMovements(),
+		MatcherID:           matcherID,
+		IsAuto:              transaction.GetIsAuto(),
+		SuspiciousReasons:   transaction.GetSuspiciousReasons(),
+		MergedIntoID:        mergedIntoID,
+		MergedAt:            mergedAt,
+		AutoMatchSkipReason: transaction.GetAutoMatchSkipReason(),
+		UserID:              userID,
 	}
 }
 
 func TransactionWithoutID(transaction *goserver.Transaction) *goserver.TransactionNoId {
 	return &goserver.TransactionNoId{
-		Date:               transaction.Date,
-		Description:        transaction.Description,
-		Place:              transaction.Place,
-		Tags:               transaction.Tags,
-		PartnerName:        transaction.PartnerName,
-		PartnerAccount:     transaction.PartnerAccount,
-		PartnerInternalId:  transaction.PartnerInternalId,
-		Extra:              transaction.Extra,
-		UnprocessedSources: transaction.UnprocessedSources,
-		ExternalIds:        transaction.ExternalIds,
-		Movements:          transaction.Movements,
-		MatcherId:          transaction.MatcherId,
-		IsAuto:             transaction.IsAuto,
-		SuspiciousReasons:  transaction.SuspiciousReasons,
-		MergedIntoId:       transaction.MergedIntoId,
-		MergedAt:           transaction.MergedAt,
+		Date:                transaction.Date,
+		Description:         transaction.Description,
+		Place:               transaction.Place,
+		Tags:                transaction.Tags,
+		PartnerName:         transaction.PartnerName,
+		PartnerAccount:      transaction.PartnerAccount,
+		PartnerInternalId:   transaction.PartnerInternalId,
+		Extra:               transaction.Extra,
+		UnprocessedSources:  transaction.UnprocessedSources,
+		ExternalIds:         transaction.ExternalIds,
+		Movements:           transaction.Movements,
+		MatcherId:           transaction.MatcherId,
+		IsAuto:              transaction.IsAuto,
+		SuspiciousReasons:   transaction.SuspiciousReasons,
+		MergedIntoId:        transaction.MergedIntoId,
+		MergedAt:            transaction.MergedAt,
+		AutoMatchSkipReason: transaction.AutoMatchSkipReason,
 	}
 }
 

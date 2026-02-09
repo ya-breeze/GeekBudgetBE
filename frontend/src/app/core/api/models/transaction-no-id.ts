@@ -3,6 +3,10 @@
 
 import { Movement } from '../models/movement';
 export interface TransactionNoId {
+    /**
+     * Reason why auto-match was skipped for this transaction
+     */
+    autoMatchSkipReason?: string;
     date: string;
     description?: string;
 

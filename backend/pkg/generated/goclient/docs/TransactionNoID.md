@@ -20,6 +20,7 @@ Name | Type | Description | Notes
 **SuspiciousReasons** | Pointer to **[]string** |  | [optional] 
 **MergedIntoId** | Pointer to **string** | ID of the transaction this one was merged into (if any) | [optional] 
 **MergedAt** | Pointer to **time.Time** | When this transaction was merged | [optional] 
+**AutoMatchSkipReason** | Pointer to **string** | Reason why auto-match was skipped for this transaction | [optional] 
 
 ## Methods
 
@@ -429,6 +430,31 @@ SetMergedAt sets MergedAt field to given value.
 `func (o *TransactionNoID) HasMergedAt() bool`
 
 HasMergedAt returns a boolean if a field has been set.
+
+### GetAutoMatchSkipReason
+
+`func (o *TransactionNoID) GetAutoMatchSkipReason() string`
+
+GetAutoMatchSkipReason returns the AutoMatchSkipReason field if non-nil, zero value otherwise.
+
+### GetAutoMatchSkipReasonOk
+
+`func (o *TransactionNoID) GetAutoMatchSkipReasonOk() (*string, bool)`
+
+GetAutoMatchSkipReasonOk returns a tuple with the AutoMatchSkipReason field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAutoMatchSkipReason
+
+`func (o *TransactionNoID) SetAutoMatchSkipReason(v string)`
+
+SetAutoMatchSkipReason sets AutoMatchSkipReason field to given value.
+
+### HasAutoMatchSkipReason
+
+`func (o *TransactionNoID) HasAutoMatchSkipReason() bool`
+
+HasAutoMatchSkipReason returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

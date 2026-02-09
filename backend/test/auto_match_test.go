@@ -96,7 +96,7 @@ var _ = Describe("Auto Match API", func() {
 				PartnerName: ptrString("Netflix"), // Common pattern
 				Movements: []goclient.Movement{
 					{
-						Amount:     100,
+						Amount:     float64(100 + i),
 						CurrencyId: currency.Id,
 						// AccountId is intentionally missing to make it unprocessed
 					},

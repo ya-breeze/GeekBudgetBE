@@ -55,6 +55,9 @@ type TransactionNoId struct {
 
 	// When this transaction was merged
 	MergedAt time.Time `json:"mergedAt,omitempty"`
+
+	// Reason why auto-match was skipped for this transaction
+	AutoMatchSkipReason string `json:"autoMatchSkipReason,omitempty"`
 }
 
 type TransactionNoIdInterface interface {
@@ -74,6 +77,7 @@ type TransactionNoIdInterface interface {
 	GetSuspiciousReasons() []string
 	GetMergedIntoId() string
 	GetMergedAt() time.Time
+	GetAutoMatchSkipReason() string
 }
 
 func (c *TransactionNoId) GetDate() time.Time {
@@ -123,6 +127,9 @@ func (c *TransactionNoId) GetMergedIntoId() string {
 }
 func (c *TransactionNoId) GetMergedAt() time.Time {
 	return c.MergedAt
+}
+func (c *TransactionNoId) GetAutoMatchSkipReason() string {
+	return c.AutoMatchSkipReason
 }
 
 // AssertTransactionNoIdRequired checks if the required fields are not zero-ed

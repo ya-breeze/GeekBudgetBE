@@ -1777,6 +1777,9 @@ components:
           type: string
           format: date-time
           description: When this transaction was merged
+        autoMatchSkipReason:
+          type: string
+          description: Reason why auto-match was skipped for this transaction
       required:
         - date
         - movements

@@ -113,29 +113,51 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 		// Construct the update payload
 		transactionNoId := models.TransactionWithoutID(&t)
 		transactionNoId.MatcherId = matcherID
-		transactionNoId.IsAuto = true
 
-		// Apply matcher outputs
-		description := matcher.OutputDescription
-		tags := matcher.OutputTags
-		if matcher.Simplified && matchDetails.MatchedKeyword != "" {
-			description = matchDetails.MatchedOutput
-			tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
-		}
-		transactionNoId.Description = description
-		transactionNoId.Tags = tags
-		// Apply account IDs if missing in movement
-		for i := range transactionNoId.Movements {
-			if transactionNoId.Movements[i].AccountId == "" {
-				transactionNoId.Movements[i].AccountId = matcher.OutputAccountId
+		// 1. Prepare Proposed Movements to check if it would be a transfer
+		proposedMovements := make([]goserver.Movement, len(transactionNoId.Movements))
+		copy(proposedMovements, transactionNoId.Movements)
+		for i := range proposedMovements {
+			if proposedMovements[i].AccountId == "" {
+				proposedMovements[i].AccountId = matcher.OutputAccountId
 			}
 		}
-		// Merge tags
-		transactionNoId.Tags = append(transactionNoId.Tags, matcher.OutputTags...)
-		transactionNoId.Tags = sortAndRemoveDuplicates(transactionNoId.Tags)
+
+		// 2. Check for potential duplicate before auto-matching
+		var duplicateFound *goserver.Transaction
+		for _, existingT := range allTransactions {
+			if existingT.Id == t.Id {
+				continue
+			}
+			if isDuplicate(transactionNoId, &existingT) {
+				duplicateFound = &existingT
+				break
+			}
+		}
+
+		if duplicateFound != nil {
+			transactionNoId.AutoMatchSkipReason = fmt.Sprintf("Potential duplicate detected: similar transaction exists from %s", duplicateFound.Date.Format("2006-01-02"))
+			transactionNoId.IsAuto = false
+			s.logger.With("transaction", t.Id, "duplicateId", duplicateFound.Id).Info("Skipping auto-processing due to duplicate")
+		} else {
+			// Apply matcher outputs
+			description := matcher.OutputDescription
+			tags := matcher.OutputTags
+			if matcher.Simplified && matchDetails.MatchedKeyword != "" {
+				description = matchDetails.MatchedOutput
+				tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
+			}
+			transactionNoId.Description = description
+			transactionNoId.Tags = tags
+			transactionNoId.Movements = proposedMovements
+			transactionNoId.IsAuto = true
+			// Merge tags
+			transactionNoId.Tags = append(transactionNoId.Tags, matcher.OutputTags...)
+			transactionNoId.Tags = sortAndRemoveDuplicates(transactionNoId.Tags)
+		}
 
 		// Persist
-		_, err := s.db.UpdateTransaction(userID, t.Id, transactionNoId)
+		_, err = s.db.UpdateTransaction(userID, t.Id, transactionNoId)
 		if err != nil {
 			s.logger.With("error", err, "transactionId", t.Id).Error("Failed to auto-process transaction")
 			// We continue processing other transactions even if one fails

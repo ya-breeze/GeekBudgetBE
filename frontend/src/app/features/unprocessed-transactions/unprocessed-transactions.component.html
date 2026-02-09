@@ -29,6 +29,15 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
                 <td mat-cell *matCellDef="let item">
                     {{ item.transaction.description || '-' }}
+                    @if (item.transaction.autoMatchSkipReason) {
+                        <div
+                            class="skip-reason"
+                            [matTooltip]="item.transaction.autoMatchSkipReason"
+                        >
+                            <mat-icon>warning</mat-icon>
+                            <span>{{ item.transaction.autoMatchSkipReason }}</span>
+                        </div>
+                    }
                 </td>
             </ng-container>
 

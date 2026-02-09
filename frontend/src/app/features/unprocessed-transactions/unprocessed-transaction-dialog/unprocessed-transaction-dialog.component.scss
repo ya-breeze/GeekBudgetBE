@@ -211,6 +211,30 @@ mat-dialog-content {
                 color: #2e7d32;
             }
         }
+
+        &.skip-reason-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px !important;
+            background-color: #fff3e0;
+            border-radius: 4px;
+            border-bottom: none !important;
+            margin: 8px 0;
+
+            mat-icon {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
+
+            .skip-reason-text {
+                font-size: 0.9rem;
+                color: #ef6c00;
+                font-weight: 500;
+                text-align: left !important;
+            }
+        }
     }
 }
 

@@ -429,27 +429,46 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 
 			s.logger.Info("Found perfect match", "matcher", matcher.Matcher.OutputDescription, "transaction", t.Description)
 
-			// Apply matcher outputs
-			description := matcher.Matcher.OutputDescription
-			tags := matcher.Matcher.OutputTags
-			if matcher.Matcher.Simplified && matchDetails.MatchedKeyword != "" {
-				description = matchDetails.MatchedOutput
-				tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
-			}
-			t.Description = description
-			for i := range t.Movements {
-				if t.Movements[i].AccountId == "" {
-					t.Movements[i].AccountId = matcher.Matcher.OutputAccountId
+			// 1. Prepare Proposed Movements to check if it would be a transfer
+			proposedMovements := make([]goserver.Movement, len(t.Movements))
+			copy(proposedMovements, t.Movements)
+			for i := range proposedMovements {
+				if proposedMovements[i].AccountId == "" {
+					proposedMovements[i].AccountId = matcher.Matcher.OutputAccountId
 				}
 			}
-			t.Tags = append(t.Tags, matcher.Matcher.OutputTags...)
-			t.Tags = sortAndRemoveDuplicates(t.Tags)
-			t.MatcherId = matcher.Matcher.Id
-			t.IsAuto = true
 
-			// auto-confirm the matcher
-			if err := s.db.AddMatcherConfirmation(userID, t.MatcherId, true); err != nil {
-				s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", t.MatcherId, "error", err)
+			// 2. Check for potential duplicate before auto-matching
+			var duplicateFound *goserver.Transaction
+			for _, dbt := range dbTransactions {
+				if isDuplicate(&t, &dbt) {
+					duplicateFound = &dbt
+					break
+				}
+			}
+
+			if duplicateFound != nil {
+				t.AutoMatchSkipReason = fmt.Sprintf("Potential duplicate detected: similar transaction exists from %s", duplicateFound.Date.Format("2006-01-02"))
+				s.logger.With("transaction", t.Description, "duplicateDate", duplicateFound.Date).Info("Skipping auto-match due to duplicate")
+			} else {
+				// Apply matcher outputs
+				description := matcher.Matcher.OutputDescription
+				tags := matcher.Matcher.OutputTags
+				if matcher.Matcher.Simplified && matchDetails.MatchedKeyword != "" {
+					description = matchDetails.MatchedOutput
+					tags = append(append([]string{}, tags...), matchDetails.MatchedKeyword)
+				}
+				t.Description = description
+				t.Movements = proposedMovements
+				t.Tags = append(t.Tags, matcher.Matcher.OutputTags...)
+				t.Tags = sortAndRemoveDuplicates(t.Tags)
+				t.MatcherId = matcher.Matcher.Id
+				t.IsAuto = true
+
+				// auto-confirm the matcher
+				if err := s.db.AddMatcherConfirmation(userID, t.MatcherId, true); err != nil {
+					s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", t.MatcherId, "error", err)
+				}
 			}
 		}
 

@@ -49,7 +49,7 @@ type ReconciliationStatusInterface interface {
 	GetBankBalance() float64
 	GetAppBalance() float64
 	GetDelta() float64
-	GetLastReconciledAt() time.Time
+	GetLastReconciledAt() *time.Time
 	GetLastReconciledBalance() float64
 	GetHasUnprocessedTransactions() bool
 	GetHasBankImporter() bool
