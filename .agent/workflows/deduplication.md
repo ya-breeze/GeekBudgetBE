@@ -49,3 +49,8 @@ To prevent the background task from re-flagging a transaction that a user has al
 - Check `backend/pkg/server/background/background_duplicate_detection.go` for implementation details.
 - Use `pkg/server/common/transactions_test.go` to verify the detection logic.
 - Verify relationship consistency in the `transaction_duplicates` table.
+
+## 7. Revalidation on Update
+- When a transaction is updated (date or amounts), `UpdateTransaction` automatically calls `RevalidateDuplicateRelationships`.
+- This re-checks all linked transactions using `utils.IsDuplicate`. If they are no longer duplicates, the link is removed.
+- Both affected transactions have their `models.DuplicateReason` cleared if they no longer have any active duplicate links.

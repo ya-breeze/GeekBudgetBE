@@ -13,6 +13,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -738,6 +739,11 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 	if t.DuplicateDismissed {
 		if err := s.ClearDuplicateRelationships(userID, id); err != nil {
 			s.log.Error("Failed to clear duplicate relationships on dismissal", "error", err, "id", id)
+		}
+	} else {
+		// Revalidate duplicate links in case date/amount changed
+		if err := s.RevalidateDuplicateRelationships(userID, id); err != nil {
+			s.log.Error("Failed to revalidate duplicate relationships", "error", err, "id", id)
 		}
 	}
 
@@ -1925,4 +1931,56 @@ func (s *storage) syncDuplicateSuspiciousReason(tx *gorm.DB, userID string, tran
 	}
 
 	return nil
+}
+
+// RevalidateDuplicateRelationships re-checks all duplicate links for a transaction.
+// If a linked transaction no longer passes IsDuplicate, the link is removed and
+// suspicious reasons are synchronized for both transactions.
+func (s *storage) RevalidateDuplicateRelationships(userID, transactionID string) error {
+	id, err := uuid.Parse(transactionID)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID: %w", err)
+	}
+
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		// 1. Get the transaction
+		var t models.Transaction
+		if err := tx.Where("user_id = ? AND id = ?", userID, id).First(&t).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil // Transaction doesn't exist, nothing to revalidate
+			}
+			return err
+		}
+
+		// 2. Get all linked duplicates
+		var duplicates []models.TransactionDuplicate
+		if err := tx.Where("user_id = ? AND transaction_id1 = ?", userID, id).Find(&duplicates).Error; err != nil {
+			return err
+		}
+
+		// 3. For each link, re-check IsDuplicate
+		for _, d := range duplicates {
+			var linkedT models.Transaction
+			if err := tx.Where("user_id = ? AND id = ?", userID, d.TransactionID2).First(&linkedT).Error; err != nil {
+				// Linked transaction doesn't exist, clean up the link
+				s.removeDuplicateLinkWithTx(tx, userID, id, d.TransactionID2)
+				continue
+			}
+
+			if !utils.IsDuplicate(t.Date, t.Movements, linkedT.Date, linkedT.Movements) {
+				// No longer duplicates, remove bidirectional link
+				s.removeDuplicateLinkWithTx(tx, userID, id, d.TransactionID2)
+				// Sync suspicious reasons for both
+				s.syncDuplicateSuspiciousReason(tx, userID, id)
+				s.syncDuplicateSuspiciousReason(tx, userID, d.TransactionID2)
+			}
+		}
+
+		return nil
+	})
+}
+
+func (s *storage) removeDuplicateLinkWithTx(tx *gorm.DB, userID string, id1, id2 uuid.UUID) {
+	tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id1, id2).Delete(&models.TransactionDuplicate{})
+	tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id2, id1).Delete(&models.TransactionDuplicate{})
 }

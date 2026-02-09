@@ -166,4 +166,51 @@ func TestDuplicateSynchronization(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("Revalidation clears link when date changes", func(t *testing.T) {
+		now := time.Now()
+		// Create two transactions with dates within 2 days
+		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
+			Date:              now,
+			Description:       "Revalidate T1",
+			SuspiciousReasons: []string{models.DuplicateReason},
+			Movements:         []goserver.Movement{{Amount: 500, CurrencyId: "EUR", AccountId: "R1"}},
+		})
+		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
+			Date:              now.Add(24 * time.Hour), // 1 day apart
+			Description:       "Revalidate T2",
+			SuspiciousReasons: []string{models.DuplicateReason},
+			Movements:         []goserver.Movement{{Amount: 500, CurrencyId: "EUR", AccountId: "R2"}},
+		})
+
+		// Link them
+		st.AddDuplicateRelationship(userID, t1.Id, t2.Id)
+
+		// Update T1's date to be 5 days earlier -> now > 2 days apart
+		update := models.TransactionWithoutID(&t1)
+		update.Date = now.Add(-5 * 24 * time.Hour)
+		if _, err := st.UpdateTransaction(userID, t1.Id, update); err != nil {
+			t.Fatalf("failed to update T1 date: %v", err)
+		}
+
+		// Verify link is gone
+		links, _ := st.GetDuplicateTransactionIDs(userID, t1.Id)
+		if len(links) > 0 {
+			t.Errorf("T1 still has duplicate links after date change: %v", links)
+		}
+
+		// Verify both have DuplicateReason removed
+		updatedT1, _ := st.GetTransaction(userID, t1.Id)
+		for _, r := range updatedT1.SuspiciousReasons {
+			if r == models.DuplicateReason {
+				t.Errorf("T1 still has DuplicateReason after revalidation")
+			}
+		}
+		updatedT2, _ := st.GetTransaction(userID, t2.Id)
+		for _, r := range updatedT2.SuspiciousReasons {
+			if r == models.DuplicateReason {
+				t.Errorf("T2 still has DuplicateReason after revalidation")
+			}
+		}
+	})
 }
