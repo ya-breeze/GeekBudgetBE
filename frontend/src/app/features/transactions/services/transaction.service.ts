@@ -12,6 +12,8 @@ import { createTransaction } from '../../../core/api/fn/transactions/create-tran
 import { updateTransaction } from '../../../core/api/fn/transactions/update-transaction';
 import { deleteTransaction } from '../../../core/api/fn/transactions/delete-transaction';
 
+import { mergeTransactions } from '../../../core/api/fn/transactions/merge-transactions';
+
 @Injectable({
     providedIn: 'root',
 })
@@ -97,6 +99,32 @@ export class TransactionService {
                 },
                 error: (err) => {
                     this.error.set(err.message || 'Failed to delete transaction');
+                    this.loading.set(false);
+                },
+            }),
+        );
+    }
+
+    merge(keepId: string, mergeId: string): Observable<Transaction> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        return mergeTransactions(this.http, this.apiConfig.rootUrl, {
+            body: { keepId, mergeId },
+        }).pipe(
+            map((response) => response.body),
+            tap({
+                next: (updatedTransaction) => {
+                    this.transactions.update((transactions) => {
+                        // Remove the merged transaction
+                        const filtered = transactions.filter((t) => t.id !== mergeId);
+                        // Update the kept transaction
+                        return filtered.map((t) => (t.id === keepId ? updatedTransaction : t));
+                    });
+                    this.loading.set(false);
+                },
+                error: (err) => {
+                    this.error.set(err.message || 'Failed to merge transactions');
                     this.loading.set(false);
                 },
             }),

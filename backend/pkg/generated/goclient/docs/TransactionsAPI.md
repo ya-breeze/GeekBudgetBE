@@ -8,6 +8,7 @@ Method | HTTP request | Description
 [**DeleteTransaction**](TransactionsAPI.md#DeleteTransaction) | **Delete** /v1/transactions/{id} | delete transaction
 [**GetTransaction**](TransactionsAPI.md#GetTransaction) | **Get** /v1/transactions/{id} | get transaction
 [**GetTransactions**](TransactionsAPI.md#GetTransactions) | **Get** /v1/transactions | get all transactions which matches given filters
+[**MergeTransactions**](TransactionsAPI.md#MergeTransactions) | **Post** /v1/transactions/merge | merge two transactions
 [**UpdateTransaction**](TransactionsAPI.md#UpdateTransaction) | **Put** /v1/transactions/{id} | update transaction
 
 
@@ -279,6 +280,70 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## MergeTransactions
+
+> Transaction MergeTransactions(ctx).MergeTransactionsRequest(mergeTransactionsRequest).Execute()
+
+merge two transactions
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	mergeTransactionsRequest := *openapiclient.NewMergeTransactionsRequest("KeepId_example", "MergeId_example") // MergeTransactionsRequest | 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.TransactionsAPI.MergeTransactions(context.Background()).MergeTransactionsRequest(mergeTransactionsRequest).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `TransactionsAPI.MergeTransactions``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `MergeTransactions`: Transaction
+	fmt.Fprintf(os.Stdout, "Response from `TransactionsAPI.MergeTransactions`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiMergeTransactionsRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **mergeTransactionsRequest** | [**MergeTransactionsRequest**](MergeTransactionsRequest.md) |  | 
+
+### Return type
+
+[**Transaction**](Transaction.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

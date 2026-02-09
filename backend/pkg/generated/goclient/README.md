@@ -129,6 +129,7 @@ Class | Method | HTTP request | Description
 *TransactionsAPI* | [**DeleteTransaction**](docs/TransactionsAPI.md#deletetransaction) | **Delete** /v1/transactions/{id} | delete transaction
 *TransactionsAPI* | [**GetTransaction**](docs/TransactionsAPI.md#gettransaction) | **Get** /v1/transactions/{id} | get transaction
 *TransactionsAPI* | [**GetTransactions**](docs/TransactionsAPI.md#gettransactions) | **Get** /v1/transactions | get all transactions which matches given filters
+*TransactionsAPI* | [**MergeTransactions**](docs/TransactionsAPI.md#mergetransactions) | **Post** /v1/transactions/merge | merge two transactions
 *TransactionsAPI* | [**UpdateTransaction**](docs/TransactionsAPI.md#updatetransaction) | **Put** /v1/transactions/{id} | update transaction
 *UnprocessedTransactionsAPI* | [**ConvertUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#convertunprocessedtransaction) | **Post** /v1/unprocessedTransactions/{id}/convert | convert unprocessed transactions into normal transaction
 *UnprocessedTransactionsAPI* | [**DeleteUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#deleteunprocessedtransaction) | **Delete** /v1/unprocessedTransactions/{id} | delete unprocessed transaction
@@ -169,6 +170,7 @@ Class | Method | HTTP request | Description
  - [Matcher](docs/Matcher.md)
  - [MatcherAndTransaction](docs/MatcherAndTransaction.md)
  - [MatcherNoID](docs/MatcherNoID.md)
+ - [MergeTransactionsRequest](docs/MergeTransactionsRequest.md)
  - [MergedTransaction](docs/MergedTransaction.md)
  - [Movement](docs/Movement.md)
  - [Notification](docs/Notification.md)

@@ -91,7 +91,8 @@ make docker-down
 4. When adding new API endpoints, update `api/openapi.yaml` first, then `make generate`.
 5. All database models must include `UserID` for multi-user isolation.
 6. All API endpoints require JWT auth except `/v1/authorize`.
-7. **For Next.js frontend**: Never import from `new-frontend/src/lib/api/generated/` directly. Always use custom hooks from `new-frontend/src/lib/api/hooks/` which wrap the generated code and won't be overwritten.
+7. **API Strictness**: When updating transactions, ensure the request body does NOT contain an `id` or other `Entity` fields. The backend decodes directly into `TransactionNoId` (or similar interface) and will fail with `json: unknown field "id"` if extra fields are present. Strip these fields in the frontend service or component before sending.
+8. **For Next.js frontend**: Never import from `new-frontend/src/lib/api/generated/` directly. Always use custom hooks from `new-frontend/src/lib/api/hooks/` which wrap the generated code and won't be overwritten.
 
 ## Testing
 
@@ -100,6 +101,17 @@ make docker-down
 - Use `test@example.com` / `test` credentials for browser testing.
 - If `make run-backend` fails with "address already in use", the backend is already running.
 - If `make run-frontend` fails with "Port 4200 is already in use", the frontend is already running.
+
+## Deduplication Flow
+ 
+ 1. **Background Task:** `StartDuplicateDetection` runs every 24 hours (or manually via `DuplicateDetectionCommand`), scanning transactions from the last 30 days. Uses `models.DuplicateReason` constant.
+ 2. **Identification:** Uses `common.IsDuplicate` to find transactions with similar dates (±2 days) and amounts.
+ 3. **Different Sources:** Only flags transactions if they have different `ExternalIDs` (indicating different import sources).
+ 4. **Duplicate Linking:** Pairwise relationships are stored in the `TransactionDuplicate` junction table. Bidirectional links (T1↔T2) allow efficient retrieval.
+ 5. **User Resolution:**
+    - **Dismissal:** Setting `DuplicateDismissed = true` clears all links and prevents re-flagging.
+    - **Merging:** `POST /v1/transactions/merge` transfers external IDs to the "kept" transaction and performs a GORM soft-delete on the other.
+    - **Synchronized Cleanup:** The storage layer (`ClearDuplicateRelationships`) automatically removes `models.DuplicateReason` from linked transactions if they have no other duplicate links remaining.
 
 ## Code Patterns
 

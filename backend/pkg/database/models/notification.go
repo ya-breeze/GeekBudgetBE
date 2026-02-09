@@ -16,7 +16,10 @@ const (
 	NotificationTypeBalanceDoesntMatch NotificationType = "balanceDoesntMatch"
 	NotificationTypeError              NotificationType = "error"
 	NotificationTypeInfo               NotificationType = "info"
+	NotificationTypeDuplicateDetected  NotificationType = "duplicateDetected"
 )
+
+const DuplicateReason = "Potential duplicate from different importer"
 
 type Notification struct {
 	gorm.Model

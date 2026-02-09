@@ -57,6 +57,9 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 		logger.Info("Fetcher for currencies rates is disabled")
 	}
 
+	// Start duplicate detection
+	duplicateDetectionFinishChan := background.StartDuplicateDetection(ctx, logger, storage)
+
 	// Wait for an interrupt signal
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -72,6 +75,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	if !cfg.DisableCurrenciesRatesFetch {
 		<-fetchCurrenciesRatesChan
 	}
+	<-duplicateDetectionFinishChan
 	return nil
 }
 

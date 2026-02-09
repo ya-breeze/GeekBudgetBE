@@ -19,6 +19,7 @@ import { Currency } from '../../../core/api/models/currency';
 import { forkJoin, Observable } from 'rxjs';
 import { TransactionUtils } from '../utils/transaction.utils';
 import { AccountDisplayComponent } from '../../../shared/components/account-display/account-display.component';
+import { DuplicateComparisonDialogComponent } from './duplicate-comparison-dialog/duplicate-comparison-dialog.component';
 
 @Component({
     selector: 'app-suspicious-transactions',
@@ -160,6 +161,36 @@ export class SuspiciousTransactionsComponent implements OnInit {
                         });
                     },
                 });
+            }
+        });
+    }
+
+    openDuplicateComparison(transaction: Transaction): void {
+        const otherId = transaction.duplicateTransactionIds?.[0];
+        if (!otherId) return;
+
+        const otherTransaction = this.transactions().find((t) => t.id === otherId);
+
+        if (!otherTransaction) {
+            this.snackBar.open(
+                'Could not find the duplicate transaction in the current list.',
+                'Close',
+                {
+                    duration: 3000,
+                },
+            );
+            return;
+        }
+
+        const dialogRef = this.dialog.open(DuplicateComparisonDialogComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            data: { transaction1: transaction, transaction2: otherTransaction },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.loadData();
             }
         });
     }

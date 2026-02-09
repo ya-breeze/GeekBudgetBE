@@ -11,6 +11,16 @@ export interface TransactionNoId {
     description?: string;
 
     /**
+     * If true, user has dismissed the duplicate detected for this transaction
+     */
+    duplicateDismissed?: boolean;
+
+    /**
+     * List of transaction IDs that are potential duplicates of this one (from separate junction table)
+     */
+    duplicateTransactionIds?: Array<string>;
+
+    /**
      * IDs of unprocessed transaction - to match later
      */
     externalIds?: Array<string>;

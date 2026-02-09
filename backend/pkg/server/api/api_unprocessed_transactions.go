@@ -129,7 +129,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 			if existingT.Id == t.Id {
 				continue
 			}
-			if isDuplicate(transactionNoId, &existingT) {
+			if common.IsDuplicate(transactionNoId.Date, transactionNoId.Movements, existingT.Date, existingT.Movements) {
 				duplicateFound = &existingT
 				break
 			}
@@ -270,7 +270,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 	res := make([]goserver.Transaction, 0)
 
 	// compute all increases for the specified transaction (per currency)
-	inc1 := getIncreases(transaction.Movements)
+	inc1 := common.GetIncreases(transaction.Movements)
 
 	for _, t := range transactions {
 		if t.Id == transaction.Id {
@@ -299,7 +299,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 		}
 
 		// compute all increases in the transaction to compare (per currency)
-		inc2 := getIncreases(t.Movements)
+		inc2 := common.GetIncreases(t.Movements)
 
 		if len(inc1) != len(inc2) {
 			continue

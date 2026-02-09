@@ -517,7 +517,7 @@ var _ = Describe("BankImporters API", func() {
 				},
 			}
 
-			Expect(isDuplicate(t1, t2)).To(BeFalse(), "123 CZK should not match 123 EUR")
+			Expect(common.IsDuplicate(t1.Date, t1.Movements, t2.Date, t2.Movements)).To(BeFalse(), "123 CZK should not match 123 EUR")
 		})
 
 		It("should match transactions with same amount and same currency", func() {
@@ -534,7 +534,7 @@ var _ = Describe("BankImporters API", func() {
 				},
 			}
 
-			Expect(isDuplicate(t1, t2)).To(BeTrue())
+			Expect(common.IsDuplicate(t1.Date, t1.Movements, t2.Date, t2.Movements)).To(BeTrue())
 		})
 
 		It("should not match transactions with different amounts in same currency", func() {
@@ -551,7 +551,7 @@ var _ = Describe("BankImporters API", func() {
 				},
 			}
 
-			Expect(isDuplicate(t1, t2)).To(BeFalse())
+			Expect(common.IsDuplicate(t1.Date, t1.Movements, t2.Date, t2.Movements)).To(BeFalse())
 		})
 
 		It("should handle complex multi-movement matches", func() {
@@ -571,7 +571,7 @@ var _ = Describe("BankImporters API", func() {
 				},
 			}
 			// Both have 100 CZK increase and 50 EUR increase
-			Expect(isDuplicate(t1, t2)).To(BeTrue())
+			Expect(common.IsDuplicate(t1.Date, t1.Movements, t2.Date, t2.Movements)).To(BeTrue())
 		})
 
 		It("should not match if currencies set differs", func() {
@@ -588,7 +588,7 @@ var _ = Describe("BankImporters API", func() {
 					{Amount: 100, CurrencyId: "CZK"},
 				},
 			}
-			Expect(isDuplicate(t1, t2)).To(BeFalse())
+			Expect(common.IsDuplicate(t1.Date, t1.Movements, t2.Date, t2.Movements)).To(BeFalse())
 		})
 	})
 

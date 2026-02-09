@@ -78,6 +78,11 @@ func (c *TransactionsAPIController) Routes() Routes {
 			"/v1/transactions/{id}",
 			c.DeleteTransaction,
 		},
+		"MergeTransactions": Route{
+			strings.ToUpper("Post"),
+			"/v1/transactions/merge",
+			c.MergeTransactions,
+		},
 	}
 }
 
@@ -258,6 +263,33 @@ func (c *TransactionsAPIController) DeleteTransaction(w http.ResponseWriter, r *
 		return
 	}
 	result, err := c.service.DeleteTransaction(r.Context(), idParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// MergeTransactions - merge two transactions
+func (c *TransactionsAPIController) MergeTransactions(w http.ResponseWriter, r *http.Request) {
+	mergeTransactionsRequestParam := MergeTransactionsRequest{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&mergeTransactionsRequestParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertMergeTransactionsRequestRequired(mergeTransactionsRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertMergeTransactionsRequestConstraints(mergeTransactionsRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.MergeTransactions(r.Context(), mergeTransactionsRequestParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

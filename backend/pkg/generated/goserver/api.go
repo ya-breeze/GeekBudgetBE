@@ -146,6 +146,7 @@ type TransactionsAPIRouter interface {
 	GetTransaction(http.ResponseWriter, *http.Request)
 	UpdateTransaction(http.ResponseWriter, *http.Request)
 	DeleteTransaction(http.ResponseWriter, *http.Request)
+	MergeTransactions(http.ResponseWriter, *http.Request)
 }
 
 // UnprocessedTransactionsAPIRouter defines the required methods for binding the api requests to a responses for the UnprocessedTransactionsAPI
@@ -307,6 +308,7 @@ type TransactionsAPIServicer interface {
 	GetTransaction(context.Context, string) (ImplResponse, error)
 	UpdateTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)
 	DeleteTransaction(context.Context, string) (ImplResponse, error)
+	MergeTransactions(context.Context, MergeTransactionsRequest) (ImplResponse, error)
 }
 
 // UnprocessedTransactionsAPIServicer defines the api actions for the UnprocessedTransactionsAPI service

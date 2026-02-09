@@ -114,3 +114,23 @@ func (s *TransactionsAPIServiceImpl) GetTransaction(
 
 	return goserver.Response(200, transaction), nil
 }
+
+func (s *TransactionsAPIServiceImpl) MergeTransactions(
+	ctx context.Context, mergeRequest goserver.MergeTransactionsRequest,
+) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		s.logger.Error("UserID not found in context")
+		return goserver.Response(500, nil), nil
+	}
+
+	s.logger.Info("Processing transactions merge", "keep", mergeRequest.KeepId, "merge", mergeRequest.MergeId, "user", userID)
+
+	transaction, err := s.db.MergeTransactions(userID, mergeRequest.KeepId, mergeRequest.MergeId)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to merge transactions")
+		return goserver.Response(400, nil), nil
+	}
+
+	return goserver.Response(200, transaction), nil
+}

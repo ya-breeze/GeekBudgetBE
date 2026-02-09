@@ -21,5 +21,6 @@ func autoMigrateModels(db *gorm.DB) error {
 		&models.CNBCurrencyRate{},
 		&models.BudgetItem{},
 		&models.Reconciliation{},
+		&models.TransactionDuplicate{},
 	)
 }

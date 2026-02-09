@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math"
 	"os"
 	"slices"
 	"time"
@@ -441,7 +440,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			// 2. Check for potential duplicate before auto-matching
 			var duplicateFound *goserver.Transaction
 			for _, dbt := range dbTransactions {
-				if isDuplicate(&t, &dbt) {
+				if common.IsDuplicate(t.Date, t.Movements, dbt.Date, dbt.Movements) {
 					duplicateFound = &dbt
 					break
 				}
@@ -529,7 +528,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			// If any of them is present in fetch/upload list then transaction is not suspicious.
 			if !found {
 				for _, t := range transactions {
-					if isDuplicate(&t, &dbt) {
+					if common.IsDuplicate(t.Date, t.Movements, dbt.Date, dbt.Movements) {
 						found = true
 						s.logger.With("dbtID", dbt.Id, "incomingDesc", t.Description).Info("Transaction found in incoming batch as a duplicate, not marking as suspicious")
 						break
@@ -718,61 +717,5 @@ func isPerfectMatch(m *goserver.Matcher) bool {
 			return false
 		}
 	}
-	return true
-}
-
-func getIncreases(movements []goserver.Movement) map[string]float64 {
-	pos := make(map[string]float64)
-	neg := make(map[string]float64)
-	for _, m := range movements {
-		if m.Amount > 0 {
-			pos[m.CurrencyId] += m.Amount
-		} else {
-			neg[m.CurrencyId] -= m.Amount
-		}
-	}
-
-	res := make(map[string]float64)
-	for c, p := range pos {
-		n := neg[c]
-		if p > n {
-			res[c] = p
-		} else {
-			res[c] = n
-		}
-	}
-	for c, n := range neg {
-		if _, ok := res[c]; !ok {
-			res[c] = n
-		}
-	}
-	return res
-}
-
-func isDuplicate(t1 *goserver.TransactionNoId, t2 *goserver.Transaction) bool {
-	// 1. Time check (+/- 2 days)
-	delta := t1.Date.Sub(t2.Date)
-	if delta < 0 {
-		delta = -delta
-	}
-	if delta > 2*time.Hour*24 {
-		return false
-	}
-
-	// 2. Amount check (sum of increases per currency)
-	inc1 := getIncreases(t1.Movements)
-	inc2 := getIncreases(t2.Movements)
-
-	if len(inc1) != len(inc2) {
-		return false
-	}
-
-	for c, v1 := range inc1 {
-		v2, ok := inc2[c]
-		if !ok || math.Abs(v1-v2) >= 0.01 {
-			return false
-		}
-	}
-
 	return true
 }

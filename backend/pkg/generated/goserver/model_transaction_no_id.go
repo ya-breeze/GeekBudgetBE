@@ -58,6 +58,12 @@ type TransactionNoId struct {
 
 	// Reason why auto-match was skipped for this transaction
 	AutoMatchSkipReason string `json:"autoMatchSkipReason,omitempty"`
+
+	// If true, user has dismissed the duplicate detected for this transaction
+	DuplicateDismissed bool `json:"duplicateDismissed,omitempty"`
+
+	// List of transaction IDs that are potential duplicates of this one (from separate junction table)
+	DuplicateTransactionIds []string `json:"duplicateTransactionIds,omitempty"`
 }
 
 type TransactionNoIdInterface interface {
@@ -78,6 +84,8 @@ type TransactionNoIdInterface interface {
 	GetMergedIntoId() string
 	GetMergedAt() time.Time
 	GetAutoMatchSkipReason() string
+	GetDuplicateDismissed() bool
+	GetDuplicateTransactionIds() []string
 }
 
 func (c *TransactionNoId) GetDate() time.Time {
@@ -130,6 +138,12 @@ func (c *TransactionNoId) GetMergedAt() time.Time {
 }
 func (c *TransactionNoId) GetAutoMatchSkipReason() string {
 	return c.AutoMatchSkipReason
+}
+func (c *TransactionNoId) GetDuplicateDismissed() bool {
+	return c.DuplicateDismissed
+}
+func (c *TransactionNoId) GetDuplicateTransactionIds() []string {
+	return c.DuplicateTransactionIds
 }
 
 // AssertTransactionNoIdRequired checks if the required fields are not zero-ed

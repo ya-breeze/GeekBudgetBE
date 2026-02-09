@@ -43,6 +43,7 @@ type Storage interface {
 	GetUser(userID string) (*models.User, error)
 	CreateUser(username, password string) (*models.User, error)
 	PutUser(user *models.User) error
+	GetAllUserIDs() ([]string, error)
 
 	CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error)
 	GetAccounts(userID string) ([]goserver.Account, error)
@@ -63,11 +64,16 @@ type Storage interface {
 		userID string, id string, transaction goserver.TransactionNoIdInterface,
 	) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
+	MergeTransactions(userID, keepID, mergeID string) (goserver.Transaction, error)
 	DeleteDuplicateTransaction(userID string, id, duplicateID string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
 	GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
 	GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error)
 	UnmergeTransaction(userID, id string) error
+	GetDuplicateTransactionIDs(userID, transactionID string) ([]string, error)
+	AddDuplicateRelationship(userID, transactionID1, transactionID2 string) error
+	RemoveDuplicateRelationship(userID, transactionID1, transactionID2 string) error
+	ClearDuplicateRelationships(userID, transactionID string) error
 
 	GetBankImporters(userID string) ([]goserver.BankImporter, error)
 	CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
@@ -224,6 +230,14 @@ func (s *storage) PutUser(user *models.User) error {
 	}
 
 	return nil
+}
+
+func (s *storage) GetAllUserIDs() ([]string, error) {
+	var ids []string
+	if err := s.db.Model(&models.User{}).Pluck("id", &ids).Error; err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+	return ids, nil
 }
 
 func (s *storage) GetUserID(username string) (string, error) {
@@ -616,6 +630,31 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onl
 		transactions = append(transactions, tr.FromDB())
 	}
 
+	// Populate DuplicateTransactionIds in batch
+	if len(transactions) > 0 {
+		ids := make([]uuid.UUID, len(transactions))
+		for i, t := range transactions {
+			id, _ := uuid.Parse(t.Id)
+			ids[i] = id
+		}
+
+		var relationships []models.TransactionDuplicate
+		if err := s.db.Where("user_id = ? AND transaction_id1 IN ?", userID, ids).Find(&relationships).Error; err == nil {
+			relMap := make(map[string][]string)
+			for _, r := range relationships {
+				t1 := r.TransactionID1.String()
+				t2 := r.TransactionID2.String()
+				relMap[t1] = append(relMap[t1], t2)
+			}
+
+			for i := range transactions {
+				if dups, ok := relMap[transactions[i].Id]; ok {
+					transactions[i].DuplicateTransactionIds = dups
+				}
+			}
+		}
+	}
+
 	return transactions, nil
 }
 
@@ -695,6 +734,13 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
+	// If dismissed, clear relationships
+	if t.DuplicateDismissed {
+		if err := s.ClearDuplicateRelationships(userID, id); err != nil {
+			s.log.Error("Failed to clear duplicate relationships on dismissal", "error", err, "id", id)
+		}
+	}
+
 	// Smart invalidation: only if amounts or currencies changed
 	s.invalidateReconciliationIfAmountsChanged(userID, oldMovements, models.MovementsToAPI(t.Movements), t.Date)
 
@@ -722,10 +768,89 @@ func (s *storage) DeleteTransaction(userID string, id string) error {
 		return fmt.Errorf(StorageError, err)
 	}
 
+	// Clear duplicate relationships if any
+	if err := s.ClearDuplicateRelationships(userID, id); err != nil {
+		s.log.Error("Failed to clear duplicate relationships on deletion", "error", err, "id", id)
+	}
+
 	// Invalidate reconciliation for deleted movements
 	s.invalidateReconciliationIfAmountsChanged(userID, models.MovementsToAPI(t.Movements), []goserver.Movement{}, t.Date)
 
 	return nil
+}
+
+func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Transaction, error) {
+	kID, err := uuid.Parse(keepID)
+	if err != nil {
+		return goserver.Transaction{}, fmt.Errorf("invalid keep ID: %w", err)
+	}
+	mID, err := uuid.Parse(mergeID)
+	if err != nil {
+		return goserver.Transaction{}, fmt.Errorf("invalid merge ID: %w", err)
+	}
+
+	var keepT models.Transaction
+	err = s.db.Transaction(func(tx *gorm.DB) error {
+		var mergeT models.Transaction
+		if err := tx.Where("user_id = ? AND id = ?", userID, kID).First(&keepT).Error; err != nil {
+			return fmt.Errorf("failed to find keep transaction: %w", err)
+		}
+		if err := tx.Where("user_id = ? AND id = ?", userID, mID).First(&mergeT).Error; err != nil {
+			return fmt.Errorf("failed to find merge transaction: %w", err)
+		}
+
+		// 2. Transfer external IDs
+		existingIDs := make(map[string]bool)
+		for _, id := range keepT.ExternalIDs {
+			existingIDs[id] = true
+		}
+		for _, id := range mergeT.ExternalIDs {
+			if !existingIDs[id] {
+				keepT.ExternalIDs = append(keepT.ExternalIDs, id)
+			}
+		}
+
+		// 3. Update keepT: remove suspicious reason, inherit external IDs
+		newReasons := make([]string, 0)
+		for _, r := range keepT.SuspiciousReasons {
+			if r != "Potential duplicate from different importer" {
+				newReasons = append(newReasons, r)
+			}
+		}
+		keepT.SuspiciousReasons = newReasons
+		if err := tx.Save(&keepT).Error; err != nil {
+			return fmt.Errorf("failed to update keep transaction: %w", err)
+		}
+
+		// 4. Update mergeT (soft delete)
+		now := time.Now()
+		mergeT.MergedIntoID = &kID
+		mergeT.MergedAt = &now
+		if err := tx.Save(&mergeT).Error; err != nil {
+			return fmt.Errorf("failed to update merge transaction: %w", err)
+		}
+		if err := tx.Delete(&mergeT).Error; err != nil {
+			return fmt.Errorf("failed to soft-delete merge transaction: %w", err)
+		}
+
+		// 5. Clear duplicate relationships for both (they are resolved now)
+		// We use tx so it's atomic within our transaction
+		if err := s.clearDuplicateRelationshipsWithTx(tx, userID, mID.String()); err != nil {
+			return fmt.Errorf("failed to clear relationships for merged transaction: %w", err)
+		}
+
+		// Clear specific relationship between keepT and mergeT (the one where keepT was the primary)
+		if err := s.clearDuplicateRelationshipsWithTx(tx, userID, kID.String()); err != nil {
+			return fmt.Errorf("failed to clear relationships for keep transaction: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
+
+	return s.GetTransaction(userID, keepID)
 }
 
 func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID string) error {
@@ -778,7 +903,13 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	return transaction.FromDB(), nil
+	apiTransaction := transaction.FromDB()
+	duplicateIds, err := s.GetDuplicateTransactionIDs(userID, id)
+	if err == nil {
+		apiTransaction.DuplicateTransactionIds = duplicateIds
+	}
+
+	return apiTransaction, nil
 }
 
 func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error) {
@@ -1624,4 +1755,174 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 			})
 		}
 	}
+}
+
+func (s *storage) GetDuplicateTransactionIDs(userID, transactionID string) ([]string, error) {
+	var duplicates []models.TransactionDuplicate
+	err := s.db.Where("user_id = ? AND transaction_id1 = ?", userID, transactionID).Find(&duplicates).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get duplicate relationships: %w", err)
+	}
+
+	ids := make([]string, len(duplicates))
+	for i, d := range duplicates {
+		ids[i] = d.TransactionID2.String()
+	}
+	return ids, nil
+}
+
+func (s *storage) AddDuplicateRelationship(userID, transactionID1, transactionID2 string) error {
+	id1, err := uuid.Parse(transactionID1)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID 1: %w", err)
+	}
+	id2, err := uuid.Parse(transactionID2)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID 2: %w", err)
+	}
+
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		// Add T1 -> T2
+		var d1 models.TransactionDuplicate
+		err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id1, id2).First(&d1).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				d1 = models.TransactionDuplicate{
+					UserID:         userID,
+					TransactionID1: id1,
+					TransactionID2: id2,
+				}
+				if err := tx.Create(&d1).Error; err != nil {
+					return fmt.Errorf("failed to create link T1->T2: %w", err)
+				}
+			} else {
+				return fmt.Errorf("failed to check link T1->T2: %w", err)
+			}
+		}
+
+		// Add T2 -> T1
+		var d2 models.TransactionDuplicate
+		err = tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id2, id1).First(&d2).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				d2 = models.TransactionDuplicate{
+					UserID:         userID,
+					TransactionID1: id2,
+					TransactionID2: id1,
+				}
+				if err := tx.Create(&d2).Error; err != nil {
+					return fmt.Errorf("failed to create link T2->T1: %w", err)
+				}
+			} else {
+				return fmt.Errorf("failed to check link T2->T1: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func (s *storage) RemoveDuplicateRelationship(userID, transactionID1, transactionID2 string) error {
+	id1, err := uuid.Parse(transactionID1)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID 1: %w", err)
+	}
+	id2, err := uuid.Parse(transactionID2)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID 2: %w", err)
+	}
+
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id1, id2).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+			return fmt.Errorf("failed to delete link T1->T2: %w", err)
+		}
+		if err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id2, id1).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+			return fmt.Errorf("failed to delete link T2->T1: %w", err)
+		}
+		return nil
+	})
+}
+
+func (s *storage) ClearDuplicateRelationships(userID, transactionID string) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		return s.clearDuplicateRelationshipsWithTx(tx, userID, transactionID)
+	})
+}
+
+func (s *storage) clearDuplicateRelationshipsWithTx(tx *gorm.DB, userID, transactionID string) error {
+	id, err := uuid.Parse(transactionID)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID: %w", err)
+	}
+
+	// 1. Find all duplicates linked to this transaction to update them later
+	var duplicates []models.TransactionDuplicate
+	if err := tx.Where("user_id = ? AND transaction_id1 = ?", userID, id).Find(&duplicates).Error; err != nil {
+		return fmt.Errorf("failed to find duplicate links: %w", err)
+	}
+
+	// 2. Delete bidirectional links
+	for _, d := range duplicates {
+		if err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, d.TransactionID2, id).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+			return fmt.Errorf("failed to delete inverse link: %w", err)
+		}
+	}
+
+	if err := tx.Where("user_id = ? AND transaction_id1 = ?", userID, id).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+		return fmt.Errorf("failed to delete primary links: %w", err)
+	}
+
+	// 3. Sync suspicious reasons for all affected transactions
+	// This ensures that if they no longer have duplicates, the flag is removed.
+	affectedIDs := []uuid.UUID{id}
+	for _, d := range duplicates {
+		affectedIDs = append(affectedIDs, d.TransactionID2)
+	}
+
+	for _, affectedID := range affectedIDs {
+		if err := s.syncDuplicateSuspiciousReason(tx, userID, affectedID); err != nil {
+			s.log.Error("Failed to sync suspicious reason", "error", err, "id", affectedID)
+		}
+	}
+
+	return nil
+}
+
+func (s *storage) syncDuplicateSuspiciousReason(tx *gorm.DB, userID string, transactionID uuid.UUID) error {
+	// Check if any duplicate links remain for this transaction
+	var count int64
+	if err := tx.Model(&models.TransactionDuplicate{}).Where("user_id = ? AND transaction_id1 = ?", userID, transactionID).Count(&count).Error; err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return nil // Still has duplicates, keep the reason
+	}
+
+	// No more duplicates, remove the reason if present
+	var t models.Transaction
+	if err := tx.Where("user_id = ? AND id = ?", userID, transactionID).First(&t).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil // Transaction might have been deleted (e.g. in Merge)
+		}
+		return err
+	}
+
+	newReasons := make([]string, 0)
+	reasonsChanged := false
+	for _, r := range t.SuspiciousReasons {
+		if r == models.DuplicateReason {
+			reasonsChanged = true
+			continue
+		}
+		newReasons = append(newReasons, r)
+	}
+
+	if reasonsChanged {
+		if err := tx.Model(&t).Update("suspicious_reasons", newReasons).Error; err != nil {
+			return fmt.Errorf("failed to update suspicious reasons: %w", err)
+		}
+	}
+
+	return nil
 }

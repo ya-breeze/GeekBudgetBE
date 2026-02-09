@@ -49,6 +49,10 @@ type TransactionNoID struct {
 	MergedAt *time.Time `json:"mergedAt,omitempty"`
 	// Reason why auto-match was skipped for this transaction
 	AutoMatchSkipReason *string `json:"autoMatchSkipReason,omitempty"`
+	// If true, user has dismissed the duplicate detected for this transaction
+	DuplicateDismissed *bool `json:"duplicateDismissed,omitempty"`
+	// List of transaction IDs that are potential duplicates of this one (from separate junction table)
+	DuplicateTransactionIds []string `json:"duplicateTransactionIds,omitempty"`
 }
 
 type _TransactionNoID TransactionNoID
@@ -61,6 +65,8 @@ func NewTransactionNoID(date time.Time, movements []Movement) *TransactionNoID {
 	this := TransactionNoID{}
 	this.Date = date
 	this.Movements = movements
+	var duplicateDismissed bool = false
+	this.DuplicateDismissed = &duplicateDismissed
 	return &this
 }
 
@@ -69,6 +75,8 @@ func NewTransactionNoID(date time.Time, movements []Movement) *TransactionNoID {
 // but it doesn't guarantee that properties required by API are set
 func NewTransactionNoIDWithDefaults() *TransactionNoID {
 	this := TransactionNoID{}
+	var duplicateDismissed bool = false
+	this.DuplicateDismissed = &duplicateDismissed
 	return &this
 }
 
@@ -600,6 +608,70 @@ func (o *TransactionNoID) SetAutoMatchSkipReason(v string) {
 	o.AutoMatchSkipReason = &v
 }
 
+// GetDuplicateDismissed returns the DuplicateDismissed field value if set, zero value otherwise.
+func (o *TransactionNoID) GetDuplicateDismissed() bool {
+	if o == nil || IsNil(o.DuplicateDismissed) {
+		var ret bool
+		return ret
+	}
+	return *o.DuplicateDismissed
+}
+
+// GetDuplicateDismissedOk returns a tuple with the DuplicateDismissed field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *TransactionNoID) GetDuplicateDismissedOk() (*bool, bool) {
+	if o == nil || IsNil(o.DuplicateDismissed) {
+		return nil, false
+	}
+	return o.DuplicateDismissed, true
+}
+
+// HasDuplicateDismissed returns a boolean if a field has been set.
+func (o *TransactionNoID) HasDuplicateDismissed() bool {
+	if o != nil && !IsNil(o.DuplicateDismissed) {
+		return true
+	}
+
+	return false
+}
+
+// SetDuplicateDismissed gets a reference to the given bool and assigns it to the DuplicateDismissed field.
+func (o *TransactionNoID) SetDuplicateDismissed(v bool) {
+	o.DuplicateDismissed = &v
+}
+
+// GetDuplicateTransactionIds returns the DuplicateTransactionIds field value if set, zero value otherwise.
+func (o *TransactionNoID) GetDuplicateTransactionIds() []string {
+	if o == nil || IsNil(o.DuplicateTransactionIds) {
+		var ret []string
+		return ret
+	}
+	return o.DuplicateTransactionIds
+}
+
+// GetDuplicateTransactionIdsOk returns a tuple with the DuplicateTransactionIds field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *TransactionNoID) GetDuplicateTransactionIdsOk() ([]string, bool) {
+	if o == nil || IsNil(o.DuplicateTransactionIds) {
+		return nil, false
+	}
+	return o.DuplicateTransactionIds, true
+}
+
+// HasDuplicateTransactionIds returns a boolean if a field has been set.
+func (o *TransactionNoID) HasDuplicateTransactionIds() bool {
+	if o != nil && !IsNil(o.DuplicateTransactionIds) {
+		return true
+	}
+
+	return false
+}
+
+// SetDuplicateTransactionIds gets a reference to the given []string and assigns it to the DuplicateTransactionIds field.
+func (o *TransactionNoID) SetDuplicateTransactionIds(v []string) {
+	o.DuplicateTransactionIds = v
+}
+
 func (o TransactionNoID) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -656,6 +728,12 @@ func (o TransactionNoID) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.AutoMatchSkipReason) {
 		toSerialize["autoMatchSkipReason"] = o.AutoMatchSkipReason
+	}
+	if !IsNil(o.DuplicateDismissed) {
+		toSerialize["duplicateDismissed"] = o.DuplicateDismissed
+	}
+	if !IsNil(o.DuplicateTransactionIds) {
+		toSerialize["duplicateTransactionIds"] = o.DuplicateTransactionIds
 	}
 	return toSerialize, nil
 }

@@ -21,6 +21,8 @@ Name | Type | Description | Notes
 **MergedIntoId** | Pointer to **string** | ID of the transaction this one was merged into (if any) | [optional] 
 **MergedAt** | Pointer to **time.Time** | When this transaction was merged | [optional] 
 **AutoMatchSkipReason** | Pointer to **string** | Reason why auto-match was skipped for this transaction | [optional] 
+**DuplicateDismissed** | Pointer to **bool** | If true, user has dismissed the duplicate detected for this transaction | [optional] [default to false]
+**DuplicateTransactionIds** | Pointer to **[]string** | List of transaction IDs that are potential duplicates of this one (from separate junction table) | [optional] 
 
 ## Methods
 
@@ -455,6 +457,56 @@ SetAutoMatchSkipReason sets AutoMatchSkipReason field to given value.
 `func (o *TransactionNoID) HasAutoMatchSkipReason() bool`
 
 HasAutoMatchSkipReason returns a boolean if a field has been set.
+
+### GetDuplicateDismissed
+
+`func (o *TransactionNoID) GetDuplicateDismissed() bool`
+
+GetDuplicateDismissed returns the DuplicateDismissed field if non-nil, zero value otherwise.
+
+### GetDuplicateDismissedOk
+
+`func (o *TransactionNoID) GetDuplicateDismissedOk() (*bool, bool)`
+
+GetDuplicateDismissedOk returns a tuple with the DuplicateDismissed field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDuplicateDismissed
+
+`func (o *TransactionNoID) SetDuplicateDismissed(v bool)`
+
+SetDuplicateDismissed sets DuplicateDismissed field to given value.
+
+### HasDuplicateDismissed
+
+`func (o *TransactionNoID) HasDuplicateDismissed() bool`
+
+HasDuplicateDismissed returns a boolean if a field has been set.
+
+### GetDuplicateTransactionIds
+
+`func (o *TransactionNoID) GetDuplicateTransactionIds() []string`
+
+GetDuplicateTransactionIds returns the DuplicateTransactionIds field if non-nil, zero value otherwise.
+
+### GetDuplicateTransactionIdsOk
+
+`func (o *TransactionNoID) GetDuplicateTransactionIdsOk() (*[]string, bool)`
+
+GetDuplicateTransactionIdsOk returns a tuple with the DuplicateTransactionIds field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDuplicateTransactionIds
+
+`func (o *TransactionNoID) SetDuplicateTransactionIds(v []string)`
+
+SetDuplicateTransactionIds sets DuplicateTransactionIds field to given value.
+
+### HasDuplicateTransactionIds
+
+`func (o *TransactionNoID) HasDuplicateTransactionIds() bool`
+
+HasDuplicateTransactionIds returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

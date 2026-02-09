@@ -67,6 +67,7 @@ go/model_import_result_balances_inner.go
 go/model_matcher.go
 go/model_matcher_and_transaction.go
 go/model_matcher_no_id.go
+go/model_merge_transactions_request.go
 go/model_merged_transaction.go
 go/model_movement.go
 go/model_notification.go

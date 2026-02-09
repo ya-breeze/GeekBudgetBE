@@ -630,6 +630,37 @@ paths:
       responses:
         "200":
           description: no body
+  /v1/transactions/merge:
+    post:
+      tags:
+        - transactions
+      summary: merge two transactions
+      operationId: mergeTransactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - keepId
+                - mergeId
+              properties:
+                keepId:
+                  type: string
+                  format: uuid
+                mergeId:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: transactions merged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          description: invalid request or transactions cannot be merged
 
   /v1/mergedTransactions:
     get:
@@ -1780,6 +1811,16 @@ components:
         autoMatchSkipReason:
           type: string
           description: Reason why auto-match was skipped for this transaction
+        duplicateDismissed:
+          type: boolean
+          description: If true, user has dismissed the duplicate detected for this transaction
+          default: false
+        duplicateTransactionIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of transaction IDs that are potential duplicates of this one (from separate junction table)
       required:
         - date
         - movements

@@ -37,6 +37,20 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 	return m.recorder
 }
 
+// AddDuplicateRelationship mocks base method.
+func (m *MockStorage) AddDuplicateRelationship(arg0, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddDuplicateRelationship", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddDuplicateRelationship indicates an expected call of AddDuplicateRelationship.
+func (mr *MockStorageMockRecorder) AddDuplicateRelationship(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDuplicateRelationship", reflect.TypeOf((*MockStorage)(nil).AddDuplicateRelationship), arg0, arg1, arg2)
+}
+
 // AddMatcherConfirmation mocks base method.
 func (m *MockStorage) AddMatcherConfirmation(arg0, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
@@ -49,6 +63,20 @@ func (m *MockStorage) AddMatcherConfirmation(arg0, arg1 string, arg2 bool) error
 func (mr *MockStorageMockRecorder) AddMatcherConfirmation(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMatcherConfirmation", reflect.TypeOf((*MockStorage)(nil).AddMatcherConfirmation), arg0, arg1, arg2)
+}
+
+// ClearDuplicateRelationships mocks base method.
+func (m *MockStorage) ClearDuplicateRelationships(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearDuplicateRelationships", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ClearDuplicateRelationships indicates an expected call of ClearDuplicateRelationships.
+func (mr *MockStorageMockRecorder) ClearDuplicateRelationships(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearDuplicateRelationships", reflect.TypeOf((*MockStorage)(nil).ClearDuplicateRelationships), arg0, arg1)
 }
 
 // Close mocks base method.
@@ -446,6 +474,21 @@ func (mr *MockStorageMockRecorder) GetAllBankImporters() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllBankImporters", reflect.TypeOf((*MockStorage)(nil).GetAllBankImporters))
 }
 
+// GetAllUserIDs mocks base method.
+func (m *MockStorage) GetAllUserIDs() ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllUserIDs")
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllUserIDs indicates an expected call of GetAllUserIDs.
+func (mr *MockStorageMockRecorder) GetAllUserIDs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUserIDs", reflect.TypeOf((*MockStorage)(nil).GetAllUserIDs))
+}
+
 // GetBankImporter mocks base method.
 func (m *MockStorage) GetBankImporter(arg0, arg1 string) (goserver.BankImporter, error) {
 	m.ctrl.T.Helper()
@@ -549,6 +592,21 @@ func (m *MockStorage) GetCurrency(arg0, arg1 string) (goserver.Currency, error) 
 func (mr *MockStorageMockRecorder) GetCurrency(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrency", reflect.TypeOf((*MockStorage)(nil).GetCurrency), arg0, arg1)
+}
+
+// GetDuplicateTransactionIDs mocks base method.
+func (m *MockStorage) GetDuplicateTransactionIDs(arg0, arg1 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDuplicateTransactionIDs", arg0, arg1)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDuplicateTransactionIDs indicates an expected call of GetDuplicateTransactionIDs.
+func (mr *MockStorageMockRecorder) GetDuplicateTransactionIDs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDuplicateTransactionIDs", reflect.TypeOf((*MockStorage)(nil).GetDuplicateTransactionIDs), arg0, arg1)
 }
 
 // GetImage mocks base method.
@@ -775,6 +833,21 @@ func (mr *MockStorageMockRecorder) InvalidateReconciliation(arg0, arg1, arg2 int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateReconciliation", reflect.TypeOf((*MockStorage)(nil).InvalidateReconciliation), arg0, arg1, arg2)
 }
 
+// MergeTransactions mocks base method.
+func (m *MockStorage) MergeTransactions(arg0, arg1, arg2 string) (goserver.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MergeTransactions", arg0, arg1, arg2)
+	ret0, _ := ret[0].(goserver.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MergeTransactions indicates an expected call of MergeTransactions.
+func (mr *MockStorageMockRecorder) MergeTransactions(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MergeTransactions", reflect.TypeOf((*MockStorage)(nil).MergeTransactions), arg0, arg1, arg2)
+}
+
 // Open mocks base method.
 func (m *MockStorage) Open() error {
 	m.ctrl.T.Helper()
@@ -801,6 +874,20 @@ func (m *MockStorage) PutUser(arg0 *models.User) error {
 func (mr *MockStorageMockRecorder) PutUser(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutUser", reflect.TypeOf((*MockStorage)(nil).PutUser), arg0)
+}
+
+// RemoveDuplicateRelationship mocks base method.
+func (m *MockStorage) RemoveDuplicateRelationship(arg0, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveDuplicateRelationship", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveDuplicateRelationship indicates an expected call of RemoveDuplicateRelationship.
+func (mr *MockStorageMockRecorder) RemoveDuplicateRelationship(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveDuplicateRelationship", reflect.TypeOf((*MockStorage)(nil).RemoveDuplicateRelationship), arg0, arg1, arg2)
 }
 
 // SaveCNBRates mocks base method.

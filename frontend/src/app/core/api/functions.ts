@@ -53,6 +53,8 @@ export type { UpdateTransaction$Params } from './fn/transactions/update-transact
 export { updateTransaction } from './fn/transactions/update-transaction';
 export type { DeleteTransaction$Params } from './fn/transactions/delete-transaction';
 export { deleteTransaction } from './fn/transactions/delete-transaction';
+export type { MergeTransactions$Params } from './fn/transactions/merge-transactions';
+export { mergeTransactions } from './fn/transactions/merge-transactions';
 export type { GetMergedTransactions$Params } from './fn/merged-transactions/get-merged-transactions';
 export { getMergedTransactions } from './fn/merged-transactions/get-merged-transactions';
 export type { UnmergeMergedTransaction$Params } from './fn/merged-transactions/unmerge-merged-transaction';

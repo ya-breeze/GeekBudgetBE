@@ -1,0 +1,154 @@
+<h2 mat-dialog-title>Compare Duplicate Transactions</h2>
+<mat-dialog-content>
+    <div class="comparison-grid">
+        <!-- Transaction 1 -->
+        <div class="transaction-column" [class.keep-target]="true">
+            <div class="column-header">
+                <h3>Transaction A</h3>
+                <button
+                    mat-flat-button
+                    color="primary"
+                    (click)="onMerge('t1')"
+                    [disabled]="loading()"
+                >
+                    Keep This
+                </button>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="details">
+                <div class="detail-row">
+                    <span class="label">Date:</span>
+                    <span class="value">{{ t1.date | appDate: 'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Description:</span>
+                    <span class="value">{{ t1.description || 'N/A' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Amount:</span>
+                    <span class="value">
+                        <div *ngFor="let m of getEffectiveAmounts(t1)">
+                            {{ formatAmount(m.amount, m.currencyId) }}
+                        </div>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Accounts:</span>
+                    <div class="accounts-list">
+                        <ng-container *ngFor="let m of t1.movements">
+                            <div class="account-item" *ngIf="getAccount(m.accountId) as acc">
+                                <app-account-display
+                                    [name]="acc.name"
+                                    [image]="acc.image"
+                                    size="small"
+                                ></app-account-display>
+                                <span
+                                    [class.positive]="m.amount > 0"
+                                    [class.negative]="m.amount < 0"
+                                >
+                                    {{ formatAmount(m.amount, m.currencyId) }}
+                                </span>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <div class="detail-row" *ngIf="t1.partnerName">
+                    <span class="label">Partner:</span>
+                    <span class="value">{{ t1.partnerName }}</span>
+                </div>
+                <div class="detail-row" *ngIf="t1.externalIds?.length">
+                    <span class="label">External IDs:</span>
+                    <div class="tag-list">
+                        <span class="tag" *ngFor="let id of t1.externalIds">{{ id }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider-column">
+            <mat-icon>compare_arrows</mat-icon>
+        </div>
+
+        <!-- Transaction 2 -->
+        <div class="transaction-column">
+            <div class="column-header">
+                <h3>Transaction B</h3>
+                <button
+                    mat-flat-button
+                    color="primary"
+                    (click)="onMerge('t2')"
+                    [disabled]="loading()"
+                >
+                    Keep This
+                </button>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="details">
+                <div class="detail-row">
+                    <span class="label">Date:</span>
+                    <span class="value">{{ t2.date | appDate: 'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Description:</span>
+                    <span class="value">{{ t2.description || 'N/A' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Amount:</span>
+                    <span class="value">
+                        <div *ngFor="let m of getEffectiveAmounts(t2)">
+                            {{ formatAmount(m.amount, m.currencyId) }}
+                        </div>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Accounts:</span>
+                    <div class="accounts-list">
+                        <ng-container *ngFor="let m of t2.movements">
+                            <div class="account-item" *ngIf="getAccount(m.accountId) as acc">
+                                <app-account-display
+                                    [name]="acc.name"
+                                    [image]="acc.image"
+                                    size="small"
+                                ></app-account-display>
+                                <span
+                                    [class.positive]="m.amount > 0"
+                                    [class.negative]="m.amount < 0"
+                                >
+                                    {{ formatAmount(m.amount, m.currencyId) }}
+                                </span>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <div class="detail-row" *ngIf="t2.partnerName">
+                    <span class="label">Partner:</span>
+                    <span class="value">{{ t2.partnerName }}</span>
+                </div>
+                <div class="detail-row" *ngIf="t2.externalIds?.length">
+                    <span class="label">External IDs:</span>
+                    <div class="tag-list">
+                        <span class="tag" *ngFor="let id of t2.externalIds">{{ id }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="loading()" class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+        <span>Processing...</span>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="loading()">Cancel</button>
+    <button
+        mat-stroked-button
+        color="warn"
+        (click)="onDismiss()"
+        [disabled]="loading()"
+        matTooltip="Keep both, they are not duplicates"
+    >
+        Dismiss (Not Duplicates)
+    </button>
+</mat-dialog-actions>
