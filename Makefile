@@ -14,6 +14,12 @@ build:
 	@cd ${ROOT_DIR}/frontend && npm run build
 	@echo "✅ Build complete"
 
+.PHONY: build-new-frontend
+build-new-frontend:
+	@echo "🚀 Building new frontend..."
+	@cd ${ROOT_DIR}/new-frontend && npm run build
+	@echo "✅ Build complete"
+
 .PHONY: run-backend
 run-backend:
 	@cd ${ROOT_DIR}/backend/cmd && go build -o ../bin/geekbudget
@@ -28,6 +34,10 @@ run-backend:
 .PHONY: run-frontend
 run-frontend:
 	@cd ${ROOT_DIR}/frontend && echo 'n' | npm run start
+
+.PHONY: run-new-frontend
+run-new-frontend:
+	@cd ${ROOT_DIR}/new-frontend && npm run dev
 
 .PHONY: replace-templates
 replace-templates:
@@ -110,6 +120,11 @@ lint:
 	@cd ${ROOT_DIR}/frontend; \
 		npx prettier --write "src/**/*.{ts,html,css,scss,json}"; \
 		npm run lint -- --fix
+
+.PHONY: lint-new-frontend
+lint-new-frontend:
+	@echo "🚀 Linting new frontend..."
+	@cd ${ROOT_DIR}/new-frontend && npm run lint && npm run type-check
 	@echo "✅ Lint complete"
 
 .PHONY: test
@@ -148,6 +163,10 @@ install: check-deps
 	cd ${ROOT_DIR}/backend && go mod download
 	cd ${ROOT_DIR}/frontend && npm install
 
+.PHONE: install-new-frontend
+install-new-frontend:
+	cd ${ROOT_DIR}/new-frontend && npm install
+
 .PHONE: clean
 clean:
 	@echo "🚀 Cleaning backend..."
@@ -158,6 +177,11 @@ clean:
 		rm -rf node_modules/; \
 		rm -rf coverage/; \
 		npm cache clean --force
+
+.PHONE: clean-new-frontend
+clean-new-frontend:
+	@echo "🚀 Cleaning new frontend..."
+	@cd ${ROOT_DIR}/new-frontend && rm -rf .next/ out/ node_modules/
 	@echo "✅ Clean complete"
 
 .PHONE: analyze
