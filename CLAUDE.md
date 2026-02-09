@@ -91,6 +91,7 @@ make docker-down
 4. When adding new API endpoints, update `api/openapi.yaml` first, then `make generate`.
 5. All database models must include `UserID` for multi-user isolation.
 6. All API endpoints require JWT auth except `/v1/authorize`.
+7. **For Next.js frontend**: Never import from `new-frontend/src/lib/api/generated/` directly. Always use custom hooks from `new-frontend/src/lib/api/hooks/` which wrap the generated code and won't be overwritten.
 
 ## Testing
 
