@@ -27,6 +27,11 @@ GeekBudgetBE/
 │       ├── features/      # Feature modules (accounts, transactions, matchers, etc.)
 │       ├── layout/        # Layout components
 │       └── shared/        # Shared components, pipes, directives
+├── new-frontend/          # Next.js 15 SPA (alternative modern frontend)
+│   └── src/
+│       ├── app/           # Next.js App Router pages
+│       ├── components/    # React components (shared + shadcn/ui)
+│       └── lib/           # API client, hooks, utilities
 ├── nginx/                 # Reverse proxy configuration
 ├── Makefile               # Build, test, lint, docker orchestration
 └── docker-compose.yml     # Multi-service deployment
@@ -40,6 +45,7 @@ GeekBudgetBE/
 - **Code generation:** OpenAPI Generator (Go client/server + Angular client)
 - **Formatting:** gofumpt (Go), Prettier + ESLint (frontend)
 - **Linting:** golangci-lint (Go), ESLint with Angular rules (frontend)
+- **Workflows:** See `.agent/workflows/` for specialized task guides (e.g., deduplication)
 
 ## Common Commands
 

@@ -1,6 +1,6 @@
-# MoneyBE
+# GeekBudget Backend
 
-# Copilot Instructions for GeekBudget Backend
+> **Note**: For AI assistant context (Claude, Copilot, etc.), see the comprehensive [`CLAUDE.md`](../CLAUDE.md) file in the project root.
 
 ## Project Overview
 

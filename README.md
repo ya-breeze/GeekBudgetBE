@@ -68,7 +68,7 @@ GeekBudgetBE/
 The application follows a microservices architecture with:
 
 - **Backend**: Go REST API server with SQLite database
-- **Frontend**: Angular SPA with Bootstrap UI
+- **Frontend**: Angular SPA with Angular Material UI (also: Next.js 15 alternative in `new-frontend/`)
 - **Reverse Proxy**: Nginx for routing and load balancing
 - **Containerization**: Docker for consistent deployment
 

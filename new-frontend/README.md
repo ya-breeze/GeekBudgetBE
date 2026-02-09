@@ -157,16 +157,7 @@ The app uses React Query for data fetching with:
 
 ### API Routing
 
-**Development Mode:**
-- Frontend calls backend directly: `http://localhost:3000` → `http://localhost:8080/v1/*`
-- No `/api/` prefix needed
-- Configured via `NEXT_PUBLIC_API_URL=http://localhost:8080`
-
-**Production Mode:**
-- Frontend uses relative URLs: `/api/v1/*`
-- Next.js rewrites `/api/*` to actual backend URL
-- Avoids CORS issues
-- Configured via Next.js rewrites in `next.config.js`
+See [API_ROUTING.md](./API_ROUTING.md) for detailed routing configuration (development vs production).
 
 ## Development Notes
 
