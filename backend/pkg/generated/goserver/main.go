@@ -36,6 +36,7 @@ type CustomControllers struct {
 	MatchersAPIService                MatchersAPIService
 	MergedTransactionsAPIService      MergedTransactionsAPIService
 	NotificationsAPIService           NotificationsAPIService
+	ReconciliationAPIService          ReconciliationAPIService
 	TransactionsAPIService            TransactionsAPIService
 	UnprocessedTransactionsAPIService UnprocessedTransactionsAPIService
 	UserAPIService                    UserAPIService
@@ -115,6 +116,12 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	NotificationsAPIController := NewNotificationsAPIController(NotificationsAPIService)
 
+	ReconciliationAPIService := NewReconciliationAPIService()
+	if controllers.ReconciliationAPIService != nil {
+		ReconciliationAPIService = controllers.ReconciliationAPIService
+	}
+	ReconciliationAPIController := NewReconciliationAPIController(ReconciliationAPIService)
+
 	TransactionsAPIService := NewTransactionsAPIService()
 	if controllers.TransactionsAPIService != nil {
 		TransactionsAPIService = controllers.TransactionsAPIService
@@ -133,7 +140,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	UserAPIController := NewUserAPIController(UserAPIService)
 
-	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, MergedTransactionsAPIController, NotificationsAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, MergedTransactionsAPIController, NotificationsAPIController, ReconciliationAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
 	router := NewRouter(logger, routers...)
 
 	router.Use(middlewares...)

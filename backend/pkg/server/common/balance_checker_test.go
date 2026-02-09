@@ -40,15 +40,18 @@ var _ = Describe("BalanceChecker", func() {
 
 	Describe("CheckBalanceForAccount", func() {
 		It("should return early if there are unprocessed transactions", func() {
-			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID).Return(5, nil)
+			acc := goserver.Account{
+				Id:   accID,
+				Name: "Test Account",
+			}
+			mockDB.EXPECT().GetAccount(userID, accID).Return(acc, nil)
+			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(5, nil)
 
 			err := CheckBalanceForAccount(ctx, logger, mockDB, userID, accID)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("should generate a notification on balance mismatch", func() {
-			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID).Return(0, nil)
-
 			acc := goserver.Account{
 				Id:   accID,
 				Name: "Test Account",
@@ -62,6 +65,7 @@ var _ = Describe("BalanceChecker", func() {
 				},
 			}
 			mockDB.EXPECT().GetAccount(userID, accID).Return(acc, nil)
+			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
 			// App balance is 1400, Bank says 1500 -> Mismatch
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(1400.0, nil)
@@ -79,8 +83,6 @@ var _ = Describe("BalanceChecker", func() {
 		})
 
 		It("should not generate a notification if balances match", func() {
-			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID).Return(0, nil)
-
 			acc := goserver.Account{
 				Id:   accID,
 				Name: "Test Account",
@@ -94,8 +96,11 @@ var _ = Describe("BalanceChecker", func() {
 				},
 			}
 			mockDB.EXPECT().GetAccount(userID, accID).Return(acc, nil)
+			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(1000.0, nil)
+
+			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
 
 			// No CreateNotification expected
 
@@ -104,8 +109,6 @@ var _ = Describe("BalanceChecker", func() {
 		})
 
 		It("should check multiple currencies", func() {
-			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID).Return(0, nil)
-
 			acc := goserver.Account{
 				Id:   accID,
 				Name: "Multi Currency",
@@ -117,8 +120,10 @@ var _ = Describe("BalanceChecker", func() {
 				},
 			}
 			mockDB.EXPECT().GetAccount(userID, accID).Return(acc, nil)
+			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(100.0, nil)
+			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "USD").Return(250.0, nil) // USD mismatch!
 
 			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
@@ -131,11 +136,11 @@ var _ = Describe("BalanceChecker", func() {
 		})
 
 		It("should handle database errors gracefully", func() {
-			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID).Return(0, fmt.Errorf("db error"))
+			mockDB.EXPECT().GetAccount(userID, accID).Return(goserver.Account{}, fmt.Errorf("db error"))
 
 			err := CheckBalanceForAccount(ctx, logger, mockDB, userID, accID)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("failed to count unprocessed transactions"))
+			Expect(err.Error()).To(ContainSubstring("failed to get account"))
 		})
 	})
 })

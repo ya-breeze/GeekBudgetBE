@@ -127,6 +127,16 @@ type NotificationsAPIRouter interface {
 	DeleteNotification(http.ResponseWriter, *http.Request)
 }
 
+// ReconciliationAPIRouter defines the required methods for binding the api requests to a responses for the ReconciliationAPI
+// The ReconciliationAPIRouter implementation should parse necessary information from the http request,
+// pass the data to a ReconciliationAPIServicer to perform the required actions, then write the service results to the http response.
+type ReconciliationAPIRouter interface {
+	GetReconciliationStatus(http.ResponseWriter, *http.Request)
+	ReconcileAccount(http.ResponseWriter, *http.Request)
+	GetTransactionsSinceReconciliation(http.ResponseWriter, *http.Request)
+	EnableAccountReconciliation(http.ResponseWriter, *http.Request)
+}
+
 // TransactionsAPIRouter defines the required methods for binding the api requests to a responses for the TransactionsAPI
 // The TransactionsAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a TransactionsAPIServicer to perform the required actions, then write the service results to the http response.
@@ -274,6 +284,17 @@ type MergedTransactionsAPIServicer interface {
 type NotificationsAPIServicer interface {
 	GetNotifications(context.Context) (ImplResponse, error)
 	DeleteNotification(context.Context, string) (ImplResponse, error)
+}
+
+// ReconciliationAPIServicer defines the api actions for the ReconciliationAPI service
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can be ignored with the .openapi-generator-ignore file
+// and updated with the logic required for the API.
+type ReconciliationAPIServicer interface {
+	GetReconciliationStatus(context.Context) (ImplResponse, error)
+	ReconcileAccount(context.Context, string, ReconcileAccountRequest) (ImplResponse, error)
+	GetTransactionsSinceReconciliation(context.Context, string, string) (ImplResponse, error)
+	EnableAccountReconciliation(context.Context, string, EnableReconciliationRequest) (ImplResponse, error)
 }
 
 // TransactionsAPIServicer defines the api actions for the TransactionsAPI service

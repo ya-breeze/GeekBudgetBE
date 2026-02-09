@@ -14,6 +14,7 @@ api_import.go
 api_matchers.go
 api_merged_transactions.go
 api_notifications.go
+api_reconciliation.go
 api_transactions.go
 api_unprocessed_transactions.go
 api_user.go
@@ -47,6 +48,7 @@ docs/CurrenciesAPI.md
 docs/Currency.md
 docs/CurrencyAggregation.md
 docs/CurrencyNoID.md
+docs/EnableReconciliationRequest.md
 docs/Entity.md
 docs/ExportAPI.md
 docs/ImportAPI.md
@@ -61,6 +63,11 @@ docs/MergedTransactionsAPI.md
 docs/Movement.md
 docs/Notification.md
 docs/NotificationsAPI.md
+docs/ReconcileAccountRequest.md
+docs/Reconciliation.md
+docs/ReconciliationAPI.md
+docs/ReconciliationNoId.md
+docs/ReconciliationStatus.md
 docs/Transaction.md
 docs/TransactionNoID.md
 docs/TransactionsAPI.md
@@ -94,6 +101,7 @@ model_convert_unprocessed_transaction200_response.go
 model_currency.go
 model_currency_aggregation.go
 model_currency_no_id.go
+model_enable_reconciliation_request.go
 model_entity.go
 model_import_result.go
 model_import_result_balances_inner.go
@@ -103,6 +111,10 @@ model_matcher_no_id.go
 model_merged_transaction.go
 model_movement.go
 model_notification.go
+model_reconcile_account_request.go
+model_reconciliation.go
+model_reconciliation_no_id.go
+model_reconciliation_status.go
 model_transaction.go
 model_transaction_no_id.go
 model_unprocessed_transaction.go
@@ -122,6 +134,7 @@ test/api_import_test.go
 test/api_matchers_test.go
 test/api_merged_transactions_test.go
 test/api_notifications_test.go
+test/api_reconciliation_test.go
 test/api_transactions_test.go
 test/api_unprocessed_transactions_test.go
 test/api_user_test.go

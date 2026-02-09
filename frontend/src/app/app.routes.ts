@@ -33,6 +33,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: 'reconciliation',
+                loadComponent: () =>
+                    import('./features/reconciliation/reconciliation.component').then(
+                        (m) => m.ReconciliationComponent,
+                    ),
+            },
+            {
                 path: 'transactions',
                 loadComponent: () =>
                     import('./features/transactions/transactions.component').then(

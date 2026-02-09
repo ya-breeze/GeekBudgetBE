@@ -1,0 +1,173 @@
+<div class="reconciliation-container">
+    <div class="header">
+        <h1>Account Reconciliation</h1>
+        <button mat-flat-button color="primary" (click)="loadStatuses()">
+            <mat-icon>refresh</mat-icon>
+            Refresh Status
+        </button>
+    </div>
+
+    <div *ngIf="loading" class="loading-shade">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <table mat-table [dataSource]="statuses" multiTemplateDataRows class="mat-elevation-z8">
+        <!-- Account Name Column -->
+        <ng-container matColumnDef="accountName">
+            <th mat-header-cell *matHeaderCellDef>Account</th>
+            <td mat-cell *matCellDef="let element">{{ element.accountName }}</td>
+        </ng-container>
+
+        <!-- App Balance Column -->
+        <ng-container matColumnDef="appBalance">
+            <th mat-header-cell *matHeaderCellDef>App Balance</th>
+            <td mat-cell *matCellDef="let element">
+                {{ element.appBalance | currency: element.currencySymbol }}
+            </td>
+        </ng-container>
+
+        <!-- Bank Balance Column -->
+        <ng-container matColumnDef="bankBalance">
+            <th mat-header-cell *matHeaderCellDef>Bank Balance</th>
+            <td mat-cell *matCellDef="let element">
+                <ng-container *ngIf="element.hasBankImporter; else noImporter">
+                    {{ element.bankBalance | currency: element.currencySymbol }}
+                </ng-container>
+                <ng-template #noImporter>
+                    <span class="text-muted">No Bank Importer</span>
+                </ng-template>
+            </td>
+        </ng-container>
+
+        <!-- Delta Column -->
+        <ng-container matColumnDef="delta">
+            <th mat-header-cell *matHeaderCellDef>Delta</th>
+            <td mat-cell *matCellDef="let element">
+                <span
+                    [class.text-danger]="element.delta !== 0"
+                    [class.text-success]="element.delta === 0"
+                >
+                    {{ element.delta | currency: element.currencySymbol }}
+                </span>
+            </td>
+        </ng-container>
+
+        <!-- Last Reconciled At Column -->
+        <ng-container matColumnDef="lastReconciledAt">
+            <th mat-header-cell *matHeaderCellDef>Last Reconciled</th>
+            <td mat-cell *matCellDef="let element">
+                <ng-container *ngIf="element.lastReconciledAt; else neverReconciled">
+                    {{ element.lastReconciledAt | date: 'short' }}
+                    <div
+                        *ngIf="element.lastReconciledBalance !== undefined"
+                        class="text-muted small"
+                    >
+                        at {{ element.lastReconciledBalance | currency: element.currencySymbol }}
+                    </div>
+                </ng-container>
+                <ng-template #neverReconciled>
+                    <span class="text-muted">Never</span>
+                </ng-template>
+            </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let element">
+                <button mat-icon-button (click)="toggleExpand(element)" matTooltip="View details">
+                    <mat-icon>{{
+                        expandedElement === element ? 'expand_less' : 'expand_more'
+                    }}</mat-icon>
+                </button>
+                <button
+                    mat-icon-button
+                    color="primary"
+                    *ngIf="element.hasBankImporter || element.isManualReconciliationEnabled"
+                    [disabled]="element.delta === 0 && !element.hasUnprocessedTransactions"
+                    (click)="reconcile(element)"
+                    matTooltip="Mark as Reconciled"
+                >
+                    <mat-icon>check_circle</mat-icon>
+                </button>
+                <button
+                    mat-icon-button
+                    color="accent"
+                    *ngIf="!element.hasBankImporter && !element.isManualReconciliationEnabled"
+                    (click)="enableManual(element)"
+                    matTooltip="Enable Manual Reconciliation"
+                >
+                    <mat-icon>add_task</mat-icon>
+                </button>
+            </td>
+        </ng-container>
+
+        <!-- Expanded Content Column -->
+        <ng-container matColumnDef="expandedDetail">
+            <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+                <div
+                    class="element-detail"
+                    [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
+                >
+                    <div class="detail-content" *ngIf="element === expandedElement">
+                        <h3>
+                            Transactions since
+                            {{
+                                element.lastReconciledAt
+                                    ? (element.lastReconciledAt | date: 'short')
+                                    : 'beginning'
+                            }}
+                        </h3>
+
+                        <div *ngIf="loadingTransactions" class="small-spinner">
+                            <mat-spinner diameter="30"></mat-spinner>
+                        </div>
+
+                        <div
+                            *ngIf="!loadingTransactions && transactionsSinceRec.length === 0"
+                            class="no-data"
+                        >
+                            No new transactions since last reconciliation.
+                        </div>
+
+                        <ul
+                            class="transaction-list"
+                            *ngIf="!loadingTransactions && transactionsSinceRec.length > 0"
+                        >
+                            <li *ngFor="let tx of transactionsSinceRec" class="transaction-item">
+                                <span class="tx-date">{{ tx.date | date: 'shortDate' }}</span>
+                                <span class="tx-desc">{{ tx.description }}</span>
+                                <span
+                                    class="tx-amount"
+                                    [class.text-danger]="tx.movements[0].amount < 0"
+                                >
+                                    {{ tx.movements[0].amount | currency: element.currencySymbol }}
+                                </span>
+                            </li>
+                        </ul>
+
+                        <div class="status-alerts" *ngIf="element.hasUnprocessedTransactions">
+                            <div class="alert alert-warning">
+                                <mat-icon>warning</mat-icon>
+                                <span
+                                    >This account has unprocessed transactions. Reconciliation is
+                                    blocked until they are resolved.</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+            mat-row
+            *matRowDef="let element; columns: displayedColumns"
+            class="element-row"
+            [class.expanded-row]="expandedElement === element"
+            [ngClass]="getStatusClass(element)"
+        ></tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+    </table>
+</div>

@@ -17,6 +17,7 @@ export type { ConvertUnprocessedTransaction200Response } from './models/convert-
 export type { Currency } from './models/currency';
 export type { CurrencyAggregation } from './models/currency-aggregation';
 export type { CurrencyNoId } from './models/currency-no-id';
+export type { EnableReconciliationRequest } from './models/enable-reconciliation-request';
 export type { Entity } from './models/entity';
 export type { ImportResult } from './models/import-result';
 export type { Matcher } from './models/matcher';
@@ -25,6 +26,10 @@ export type { MatcherNoId } from './models/matcher-no-id';
 export type { MergedTransaction } from './models/merged-transaction';
 export type { Movement } from './models/movement';
 export type { Notification } from './models/notification';
+export type { ReconcileAccountRequest } from './models/reconcile-account-request';
+export type { Reconciliation } from './models/reconciliation';
+export type { ReconciliationNoId } from './models/reconciliation-no-id';
+export type { ReconciliationStatus } from './models/reconciliation-status';
 export type { Transaction } from './models/transaction';
 export type { TransactionNoId } from './models/transaction-no-id';
 export type { UnprocessedTransaction } from './models/unprocessed-transaction';

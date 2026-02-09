@@ -43,7 +43,9 @@ var _ = Describe("BankImporters API", func() {
 		sut = NewBankImportersAPIServiceImpl(logger, mockDB)
 
 		// Default expectation for balance checks triggered during imports
-		mockDB.EXPECT().CountUnprocessedTransactionsForAccount(gomock.Any(), gomock.Any()).Return(1, nil).AnyTimes()
+		// CountUnprocessedTransactionsForAccount returning 1 causes early return in CheckBalanceForAccount
+		// Tests that need balance check should add their own GetAccount mock first
+		mockDB.EXPECT().CountUnprocessedTransactionsForAccount(gomock.Any(), gomock.Any(), gomock.Any()).Return(1, nil).AnyTimes()
 	})
 
 	AfterEach(func() {
@@ -309,8 +311,8 @@ var _ = Describe("BankImporters API", func() {
 			// Mock GetBankImporter to return account ID
 			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(goserver.BankImporter{Id: importerID, AccountId: accountID}, nil).AnyTimes()
 
-			// Expect GetAccount when checkMissing is true
-			mockDB.EXPECT().GetAccount(userID, accountID).Return(goserver.Account{Id: accountID, BankInfo: goserver.BankAccountInfo{}}, nil)
+			// Expect GetAccount when checkMissing is true (AnyTimes for balance check too)
+			mockDB.EXPECT().GetAccount(userID, accountID).Return(goserver.Account{Id: accountID, BankInfo: goserver.BankAccountInfo{}}, nil).AnyTimes()
 			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).Return(goserver.Account{}, nil)
 
 			// 2. Setup imported transactions (Only txPresent)
@@ -616,7 +618,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(goserver.BankImporter{Id: importerID, AccountId: accountID}, nil).AnyTimes()
 			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
-			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil)
+			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil).AnyTimes()
 
 			// EXPECT: Entire balance object replaced (OpeningBalance updated to 2000)
 			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
@@ -665,7 +667,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetBankImporter(userID, importerID).Return(goserver.BankImporter{Id: importerID, AccountId: accountID}, nil).AnyTimes()
 			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{}, nil)
-			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil)
+			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil).AnyTimes()
 
 			// EXPECT: OpeningBalance preserved at 1000, but ClosingBalance updated to 2500
 			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {

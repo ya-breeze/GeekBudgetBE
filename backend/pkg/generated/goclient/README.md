@@ -121,6 +121,10 @@ Class | Method | HTTP request | Description
 *MergedTransactionsAPI* | [**UnmergeMergedTransaction**](docs/MergedTransactionsAPI.md#unmergemergedtransaction) | **Post** /v1/mergedTransactions/{id}/unmerge | restore a merged transaction
 *NotificationsAPI* | [**DeleteNotification**](docs/NotificationsAPI.md#deletenotification) | **Delete** /v1/notifications/{id} | delete notification
 *NotificationsAPI* | [**GetNotifications**](docs/NotificationsAPI.md#getnotifications) | **Get** /v1/notifications | return all notifications
+*ReconciliationAPI* | [**EnableAccountReconciliation**](docs/ReconciliationAPI.md#enableaccountreconciliation) | **Post** /v1/accounts/{id}/enable-reconciliation | enable manual reconciliation for accounts without bank importer
+*ReconciliationAPI* | [**GetReconciliationStatus**](docs/ReconciliationAPI.md#getreconciliationstatus) | **Get** /v1/reconciliation/status | get reconciliation status for all asset accounts
+*ReconciliationAPI* | [**GetTransactionsSinceReconciliation**](docs/ReconciliationAPI.md#gettransactionssincereconciliation) | **Get** /v1/accounts/{id}/transactions-since-reconciliation | return transactions since last reconciliation
+*ReconciliationAPI* | [**ReconcileAccount**](docs/ReconciliationAPI.md#reconcileaccount) | **Post** /v1/accounts/{id}/reconcile | manually mark an account as reconciled
 *TransactionsAPI* | [**CreateTransaction**](docs/TransactionsAPI.md#createtransaction) | **Post** /v1/transactions | create new transaction
 *TransactionsAPI* | [**DeleteTransaction**](docs/TransactionsAPI.md#deletetransaction) | **Delete** /v1/transactions/{id} | delete transaction
 *TransactionsAPI* | [**GetTransaction**](docs/TransactionsAPI.md#gettransaction) | **Get** /v1/transactions/{id} | get transaction
@@ -158,6 +162,7 @@ Class | Method | HTTP request | Description
  - [Currency](docs/Currency.md)
  - [CurrencyAggregation](docs/CurrencyAggregation.md)
  - [CurrencyNoID](docs/CurrencyNoID.md)
+ - [EnableReconciliationRequest](docs/EnableReconciliationRequest.md)
  - [Entity](docs/Entity.md)
  - [ImportResult](docs/ImportResult.md)
  - [ImportResultBalancesInner](docs/ImportResultBalancesInner.md)
@@ -167,6 +172,10 @@ Class | Method | HTTP request | Description
  - [MergedTransaction](docs/MergedTransaction.md)
  - [Movement](docs/Movement.md)
  - [Notification](docs/Notification.md)
+ - [ReconcileAccountRequest](docs/ReconcileAccountRequest.md)
+ - [Reconciliation](docs/Reconciliation.md)
+ - [ReconciliationNoId](docs/ReconciliationNoId.md)
+ - [ReconciliationStatus](docs/ReconciliationStatus.md)
  - [Transaction](docs/Transaction.md)
  - [TransactionNoID](docs/TransactionNoID.md)
  - [UnprocessedTransaction](docs/UnprocessedTransaction.md)

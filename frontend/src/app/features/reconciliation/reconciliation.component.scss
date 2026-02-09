@@ -1,0 +1,144 @@
+.reconciliation-container {
+    padding: 20px;
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+
+        h1 {
+            margin: 0;
+        }
+    }
+}
+
+.loading-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.15);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+table {
+    width: 100%;
+}
+
+tr.detail-row {
+    height: 0;
+}
+
+tr.element-row:not(.expanded-row):hover {
+    background: whitesmoke;
+}
+
+tr.element-row:not(.expanded-row):active {
+    background: #efefef;
+}
+
+.element-row td {
+    border-bottom-width: 0;
+}
+
+.element-detail {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-content {
+    padding: 16px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+}
+
+.status-green {
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.status-yellow {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.status-red {
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.small {
+    font-size: 0.85em;
+}
+
+.transaction-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+
+    .transaction-item {
+        display: flex;
+        padding: 8px 12px;
+        border-bottom: 1px solid #eee;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .tx-date {
+            width: 100px;
+            color: #777;
+        }
+
+        .tx-desc {
+            flex: 1;
+        }
+
+        .tx-amount {
+            width: 120px;
+            text-align: right;
+            font-weight: 500;
+        }
+    }
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 10px;
+
+    mat-icon {
+        margin-right: 8px;
+    }
+
+    &.alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+}
+
+.small-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.no-data {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}

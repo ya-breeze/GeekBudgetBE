@@ -3,6 +3,7 @@ package database_test
 import (
 	"log/slog"
 	"testing"
+	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -54,7 +55,7 @@ func TestStorageBalanceCheck(t *testing.T) {
 			t.Fatalf("failed to create transaction: %v", err)
 		}
 
-		count, err := st.CountUnprocessedTransactionsForAccount(userID, accID)
+		count, err := st.CountUnprocessedTransactionsForAccount(userID, accID, time.Time{})
 		if err != nil {
 			t.Fatalf("failed to count unprocessed: %v", err)
 		}
@@ -95,7 +96,7 @@ func TestStorageBalanceCheck(t *testing.T) {
 		// Before, we had 1 unprocessed. Now we added 1 processed.
 		// But wait, the previous test added 1 unprocessed.
 
-		count, err := st.CountUnprocessedTransactionsForAccount(userID, accID)
+		count, err := st.CountUnprocessedTransactionsForAccount(userID, accID, time.Time{})
 		if err != nil {
 			t.Fatalf("failed to count unprocessed: %v", err)
 		}

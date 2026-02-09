@@ -54,6 +54,7 @@ export class SidebarComponent {
         },
         { label: 'Budget', icon: 'savings', route: '/budget' },
         { label: 'Transactions', icon: 'receipt_long', route: '/transactions' },
+        { label: 'Reconciliation', icon: 'account_balance_wallet', route: '/reconciliation' },
         { label: 'Reports', icon: 'assessment', route: '/reports' },
         { label: 'Suspicious', icon: 'report_problem', route: '/suspicious' },
         {

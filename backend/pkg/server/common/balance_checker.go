@@ -15,7 +15,12 @@ import (
 func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db database.Storage, userID, accountID string) error {
 	logger.Info("Checking balance for account", "userID", userID, "accountID", accountID)
 
-	count, err := db.CountUnprocessedTransactionsForAccount(userID, accountID)
+	acc, err := db.GetAccount(userID, accountID)
+	if err != nil {
+		return fmt.Errorf("failed to get account: %w", err)
+	}
+
+	count, err := db.CountUnprocessedTransactionsForAccount(userID, accountID, acc.IgnoreUnprocessedBefore)
 	if err != nil {
 		return fmt.Errorf("failed to count unprocessed transactions: %w", err)
 	}
@@ -23,11 +28,6 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 	if count > 0 {
 		logger.Info("Account still has unprocessed transactions, skipping balance check", "count", count)
 		return nil
-	}
-
-	acc, err := db.GetAccount(userID, accountID)
-	if err != nil {
-		return fmt.Errorf("failed to get account: %w", err)
 	}
 
 	for _, b := range acc.BankInfo.Balances {
@@ -56,6 +56,19 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 			}
 		} else {
 			logger.Info("Balance verified for account", "account", acc.Name, "currencyId", b.CurrencyId, "balance", appBalance)
+			// Create reconciliation record
+			rec, err := db.CreateReconciliation(userID, &goserver.ReconciliationNoId{
+				AccountId:         accountID,
+				CurrencyId:        b.CurrencyId,
+				ReconciledBalance: appBalance,
+				ExpectedBalance:   b.ClosingBalance,
+				IsManual:          false,
+			})
+			if err != nil {
+				logger.With("error", err).Error("Failed to record reconciliation")
+			} else {
+				logger.Info("Reconciliation recorded", "recId", rec.ReconciliationId, "accountId", accountID)
+			}
 		}
 	}
 

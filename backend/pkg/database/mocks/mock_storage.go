@@ -66,18 +66,18 @@ func (mr *MockStorageMockRecorder) Close() *gomock.Call {
 }
 
 // CountUnprocessedTransactionsForAccount mocks base method.
-func (m *MockStorage) CountUnprocessedTransactionsForAccount(arg0, arg1 string) (int, error) {
+func (m *MockStorage) CountUnprocessedTransactionsForAccount(arg0, arg1 string, arg2 time.Time) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CountUnprocessedTransactionsForAccount", arg0, arg1)
+	ret := m.ctrl.Call(m, "CountUnprocessedTransactionsForAccount", arg0, arg1, arg2)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CountUnprocessedTransactionsForAccount indicates an expected call of CountUnprocessedTransactionsForAccount.
-func (mr *MockStorageMockRecorder) CountUnprocessedTransactionsForAccount(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) CountUnprocessedTransactionsForAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountUnprocessedTransactionsForAccount", reflect.TypeOf((*MockStorage)(nil).CountUnprocessedTransactionsForAccount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountUnprocessedTransactionsForAccount", reflect.TypeOf((*MockStorage)(nil).CountUnprocessedTransactionsForAccount), arg0, arg1, arg2)
 }
 
 // CreateAccount mocks base method.
@@ -198,6 +198,21 @@ func (m *MockStorage) CreateNotification(arg0 string, arg1 *goserver.Notificatio
 func (mr *MockStorageMockRecorder) CreateNotification(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNotification", reflect.TypeOf((*MockStorage)(nil).CreateNotification), arg0, arg1)
+}
+
+// CreateReconciliation mocks base method.
+func (m *MockStorage) CreateReconciliation(arg0 string, arg1 *goserver.ReconciliationNoId) (goserver.Reconciliation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateReconciliation", arg0, arg1)
+	ret0, _ := ret[0].(goserver.Reconciliation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateReconciliation indicates an expected call of CreateReconciliation.
+func (mr *MockStorageMockRecorder) CreateReconciliation(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateReconciliation", reflect.TypeOf((*MockStorage)(nil).CreateReconciliation), arg0, arg1)
 }
 
 // CreateTransaction mocks base method.
@@ -551,6 +566,21 @@ func (mr *MockStorageMockRecorder) GetImage(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImage", reflect.TypeOf((*MockStorage)(nil).GetImage), arg0)
 }
 
+// GetLatestReconciliation mocks base method.
+func (m *MockStorage) GetLatestReconciliation(arg0, arg1, arg2 string) (*goserver.Reconciliation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLatestReconciliation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*goserver.Reconciliation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLatestReconciliation indicates an expected call of GetLatestReconciliation.
+func (mr *MockStorageMockRecorder) GetLatestReconciliation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestReconciliation", reflect.TypeOf((*MockStorage)(nil).GetLatestReconciliation), arg0, arg1, arg2)
+}
+
 // GetMatcher mocks base method.
 func (m *MockStorage) GetMatcher(arg0, arg1 string) (goserver.Matcher, error) {
 	m.ctrl.T.Helper()
@@ -641,6 +671,21 @@ func (mr *MockStorageMockRecorder) GetNotifications(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotifications", reflect.TypeOf((*MockStorage)(nil).GetNotifications), arg0)
 }
 
+// GetReconciliationsForAccount mocks base method.
+func (m *MockStorage) GetReconciliationsForAccount(arg0, arg1 string) ([]goserver.Reconciliation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReconciliationsForAccount", arg0, arg1)
+	ret0, _ := ret[0].([]goserver.Reconciliation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReconciliationsForAccount indicates an expected call of GetReconciliationsForAccount.
+func (mr *MockStorageMockRecorder) GetReconciliationsForAccount(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReconciliationsForAccount", reflect.TypeOf((*MockStorage)(nil).GetReconciliationsForAccount), arg0, arg1)
+}
+
 // GetTransaction mocks base method.
 func (m *MockStorage) GetTransaction(arg0, arg1 string) (goserver.Transaction, error) {
 	m.ctrl.T.Helper()
@@ -714,6 +759,20 @@ func (m *MockStorage) GetUserID(arg0 string) (string, error) {
 func (mr *MockStorageMockRecorder) GetUserID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserID", reflect.TypeOf((*MockStorage)(nil).GetUserID), arg0)
+}
+
+// InvalidateReconciliation mocks base method.
+func (m *MockStorage) InvalidateReconciliation(arg0, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InvalidateReconciliation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InvalidateReconciliation indicates an expected call of InvalidateReconciliation.
+func (mr *MockStorageMockRecorder) InvalidateReconciliation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateReconciliation", reflect.TypeOf((*MockStorage)(nil).InvalidateReconciliation), arg0, arg1, arg2)
 }
 
 // Open mocks base method.

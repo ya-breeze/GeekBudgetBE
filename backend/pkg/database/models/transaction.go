@@ -183,3 +183,10 @@ func TransactionWithoutID(transaction *goserver.Transaction) *goserver.Transacti
 		MergedAt:           transaction.MergedAt,
 	}
 }
+
+func MovementsToAPI(movements []goserver.Movement) []goserver.Movement {
+	if movements == nil {
+		return []goserver.Movement{}
+	}
+	return movements
+}

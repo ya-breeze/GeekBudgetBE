@@ -26,6 +26,8 @@ go/api_merged_transactions.go
 go/api_merged_transactions_service.go
 go/api_notifications.go
 go/api_notifications_service.go
+go/api_reconciliation.go
+go/api_reconciliation_service.go
 go/api_transactions.go
 go/api_transactions_service.go
 go/api_unprocessed_transactions.go
@@ -58,6 +60,7 @@ go/model_convert_unprocessed_transaction200_response.go
 go/model_currency.go
 go/model_currency_aggregation.go
 go/model_currency_no_id.go
+go/model_enable_reconciliation_request.go
 go/model_entity.go
 go/model_import_result.go
 go/model_import_result_balances_inner.go
@@ -67,6 +70,10 @@ go/model_matcher_no_id.go
 go/model_merged_transaction.go
 go/model_movement.go
 go/model_notification.go
+go/model_reconcile_account_request.go
+go/model_reconciliation.go
+go/model_reconciliation_no_id.go
+go/model_reconciliation_status.go
 go/model_transaction.go
 go/model_transaction_no_id.go
 go/model_unprocessed_transaction.go

@@ -109,3 +109,11 @@ export type { UpdateBudgetItem$Params } from './fn/budget-items/update-budget-it
 export { updateBudgetItem } from './fn/budget-items/update-budget-item';
 export type { DeleteBudgetItem$Params } from './fn/budget-items/delete-budget-item';
 export { deleteBudgetItem } from './fn/budget-items/delete-budget-item';
+export type { GetReconciliationStatus$Params } from './fn/reconciliation/get-reconciliation-status';
+export { getReconciliationStatus } from './fn/reconciliation/get-reconciliation-status';
+export type { ReconcileAccount$Params } from './fn/reconciliation/reconcile-account';
+export { reconcileAccount } from './fn/reconciliation/reconcile-account';
+export type { GetTransactionsSinceReconciliation$Params } from './fn/reconciliation/get-transactions-since-reconciliation';
+export { getTransactionsSinceReconciliation } from './fn/reconciliation/get-transactions-since-reconciliation';
+export type { EnableAccountReconciliation$Params } from './fn/reconciliation/enable-account-reconciliation';
+export { enableAccountReconciliation } from './fn/reconciliation/enable-account-reconciliation';

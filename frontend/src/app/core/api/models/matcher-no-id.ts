@@ -20,7 +20,7 @@ export interface MatcherNoId {
      */
     keywords?: Array<string>;
     outputAccountId: string;
-    outputDescription: string;
+    outputDescription?: string;
     outputTags?: Array<string>;
     partnerAccountNumberRegExp?: string;
     partnerNameRegExp?: string;

@@ -1317,6 +1317,105 @@ paths:
         "200":
           description: no body
 
+  /v1/reconciliation/status:
+    get:
+      tags:
+        - reconciliation
+      summary: get reconciliation status for all asset accounts
+      operationId: getReconciliationStatus
+      responses:
+        "200":
+          description: reconciliation status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReconciliationStatus"
+
+  /v1/accounts/{id}/reconcile:
+    post:
+      tags:
+        - reconciliation
+      summary: manually mark an account as reconciled
+      operationId: reconcileAccount
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReconcileAccountRequest"
+      responses:
+        "200":
+          description: created reconciliation record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reconciliation"
+
+  /v1/accounts/{id}/transactions-since-reconciliation:
+    get:
+      tags:
+        - reconciliation
+      summary: return transactions since last reconciliation
+      operationId: getTransactionsSinceReconciliation
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "currencyId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: list of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+  /v1/accounts/{id}/enable-reconciliation:
+    post:
+      tags:
+        - reconciliation
+      summary: enable manual reconciliation for accounts without bank importer
+      operationId: enableAccountReconciliation
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnableReconciliationRequest"
+      responses:
+        "200":
+          description: initial reconciliation record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reconciliation"
+
 security:
   - BearerAuth: []
 
@@ -2002,3 +2101,123 @@ components:
           description: IDs of unprocessed transactions that were automatically matched because of this matcher update
       required:
         - matcher
+
+    Reconciliation:
+      type: object
+      properties:
+        reconciliationId:
+          type: string
+          format: uuid
+          readOnly: true
+        accountId:
+          type: string
+          format: uuid
+        currencyId:
+          type: string
+          format: uuid
+        reconciledBalance:
+          type: number
+          format: double
+        reconciledAt:
+          type: string
+          format: date-time
+        expectedBalance:
+          type: number
+          format: double
+        isManual:
+          type: boolean
+      required:
+        - accountId
+        - currencyId
+        - reconciledBalance
+        - reconciledAt
+
+    ReconciliationNoId:
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        currencyId:
+          type: string
+          format: uuid
+        reconciledBalance:
+          type: number
+          format: double
+        expectedBalance:
+          type: number
+          format: double
+        isManual:
+          type: boolean
+      required:
+        - accountId
+        - currencyId
+        - reconciledBalance
+
+    ReconciliationStatus:
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        accountName:
+          type: string
+        currencyId:
+          type: string
+          format: uuid
+        currencySymbol:
+          type: string
+        bankBalance:
+          type: number
+          format: double
+        appBalance:
+          type: number
+          format: double
+        delta:
+          type: number
+          format: double
+        lastReconciledAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastReconciledBalance:
+          type: number
+          format: double
+        hasUnprocessedTransactions:
+          type: boolean
+        hasBankImporter:
+          type: boolean
+        isManualReconciliationEnabled:
+          type: boolean
+      required:
+        - accountId
+        - accountName
+        - currencyId
+        - appBalance
+        - delta
+
+    ReconcileAccountRequest:
+      type: object
+      properties:
+        currencyId:
+          type: string
+          format: uuid
+        balance:
+          type: number
+          format: double
+          description: Manual balance to set. If 0, current app balance is used.
+      required:
+        - currencyId
+
+    EnableReconciliationRequest:
+      type: object
+      properties:
+        currencyId:
+          type: string
+          format: uuid
+        initialBalance:
+          type: number
+          format: double
+      required:
+        - currencyId
+        - initialBalance

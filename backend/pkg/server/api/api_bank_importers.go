@@ -589,9 +589,11 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 		}
 	}
 
-	// Trigger balance verification
-	if err := common.CheckBalanceForAccount(context.Background(), s.logger, s.db, userID, biData.AccountId); err != nil {
-		s.logger.With("error", err).Error("Failed to check balance after import")
+	// Trigger balance verification (only if account is linked)
+	if biData.AccountId != "" {
+		if err := common.CheckBalanceForAccount(context.Background(), s.logger, s.db, userID, biData.AccountId); err != nil {
+			s.logger.With("error", err).Error("Failed to check balance after import")
+		}
 	}
 
 	// update last import fields
