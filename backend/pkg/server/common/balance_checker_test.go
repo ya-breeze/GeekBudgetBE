@@ -73,7 +73,7 @@ var _ = Describe("BalanceChecker", func() {
 			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Type).To(Equal(string(models.NotificationTypeBalanceDoesntMatch)))
 				Expect(n.Title).To(Equal("Balance Mismatch Detected"))
-				Expect(n.Description).To(ContainSubstring("App balance: 1400.00"))
+				Expect(n.Description).To(ContainSubstring("Account balance: 1400.00"))
 				Expect(n.Description).To(ContainSubstring("Bank balance: 1500.00"))
 				return goserver.Notification{}, nil
 			})

@@ -33,7 +33,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 	for _, b := range acc.BankInfo.Balances {
 		appBalance, err := db.GetAccountBalance(userID, accountID, b.CurrencyId)
 		if err != nil {
-			logger.With("error", err, "currencyId", b.CurrencyId).Error("Failed to get app balance")
+			logger.With("error", err, "currencyId", b.CurrencyId).Error("Failed to get account balance")
 			continue
 		}
 
@@ -48,7 +48,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 				Date:  time.Now(),
 				Type:  string(models.NotificationTypeBalanceDoesntMatch),
 				Title: "Balance Mismatch Detected",
-				Description: fmt.Sprintf("Account %q has a balance mismatch. App balance: %.2f, Bank balance: %.2f (Currency: %s). Please check your transactions.",
+				Description: fmt.Sprintf("Account %q has a balance mismatch. Account balance: %.2f, Bank balance: %.2f (Currency: %s). Please check your transactions.",
 					acc.Name, appBalance, b.ClosingBalance, b.CurrencyId),
 			})
 			if err != nil {

@@ -283,7 +283,7 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		notifications, _, _ = client.NotificationsAPI.GetNotifications(ctx).Execute()
 		Expect(notifications).To(HaveLen(1))
 		Expect(notifications[0].Title).To(Equal("Balance Mismatch Detected"))
-		Expect(notifications[0].Description).To(ContainSubstring("App balance: 1400.00"))
+		Expect(notifications[0].Description).To(ContainSubstring("Account balance: 1400.00"))
 		Expect(notifications[0].Description).To(ContainSubstring("Bank balance: 1500.00"))
 	})
 })

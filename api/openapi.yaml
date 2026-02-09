@@ -2249,7 +2249,7 @@ components:
         balance:
           type: number
           format: double
-          description: Manual balance to set. If 0, current app balance is used.
+          description: Manual balance to set. If 0, current Account balance is used.
       required:
         - currencyId
 

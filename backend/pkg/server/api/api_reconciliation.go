@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"log/slog"
+	"math"
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -113,7 +114,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 		return goserver.Response(500, nil), nil
 	}
 
-	// Get current app balance if not provided
+	// Get current account balance if not provided
 	balance := body.Balance
 	if balance == 0 {
 		var err error
@@ -136,6 +137,11 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 			expectedBalance = b.ClosingBalance
 			break
 		}
+	}
+
+	// Validate that balance matches expected balance
+	if math.Abs(balance-expectedBalance) > 0.01 {
+		return goserver.Response(400, "Cannot reconcile: account balance does not match bank balance"), nil
 	}
 
 	// Create new reconciliation record

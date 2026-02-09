@@ -81,7 +81,7 @@ export class ReconciliationComponent implements OnInit {
         this.reconciliationService
             .reconcile(status.accountId, {
                 currencyId: status.currencyId,
-                balance: 0, // Use app balance
+                balance: 0, // Use account balance
             })
             .subscribe({
                 next: () => {
