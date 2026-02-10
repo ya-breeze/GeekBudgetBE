@@ -39,6 +39,16 @@ run-frontend:
 run-new-frontend:
 	@cd ${ROOT_DIR}/new-frontend && npm run dev
 
+.PHONY: dev
+dev:
+	@echo "🚀 Starting backend and frontend..."
+	@(trap 'kill 0' SIGINT; $(MAKE) run-backend & $(MAKE) run-frontend & wait)
+
+.PHONY: dev-new
+dev-new:
+	@echo "🚀 Starting backend and new frontend..."
+	@(trap 'kill 0' SIGINT; $(MAKE) run-backend & $(MAKE) run-new-frontend & wait)
+
 .PHONY: replace-templates
 replace-templates:
 	@cd ${ROOT_DIR}/backend; \
