@@ -9,6 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TransactionService } from '../services/transaction.service';
 import { MergedTransactionService } from '../../merged-transactions/services/merged-transaction.service';
@@ -20,6 +21,11 @@ import { MergedTransaction } from '../../../core/api/models/merged-transaction';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ImageUrlPipe } from '../../../shared/pipes/image-url.pipe';
 import { AccountDisplayComponent } from '../../../shared/components/account-display/account-display.component';
+import {
+    TransactionFormDialogComponent,
+    TransactionFormDialogData,
+} from '../transaction-form-dialog/transaction-form-dialog.component';
+import { TransactionNoId } from '../../../core/api/models/transaction-no-id';
 
 @Component({
     selector: 'app-transaction-detail',
@@ -45,6 +51,7 @@ export class TransactionDetailComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly location = inject(Location);
+    private readonly dialog = inject(MatDialog);
     private readonly transactionService = inject(TransactionService);
     private readonly mergedTransactionService = inject(MergedTransactionService);
     private readonly accountService = inject(AccountService);
@@ -142,12 +149,38 @@ export class TransactionDetailComponent implements OnInit {
     }
 
     editTransaction(): void {
-        // Navigate to list with open edit dialog or implement edit logic here?
-        // For now, maybe just log or show not implemented, or navigate to list and open dialog
-        // Since existing edit is a dialog on list, reusing it might be tricky without moving logic.
-        // We'll leave it as a TODO or just navigate back for now.
-        this.snackBar.open('Editing from detail view is not yet implemented', 'Close', {
-            duration: 3000,
+        const currentTransaction = this.displayedTransaction();
+        if (!currentTransaction) {
+            return;
+        }
+
+        const dialogRef = this.dialog.open<
+            TransactionFormDialogComponent,
+            TransactionFormDialogData
+        >(TransactionFormDialogComponent, {
+            width: '600px',
+            data: {
+                mode: 'edit',
+                transaction: currentTransaction,
+            },
+        });
+
+        dialogRef.afterClosed().subscribe((result: TransactionNoId | undefined) => {
+            if (result && this.transactionId()) {
+                this.transactionService.update(this.transactionId()!, result).subscribe({
+                    next: (updatedTransaction) => {
+                        this.transaction.set(updatedTransaction);
+                        this.snackBar.open('Transaction updated successfully', 'Close', {
+                            duration: 3000,
+                        });
+                    },
+                    error: (err) => {
+                        this.snackBar.open(err.message || 'Failed to update transaction', 'Close', {
+                            duration: 5000,
+                        });
+                    },
+                });
+            }
         });
     }
 

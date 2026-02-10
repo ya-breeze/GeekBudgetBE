@@ -5,7 +5,9 @@
       "Bash(lsof:*)",
       "Bash(ps:*)",
       "Bash(curl:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(sqlite3:*)",
+      "Bash(git log:*)"
     ]
   }
 }

@@ -138,6 +138,28 @@
                 [matSortDirection]="sortDirection()"
                 class="transactions-table"
             >
+                <ng-container matColumnDef="select">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let transaction">
+                        <mat-checkbox
+                            (click)="$event.stopPropagation()"
+                            (change)="onToggleSelection(transaction, $event)"
+                            [checked]="selectionService.isSelected(transaction.id)"
+                            [disabled]="
+                                !selectionService.isSelected(transaction.id) &&
+                                selectionService.count() >= 2
+                            "
+                            [matTooltip]="
+                                !selectionService.isSelected(transaction.id) &&
+                                selectionService.count() >= 2
+                                    ? 'Maximum 2 transactions can be selected'
+                                    : ''
+                            "
+                        >
+                        </mat-checkbox>
+                    </td>
+                </ng-container>
+
                 <ng-container matColumnDef="date">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
                     <td mat-cell *matCellDef="let transaction">
@@ -307,6 +329,38 @@
                     </td>
                 </tr>
             </table>
+        </div>
+    }
+
+    <!-- Floating Selection Bar -->
+    @if (selectionService.count() > 0) {
+        <div class="selection-floating-bar" [class.full-width]="!sidenavOpened()">
+            <div class="selection-info">
+                <span class="count-badge">{{ selectionService.count() }}</span>
+                <span class="selection-text">Selected Transactions</span>
+
+                <div class="selected-items-preview">
+                    @for (item of selectionService.selectedTransactions(); track item.id) {
+                        <div class="preview-chip">
+                            <span class="preview-date">{{ item.date | appDate: 'dd/MM' }}</span>
+                            <span class="preview-desc">{{ item.description }}</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="selection-actions">
+                <button mat-button (click)="selectionService.clearSelection()">Clear</button>
+                <button
+                    mat-flat-button
+                    color="primary"
+                    [disabled]="selectionService.count() !== 2"
+                    (click)="openMergeDialog()"
+                >
+                    <mat-icon>merge_type</mat-icon>
+                    Merge
+                </button>
+            </div>
         </div>
     }
 </div>

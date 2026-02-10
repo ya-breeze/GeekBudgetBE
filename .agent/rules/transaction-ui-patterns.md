@@ -17,6 +17,14 @@ When displaying entities that have associated IDs (Accounts, Currencies, Matcher
 - **Accordion Layout**: Use `mat-accordion` for complex detail views to allow progressive disclosure of information (e.g., raw source data, metadata).
 - **History Preservation**: Use `Location.back()` for "Back" buttons in detail views. This allows users who navigated between linked transactions to go back through their specific path rather than jumping straight back to the transaction list.
 
-### 4. Archived (Merged) Transactions
-- **Separate Retrieval**: Merged transactions are archived in a separate table. Use the specific `mergedTransactions` endpoint (e.g., `GET /v1/mergedTransactions/{id}`) when a standard transaction lookup fails or when navigating from a "Merged" link.
-- **Visual Distinction**: Use a specific badge or border color (e.g., `archive` icon, Pink/Accent border) to distinguish archived transactions from active ones.
+### 5. Manual Merge & Cross-Month Selection
+- **Selection Persistence**: Use a dedicated `TransactionSelectionService` to manage selected transactions globally. This allows users to select a transaction in one month, navigate, and select another in a different month.
+- **Floating Bar Feedback**: Always show a persistent floating bar (`selection-floating-bar`) when transactions are selected. It should provide:
+    - Count of selected items.
+    - Brief preview (Date/Description) of selected items.
+    - Action buttons (Merge, Clear).
+- **Selection Constraints**: 
+    - Enforce a strict limit of 2 transactions for merging. 
+    - Disable checkboxes and show informative tooltips when the limit is reached.
+- **Responsive Comparison**: Manual merge dialogs must use responsive grids (`grid-template-columns: 1fr` on small screens) to prevent clipping when comparing dense transaction data side-by-side.
+- **Layout Spacing**: Add appropriate bottom padding or spacers in lists where a floating bar may overlap the footer content.

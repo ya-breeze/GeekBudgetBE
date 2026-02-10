@@ -28,6 +28,9 @@ import { TransactionUtils } from './utils/transaction.utils';
 import { LayoutService } from '../../layout/services/layout.service';
 import { MatcherService } from '../matchers/services/matcher.service';
 import { Matcher } from '../../core/api/models/matcher';
+import { TransactionSelectionService } from './services/transaction-selection.service';
+import { ManualMergeDialogComponent } from './manual-merge-dialog/manual-merge-dialog.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
@@ -52,7 +55,9 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
         AppDatePipe,
         FormsModule,
         ImageUrlPipe,
+        ImageUrlPipe,
         AccountDisplayComponent,
+        MatCheckboxModule,
     ],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
@@ -65,6 +70,7 @@ export class TransactionsComponent implements OnInit {
     private readonly dialog = inject(MatDialog);
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
+    protected readonly selectionService = inject(TransactionSelectionService);
 
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
@@ -79,6 +85,7 @@ export class TransactionsComponent implements OnInit {
 
     protected readonly loading = signal(false); // Combined loading for transactions, accounts, and currencies
     protected readonly displayedColumns = signal([
+        'select',
         'date',
         'movements',
         'description',
@@ -462,6 +469,39 @@ export class TransactionsComponent implements OnInit {
                 });
             }
         }
+    }
+
+    onToggleSelection(transaction: Transaction, event: any): void {
+        const isSelected = this.selectionService.isSelected(transaction.id);
+        if (!isSelected && this.selectionService.count() >= 2) {
+            this.snackBar.open('You can only select up to 2 transactions to merge.', 'Close', {
+                duration: 3000,
+            });
+            return;
+        }
+        this.selectionService.toggleSelection(transaction);
+    }
+
+    openMergeDialog(): void {
+        const selected = this.selectionService.selectedTransactions();
+        if (selected.length !== 2) return;
+
+        const dialogRef = this.dialog.open(ManualMergeDialogComponent, {
+            width: '90vw',
+            maxWidth: '1000px',
+            maxHeight: '90vh',
+            data: {
+                transaction1: selected[0],
+                transaction2: selected[1],
+            },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.selectionService.clearSelection();
+                this.loadData(); // Refresh list to reflect merge
+            }
+        });
     }
 
     isImported(transaction: Transaction): boolean {
