@@ -88,6 +88,7 @@ func (t *Transaction) FromDB() goserver.Transaction {
 		MergedAt:                mergedAt,
 		AutoMatchSkipReason:     t.AutoMatchSkipReason,
 		DuplicateDismissed:      t.DuplicateDismissed,
+		MergedTransactionIds:    []string{}, // Populated by storage
 		DuplicateTransactionIds: []string{}, // Populated by storage
 	}
 }
@@ -126,6 +127,7 @@ func (t *Transaction) WithoutID() *goserver.TransactionNoId {
 		MergedIntoId:            mergedIntoID,
 		MergedAt:                mergedAt,
 		DuplicateDismissed:      t.DuplicateDismissed,
+		MergedTransactionIds:    []string{}, // Populated by storage
 		DuplicateTransactionIds: []string{}, // Managed via junction table
 	}
 }

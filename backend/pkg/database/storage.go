@@ -654,6 +654,28 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onl
 				}
 			}
 		}
+
+		// Populate MergedTransactionIds in batch (find soft-deleted transactions that were merged into these)
+		var mergedRecords []struct {
+			MergedIntoID uuid.UUID
+			ID           uuid.UUID
+		}
+		if err := s.db.Unscoped().Model(&models.Transaction{}).
+			Select("merged_into_id, id").
+			Where("user_id = ? AND merged_into_id IN ?", userID, ids).
+			Find(&mergedRecords).Error; err == nil {
+
+			mergedMap := make(map[string][]string)
+			for _, r := range mergedRecords {
+				key := r.MergedIntoID.String()
+				mergedMap[key] = append(mergedMap[key], r.ID.String())
+			}
+			for i := range transactions {
+				if merged, ok := mergedMap[transactions[i].Id]; ok {
+					transactions[i].MergedTransactionIds = merged
+				}
+			}
+		}
 	}
 
 	return transactions, nil
@@ -891,6 +913,12 @@ func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID stri
 			return fmt.Errorf(StorageError, err)
 		}
 
+		// Ensure soft-delete is set
+		if err := tx.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error; err != nil {
+			s.log.Warn("Failed to soft-delete merged transaction", "id", id, "error", err)
+			return fmt.Errorf(StorageError, err)
+		}
+
 		if err := s.recordTransactionHistory(tx, userID, &t, "MERGED"); err != nil {
 			s.log.Error("Failed to record transaction history", "error", err)
 		}
@@ -913,6 +941,14 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	duplicateIds, err := s.GetDuplicateTransactionIDs(userID, id)
 	if err == nil {
 		apiTransaction.DuplicateTransactionIds = duplicateIds
+	}
+
+	// Populate MergedTransactionIds for single transaction
+	var mergedIds []string
+	if err := s.db.Unscoped().Model(&models.Transaction{}).
+		Where("user_id = ? AND merged_into_id = ?", userID, id).
+		Pluck("id", &mergedIds).Error; err == nil {
+		apiTransaction.MergedTransactionIds = mergedIds
 	}
 
 	return apiTransaction, nil
@@ -978,13 +1014,19 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 		}
 
 		// 2. Clear merge fields
-		if err := tx.Model(&models.Transaction{}).
+		if err := tx.Unscoped().Model(&models.Transaction{}).
 			Where("id = ? AND user_id = ?", id, userID).
 			Updates(map[string]interface{}{
 				"merged_into_id": gorm.Expr("NULL"),
 				"merged_at":      gorm.Expr("NULL"),
+				"deleted_at":     gorm.Expr("NULL"),
 			}).Error; err != nil {
 			return fmt.Errorf("failed to unmerge transaction: %w", err)
+		}
+
+		// Refresh transaction object for history
+		if err := tx.Unscoped().Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
+			s.log.Warn("Failed to refresh transaction for history", "id", id, "error", err)
 		}
 
 		if err := s.recordTransactionHistory(tx, userID, &t, "UNMERGED"); err != nil {

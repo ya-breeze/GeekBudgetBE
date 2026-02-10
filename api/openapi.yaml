@@ -1815,6 +1815,12 @@ components:
           type: boolean
           description: If true, user has dismissed the duplicate detected for this transaction
           default: false
+        mergedTransactionIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of transaction IDs that were merged into this transaction (soft-deleted duplicates pointing here via mergedIntoId)
         duplicateTransactionIds:
           type: array
           items:

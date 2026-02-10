@@ -202,6 +202,19 @@
                                     }
                                 }
                             }
+                            @if (
+                                transaction.mergedTransactionIds &&
+                                transaction.mergedTransactionIds.length > 0
+                            ) {
+                                <mat-icon
+                                    class="merged-icon"
+                                    [matTooltip]="
+                                        transaction.mergedTransactionIds.length +
+                                        ' transaction(s) merged into this one'
+                                    "
+                                    >merge</mat-icon
+                                >
+                            }
                         </div>
                     </td>
                 </ng-container>

@@ -23,7 +23,7 @@ var _ MappedNullable = &ReconcileAccountRequest{}
 // ReconcileAccountRequest struct for ReconcileAccountRequest
 type ReconcileAccountRequest struct {
 	CurrencyId string `json:"currencyId"`
-	// Manual balance to set. If 0, current app balance is used.
+	// Manual balance to set. If 0, current Account balance is used.
 	Balance *float64 `json:"balance,omitempty"`
 }
 

@@ -62,6 +62,9 @@ type TransactionNoId struct {
 	// If true, user has dismissed the duplicate detected for this transaction
 	DuplicateDismissed bool `json:"duplicateDismissed,omitempty"`
 
+	// List of transaction IDs that were merged into this transaction (soft-deleted duplicates pointing here via mergedIntoId)
+	MergedTransactionIds []string `json:"mergedTransactionIds,omitempty"`
+
 	// List of transaction IDs that are potential duplicates of this one (from separate junction table)
 	DuplicateTransactionIds []string `json:"duplicateTransactionIds,omitempty"`
 }
@@ -85,6 +88,7 @@ type TransactionNoIdInterface interface {
 	GetMergedAt() time.Time
 	GetAutoMatchSkipReason() string
 	GetDuplicateDismissed() bool
+	GetMergedTransactionIds() []string
 	GetDuplicateTransactionIds() []string
 }
 
@@ -141,6 +145,9 @@ func (c *TransactionNoId) GetAutoMatchSkipReason() string {
 }
 func (c *TransactionNoId) GetDuplicateDismissed() bool {
 	return c.DuplicateDismissed
+}
+func (c *TransactionNoId) GetMergedTransactionIds() []string {
+	return c.MergedTransactionIds
 }
 func (c *TransactionNoId) GetDuplicateTransactionIds() []string {
 	return c.DuplicateTransactionIds

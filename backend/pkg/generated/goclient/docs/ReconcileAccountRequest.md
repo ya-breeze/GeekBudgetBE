@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CurrencyId** | **string** |  | 
-**Balance** | Pointer to **float64** | Manual balance to set. If 0, current app balance is used. | [optional] 
+**Balance** | Pointer to **float64** | Manual balance to set. If 0, current Account balance is used. | [optional] 
 
 ## Methods
 

@@ -22,6 +22,7 @@ Name | Type | Description | Notes
 **MergedAt** | Pointer to **time.Time** | When this transaction was merged | [optional] 
 **AutoMatchSkipReason** | Pointer to **string** | Reason why auto-match was skipped for this transaction | [optional] 
 **DuplicateDismissed** | Pointer to **bool** | If true, user has dismissed the duplicate detected for this transaction | [optional] [default to false]
+**MergedTransactionIds** | Pointer to **[]string** | List of transaction IDs that were merged into this transaction (soft-deleted duplicates pointing here via mergedIntoId) | [optional] 
 **DuplicateTransactionIds** | Pointer to **[]string** | List of transaction IDs that are potential duplicates of this one (from separate junction table) | [optional] 
 
 ## Methods
@@ -482,6 +483,31 @@ SetDuplicateDismissed sets DuplicateDismissed field to given value.
 `func (o *TransactionNoID) HasDuplicateDismissed() bool`
 
 HasDuplicateDismissed returns a boolean if a field has been set.
+
+### GetMergedTransactionIds
+
+`func (o *TransactionNoID) GetMergedTransactionIds() []string`
+
+GetMergedTransactionIds returns the MergedTransactionIds field if non-nil, zero value otherwise.
+
+### GetMergedTransactionIdsOk
+
+`func (o *TransactionNoID) GetMergedTransactionIdsOk() (*[]string, bool)`
+
+GetMergedTransactionIdsOk returns a tuple with the MergedTransactionIds field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetMergedTransactionIds
+
+`func (o *TransactionNoID) SetMergedTransactionIds(v []string)`
+
+SetMergedTransactionIds sets MergedTransactionIds field to given value.
+
+### HasMergedTransactionIds
+
+`func (o *TransactionNoID) HasMergedTransactionIds() bool`
+
+HasMergedTransactionIds returns a boolean if a field has been set.
 
 ### GetDuplicateTransactionIds
 

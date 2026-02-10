@@ -52,6 +52,8 @@ type Transaction struct {
 	AutoMatchSkipReason *string `json:"autoMatchSkipReason,omitempty"`
 	// If true, user has dismissed the duplicate detected for this transaction
 	DuplicateDismissed *bool `json:"duplicateDismissed,omitempty"`
+	// List of transaction IDs that were merged into this transaction (soft-deleted duplicates pointing here via mergedIntoId)
+	MergedTransactionIds []string `json:"mergedTransactionIds,omitempty"`
 	// List of transaction IDs that are potential duplicates of this one (from separate junction table)
 	DuplicateTransactionIds []string `json:"duplicateTransactionIds,omitempty"`
 }
@@ -666,6 +668,38 @@ func (o *Transaction) SetDuplicateDismissed(v bool) {
 	o.DuplicateDismissed = &v
 }
 
+// GetMergedTransactionIds returns the MergedTransactionIds field value if set, zero value otherwise.
+func (o *Transaction) GetMergedTransactionIds() []string {
+	if o == nil || IsNil(o.MergedTransactionIds) {
+		var ret []string
+		return ret
+	}
+	return o.MergedTransactionIds
+}
+
+// GetMergedTransactionIdsOk returns a tuple with the MergedTransactionIds field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Transaction) GetMergedTransactionIdsOk() ([]string, bool) {
+	if o == nil || IsNil(o.MergedTransactionIds) {
+		return nil, false
+	}
+	return o.MergedTransactionIds, true
+}
+
+// HasMergedTransactionIds returns a boolean if a field has been set.
+func (o *Transaction) HasMergedTransactionIds() bool {
+	if o != nil && !IsNil(o.MergedTransactionIds) {
+		return true
+	}
+
+	return false
+}
+
+// SetMergedTransactionIds gets a reference to the given []string and assigns it to the MergedTransactionIds field.
+func (o *Transaction) SetMergedTransactionIds(v []string) {
+	o.MergedTransactionIds = v
+}
+
 // GetDuplicateTransactionIds returns the DuplicateTransactionIds field value if set, zero value otherwise.
 func (o *Transaction) GetDuplicateTransactionIds() []string {
 	if o == nil || IsNil(o.DuplicateTransactionIds) {
@@ -758,6 +792,9 @@ func (o Transaction) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.DuplicateDismissed) {
 		toSerialize["duplicateDismissed"] = o.DuplicateDismissed
+	}
+	if !IsNil(o.MergedTransactionIds) {
+		toSerialize["mergedTransactionIds"] = o.MergedTransactionIds
 	}
 	if !IsNil(o.DuplicateTransactionIds) {
 		toSerialize["duplicateTransactionIds"] = o.DuplicateTransactionIds
