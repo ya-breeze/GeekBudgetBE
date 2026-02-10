@@ -202,9 +202,9 @@ func (fc *KBConverter) ConvertToTransaction(ctx context.Context, record []string
 		return res, fmt.Errorf("can't resolve currency %q: %w", "CZK", err)
 	}
 
-	res.Date, err = time.ParseInLocation("02.01.2006", record[KBIndexDate], fc.location)
+	res.Date, err = time.ParseInLocation("02.01.2006", record[KBIndexDateExecuted], fc.location)
 	if err != nil {
-		return res, fmt.Errorf("can't parse date %q: %w", record[KBIndexDate], err)
+		return res, fmt.Errorf("can't parse date %q: %w", record[KBIndexDateExecuted], err)
 	}
 
 	if len(record[KBIndexType]) > 0 {
