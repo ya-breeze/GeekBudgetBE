@@ -655,20 +655,20 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onl
 			}
 		}
 
-		// Populate MergedTransactionIds in batch (find soft-deleted transactions that were merged into these)
+		// Populate MergedTransactionIds in batch (find transactions that were merged into these from archive)
 		var mergedRecords []struct {
-			MergedIntoID uuid.UUID
-			ID           uuid.UUID
+			KeptTransactionID     uuid.UUID
+			OriginalTransactionID uuid.UUID
 		}
-		if err := s.db.Unscoped().Model(&models.Transaction{}).
-			Select("merged_into_id, id").
-			Where("user_id = ? AND merged_into_id IN ?", userID, ids).
+		if err := s.db.Model(&models.MergedTransaction{}).
+			Select("kept_transaction_id, original_transaction_id").
+			Where("user_id = ? AND kept_transaction_id IN ?", userID, ids).
 			Find(&mergedRecords).Error; err == nil {
 
 			mergedMap := make(map[string][]string)
 			for _, r := range mergedRecords {
-				key := r.MergedIntoID.String()
-				mergedMap[key] = append(mergedMap[key], r.ID.String())
+				key := r.KeptTransactionID.String()
+				mergedMap[key] = append(mergedMap[key], r.OriginalTransactionID.String())
 			}
 			for i := range transactions {
 				if merged, ok := mergedMap[transactions[i].Id]; ok {
@@ -850,15 +850,16 @@ func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Tr
 			return fmt.Errorf("failed to update keep transaction: %w", err)
 		}
 
-		// 4. Update mergeT (soft delete)
+		// 4. Archive and hard-delete mergeT (archive is now source of truth)
 		now := time.Now()
-		mergeT.MergedIntoID = &kID
-		mergeT.MergedAt = &now
-		if err := tx.Save(&mergeT).Error; err != nil {
-			return fmt.Errorf("failed to update merge transaction: %w", err)
+
+		if err := s.archiveMergedTransaction(tx, userID, &mergeT, kID, now); err != nil {
+			return err
 		}
-		if err := tx.Delete(&mergeT).Error; err != nil {
-			return fmt.Errorf("failed to soft-delete merge transaction: %w", err)
+
+		// Hard-delete the merged transaction
+		if err := tx.Unscoped().Delete(&mergeT).Error; err != nil {
+			return fmt.Errorf("failed to hard-delete merge transaction: %w", err)
 		}
 
 		// 5. Clear duplicate relationships for both (they are resolved now)
@@ -901,21 +902,16 @@ func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID stri
 			return fmt.Errorf(StorageError, err)
 		}
 
-		// Mark as merged instead of deleting
+		// Archive and hard-delete the transaction
 		now := time.Now()
-		if err := tx.Model(&models.Transaction{}).
-			Where("id = ? AND user_id = ?", id, userID).
-			Updates(map[string]interface{}{
-				"merged_into_id": duplicateID,
-				"merged_at":      &now,
-			}).Error; err != nil {
-			s.log.Warn("Failed to mark transaction as merged", "id", id, "error", err)
-			return fmt.Errorf(StorageError, err)
+		duplicateIDUUID, _ := uuid.Parse(duplicateID)
+		if err := s.archiveMergedTransaction(tx, userID, &t, duplicateIDUUID, now); err != nil {
+			return err
 		}
 
-		// Ensure soft-delete is set
-		if err := tx.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error; err != nil {
-			s.log.Warn("Failed to soft-delete merged transaction", "id", id, "error", err)
+		// Hard-delete the transaction (archive is source of truth)
+		if err := tx.Unscoped().Delete(&t).Error; err != nil {
+			s.log.Warn("Failed to hard-delete merged transaction", "id", id, "error", err)
 			return fmt.Errorf(StorageError, err)
 		}
 
@@ -943,11 +939,11 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 		apiTransaction.DuplicateTransactionIds = duplicateIds
 	}
 
-	// Populate MergedTransactionIds for single transaction
+	// Populate MergedTransactionIds for single transaction from archive
 	var mergedIds []string
-	if err := s.db.Unscoped().Model(&models.Transaction{}).
-		Where("user_id = ? AND merged_into_id = ?", userID, id).
-		Pluck("id", &mergedIds).Error; err == nil {
+	if err := s.db.Model(&models.MergedTransaction{}).
+		Where("user_id = ? AND kept_transaction_id = ?", userID, id).
+		Pluck("original_transaction_id", &mergedIds).Error; err == nil {
 		apiTransaction.MergedTransactionIds = mergedIds
 	}
 
@@ -955,23 +951,43 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 }
 
 func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error) {
-	var mergedModels []models.Transaction
-	if err := s.db.Where("user_id = ? AND merged_into_id IS NOT NULL", userID).Order("merged_at DESC").Find(&mergedModels).Error; err != nil {
+	var mergedModels []models.MergedTransaction
+	if err := s.db.Where("user_id = ?", userID).Order("merged_at DESC").Find(&mergedModels).Error; err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
 
 	result := make([]goserver.MergedTransaction, 0, len(mergedModels))
 	for _, m := range mergedModels {
 		var kept models.Transaction
-		if err := s.db.Where("id = ? AND user_id = ?", m.MergedIntoID, userID).First(&kept).Error; err != nil {
-			s.log.Warn("Failed to find kept transaction for merged transaction", "merged_id", m.ID, "kept_id", m.MergedIntoID)
+		if err := s.db.Where("id = ? AND user_id = ?", m.KeptTransactionID, userID).First(&kept).Error; err != nil {
+			s.log.Warn("Failed to find kept transaction for merged transaction", "merged_id", m.OriginalTransactionID, "kept_id", m.KeptTransactionID)
 			continue
 		}
 
+		// Create a temporary transaction structure to use FromDB
+		tr := models.Transaction{
+			ID:                 m.OriginalTransactionID,
+			UserID:             m.UserID,
+			Date:               m.Date,
+			Description:        m.Description,
+			Place:              m.Place,
+			Tags:               m.Tags,
+			PartnerName:        m.PartnerName,
+			PartnerAccount:     m.PartnerAccount,
+			PartnerInternalID:  m.PartnerInternalID,
+			Extra:              m.Extra,
+			UnprocessedSources: m.UnprocessedSources,
+			ExternalIDs:        m.ExternalIDs,
+			Movements:          m.Movements,
+			MatcherID:          m.MatcherID,
+			IsAuto:             m.IsAuto,
+			SuspiciousReasons:  m.SuspiciousReasons,
+		}
+
 		result = append(result, goserver.MergedTransaction{
-			Transaction: m.FromDB(),
+			Transaction: tr.FromDB(),
 			MergedInto:  kept.FromDB(),
-			MergedAt:    *m.MergedAt,
+			MergedAt:    m.MergedAt,
 		})
 	}
 
@@ -980,24 +996,24 @@ func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransac
 
 func (s *storage) UnmergeTransaction(userID, id string) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		var t models.Transaction
-		if err := tx.Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
+		// 1. Find the archived transaction
+		var archived models.MergedTransaction
+		if err := tx.Where("user_id = ? AND original_transaction_id = ?", userID, id).First(&archived).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("transaction %s is not merged or archive not found", id)
+			}
 			return fmt.Errorf(StorageError, err)
 		}
 
-		if t.MergedIntoID == nil {
-			return fmt.Errorf("transaction %s is not merged", id)
-		}
+		keptID := archived.KeptTransactionID.String()
 
-		keptID := t.MergedIntoID.String()
-
-		// 1. Remove external IDs from kept transaction
+		// 2. Remove external IDs from kept transaction
 		var kept models.Transaction
 		if err := tx.Where("id = ? AND user_id = ?", keptID, userID).First(&kept).Error; err == nil {
 			newExternalIDs := make([]string, 0)
 			for _, extID := range kept.ExternalIDs {
 				found := false
-				for _, mergedExtID := range t.ExternalIDs {
+				for _, mergedExtID := range archived.ExternalIDs {
 					if extID == mergedExtID {
 						found = true
 						break
@@ -1013,23 +1029,39 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 			}
 		}
 
-		// 2. Clear merge fields
-		if err := tx.Unscoped().Model(&models.Transaction{}).
-			Where("id = ? AND user_id = ?", id, userID).
-			Updates(map[string]interface{}{
-				"merged_into_id": gorm.Expr("NULL"),
-				"merged_at":      gorm.Expr("NULL"),
-				"deleted_at":     gorm.Expr("NULL"),
-			}).Error; err != nil {
-			return fmt.Errorf("failed to unmerge transaction: %w", err)
+		// 3. Recreate the transaction from archive data (don't rely on soft-deleted record)
+		restoredTransaction := models.Transaction{
+			ID:                 archived.OriginalTransactionID,
+			UserID:             archived.UserID,
+			Date:               archived.Date,
+			Description:        archived.Description,
+			Place:              archived.Place,
+			Tags:               archived.Tags,
+			PartnerName:        archived.PartnerName,
+			PartnerAccount:     archived.PartnerAccount,
+			PartnerInternalID:  archived.PartnerInternalID,
+			Extra:              archived.Extra,
+			UnprocessedSources: archived.UnprocessedSources,
+			ExternalIDs:        archived.ExternalIDs,
+			Movements:          archived.Movements,
+			MatcherID:          archived.MatcherID,
+			IsAuto:             archived.IsAuto,
+			SuspiciousReasons:  archived.SuspiciousReasons,
+			// MergedIntoID and MergedAt are left nil (transaction is no longer merged)
 		}
 
-		// Refresh transaction object for history
-		if err := tx.Unscoped().Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
-			s.log.Warn("Failed to refresh transaction for history", "id", id, "error", err)
+		// Create the restored transaction
+		if err := tx.Create(&restoredTransaction).Error; err != nil {
+			return fmt.Errorf("failed to recreate transaction: %w", err)
 		}
 
-		if err := s.recordTransactionHistory(tx, userID, &t, "UNMERGED"); err != nil {
+		// 4. Delete from archive
+		if err := tx.Delete(&archived).Error; err != nil {
+			return fmt.Errorf("failed to delete from archive during unmerge: %w", err)
+		}
+
+		// 5. Record history
+		if err := s.recordTransactionHistory(tx, userID, &restoredTransaction, "UNMERGED"); err != nil {
 			s.log.Error("Failed to record transaction history", "error", err)
 		}
 
@@ -2025,4 +2057,36 @@ func (s *storage) RevalidateDuplicateRelationships(userID, transactionID string)
 func (s *storage) removeDuplicateLinkWithTx(tx *gorm.DB, userID string, id1, id2 uuid.UUID) {
 	tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id1, id2).Delete(&models.TransactionDuplicate{})
 	tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id2, id1).Delete(&models.TransactionDuplicate{})
+}
+
+func (s *storage) archiveMergedTransaction(tx *gorm.DB, userID string,
+	merged *models.Transaction, keptID uuid.UUID, mergedAt time.Time,
+) error {
+	archive := models.MergedTransaction{
+		ID:                    uuid.New(),
+		UserID:                userID,
+		KeptTransactionID:     keptID,
+		OriginalTransactionID: merged.ID,
+		Date:                  merged.Date,
+		Description:           merged.Description,
+		Place:                 merged.Place,
+		Tags:                  merged.Tags,
+		PartnerName:           merged.PartnerName,
+		PartnerAccount:        merged.PartnerAccount,
+		PartnerInternalID:     merged.PartnerInternalID,
+		Extra:                 merged.Extra,
+		UnprocessedSources:    merged.UnprocessedSources,
+		ExternalIDs:           merged.ExternalIDs,
+		Movements:             merged.Movements,
+		MatcherID:             merged.MatcherID,
+		IsAuto:                merged.IsAuto,
+		SuspiciousReasons:     merged.SuspiciousReasons,
+		MergedAt:              mergedAt,
+	}
+
+	if err := tx.Create(&archive).Error; err != nil {
+		return fmt.Errorf("failed to create merged transaction archive: %w", err)
+	}
+
+	return nil
 }
