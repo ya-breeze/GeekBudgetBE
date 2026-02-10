@@ -9,6 +9,7 @@ When displaying entities that have associated IDs (Accounts, Currencies, Matcher
 
 ### 2. Information Density and Icons
 - **Icon Visibility**: Transactions should show status icons (Suspicious, Auto/Manual Matched, Merged) in both list and detail views. Use consistent icons and tooltips.
+- **Avoid Redundant Badges**: Do not show an "Active" badge if most transactions share this state. Focus on highlighting non-standard states (e.g., Merged, Suspicious).
 - **Column Merging**: In tables, prefer merging related information (e.g., Currency next to Amount) to reduce horizontally sprawling columns.
 - **Account Icons**: Use the `AccountDisplayComponent` to show account names along with their icons for immediate visual recognition.
 
