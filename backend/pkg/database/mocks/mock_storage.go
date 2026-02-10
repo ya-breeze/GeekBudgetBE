@@ -65,6 +65,20 @@ func (mr *MockStorageMockRecorder) AddMatcherConfirmation(arg0, arg1, arg2 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMatcherConfirmation", reflect.TypeOf((*MockStorage)(nil).AddMatcherConfirmation), arg0, arg1, arg2)
 }
 
+// Backup mocks base method.
+func (m *MockStorage) Backup(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Backup", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Backup indicates an expected call of Backup.
+func (mr *MockStorageMockRecorder) Backup(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Backup", reflect.TypeOf((*MockStorage)(nil).Backup), arg0)
+}
+
 // ClearDuplicateRelationships mocks base method.
 func (m *MockStorage) ClearDuplicateRelationships(arg0, arg1 string) error {
 	m.ctrl.T.Helper()

@@ -61,6 +61,9 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// Start duplicate detection
 	duplicateDetectionFinishChan := background.StartDuplicateDetection(ctx, logger, storage)
 
+	// Start database backup
+	backupFinishChan := background.StartDatabaseBackup(ctx, logger, storage, cfg)
+
 	// Wait for an interrupt signal
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -77,6 +80,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 		<-fetchCurrenciesRatesChan
 	}
 	<-duplicateDetectionFinishChan
+	<-backupFinishChan
 	return nil
 }
 

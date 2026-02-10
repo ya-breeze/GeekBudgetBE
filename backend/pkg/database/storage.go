@@ -123,6 +123,7 @@ type Storage interface {
 	GetReconciliationsForAccount(userID, accountID string) ([]goserver.Reconciliation, error)
 	CreateReconciliation(userID string, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error)
 	InvalidateReconciliation(userID, accountID, currencyID string) error
+	Backup(destination string) error
 }
 
 type MatcherRuntime struct {
@@ -2089,4 +2090,8 @@ func (s *storage) archiveMergedTransaction(tx *gorm.DB, userID string,
 	}
 
 	return nil
+}
+
+func (s *storage) Backup(destination string) error {
+	return s.db.Exec("VACUUM INTO ?", destination).Error
 }
