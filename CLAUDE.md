@@ -49,6 +49,7 @@ GeekBudgetBE/
 - **Linting:** golangci-lint (Go), ESLint with Angular rules (frontend)
 - **Workflows:** See `.agent/workflows/` for specialized task guides (e.g., deduplication)
 - **Investigation:** See `.agent/rules/database-investigation.md` for local DB querying guidelines
+- **Bank Importers:** See `.agent/rules/bank-importers.md` for importer-specific dates and rules
 
 ## Common Commands
 
