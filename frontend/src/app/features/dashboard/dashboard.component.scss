@@ -46,6 +46,30 @@
             margin: 0;
             font-size: 18px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+
+            .settings-button {
+                margin-right: 4px;
+                margin-left: -8px; // Pull it slightly left to align with edge
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                mat-icon {
+                    font-size: 18px;
+                    width: 18px;
+                    height: 18px;
+                    line-height: 18px; // Ensure icon itself is centered in its box
+                    color: #9e9e9e;
+                }
+
+                &:hover mat-icon {
+                    color: #616161;
+                }
+            }
         }
 
         .hide-button {
@@ -63,6 +87,15 @@
         align-items: baseline;
         gap: 8px;
         margin-bottom: 8px;
+
+        &.clickable {
+            cursor: pointer;
+            transition: opacity 0.2s;
+
+            &:hover {
+                opacity: 0.7;
+            }
+        }
 
         .balance {
             font-size: 24px;

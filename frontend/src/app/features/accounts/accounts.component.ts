@@ -138,67 +138,7 @@ export class AccountsComponent implements OnInit {
         dialogRef.afterClosed().subscribe((result) => {
             // Check if result exists and account has ID (should always have in edit mode)
             if (result && account.id) {
-                // First update the account details
-                this.accountService.update(account.id, result.account).subscribe({
-                    next: () => {
-                        // Then handle image delete if requested
-                        if (result.deleteImage && !result.image) {
-                            this.accountService.deleteAccountImage({ id: account.id! }).subscribe({
-                                next: () => {
-                                    this.loadAccounts();
-                                    this.snackBar.open(
-                                        'Account and image updated successfully',
-                                        'Close',
-                                        { duration: 3000 },
-                                    );
-                                },
-                                error: () => {
-                                    this.loadAccounts();
-                                    this.snackBar.open(
-                                        'Account updated but image deletion failed',
-                                        'Close',
-                                        { duration: 3000 },
-                                    );
-                                },
-                            });
-                        }
-                        // Then handle new image upload if requested
-                        else if (result.image) {
-                            this.accountService
-                                .uploadAccountImage({
-                                    id: account.id!,
-                                    body: {
-                                        file: result.image,
-                                    },
-                                })
-                                .subscribe({
-                                    next: () => {
-                                        this.loadAccounts();
-                                        this.snackBar.open(
-                                            'Account and image updated successfully',
-                                            'Close',
-                                            { duration: 3000 },
-                                        );
-                                    },
-                                    error: () => {
-                                        this.loadAccounts();
-                                        this.snackBar.open(
-                                            'Account updated but image upload failed',
-                                            'Close',
-                                            { duration: 3000 },
-                                        );
-                                    },
-                                });
-                        } else {
-                            this.snackBar.open('Account updated successfully', 'Close', {
-                                duration: 3000,
-                            });
-                        }
-                    },
-                    error: () => {
-                        this.snackBar.open('Failed to update account', 'Close', { duration: 3000 });
-                    },
-                });
+                this.accountService.handleAccountDialogResult(account, result, this.snackBar);
             }
         });
     }

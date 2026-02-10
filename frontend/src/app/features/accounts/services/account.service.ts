@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, tap, map } from 'rxjs';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
 import { Account } from '../../../core/api/models/account';
@@ -135,6 +136,79 @@ export class AccountService {
     }
 
     readonly averages = signal<AccountAverage[]>([]);
+
+    handleAccountDialogResult(
+        account: Account,
+        result: {
+            account: AccountNoId;
+            image?: File | null;
+            deleteImage?: boolean;
+        },
+        snackBar: MatSnackBar,
+    ): void {
+        if (!account.id) return;
+
+        // First update the account details
+        this.update(account.id, result.account).subscribe({
+            next: () => {
+                // Then handle image delete if requested
+                if (result.deleteImage && !result.image) {
+                    this.deleteAccountImage({ id: account.id! }).subscribe({
+                        next: () => {
+                            this.loadAccounts().subscribe();
+                            snackBar.open(
+                                'Account and image updated successfully',
+                                'Close',
+                                { duration: 3000 },
+                            );
+                        },
+                        error: () => {
+                            this.loadAccounts().subscribe();
+                            snackBar.open(
+                                'Account updated but image deletion failed',
+                                'Close',
+                                { duration: 3000 },
+                            );
+                        },
+                    });
+                }
+                // Then handle new image upload if requested
+                else if (result.image) {
+                    this.uploadAccountImage({
+                        id: account.id!,
+                        body: {
+                            file: result.image,
+                        },
+                    }).subscribe({
+                        next: () => {
+                            this.loadAccounts().subscribe();
+                            snackBar.open(
+                                'Account and image updated successfully',
+                                'Close',
+                                { duration: 3000 },
+                            );
+                        },
+                        error: () => {
+                            this.loadAccounts().subscribe();
+                            snackBar.open(
+                                'Account updated but image upload failed',
+                                'Close',
+                                { duration: 3000 },
+                            );
+                        },
+                    });
+                } else {
+                    this.loadAccounts().subscribe();
+                    snackBar.open('Account updated successfully', 'Close', {
+                        duration: 3000,
+                    });
+                }
+            },
+            error: () => {
+                snackBar.open('Failed to update account', 'Close', { duration: 3000 });
+            },
+        });
+    }
 
     loadYearlyExpenses(currencyId?: string): Observable<Aggregation> {
         this.loading.set(true);

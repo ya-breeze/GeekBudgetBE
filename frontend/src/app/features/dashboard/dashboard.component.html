@@ -1,6 +1,6 @@
 <div class="dashboard-container">
     @if (!sidenavOpened()) {
-        <h1 class="page-title">Dashboard</h1>
+    <h1 class="page-title">Dashboard</h1>
     }
 
     <div class="dashboard-actions option-toggle">
@@ -10,198 +10,162 @@
     </div>
 
     @if (loading()) {
-        <div class="loading-container">
-            <mat-spinner></mat-spinner>
-        </div>
+    <div class="loading-container">
+        <mat-spinner></mat-spinner>
+    </div>
     } @else {
-        @if (assetCards().length) {
-            <div class="assets-section">
-                @for (card of assetCards(); track card.accountId) {
-                    <mat-card class="asset-card">
-                        <mat-card-header>
-                            <mat-card-title>
-                                <app-account-display
-                                    [name]="card.accountName"
-                                    [image]="card.accountImage"
-                                    size="medium"
-                                ></app-account-display>
-                            </mat-card-title>
-                            <button
-                                mat-icon-button
-                                class="hide-button"
-                                (click)="onHideAccount(card.accountId)"
-                                aria-label="Hide account from summary"
-                            >
-                                <mat-icon>close</mat-icon>
-                            </button>
-                        </mat-card-header>
-                        <mat-card-content>
-                            <div class="balance-container">
-                                <span class="balance">{{ card.balance | number: '1.0-2' }}</span>
-                                <span class="currency">{{ card.currencyName }}</span>
-                            </div>
-                            <div
-                                class="trend-container"
-                                [class.positive]="card.trendDirection === 'up'"
-                                [class.negative]="card.trendDirection === 'down'"
-                            >
-                                <mat-icon class="trend-icon">
-                                    @if (card.trendDirection === 'up') {
-                                        north_east
-                                    } @else if (card.trendDirection === 'down') {
-                                        south_east
-                                    } @else {
-                                        remove
-                                    }
-                                </mat-icon>
-                                <span class="trend-value"
-                                    >{{ card.trendPercent | number: '1.1-1' }}%</span
-                                >
-                                <span class="trend-label">vs last month</span>
-                            </div>
-                        </mat-card-content>
-                    </mat-card>
-                }
-            </div>
+    @if (assetCards().length) {
+    <div class="assets-section">
+        @for (card of assetCards(); track card.accountId) {
+        <mat-card class="asset-card">
+            <mat-card-header>
+                <mat-card-title>
+                    <button mat-icon-button class="settings-button" (click)="onSettingsClick($event, card.accountId)"
+                        aria-label="Edit account settings">
+                        <mat-icon>settings</mat-icon>
+                    </button>
+                    <app-account-display [name]="card.accountName" [image]="card.accountImage"
+                        size="medium"></app-account-display>
+                </mat-card-title>
+                <button mat-icon-button class="hide-button" (click)="onHideAccount(card.accountId)"
+                    aria-label="Hide account from summary">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="balance-container clickable" (click)="onBalanceClick(card.accountId)">
+                    <span class="balance">{{ card.balance | number: '1.0-2' }}</span>
+                    <span class="currency">{{ card.currencyName }}</span>
+                </div>
+                <div class="trend-container" [class.positive]="card.trendDirection === 'up'"
+                    [class.negative]="card.trendDirection === 'down'">
+                    <mat-icon class="trend-icon">
+                        @if (card.trendDirection === 'up') {
+                        north_east
+                        } @else if (card.trendDirection === 'down') {
+                        south_east
+                        } @else {
+                        remove
+                        }
+                    </mat-icon>
+                    <span class="trend-value">{{ card.trendPercent | number: '1.1-1' }}%</span>
+                    <span class="trend-label">vs last month</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
         }
+    </div>
+    }
 
-        @if (currencyTables().length) {
-            <!-- Expense Tables per Currency -->
-            <div class="expense-table-section">
-                @for (table of currencyTables(); track table.currencyId) {
-                    <h2 class="currency-title">
-                        Currency: {{ table.currencyName }}
-                        <mat-button-toggle
-                            class="currency-toggle"
-                            [checked]="selectedOutputCurrencyId() === table.currencyId"
-                            (click)="onOutputCurrencyToggle(table.currencyId)"
-                        >
-                            Use as output currency
-                        </mat-button-toggle>
-                    </h2>
-                    <div class="table-container">
-                        <table class="expense-table">
-                            <thead>
-                                <tr>
-                                    <th
-                                        class="account-header sortable"
-                                        (click)="onColumnClick('accountName')"
-                                    >
-                                        Account
-                                        @if (sortColumn() === 'accountName') {
-                                            <span class="sort-indicator">{{
-                                                sortDirection() === 'asc' ? '▲' : '▼'
-                                            }}</span>
-                                        }
-                                    </th>
-                                    @for (month of monthColumns(); track month) {
-                                        <th
-                                            class="month-header sortable"
-                                            (click)="onColumnClick(month)"
-                                        >
-                                            {{ formatMonth(month) }}
-                                            @if (sortColumn() === month) {
-                                                <span class="sort-indicator">{{
-                                                    sortDirection() === 'asc' ? '▲' : '▼'
-                                                }}</span>
-                                            }
-                                        </th>
-                                    }
-                                    <th
-                                        class="total-header sortable"
-                                        (click)="onColumnClick('total')"
-                                    >
-                                        Total
-                                        @if (sortColumn() === 'total') {
-                                            <span class="sort-indicator">{{
-                                                sortDirection() === 'asc' ? '▲' : '▼'
-                                            }}</span>
-                                        }
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (row of table.rows; track row.accountId) {
-                                    <tr>
-                                        <td class="account-cell">
-                                            <div class="account-info">
-                                                <app-account-display
-                                                    [name]="row.accountName"
-                                                    [image]="row.accountImage"
-                                                    size="small"
-                                                ></app-account-display>
-                                                @if (
-                                                    row.averageSpent > 0 &&
-                                                    row.accountId !== 'total'
-                                                ) {
-                                                    <span class="account-average"
-                                                        >Avg:
-                                                        {{
-                                                            row.averageSpent | number: '1.0-2'
-                                                        }}</span
-                                                    >
-                                                }
-                                            </div>
-                                        </td>
-                                        @for (month of monthColumns(); track month) {
-                                            <td
-                                                class="expense-cell clickable"
-                                                [style.background-color]="
-                                                    row.monthCells.get(month)?.color || 'white'
-                                                "
-                                                (click)="onCellClick(row.accountId, month)"
-                                            >
-                                                {{
-                                                    row.monthCells.get(month)?.value || 0
-                                                        | number: '1.2-2'
-                                                }}
-                                            </td>
-                                        }
-                                        <td
-                                            class="total-cell"
-                                            [style.background-color]="row.total.color"
-                                        >
-                                            {{ row.total.value | number: '1.2-2' }}
-                                        </td>
-                                    </tr>
+    @if (currencyTables().length) {
+    <!-- Expense Tables per Currency -->
+    <div class="expense-table-section">
+        @for (table of currencyTables(); track table.currencyId) {
+        <h2 class="currency-title">
+            Currency: {{ table.currencyName }}
+            <mat-button-toggle class="currency-toggle" [checked]="selectedOutputCurrencyId() === table.currencyId"
+                (click)="onOutputCurrencyToggle(table.currencyId)">
+                Use as output currency
+            </mat-button-toggle>
+        </h2>
+        <div class="table-container">
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th class="account-header sortable" (click)="onColumnClick('accountName')">
+                            Account
+                            @if (sortColumn() === 'accountName') {
+                            <span class="sort-indicator">{{
+                                sortDirection() === 'asc' ? '▲' : '▼'
+                                }}</span>
+                            }
+                        </th>
+                        @for (month of monthColumns(); track month) {
+                        <th class="month-header sortable" (click)="onColumnClick(month)">
+                            {{ formatMonth(month) }}
+                            @if (sortColumn() === month) {
+                            <span class="sort-indicator">{{
+                                sortDirection() === 'asc' ? '▲' : '▼'
+                                }}</span>
+                            }
+                        </th>
+                        }
+                        <th class="total-header sortable" (click)="onColumnClick('total')">
+                            Total
+                            @if (sortColumn() === 'total') {
+                            <span class="sort-indicator">{{
+                                sortDirection() === 'asc' ? '▲' : '▼'
+                                }}</span>
+                            }
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (row of table.rows; track row.accountId) {
+                    <tr>
+                        <td class="account-cell">
+                            <div class="account-info">
+                                <div class="account-name-row">
+                                    <app-account-display [name]="row.accountName" [image]="row.accountImage"
+                                        size="small"></app-account-display>
+                                </div>
+                                @if (
+                                row.averageSpent > 0 &&
+                                row.accountId !== 'total'
+                                ) {
+                                <span class="account-average">Avg:
+                                    {{
+                                    row.averageSpent | number: '1.0-2'
+                                    }}</span>
                                 }
-                                <!-- Total Row -->
-                                <tr class="total-row">
-                                    <td class="account-cell total-label">Total</td>
-                                    @for (month of monthColumns(); track month) {
-                                        <td
-                                            class="expense-cell total-cell"
-                                            [style.background-color]="
+                            </div>
+                        </td>
+                        @for (month of monthColumns(); track month) {
+                        <td class="expense-cell clickable" [style.background-color]="
+                                                    row.monthCells.get(month)?.color || 'white'
+                                                " (click)="onCellClick(row.accountId, month)">
+                            {{
+                            row.monthCells.get(month)?.value || 0
+                            | number: '1.2-2'
+                            }}
+                        </td>
+                        }
+                        <td class="total-cell" [style.background-color]="row.total.color">
+                            {{ row.total.value | number: '1.2-2' }}
+                        </td>
+                    </tr>
+                    }
+                    <!-- Total Row -->
+                    <tr class="total-row">
+                        <td class="account-cell total-label">Total</td>
+                        @for (month of monthColumns(); track month) {
+                        <td class="expense-cell total-cell" [style.background-color]="
                                                 table.totalRow.monthCells.get(month)?.color ||
                                                 'white'
-                                            "
-                                        >
-                                            {{
-                                                table.totalRow.monthCells.get(month)?.value || 0
-                                                    | number: '1.2-2'
-                                            }}
-                                        </td>
-                                    }
-                                    <td
-                                        class="total-cell grand-total"
-                                        [style.background-color]="table.totalRow.total.color"
-                                    >
-                                        {{ table.totalRow.total.value | number: '1.2-2' }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                }
-            </div>
+                                            ">
+                            {{
+                            table.totalRow.monthCells.get(month)?.value || 0
+                            | number: '1.2-2'
+                            }}
+                        </td>
+                        }
+                        <td class="total-cell grand-total" [style.background-color]="table.totalRow.total.color">
+                            {{ table.totalRow.total.value | number: '1.2-2' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         }
+    </div>
+    }
 
-        @if (!assetCards().length && !currencyTables().length) {
-            <div class="error-container">
-                <p>No expense data available. Please check the console for errors.</p>
-                <p>Loading: {{ loading() }}</p>
-                <p>Expense Data: {{ expenseData() | json }}</p>
-            </div>
-        }
+    @if (!assetCards().length && !currencyTables().length) {
+    <div class="error-container">
+        <p>No expense data available. Please check the console for errors.</p>
+        <p>Loading: {{ loading() }}</p>
+        <p>Expense Data: {{ expenseData() | json }}</p>
+    </div>
+    }
     }
 </div>

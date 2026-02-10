@@ -22,6 +22,7 @@ import { LayoutService } from '../../layout/services/layout.service';
 import { AccountNoId } from '../../core/api/models/account-no-id';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { AccountFormDialogComponent } from '../accounts/account-form-dialog/account-form-dialog.component';
 import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
 
 interface ExpenseTableCell {
@@ -520,6 +521,36 @@ export class DashboardComponent implements OnInit {
     protected formatMonth(dateString: string): string {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    }
+
+    protected onSettingsClick(event: Event, accountId: string): void {
+        event.stopPropagation();
+        const account = this.accounts().find((a) => a.id === accountId);
+        if (!account) return;
+
+        const dialogRef = this.dialog.open(AccountFormDialogComponent, {
+            width: '600px',
+            data: { mode: 'edit', account },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result && account.id) {
+                this.accountService.handleAccountDialogResult(account, result, this.snackBar);
+            }
+        });
+    }
+
+    protected onBalanceClick(accountId: string): void {
+        const now = new Date();
+        const oneYearAgo = new Date(now.getFullYear(), now.getMonth() - 11, now.getDate());
+
+        this.router.navigate(['/reports/balance'], {
+            queryParams: {
+                accountId,
+                from: oneYearAgo.toISOString(),
+                to: now.toISOString(),
+            },
+        });
     }
 
     protected onColumnClick(column: string): void {

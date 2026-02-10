@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -81,12 +82,14 @@ export class BalanceReportComponent implements OnInit {
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
     private readonly userService = inject(UserService);
+    private readonly route = inject(ActivatedRoute);
 
     protected readonly filterForm: FormGroup;
     protected readonly loading = signal(false);
     protected readonly balanceData = signal<Aggregation | null>(null);
     protected readonly selectedOutputCurrencyId = signal<string | null>(null);
     protected readonly includeHidden = signal(false);
+    protected readonly filteredAccountId = signal<string | null>(null);
 
     protected readonly chartOptions: ChartConfiguration['options'] = {
         responsive: true,
@@ -129,6 +132,12 @@ export class BalanceReportComponent implements OnInit {
             const accountSummaries: AccountSummary[] = [];
 
             currencyAgg.accounts.forEach((accAgg) => {
+                if (
+                    this.filteredAccountId() &&
+                    this.filteredAccountId() !== accAgg.accountId
+                ) {
+                    return;
+                }
                 const account = accounts.find((a) => a.id === accAgg.accountId);
                 if (!account) return;
 
@@ -227,6 +236,21 @@ export class BalanceReportComponent implements OnInit {
     ngOnInit(): void {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
+
+        this.route.queryParams.subscribe((params) => {
+            if (params['accountId']) {
+                this.filteredAccountId.set(params['accountId']);
+            } else {
+                this.filteredAccountId.set(null);
+            }
+
+            if (params['from'] && params['to']) {
+                this.filterForm.patchValue({
+                    startDate: new Date(params['from']),
+                    endDate: new Date(params['to']),
+                });
+            }
+        });
 
         this.userService.loadUser().subscribe({
             next: (user) => {
