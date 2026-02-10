@@ -4,6 +4,8 @@
 
 GeekBudget is a full-stack personal finance management application with a Go backend and Angular frontend. It supports multiple users, bank transaction imports, transaction matching, and budgeting.
 
+See `.agent/rules/principal-architect-mode.md` before starting any work.
+
 ## Repository Structure
 
 ```
@@ -46,6 +48,7 @@ GeekBudgetBE/
 - **Formatting:** gofumpt (Go), Prettier + ESLint (frontend)
 - **Linting:** golangci-lint (Go), ESLint with Angular rules (frontend)
 - **Workflows:** See `.agent/workflows/` for specialized task guides (e.g., deduplication)
+- **Investigation:** See `.agent/rules/database-investigation.md` for local DB querying guidelines
 
 ## Common Commands
 
@@ -87,6 +90,10 @@ make generate_mocks
 make docker-build
 make docker-up
 make docker-down
+
+# Database Investigation
+sqlite3 geekbudget.db ".tables"
+sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LIMIT 10;"
 ```
 
 ## Development Workflow

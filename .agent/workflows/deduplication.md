@@ -48,7 +48,7 @@ To prevent the background task from re-flagging a transaction that a user has al
 - All duplicates are logged with the prefix `DUPLICATE DETECTION:`.
 - Check `backend/pkg/server/background/background_duplicate_detection.go` for implementation details.
 - Use `pkg/server/common/transactions_test.go` to verify the detection logic.
-- Verify relationship consistency in the `transaction_duplicates` table.
+- Verify relationship consistency in the `transaction_duplicates` table (see `.agent/rules/database-investigation.md` for tools).
 
 ## 7. Revalidation on Update
 - When a transaction is updated (date or amounts), `UpdateTransaction` automatically calls `RevalidateDuplicateRelationships`.
