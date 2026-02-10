@@ -23,13 +23,13 @@ GeekBudgetBE/
 │   │   └── utils/         # Utility functions
 │   ├── test/              # Integration tests
 │   └── webapp/            # Static assets and HTML templates
-├── frontend/              # Angular 20 SPA
+├── frontend/              # Angular 20 SPA (Legacy but Active)
 │   └── src/app/
 │       ├── core/api/      # Generated API client
 │       ├── features/      # Feature modules (accounts, transactions, matchers, etc.)
 │       ├── layout/        # Layout components
 │       └── shared/        # Shared components, pipes, directives
-├── new-frontend/          # Next.js 15 SPA (alternative modern frontend)
+├── new-frontend/          # Next.js 15 SPA (not active yet)
 │   └── src/
 │       ├── app/           # Next.js App Router pages
 │       ├── components/    # React components (shared + shadcn/ui)
@@ -137,6 +137,9 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 4. **Stale Balances**: If `hasTransactionsAfterBankBalance` is true, a warning ⚠️ is shown in the UI. This happens when the system detects transactions with a date newer than the bank balance timestamp.
 5. **Timestamping**: Bank balances include a `lastUpdatedAt` timestamp derived from statement metadata (e.g., Fio's `DateEnd`) or the newest transaction in an import.
 6. **UI Tooltips**: Disabled reconciliation buttons have tooltips (wrapped in `<span>`) explaining exactly why reconciliation is unavailable (e.g., large delta or unprocessed transactions).
+7. **Manual Reconciliation**: 
+   - **Auto-Balance**: When enabling manual reconciliation, the system defaults to using the *current* `AppBalance` as the starting bank balance, avoiding manual input.
+   - **Display**: For accounts without bank importers, manual reconciliation records are used to populate "Bank Balance" and "Balance Date" columns in the UI, mimicking a bank feed for consistency.
 
 ## Code Patterns
 
