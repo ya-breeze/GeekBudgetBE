@@ -40,6 +40,8 @@ type Account struct {
 	OpeningDate *time.Time `json:"openingDate,omitempty"`
 	// If set, the account is ignored after this date.
 	ClosingDate *time.Time `json:"closingDate,omitempty"`
+	// If true, this account is shown on the reconciliation page even if it has no bank importer.
+	ShowInReconciliation *bool `json:"showInReconciliation,omitempty"`
 }
 
 type _Account Account
@@ -56,6 +58,8 @@ func NewAccount(id string, name string, type_ string, showInDashboardSummary boo
 	this.ShowInDashboardSummary = showInDashboardSummary
 	var hideFromReports bool = false
 	this.HideFromReports = &hideFromReports
+	var showInReconciliation bool = false
+	this.ShowInReconciliation = &showInReconciliation
 	return &this
 }
 
@@ -68,6 +72,8 @@ func NewAccountWithDefaults() *Account {
 	this.ShowInDashboardSummary = showInDashboardSummary
 	var hideFromReports bool = false
 	this.HideFromReports = &hideFromReports
+	var showInReconciliation bool = false
+	this.ShowInReconciliation = &showInReconciliation
 	return &this
 }
 
@@ -391,6 +397,38 @@ func (o *Account) SetClosingDate(v time.Time) {
 	o.ClosingDate = &v
 }
 
+// GetShowInReconciliation returns the ShowInReconciliation field value if set, zero value otherwise.
+func (o *Account) GetShowInReconciliation() bool {
+	if o == nil || IsNil(o.ShowInReconciliation) {
+		var ret bool
+		return ret
+	}
+	return *o.ShowInReconciliation
+}
+
+// GetShowInReconciliationOk returns a tuple with the ShowInReconciliation field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *Account) GetShowInReconciliationOk() (*bool, bool) {
+	if o == nil || IsNil(o.ShowInReconciliation) {
+		return nil, false
+	}
+	return o.ShowInReconciliation, true
+}
+
+// HasShowInReconciliation returns a boolean if a field has been set.
+func (o *Account) HasShowInReconciliation() bool {
+	if o != nil && !IsNil(o.ShowInReconciliation) {
+		return true
+	}
+
+	return false
+}
+
+// SetShowInReconciliation gets a reference to the given bool and assigns it to the ShowInReconciliation field.
+func (o *Account) SetShowInReconciliation(v bool) {
+	o.ShowInReconciliation = &v
+}
+
 func (o Account) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -425,6 +463,9 @@ func (o Account) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ClosingDate) {
 		toSerialize["closingDate"] = o.ClosingDate
+	}
+	if !IsNil(o.ShowInReconciliation) {
+		toSerialize["showInReconciliation"] = o.ShowInReconciliation
 	}
 	return toSerialize, nil
 }

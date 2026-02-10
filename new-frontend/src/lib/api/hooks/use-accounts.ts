@@ -81,7 +81,7 @@ export function useCreateAccount(
     mutationFn: createAccount,
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
-      options?.onSuccess?.(data, variables, context);
+      (options?.onSuccess as any)?.(data, variables, context);
     },
     ...options,
   });
@@ -97,7 +97,7 @@ export function useUpdateAccount(
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
       queryClient.invalidateQueries({ queryKey: accountKeys.detail(variables.id) });
-      options?.onSuccess?.(data, variables, context);
+      (options?.onSuccess as any)?.(data, variables, context);
     },
     ...options,
   });
@@ -113,7 +113,7 @@ export function useDeleteAccount(
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
       queryClient.invalidateQueries({ queryKey: accountKeys.detail(variables.id) });
-      options?.onSuccess?.(data, variables, context);
+      (options?.onSuccess as any)?.(data, variables, context);
     },
     ...options,
   });
@@ -129,7 +129,7 @@ export function useUploadAccountImage(
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
       queryClient.invalidateQueries({ queryKey: accountKeys.detail(variables.id) });
-      options?.onSuccess?.(data, variables, context);
+      (options?.onSuccess as any)?.(data, variables, context);
     },
     ...options,
   });
@@ -145,7 +145,7 @@ export function useDeleteAccountImage(
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
       queryClient.invalidateQueries({ queryKey: accountKeys.detail(variables) });
-      options?.onSuccess?.(data, variables, context);
+      (options?.onSuccess as any)?.(data, variables, context);
     },
     ...options,
   });

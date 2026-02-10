@@ -51,6 +51,7 @@ const accountFormSchema = z.object({
   openingDate: z.string().optional(),
   closingDate: z.string().optional(),
   ignoreUnprocessedBefore: z.string().optional(),
+  showInReconciliation: z.boolean().default(false),
 });
 
 type AccountFormValues = z.infer<typeof accountFormSchema>;
@@ -88,6 +89,7 @@ export function AccountFormDialog({
       openingDate: "",
       closingDate: "",
       ignoreUnprocessedBefore: "",
+      showInReconciliation: false,
     },
   });
 
@@ -108,6 +110,7 @@ export function AccountFormDialog({
           openingDate: account.openingDate || "",
           closingDate: account.closingDate || "",
           ignoreUnprocessedBefore: account.ignoreUnprocessedBefore || "",
+          showInReconciliation: account.showInReconciliation ?? false,
         });
         setBankInfoOpen(!!(account.bankInfo?.accountId || account.bankInfo?.bankId));
         setAdvancedOpen(!!(account.openingDate || account.closingDate || account.ignoreUnprocessedBefore));
@@ -122,6 +125,7 @@ export function AccountFormDialog({
           openingDate: "",
           closingDate: "",
           ignoreUnprocessedBefore: "",
+          showInReconciliation: false,
         });
         setBankInfoOpen(false);
         setAdvancedOpen(false);
@@ -139,13 +143,14 @@ export function AccountFormDialog({
       bankInfo:
         values.bankInfo?.accountId || values.bankInfo?.bankId
           ? {
-              accountId: values.bankInfo.accountId || undefined,
-              bankId: values.bankInfo.bankId || undefined,
-            }
+            accountId: values.bankInfo.accountId || undefined,
+            bankId: values.bankInfo.bankId || undefined,
+          }
           : undefined,
       openingDate: values.openingDate || undefined,
       closingDate: values.closingDate || undefined,
       ignoreUnprocessedBefore: values.ignoreUnprocessedBefore || undefined,
+      showInReconciliation: values.showInReconciliation,
     };
     onSubmit(payload);
   };
@@ -258,6 +263,24 @@ export function AccountFormDialog({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="showInReconciliation"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <FormLabel>Show in Reconciliation</FormLabel>
+                      <FormDescription className="text-xs">
+                        Always show this account on the reconciliation page.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Bank Info Section */}
@@ -270,9 +293,8 @@ export function AccountFormDialog({
                 >
                   Bank Information (Optional)
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform ${
-                      bankInfoOpen ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 w-4 transition-transform ${bankInfoOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </Button>
               </CollapsibleTrigger>
@@ -323,9 +345,8 @@ export function AccountFormDialog({
                 >
                   Advanced Options
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform ${
-                      advancedOpen ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 w-4 transition-transform ${advancedOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </Button>
               </CollapsibleTrigger>

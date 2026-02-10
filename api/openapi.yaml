@@ -1600,6 +1600,10 @@ components:
           type: string
           format: date-time
           description: "If set, the account is ignored after this date."
+        showInReconciliation:
+          type: boolean
+          description: "If true, this account is shown on the reconciliation page even if it has no bank importer."
+          default: false
       required:
         - name
         - type

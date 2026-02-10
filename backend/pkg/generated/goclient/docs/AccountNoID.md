@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **IgnoreUnprocessedBefore** | Pointer to **time.Time** | If set, unprocessed transactions for this account older than this date will be ignored. | [optional] 
 **OpeningDate** | Pointer to **time.Time** | If set, the account is ignored before this date. | [optional] 
 **ClosingDate** | Pointer to **time.Time** | If set, the account is ignored after this date. | [optional] 
+**ShowInReconciliation** | Pointer to **bool** | If true, this account is shown on the reconciliation page even if it has no bank importer. | [optional] [default to false]
 
 ## Methods
 
@@ -273,6 +274,31 @@ SetClosingDate sets ClosingDate field to given value.
 `func (o *AccountNoID) HasClosingDate() bool`
 
 HasClosingDate returns a boolean if a field has been set.
+
+### GetShowInReconciliation
+
+`func (o *AccountNoID) GetShowInReconciliation() bool`
+
+GetShowInReconciliation returns the ShowInReconciliation field if non-nil, zero value otherwise.
+
+### GetShowInReconciliationOk
+
+`func (o *AccountNoID) GetShowInReconciliationOk() (*bool, bool)`
+
+GetShowInReconciliationOk returns a tuple with the ShowInReconciliation field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetShowInReconciliation
+
+`func (o *AccountNoID) SetShowInReconciliation(v bool)`
+
+SetShowInReconciliation sets ShowInReconciliation field to given value.
+
+### HasShowInReconciliation
+
+`func (o *AccountNoID) HasShowInReconciliation() bool`
+
+HasShowInReconciliation returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

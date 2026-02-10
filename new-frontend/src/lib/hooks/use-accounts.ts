@@ -7,7 +7,7 @@ import type { Account } from "@/lib/api/models";
 export function useAccounts() {
   const { data, isLoading, error } = useGetAccounts();
 
-  const accounts = useMemo(() => data?.data ?? [], [data]);
+  const accounts: Account[] = useMemo(() => data ?? [], [data]);
 
   const accountMap = useMemo(
     () => new Map(accounts.map((a) => [a.id, a])),

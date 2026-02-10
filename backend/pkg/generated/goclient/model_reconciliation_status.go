@@ -23,18 +23,20 @@ var _ MappedNullable = &ReconciliationStatus{}
 
 // ReconciliationStatus struct for ReconciliationStatus
 type ReconciliationStatus struct {
-	AccountId                     string       `json:"accountId"`
-	AccountName                   string       `json:"accountName"`
-	CurrencyId                    string       `json:"currencyId"`
-	CurrencySymbol                *string      `json:"currencySymbol,omitempty"`
-	BankBalance                   *float64     `json:"bankBalance,omitempty"`
-	AppBalance                    float64      `json:"appBalance"`
-	Delta                         float64      `json:"delta"`
-	LastReconciledAt              NullableTime `json:"lastReconciledAt,omitempty"`
-	LastReconciledBalance         *float64     `json:"lastReconciledBalance,omitempty"`
-	HasUnprocessedTransactions    *bool        `json:"hasUnprocessedTransactions,omitempty"`
-	HasBankImporter               *bool        `json:"hasBankImporter,omitempty"`
-	IsManualReconciliationEnabled *bool        `json:"isManualReconciliationEnabled,omitempty"`
+	AccountId                       string       `json:"accountId"`
+	AccountName                     string       `json:"accountName"`
+	CurrencyId                      string       `json:"currencyId"`
+	CurrencySymbol                  *string      `json:"currencySymbol,omitempty"`
+	BankBalance                     *float64     `json:"bankBalance,omitempty"`
+	AppBalance                      float64      `json:"appBalance"`
+	Delta                           float64      `json:"delta"`
+	LastReconciledAt                NullableTime `json:"lastReconciledAt,omitempty"`
+	LastReconciledBalance           *float64     `json:"lastReconciledBalance,omitempty"`
+	HasUnprocessedTransactions      *bool        `json:"hasUnprocessedTransactions,omitempty"`
+	HasBankImporter                 *bool        `json:"hasBankImporter,omitempty"`
+	IsManualReconciliationEnabled   *bool        `json:"isManualReconciliationEnabled,omitempty"`
+	BankBalanceAt                   NullableTime `json:"bankBalanceAt,omitempty"`
+	HasTransactionsAfterBankBalance *bool        `json:"hasTransactionsAfterBankBalance,omitempty"`
 }
 
 type _ReconciliationStatus ReconciliationStatus
@@ -416,6 +418,81 @@ func (o *ReconciliationStatus) SetIsManualReconciliationEnabled(v bool) {
 	o.IsManualReconciliationEnabled = &v
 }
 
+// GetBankBalanceAt returns the BankBalanceAt field value if set, zero value otherwise (both if not set or set to explicit null).
+func (o *ReconciliationStatus) GetBankBalanceAt() time.Time {
+	if o == nil || IsNil(o.BankBalanceAt.Get()) {
+		var ret time.Time
+		return ret
+	}
+	return *o.BankBalanceAt.Get()
+}
+
+// GetBankBalanceAtOk returns a tuple with the BankBalanceAt field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *ReconciliationStatus) GetBankBalanceAtOk() (*time.Time, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return o.BankBalanceAt.Get(), o.BankBalanceAt.IsSet()
+}
+
+// HasBankBalanceAt returns a boolean if a field has been set.
+func (o *ReconciliationStatus) HasBankBalanceAt() bool {
+	if o != nil && o.BankBalanceAt.IsSet() {
+		return true
+	}
+
+	return false
+}
+
+// SetBankBalanceAt gets a reference to the given NullableTime and assigns it to the BankBalanceAt field.
+func (o *ReconciliationStatus) SetBankBalanceAt(v time.Time) {
+	o.BankBalanceAt.Set(&v)
+}
+
+// SetBankBalanceAtNil sets the value for BankBalanceAt to be an explicit nil
+func (o *ReconciliationStatus) SetBankBalanceAtNil() {
+	o.BankBalanceAt.Set(nil)
+}
+
+// UnsetBankBalanceAt ensures that no value is present for BankBalanceAt, not even an explicit nil
+func (o *ReconciliationStatus) UnsetBankBalanceAt() {
+	o.BankBalanceAt.Unset()
+}
+
+// GetHasTransactionsAfterBankBalance returns the HasTransactionsAfterBankBalance field value if set, zero value otherwise.
+func (o *ReconciliationStatus) GetHasTransactionsAfterBankBalance() bool {
+	if o == nil || IsNil(o.HasTransactionsAfterBankBalance) {
+		var ret bool
+		return ret
+	}
+	return *o.HasTransactionsAfterBankBalance
+}
+
+// GetHasTransactionsAfterBankBalanceOk returns a tuple with the HasTransactionsAfterBankBalance field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ReconciliationStatus) GetHasTransactionsAfterBankBalanceOk() (*bool, bool) {
+	if o == nil || IsNil(o.HasTransactionsAfterBankBalance) {
+		return nil, false
+	}
+	return o.HasTransactionsAfterBankBalance, true
+}
+
+// HasHasTransactionsAfterBankBalance returns a boolean if a field has been set.
+func (o *ReconciliationStatus) HasHasTransactionsAfterBankBalance() bool {
+	if o != nil && !IsNil(o.HasTransactionsAfterBankBalance) {
+		return true
+	}
+
+	return false
+}
+
+// SetHasTransactionsAfterBankBalance gets a reference to the given bool and assigns it to the HasTransactionsAfterBankBalance field.
+func (o *ReconciliationStatus) SetHasTransactionsAfterBankBalance(v bool) {
+	o.HasTransactionsAfterBankBalance = &v
+}
+
 func (o ReconciliationStatus) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -451,6 +528,12 @@ func (o ReconciliationStatus) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.IsManualReconciliationEnabled) {
 		toSerialize["isManualReconciliationEnabled"] = o.IsManualReconciliationEnabled
+	}
+	if o.BankBalanceAt.IsSet() {
+		toSerialize["bankBalanceAt"] = o.BankBalanceAt.Get()
+	}
+	if !IsNil(o.HasTransactionsAfterBankBalance) {
+		toSerialize["hasTransactionsAfterBankBalance"] = o.HasTransactionsAfterBankBalance
 	}
 	return toSerialize, nil
 }

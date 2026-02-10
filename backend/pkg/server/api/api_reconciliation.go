@@ -67,8 +67,8 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 			lastRec, _ := s.db.GetLatestReconciliation(userID, acc.Id, b.CurrencyId)
 
 			hasImporter := accountsWithImporter[acc.Id]
-			// Filter: only show if it has a bank importer OR it was already manually reconciled
-			if !hasImporter && lastRec == nil {
+			// Filter: only show if it has a bank importer OR it was already manually reconciled OR it's explicitly marked
+			if !hasImporter && lastRec == nil && !acc.ShowInReconciliation {
 				continue
 			}
 
@@ -80,21 +80,30 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 
 			unprocessedCount, _ := s.db.CountUnprocessedTransactionsForAccount(userID, acc.Id, acc.IgnoreUnprocessedBefore)
 
+			bankBalance := b.ClosingBalance
+			var bankBalanceAt *time.Time = b.LastUpdatedAt
+
+			// If no importer but we have manual reconciliation, use that as "Bank Balance"
+			if !hasImporter && lastRec != nil {
+				bankBalance = lastRec.ReconciledBalance
+				bankBalanceAt = &lastRec.ReconciledAt
+			}
+
 			status := goserver.ReconciliationStatus{
 				AccountId:                  acc.Id,
 				AccountName:                acc.Name,
 				CurrencyId:                 b.CurrencyId,
 				CurrencySymbol:             currencyMap[b.CurrencyId],
-				BankBalance:                b.ClosingBalance,
+				BankBalance:                bankBalance,
 				AppBalance:                 appBalance,
-				Delta:                      appBalance - b.ClosingBalance,
+				Delta:                      appBalance - bankBalance,
 				HasUnprocessedTransactions: unprocessedCount > 0,
 				HasBankImporter:            hasImporter,
-				BankBalanceAt:              b.LastUpdatedAt,
+				BankBalanceAt:              bankBalanceAt,
 			}
 
-			if b.LastUpdatedAt != nil {
-				hasAfter, _ := s.db.HasTransactionsAfterDate(userID, acc.Id, *b.LastUpdatedAt)
+			if bankBalanceAt != nil {
+				hasAfter, _ := s.db.HasTransactionsAfterDate(userID, acc.Id, *bankBalanceAt)
 				status.HasTransactionsAfterBankBalance = hasAfter
 			}
 

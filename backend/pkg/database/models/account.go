@@ -16,6 +16,7 @@ type Account struct {
 	Description            string
 	Type                   string
 	ShowInDashboardSummary bool
+	ShowInReconciliation   bool `gorm:"default:false"`
 	HideFromReports        bool `gorm:"default:false"`
 	Image                  string
 
@@ -37,6 +38,7 @@ func (a *Account) FromDB() goserver.Account {
 		Description:            a.Description,
 		BankInfo:               a.BankInfo,
 		ShowInDashboardSummary: a.ShowInDashboardSummary,
+		ShowInReconciliation:   a.ShowInReconciliation,
 		HideFromReports:        a.HideFromReports,
 		Image:                  a.Image,
 	}
@@ -61,6 +63,7 @@ func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
 		Type:                   m.GetType(),
 		BankInfo:               m.GetBankInfo(),
 		ShowInDashboardSummary: m.GetShowInDashboardSummary(),
+		ShowInReconciliation:   m.GetShowInReconciliation(),
 		HideFromReports:        m.GetHideFromReports(),
 		Image:                  m.GetImage(),
 	}
@@ -90,6 +93,7 @@ func AccountWithoutID(account *goserver.Account) *goserver.AccountNoId {
 		Description:             account.Description,
 		BankInfo:                account.BankInfo,
 		ShowInDashboardSummary:  account.ShowInDashboardSummary,
+		ShowInReconciliation:    account.ShowInReconciliation,
 		HideFromReports:         account.HideFromReports,
 		Image:                   account.Image,
 		IgnoreUnprocessedBefore: account.IgnoreUnprocessedBefore,

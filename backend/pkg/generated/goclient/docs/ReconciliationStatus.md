@@ -16,6 +16,8 @@ Name | Type | Description | Notes
 **HasUnprocessedTransactions** | Pointer to **bool** |  | [optional] 
 **HasBankImporter** | Pointer to **bool** |  | [optional] 
 **IsManualReconciliationEnabled** | Pointer to **bool** |  | [optional] 
+**BankBalanceAt** | Pointer to **NullableTime** |  | [optional] 
+**HasTransactionsAfterBankBalance** | Pointer to **bool** |  | [optional] 
 
 ## Methods
 
@@ -320,6 +322,66 @@ SetIsManualReconciliationEnabled sets IsManualReconciliationEnabled field to giv
 `func (o *ReconciliationStatus) HasIsManualReconciliationEnabled() bool`
 
 HasIsManualReconciliationEnabled returns a boolean if a field has been set.
+
+### GetBankBalanceAt
+
+`func (o *ReconciliationStatus) GetBankBalanceAt() time.Time`
+
+GetBankBalanceAt returns the BankBalanceAt field if non-nil, zero value otherwise.
+
+### GetBankBalanceAtOk
+
+`func (o *ReconciliationStatus) GetBankBalanceAtOk() (*time.Time, bool)`
+
+GetBankBalanceAtOk returns a tuple with the BankBalanceAt field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetBankBalanceAt
+
+`func (o *ReconciliationStatus) SetBankBalanceAt(v time.Time)`
+
+SetBankBalanceAt sets BankBalanceAt field to given value.
+
+### HasBankBalanceAt
+
+`func (o *ReconciliationStatus) HasBankBalanceAt() bool`
+
+HasBankBalanceAt returns a boolean if a field has been set.
+
+### SetBankBalanceAtNil
+
+`func (o *ReconciliationStatus) SetBankBalanceAtNil(b bool)`
+
+ SetBankBalanceAtNil sets the value for BankBalanceAt to be an explicit nil
+
+### UnsetBankBalanceAt
+`func (o *ReconciliationStatus) UnsetBankBalanceAt()`
+
+UnsetBankBalanceAt ensures that no value is present for BankBalanceAt, not even an explicit nil
+### GetHasTransactionsAfterBankBalance
+
+`func (o *ReconciliationStatus) GetHasTransactionsAfterBankBalance() bool`
+
+GetHasTransactionsAfterBankBalance returns the HasTransactionsAfterBankBalance field if non-nil, zero value otherwise.
+
+### GetHasTransactionsAfterBankBalanceOk
+
+`func (o *ReconciliationStatus) GetHasTransactionsAfterBankBalanceOk() (*bool, bool)`
+
+GetHasTransactionsAfterBankBalanceOk returns a tuple with the HasTransactionsAfterBankBalance field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetHasTransactionsAfterBankBalance
+
+`func (o *ReconciliationStatus) SetHasTransactionsAfterBankBalance(v bool)`
+
+SetHasTransactionsAfterBankBalance sets HasTransactionsAfterBankBalance field to given value.
+
+### HasHasTransactionsAfterBankBalance
+
+`func (o *ReconciliationStatus) HasHasTransactionsAfterBankBalance() bool`
+
+HasHasTransactionsAfterBankBalance returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

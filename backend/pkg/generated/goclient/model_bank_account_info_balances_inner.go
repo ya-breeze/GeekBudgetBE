@@ -13,6 +13,7 @@ package goclient
 
 import (
 	"encoding/json"
+	"time"
 )
 
 // checks if the BankAccountInfoBalancesInner type satisfies the MappedNullable interface at compile time
@@ -20,9 +21,10 @@ var _ MappedNullable = &BankAccountInfoBalancesInner{}
 
 // BankAccountInfoBalancesInner struct for BankAccountInfoBalancesInner
 type BankAccountInfoBalancesInner struct {
-	CurrencyId     *string  `json:"currencyId,omitempty"`
-	OpeningBalance *float64 `json:"openingBalance,omitempty"`
-	ClosingBalance *float64 `json:"closingBalance,omitempty"`
+	CurrencyId     *string      `json:"currencyId,omitempty"`
+	OpeningBalance *float64     `json:"openingBalance,omitempty"`
+	ClosingBalance *float64     `json:"closingBalance,omitempty"`
+	LastUpdatedAt  NullableTime `json:"lastUpdatedAt,omitempty"`
 }
 
 // NewBankAccountInfoBalancesInner instantiates a new BankAccountInfoBalancesInner object
@@ -138,6 +140,49 @@ func (o *BankAccountInfoBalancesInner) SetClosingBalance(v float64) {
 	o.ClosingBalance = &v
 }
 
+// GetLastUpdatedAt returns the LastUpdatedAt field value if set, zero value otherwise (both if not set or set to explicit null).
+func (o *BankAccountInfoBalancesInner) GetLastUpdatedAt() time.Time {
+	if o == nil || IsNil(o.LastUpdatedAt.Get()) {
+		var ret time.Time
+		return ret
+	}
+	return *o.LastUpdatedAt.Get()
+}
+
+// GetLastUpdatedAtOk returns a tuple with the LastUpdatedAt field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *BankAccountInfoBalancesInner) GetLastUpdatedAtOk() (*time.Time, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return o.LastUpdatedAt.Get(), o.LastUpdatedAt.IsSet()
+}
+
+// HasLastUpdatedAt returns a boolean if a field has been set.
+func (o *BankAccountInfoBalancesInner) HasLastUpdatedAt() bool {
+	if o != nil && o.LastUpdatedAt.IsSet() {
+		return true
+	}
+
+	return false
+}
+
+// SetLastUpdatedAt gets a reference to the given NullableTime and assigns it to the LastUpdatedAt field.
+func (o *BankAccountInfoBalancesInner) SetLastUpdatedAt(v time.Time) {
+	o.LastUpdatedAt.Set(&v)
+}
+
+// SetLastUpdatedAtNil sets the value for LastUpdatedAt to be an explicit nil
+func (o *BankAccountInfoBalancesInner) SetLastUpdatedAtNil() {
+	o.LastUpdatedAt.Set(nil)
+}
+
+// UnsetLastUpdatedAt ensures that no value is present for LastUpdatedAt, not even an explicit nil
+func (o *BankAccountInfoBalancesInner) UnsetLastUpdatedAt() {
+	o.LastUpdatedAt.Unset()
+}
+
 func (o BankAccountInfoBalancesInner) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
@@ -156,6 +201,9 @@ func (o BankAccountInfoBalancesInner) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ClosingBalance) {
 		toSerialize["closingBalance"] = o.ClosingBalance
+	}
+	if o.LastUpdatedAt.IsSet() {
+		toSerialize["lastUpdatedAt"] = o.LastUpdatedAt.Get()
 	}
 	return toSerialize, nil
 }

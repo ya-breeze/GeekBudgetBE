@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **CurrencyId** | Pointer to **string** |  | [optional] 
 **OpeningBalance** | Pointer to **float64** |  | [optional] 
 **ClosingBalance** | Pointer to **float64** |  | [optional] 
+**LastUpdatedAt** | Pointer to **NullableTime** |  | [optional] 
 
 ## Methods
 
@@ -102,6 +103,41 @@ SetClosingBalance sets ClosingBalance field to given value.
 
 HasClosingBalance returns a boolean if a field has been set.
 
+### GetLastUpdatedAt
+
+`func (o *BankAccountInfoBalancesInner) GetLastUpdatedAt() time.Time`
+
+GetLastUpdatedAt returns the LastUpdatedAt field if non-nil, zero value otherwise.
+
+### GetLastUpdatedAtOk
+
+`func (o *BankAccountInfoBalancesInner) GetLastUpdatedAtOk() (*time.Time, bool)`
+
+GetLastUpdatedAtOk returns a tuple with the LastUpdatedAt field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetLastUpdatedAt
+
+`func (o *BankAccountInfoBalancesInner) SetLastUpdatedAt(v time.Time)`
+
+SetLastUpdatedAt sets LastUpdatedAt field to given value.
+
+### HasLastUpdatedAt
+
+`func (o *BankAccountInfoBalancesInner) HasLastUpdatedAt() bool`
+
+HasLastUpdatedAt returns a boolean if a field has been set.
+
+### SetLastUpdatedAtNil
+
+`func (o *BankAccountInfoBalancesInner) SetLastUpdatedAtNil(b bool)`
+
+ SetLastUpdatedAtNil sets the value for LastUpdatedAt to be an explicit nil
+
+### UnsetLastUpdatedAt
+`func (o *BankAccountInfoBalancesInner) UnsetLastUpdatedAt()`
+
+UnsetLastUpdatedAt ensures that no value is present for LastUpdatedAt, not even an explicit nil
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

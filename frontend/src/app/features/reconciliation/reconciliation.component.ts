@@ -150,18 +150,15 @@ export class ReconciliationComponent implements OnInit {
     enableManual(status: ReconciliationStatus): void {
         if (!status.accountId || !status.currencyId) return;
 
-        const balance = prompt('Enter initial balance for reconciliation:');
-        if (balance !== null) {
-            const initialBalance = parseFloat(balance);
-            if (isNaN(initialBalance)) {
-                this.snackBar.open('Invalid balance entered', 'Close', { duration: 3000 });
-                return;
-            }
-
+        if (
+            confirm(
+                `Enable manual reconciliation starting with balance ${status.appBalance} ${status.currencySymbol}?`
+            )
+        ) {
             this.reconciliationService
                 .enableManual(status.accountId, {
                     currencyId: status.currencyId,
-                    initialBalance: initialBalance,
+                    initialBalance: status.appBalance,
                 })
                 .subscribe({
                     next: () => {

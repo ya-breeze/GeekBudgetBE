@@ -67,6 +67,7 @@ export class AccountFormDialogComponent implements OnInit {
             type: [this.data.account?.type || 'expense', [Validators.required]],
             description: [this.data.account?.description || '', [Validators.maxLength(500)]],
             showInDashboardSummary: [this.data.account?.showInDashboardSummary ?? true],
+            showInReconciliation: [this.data.account?.showInReconciliation ?? false],
             hideFromReports: [this.data.account?.hideFromReports ?? false],
             bankId: [this.data.account?.bankInfo?.bankId || ''],
             bankAccountId: [this.data.account?.bankInfo?.accountId || ''],
@@ -163,19 +164,20 @@ export class AccountFormDialogComponent implements OnInit {
                 type: formValue.type,
                 description: formValue.description,
                 showInDashboardSummary: formValue.showInDashboardSummary,
+                showInReconciliation: formValue.showInReconciliation,
                 hideFromReports: formValue.hideFromReports,
                 bankInfo:
                     formValue.type === 'asset'
                         ? {
-                              ...this.data.account?.bankInfo,
-                              bankId: formValue.bankId || undefined,
-                              accountId: formValue.bankAccountId || undefined,
-                              balances: formValue.balances?.map((b: any) => ({
-                                  currencyId: b.currencyId || undefined,
-                                  openingBalance: b.openingBalance || 0,
-                                  closingBalance: b.closingBalance,
-                              })),
-                          }
+                            ...this.data.account?.bankInfo,
+                            bankId: formValue.bankId || undefined,
+                            accountId: formValue.bankAccountId || undefined,
+                            balances: formValue.balances?.map((b: any) => ({
+                                currencyId: b.currencyId || undefined,
+                                openingBalance: b.openingBalance || 0,
+                                closingBalance: b.closingBalance,
+                            })),
+                        }
                         : undefined,
                 ignoreUnprocessedBefore:
                     formValue.type === 'asset' && formValue.ignoreUnprocessedBefore

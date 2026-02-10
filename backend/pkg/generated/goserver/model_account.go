@@ -43,6 +43,9 @@ type Account struct {
 
 	// If set, the account is ignored after this date.
 	ClosingDate time.Time `json:"closingDate,omitempty"`
+
+	// If true, this account is shown on the reconciliation page even if it has no bank importer.
+	ShowInReconciliation bool `json:"showInReconciliation,omitempty"`
 }
 
 type AccountInterface interface {
@@ -57,6 +60,7 @@ type AccountInterface interface {
 	GetIgnoreUnprocessedBefore() time.Time
 	GetOpeningDate() time.Time
 	GetClosingDate() time.Time
+	GetShowInReconciliation() bool
 }
 
 func (c *Account) GetId() string {
@@ -91,6 +95,9 @@ func (c *Account) GetOpeningDate() time.Time {
 }
 func (c *Account) GetClosingDate() time.Time {
 	return c.ClosingDate
+}
+func (c *Account) GetShowInReconciliation() bool {
+	return c.ShowInReconciliation
 }
 
 // AssertAccountRequired checks if the required fields are not zero-ed

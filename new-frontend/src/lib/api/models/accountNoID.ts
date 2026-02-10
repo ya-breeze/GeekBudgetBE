@@ -12,4 +12,5 @@ export interface AccountNoID {
   ignoreUnprocessedBefore?: string;
   openingDate?: string;
   closingDate?: string;
+  showInReconciliation?: boolean;
 }

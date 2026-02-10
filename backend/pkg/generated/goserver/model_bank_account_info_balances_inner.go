@@ -11,7 +11,9 @@
 
 package goserver
 
-import "time"
+import (
+	"time"
+)
 
 type BankAccountInfoBalancesInner struct {
 	CurrencyId string `json:"currencyId,omitempty"`

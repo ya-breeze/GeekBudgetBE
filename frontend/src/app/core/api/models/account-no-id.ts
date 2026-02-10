@@ -36,5 +36,10 @@ export interface AccountNoId {
      * If true, show this account in dashboard summary.
      */
     showInDashboardSummary?: boolean;
+
+    /**
+     * If true, this account is shown on the reconciliation page even if it has no bank importer.
+     */
+    showInReconciliation?: boolean;
     type: 'expense' | 'income' | 'asset';
 }

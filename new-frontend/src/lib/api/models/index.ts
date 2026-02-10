@@ -37,6 +37,7 @@ export interface AccountNoID {
   ignoreUnprocessedBefore?: string;
   openingDate?: string;
   closingDate?: string;
+  showInReconciliation?: boolean;
 }
 
 export type Account = Entity & AccountNoID & { showInDashboardSummary: boolean };
