@@ -129,6 +129,15 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
     - **Retrieval:** Use `GET /v1/mergedTransactions/{id}` to fetch these archived records. The standard `GET /v1/transactions/{id}` only returns active ones.
  6. **Synchronized Cleanup:** The storage layer (`ClearDuplicateRelationships`) automatically removes `models.DuplicateReason` from linked transactions if they have no other duplicate links remaining.
 
+## Reconciliation Flow
+
+1. **Status Retrieval**: `GET /v1/reconciliation/status` returns balance details, delta, and flags for all accounts.
+2. **Tolerance**: Minor discrepancies up to `common.ReconciliationTolerance` (0.01) are handled as "matching".
+3. **Blocking**: Manual reconciliation is **blocked** if `hasUnprocessedTransactions` is true. This ensures the App Balance is finalized before being compared to the Bank Balance.
+4. **Stale Balances**: If `hasTransactionsAfterBankBalance` is true, a warning ⚠️ is shown in the UI. This happens when the system detects transactions with a date newer than the bank balance timestamp.
+5. **Timestamping**: Bank balances include a `lastUpdatedAt` timestamp derived from statement metadata (e.g., Fio's `DateEnd`) or the newest transaction in an import.
+6. **UI Tooltips**: Disabled reconciliation buttons have tooltips (wrapped in `<span>`) explaining exactly why reconciliation is unavailable (e.g., large delta or unprocessed transactions).
+
 ## Code Patterns
 
 - **Service layer:** `ServiceImpl` structs with `logger` and `db` fields, methods take `context.Context` and `userID`.

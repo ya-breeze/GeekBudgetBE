@@ -12,14 +12,18 @@ When importing transactions, always prioritize the date the transaction actually
   - Header: `Datum zauctovani;Datum provedeni;...`
   - Use **`Datum provedeni`** (Column 2, Index 1).
   - Do NOT use `Datum zauctovani` (Column 1, Index 0).
+  - **Balance Date**: Searches for header fields like `Datum vypisu`, `Vytvoreno`, or `Datum exportu`. If missing, it uses the date of the **newest transaction** in the file.
 
 - **Revolut**:
   - Columns: `Type`, `Product`, `Started Date`, `Completed Date`, ...
   - Use **`Started Date`** (Column 3, Index 2).
   - User explicitly prefers `Started Date` over `Completed Date` for Revolut.
+  - **Balance Date**: Derives the date from the **newest transaction** in the imported block for each currency.
 
 - **Fio**:
-  - Uses the single available date column.
+  - Uses the single available date column for transactions.
+  - **Balance Date**: Extracts `DateEnd` from the statement metadata.
+  - **Precision**: If `DateEnd` is today, the importer uses `time.Now()` to include the current time in the "Balance Date" display.
 
 ## Testing
 
