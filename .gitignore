@@ -20,7 +20,7 @@ backend/token
 backend/transactions.json
 backend/*.xlsx
 backend/*.csv
-geekbudget.db
+geekbudget*.db
 
 ### Frontend
 frontend/node_modules/

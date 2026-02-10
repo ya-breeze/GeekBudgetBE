@@ -8,6 +8,7 @@ import {
     getTransactions,
     GetTransactions$Params,
 } from '../../../core/api/fn/transactions/get-transactions';
+import { getTransaction } from '../../../core/api/fn/transactions/get-transaction';
 import { createTransaction } from '../../../core/api/fn/transactions/create-transaction';
 import { updateTransaction } from '../../../core/api/fn/transactions/update-transaction';
 import { deleteTransaction } from '../../../core/api/fn/transactions/delete-transaction';
@@ -41,6 +42,12 @@ export class TransactionService {
                     this.loading.set(false);
                 },
             }),
+        );
+    }
+
+    getTransaction(id: string): Observable<Transaction> {
+        return getTransaction(this.http, this.apiConfig.rootUrl, { id }).pipe(
+            map((response) => response.body),
         );
     }
 

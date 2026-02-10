@@ -70,6 +70,7 @@ type Storage interface {
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
 	GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
 	GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error)
+	GetMergedTransaction(userID, originalTransactionID string) (goserver.MergedTransaction, error)
 	UnmergeTransaction(userID, id string) error
 	GetDuplicateTransactionIDs(userID, transactionID string) ([]string, error)
 	AddDuplicateRelationship(userID, transactionID1, transactionID2 string) error
@@ -993,6 +994,51 @@ func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransac
 	}
 
 	return result, nil
+}
+
+func (s *storage) GetMergedTransaction(userID, originalTransactionID string) (goserver.MergedTransaction, error) {
+	// 1. Find the archived transaction
+	var archived models.MergedTransaction
+	if err := s.db.Where("user_id = ? AND original_transaction_id = ?", userID, originalTransactionID).First(&archived).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return goserver.MergedTransaction{}, ErrNotFound
+		}
+		return goserver.MergedTransaction{}, fmt.Errorf(StorageError, err)
+	}
+
+	// 2. Find the kept transaction (mergedInto)
+	var kept models.Transaction
+	if err := s.db.Where("id = ? AND user_id = ?", archived.KeptTransactionID, userID).First(&kept).Error; err != nil {
+		s.log.Warn("Failed to find kept transaction for merged transaction", "merged_id", archived.OriginalTransactionID, "kept_id", archived.KeptTransactionID)
+		// We still return the merged transaction, just without the full kept transaction details if not found
+	}
+
+	// 3. Construct the response
+	// Create a temporary transaction structure to use FromDB for the archived transaction
+	tr := models.Transaction{
+		ID:                 archived.OriginalTransactionID,
+		UserID:             archived.UserID,
+		Date:               archived.Date,
+		Description:        archived.Description,
+		Place:              archived.Place,
+		Tags:               archived.Tags,
+		PartnerName:        archived.PartnerName,
+		PartnerAccount:     archived.PartnerAccount,
+		PartnerInternalID:  archived.PartnerInternalID,
+		Extra:              archived.Extra,
+		UnprocessedSources: archived.UnprocessedSources,
+		ExternalIDs:        archived.ExternalIDs,
+		Movements:          archived.Movements,
+		MatcherID:          archived.MatcherID,
+		IsAuto:             archived.IsAuto,
+		SuspiciousReasons:  archived.SuspiciousReasons,
+	}
+
+	return goserver.MergedTransaction{
+		Transaction: tr.FromDB(),
+		MergedInto:  kept.FromDB(),
+		MergedAt:    archived.MergedAt,
+	}, nil
 }
 
 func (s *storage) UnmergeTransaction(userID, id string) error {

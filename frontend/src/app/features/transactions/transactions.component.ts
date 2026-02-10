@@ -72,6 +72,11 @@ export class TransactionsComponent implements OnInit {
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
 
     protected readonly transactions = this.transactionService.transactions;
+
+    viewTransactionDetails(transaction: Transaction): void {
+        this.router.navigate(['/transactions', transaction.id]);
+    }
+
     protected readonly loading = signal(false); // Combined loading for transactions, accounts, and currencies
     protected readonly displayedColumns = signal([
         'date',

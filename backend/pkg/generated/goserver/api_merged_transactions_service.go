@@ -21,6 +21,8 @@ import (
 type MergedTransactionsAPIService interface {
 	// GetMergedTransactions - get all merged (deduplicated) transactions
 	GetMergedTransactions(ctx context.Context) (ImplResponse, error)
+	// GetMergedTransaction - get merged transaction details by original transaction ID
+	GetMergedTransaction(ctx context.Context, id string) (ImplResponse, error)
 	// UnmergeMergedTransaction - restore a merged transaction
 	UnmergeMergedTransaction(ctx context.Context, id string) (ImplResponse, error)
 }
@@ -45,6 +47,20 @@ func (s *MergedTransactionsAPIServiceImpl) GetMergedTransactions(ctx context.Con
 	// return Response(200, []MergedTransaction{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("GetMergedTransactions method not implemented")
+}
+
+// GetMergedTransaction - get merged transaction details by original transaction ID
+func (s *MergedTransactionsAPIServiceImpl) GetMergedTransaction(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update GetMergedTransaction with the required logic for this service method.
+	// Add api_merged_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, MergedTransaction{}) or use other options such as http.Ok ...
+	// return Response(200, MergedTransaction{}), nil
+
+	// TODO: Uncomment the next line to return response Response(404, {}) or use other options such as http.Ok ...
+	// return Response(404, nil),nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("GetMergedTransaction method not implemented")
 }
 
 // UnmergeMergedTransaction - restore a merged transaction

@@ -3,7 +3,7 @@
 
 export interface ReconcileAccountRequest {
     /**
-     * Manual balance to set. If 0, current app balance is used.
+     * Manual balance to set. If 0, current Account balance is used.
      */
     balance?: number;
     currencyId: string;

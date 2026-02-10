@@ -49,6 +49,11 @@ export interface TransactionNoId {
      * ID of the transaction this one was merged into (if any)
      */
     mergedIntoId?: string;
+
+    /**
+     * List of transaction IDs that were merged into this transaction (soft-deleted duplicates pointing here via mergedIntoId)
+     */
+    mergedTransactionIds?: Array<string>;
     movements: Array<Movement>;
     partnerAccount?: string;
 

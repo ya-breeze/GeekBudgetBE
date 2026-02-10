@@ -1,0 +1,276 @@
+<div class="container" *ngIf="loading()">
+    <mat-spinner diameter="40"></mat-spinner>
+</div>
+
+<div class="container" *ngIf="error()">
+    <mat-card class="error-card">
+        <mat-card-content>
+            <mat-icon color="warn">error</mat-icon>
+            <p>{{ error() }}</p>
+            <button mat-button (click)="goBack()">Go Back</button>
+        </mat-card-content>
+    </mat-card>
+</div>
+
+<div class="transaction-detail-container" *ngIf="displayedTransaction() as t">
+    <!-- Header Card (Always Visible) -->
+    <mat-card class="header-card" [class.merged-bg]="isMerged()">
+        <mat-card-header>
+            <div mat-card-avatar>
+                <mat-icon class="large-icon">{{ isMerged() ? 'archive' : 'receipt' }}</mat-icon>
+            </div>
+            <mat-card-title>
+                <div class="title-with-icons">
+                    <span>{{ t.partnerName || t.description }}</span>
+                    <div class="status-icons">
+                        <mat-icon
+                            *ngIf="t.suspiciousReasons && t.suspiciousReasons.length > 0"
+                            class="suspicious-icon"
+                            [matTooltip]="'Suspicious: ' + t.suspiciousReasons.join(', ')"
+                            >warning</mat-icon
+                        >
+                        <ng-container *ngIf="t.matcherId">
+                            <ng-container
+                                *ngIf="matcherMap().get(t.matcherId)?.image; else defaultIcon"
+                            >
+                                <img
+                                    [src]="matcherMap().get(t.matcherId)?.image | imageUrl"
+                                    class="matcher-icon-small"
+                                    [class.auto]="t.isAuto"
+                                    [class.manual]="!t.isAuto"
+                                    [matTooltip]="
+                                        (t.isAuto
+                                            ? 'Automatically matched by '
+                                            : 'Manually matched using ') +
+                                        getMatcherName(t.matcherId)
+                                    "
+                                    alt="Matcher Icon"
+                                />
+                            </ng-container>
+                            <ng-template #defaultIcon>
+                                <mat-icon
+                                    *ngIf="t.isAuto"
+                                    class="match-icon auto"
+                                    [matTooltip]="
+                                        'Automatically converted by matcher ' +
+                                        getMatcherName(t.matcherId)
+                                    "
+                                    >auto_fix_high</mat-icon
+                                >
+                                <mat-icon
+                                    *ngIf="!t.isAuto"
+                                    class="match-icon manual"
+                                    [matTooltip]="
+                                        'Manually matched using matcher ' +
+                                        getMatcherName(t.matcherId)
+                                    "
+                                    >link</mat-icon
+                                >
+                            </ng-template>
+                        </ng-container>
+                        <mat-icon
+                            *ngIf="t.mergedTransactionIds?.length"
+                            class="merged-icon"
+                            [matTooltip]="
+                                t.mergedTransactionIds!.length +
+                                ' transaction(s) merged into this one'
+                            "
+                            >merge</mat-icon
+                        >
+                    </div>
+                </div>
+            </mat-card-title>
+            <mat-card-subtitle
+                >{{ t.date | date: 'mediumDate' }} at
+                {{ t.place || 'Unknown Location' }}</mat-card-subtitle
+            >
+
+            <div class="header-actions">
+                <mat-chip-set>
+                    <mat-chip *ngIf="isMerged()" color="warn" highlighted
+                        >Merged / Archived</mat-chip
+                    >
+                    <mat-chip *ngIf="!isMerged()" color="accent" highlighted>Active</mat-chip>
+                    <mat-chip *ngIf="t.suspiciousReasons?.length" color="warn">Suspicious</mat-chip>
+                </mat-chip-set>
+            </div>
+        </mat-card-header>
+
+        <mat-card-content class="header-content">
+            <div class="amount-display">
+                <!-- Assuming generic amount display logic or just showing first movement amount for now -->
+                <!-- Note: A transaction doesn't have a single amount field on the root object in the model usually, 
+              but for display we usually aggregate movements or show nothing. 
+              Let's skip amount here and rely on movements table. -->
+            </div>
+            <p *ngIf="t.description && t.description !== t.partnerName" class="full-description">
+                {{ t.description }}
+            </p>
+
+            <div class="suspicious-warnings" *ngIf="t.suspiciousReasons?.length">
+                <div class="warning-item" *ngFor="let reason of t.suspiciousReasons">
+                    <mat-icon color="warn">warning</mat-icon>
+                    <span>{{ reason }}</span>
+                </div>
+            </div>
+        </mat-card-content>
+
+        <mat-card-actions align="end">
+            <button mat-button (click)="goBack()"><mat-icon>arrow_back</mat-icon> Back</button>
+            <button mat-flat-button color="primary" *ngIf="!isMerged()" (click)="editTransaction()">
+                <mat-icon>edit</mat-icon> Edit
+            </button>
+        </mat-card-actions>
+    </mat-card>
+
+    <!-- Accordion Sections -->
+    <mat-accordion multi="true">
+        <!-- Movements (Expanded by Default) -->
+        <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    <mat-icon class="panel-icon">swap_horiz</mat-icon>
+                    Movements
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="table-container">
+                <table mat-table [dataSource]="movements()">
+                    <ng-container matColumnDef="date">
+                        <th mat-header-cell *matHeaderCellDef>Date</th>
+                        <td mat-cell *matCellDef="let m">{{ m.date | date: 'shortDate' }}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="amount">
+                        <th mat-header-cell *matHeaderCellDef>Amount</th>
+                        <td
+                            mat-cell
+                            *matCellDef="let m"
+                            [class.negative]="m.amount < 0"
+                            [class.positive]="m.amount > 0"
+                        >
+                            {{ m.amount | number: '1.2-2' }}
+                            {{ currencyMap().get(m.currencyId) || m.currencyId }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="account">
+                        <th mat-header-cell *matHeaderCellDef>Account</th>
+                        <td mat-cell *matCellDef="let m">
+                            <app-account-display
+                                *ngIf="accountMap().get(m.accountId || '')"
+                                [name]="accountMap().get(m.accountId || '')?.name || 'N/A'"
+                                [image]="accountMap().get(m.accountId || '')?.image"
+                                size="small"
+                            ></app-account-display>
+                            <span *ngIf="!accountMap().get(m.accountId || '')">{{
+                                m.accountId || 'N/A'
+                            }}</span>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="comment">
+                        <th mat-header-cell *matHeaderCellDef>Description</th>
+                        <td mat-cell *matCellDef="let m">{{ m.description }}</td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+                </table>
+            </div>
+        </mat-expansion-panel>
+
+        <!-- Linked Transactions (Collapsed) -->
+        <mat-expansion-panel
+            *ngIf="isMerged() || (t.mergedTransactionIds && t.mergedTransactionIds.length > 0)"
+        >
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    <mat-icon class="panel-icon">link</mat-icon>
+                    Linked Transactions
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div
+                class="linked-section"
+                *ngIf="isMerged() && mergedTransaction()?.mergedInto as kept"
+            >
+                <h3>Merged Into:</h3>
+                <div class="linked-item clickable" (click)="viewMergedTransaction(kept.id)">
+                    <mat-icon>arrow_forward</mat-icon>
+                    <span>{{ kept.description }} ({{ kept.date | date: 'shortDate' }})</span>
+                    <span class="id-pill">{{ kept.id }}</span>
+                </div>
+            </div>
+
+            <div
+                class="linked-section"
+                *ngIf="t.mergedTransactionIds && t.mergedTransactionIds.length > 0"
+            >
+                <h3>Contains Merged Transactions:</h3>
+                <div class="linked-list">
+                    <div
+                        class="linked-item clickable"
+                        *ngFor="let id of t.mergedTransactionIds"
+                        (click)="viewMergedTransaction(id)"
+                    >
+                        <mat-icon>subdirectory_arrow_right</mat-icon>
+                        <span>Merged Transaction</span>
+                        <span class="id-pill">{{ id }}</span>
+                    </div>
+                </div>
+            </div>
+        </mat-expansion-panel>
+
+        <!-- Metadata (Collapsed) -->
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    <mat-icon class="panel-icon">info</mat-icon>
+                    Metadata & System Info
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="metadata-grid">
+                <div class="meta-item">
+                    <span class="label">Transaction ID</span>
+                    <span>{{ t.id }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">Matcher</span>
+                    <span>{{ matcherMap().get(t.matcherId || '') || t.matcherId || 'N/A' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">Partner Account</span>
+                    <span>{{ t.partnerAccount || 'N/A' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">Partner Internal ID</span>
+                    <span>{{ t.partnerInternalId || 'N/A' }}</span>
+                </div>
+                <div class="meta-item full-width">
+                    <span class="label">Tags</span>
+                    <mat-chip-set>
+                        <mat-chip *ngFor="let tag of t.tags">{{ tag }}</mat-chip>
+                    </mat-chip-set>
+                </div>
+                <div class="meta-item full-width" *ngIf="t.externalIds?.length">
+                    <span class="label">External IDs</span>
+                    <div class="code-block" *ngFor="let eid of t.externalIds">{{ eid }}</div>
+                </div>
+            </div>
+        </mat-expansion-panel>
+
+        <!-- Raw Data (Collapsed) -->
+        <mat-expansion-panel *ngIf="t.unprocessedSources">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    <mat-icon class="panel-icon">code</mat-icon>
+                    Raw Source Data
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <pre class="raw-data">{{ getFormattedRawData() }}</pre>
+        </mat-expansion-panel>
+    </mat-accordion>
+</div>

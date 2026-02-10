@@ -117,6 +117,7 @@ Class | Method | HTTP request | Description
 *MatchersAPI* | [**GetMatchers**](docs/MatchersAPI.md#getmatchers) | **Get** /v1/matchers | get all matchers
 *MatchersAPI* | [**UpdateMatcher**](docs/MatchersAPI.md#updatematcher) | **Put** /v1/matchers/{id} | update matcher
 *MatchersAPI* | [**UploadMatcherImage**](docs/MatchersAPI.md#uploadmatcherimage) | **Post** /v1/matchers/{id}/image | Upload matcher image
+*MergedTransactionsAPI* | [**GetMergedTransaction**](docs/MergedTransactionsAPI.md#getmergedtransaction) | **Get** /v1/mergedTransactions/{id} | get merged transaction details by original transaction ID
 *MergedTransactionsAPI* | [**GetMergedTransactions**](docs/MergedTransactionsAPI.md#getmergedtransactions) | **Get** /v1/mergedTransactions | get all merged (deduplicated) transactions
 *MergedTransactionsAPI* | [**UnmergeMergedTransaction**](docs/MergedTransactionsAPI.md#unmergemergedtransaction) | **Post** /v1/mergedTransactions/{id}/unmerge | restore a merged transaction
 *NotificationsAPI* | [**DeleteNotification**](docs/NotificationsAPI.md#deletenotification) | **Delete** /v1/notifications/{id} | delete notification

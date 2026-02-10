@@ -57,6 +57,8 @@ export type { MergeTransactions$Params } from './fn/transactions/merge-transacti
 export { mergeTransactions } from './fn/transactions/merge-transactions';
 export type { GetMergedTransactions$Params } from './fn/merged-transactions/get-merged-transactions';
 export { getMergedTransactions } from './fn/merged-transactions/get-merged-transactions';
+export type { GetMergedTransaction$Params } from './fn/merged-transactions/get-merged-transaction';
+export { getMergedTransaction } from './fn/merged-transactions/get-merged-transaction';
 export type { UnmergeMergedTransaction$Params } from './fn/merged-transactions/unmerge-merged-transaction';
 export { unmergeMergedTransaction } from './fn/merged-transactions/unmerge-merged-transaction';
 export type { GetUnprocessedTransactions$Params } from './fn/unprocessed-transactions/get-unprocessed-transactions';

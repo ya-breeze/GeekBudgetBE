@@ -116,6 +116,7 @@ type MatchersAPIRouter interface {
 // pass the data to a MergedTransactionsAPIServicer to perform the required actions, then write the service results to the http response.
 type MergedTransactionsAPIRouter interface {
 	GetMergedTransactions(http.ResponseWriter, *http.Request)
+	GetMergedTransaction(http.ResponseWriter, *http.Request)
 	UnmergeMergedTransaction(http.ResponseWriter, *http.Request)
 }
 
@@ -275,6 +276,7 @@ type MatchersAPIServicer interface {
 // and updated with the logic required for the API.
 type MergedTransactionsAPIServicer interface {
 	GetMergedTransactions(context.Context) (ImplResponse, error)
+	GetMergedTransaction(context.Context, string) (ImplResponse, error)
 	UnmergeMergedTransaction(context.Context, string) (ImplResponse, error)
 }
 

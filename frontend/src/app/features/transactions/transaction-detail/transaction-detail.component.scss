@@ -1,0 +1,220 @@
+.container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.transaction-detail-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.header-card {
+    margin-bottom: 0.5rem;
+
+    &.merged-bg {
+        background-color: #fafafa;
+        border-left: 5px solid #ff4081; // Accent color for merged
+    }
+
+    .large-icon {
+        transform: scale(1.5);
+    }
+
+    .title-with-icons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .matcher-icon-small {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                object-fit: cover;
+
+                &.auto {
+                    border: 2px solid #4caf50;
+                }
+
+                &.manual {
+                    border: 2px solid #ff9800;
+                }
+            }
+
+            .match-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+
+                &.auto {
+                    color: #4caf50;
+                }
+
+                &.manual {
+                    color: #ff9800;
+                }
+            }
+
+            .suspicious-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+                color: #f44336;
+            }
+
+            .merged-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+                color: #2196f3;
+            }
+        }
+    }
+
+    .header-actions {
+        margin-left: auto;
+    }
+
+    .full-description {
+        font-size: 1.1rem;
+        margin: 1rem 0;
+        color: rgba(0, 0, 0, 0.87);
+    }
+
+    .header-tags {
+        margin: 1rem 0;
+    }
+
+    .suspicious-warnings {
+        background-color: #fff3e0;
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin-top: 1rem;
+
+        .warning-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #d84315;
+            margin-bottom: 0.25rem;
+        }
+    }
+}
+
+.panel-icon {
+    margin-right: 1rem;
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.table-container {
+    overflow-x: auto;
+
+    table {
+        width: 100%;
+
+        td.negative {
+            color: #d32f2f;
+        }
+
+        td.positive {
+            color: #388e3c;
+        }
+    }
+}
+
+.linked-section {
+    margin-bottom: 1.5rem;
+
+    h3 {
+        font-size: 0.9rem;
+        color: rgba(0, 0, 0, 0.54);
+        margin-bottom: 0.5rem;
+    }
+
+    .linked-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #f5f5f5;
+        border-radius: 4px;
+        transition: background 0.2s;
+
+        &.clickable {
+            cursor: pointer;
+
+            &:hover {
+                background: #eeeeee;
+                border: 1px solid #e0e0e0;
+            }
+        }
+
+        .id-pill {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+    }
+}
+
+.metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+
+        &.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.75rem;
+            color: rgba(0, 0, 0, 0.54);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        span {
+            font-size: 0.95rem;
+            font-family: 'Roboto Mono', monospace;
+            word-break: break-all;
+        }
+
+        .code-block {
+            background: #263238;
+            color: #eceff1;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+    }
+}
+
+.raw-data {
+    background: #263238;
+    color: #80cbc4; // Teal accent for code
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}

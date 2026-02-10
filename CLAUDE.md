@@ -115,7 +115,7 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 - If `make run-backend` fails with "address already in use", the backend is already running.
 - If `make run-frontend` fails with "Port 4200 is already in use", the frontend is already running.
 
-## Deduplication Flow
+## Deduplication & Archiving Flow
  
  1. **Background Task:** `StartDuplicateDetection` runs every 24 hours (or manually via `DuplicateDetectionCommand`), scanning transactions from the last 30 days. Uses `models.DuplicateReason` constant.
  2. **Identification:** Uses `common.IsDuplicate` to find transactions with similar dates (±2 days) and amounts.
@@ -124,7 +124,9 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
  5. **User Resolution:**
     - **Dismissal:** Setting `DuplicateDismissed = true` clears all links and prevents re-flagging.
     - **Merging:** `POST /v1/transactions/merge` transfers external IDs to the "kept" transaction and performs a GORM soft-delete on the other.
-    - **Synchronized Cleanup:** The storage layer (`ClearDuplicateRelationships`) automatically removes `models.DuplicateReason` from linked transactions if they have no other duplicate links remaining.
+    - **Archiving:** Merged transactions are moved to a separate archive table.
+    - **Retrieval:** Use `GET /v1/mergedTransactions/{id}` to fetch these archived records. The standard `GET /v1/transactions/{id}` only returns active ones.
+ 6. **Synchronized Cleanup:** The storage layer (`ClearDuplicateRelationships`) automatically removes `models.DuplicateReason` from linked transactions if they have no other duplicate links remaining.
 
 ## Code Patterns
 

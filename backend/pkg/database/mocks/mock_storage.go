@@ -713,6 +713,21 @@ func (mr *MockStorageMockRecorder) GetMatchersRuntime(arg0 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMatchersRuntime", reflect.TypeOf((*MockStorage)(nil).GetMatchersRuntime), arg0)
 }
 
+// GetMergedTransaction mocks base method.
+func (m *MockStorage) GetMergedTransaction(arg0, arg1 string) (goserver.MergedTransaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMergedTransaction", arg0, arg1)
+	ret0, _ := ret[0].(goserver.MergedTransaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMergedTransaction indicates an expected call of GetMergedTransaction.
+func (mr *MockStorageMockRecorder) GetMergedTransaction(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMergedTransaction", reflect.TypeOf((*MockStorage)(nil).GetMergedTransaction), arg0, arg1)
+}
+
 // GetMergedTransactions mocks base method.
 func (m *MockStorage) GetMergedTransactions(arg0 string) ([]goserver.MergedTransaction, error) {
 	m.ctrl.T.Helper()

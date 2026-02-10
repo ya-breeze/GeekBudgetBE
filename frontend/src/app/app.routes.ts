@@ -40,6 +40,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: 'transactions/:id',
+                loadComponent: () =>
+                    import('./features/transactions/transaction-detail/transaction-detail.component').then(
+                        (m) => m.TransactionDetailComponent,
+                    ),
+            },
+            {
                 path: 'transactions',
                 loadComponent: () =>
                     import('./features/transactions/transactions.component').then(

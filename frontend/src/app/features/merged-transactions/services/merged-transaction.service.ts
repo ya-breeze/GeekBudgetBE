@@ -4,6 +4,7 @@ import { Observable, tap, map } from 'rxjs';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
 import { MergedTransaction } from '../../../core/api/models/merged-transaction';
 import { getMergedTransactions } from '../../../core/api/fn/merged-transactions/get-merged-transactions';
+import { getMergedTransaction } from '../../../core/api/fn/merged-transactions/get-merged-transaction';
 import { unmergeMergedTransaction } from '../../../core/api/fn/merged-transactions/unmerge-merged-transaction';
 
 @Injectable({
@@ -33,6 +34,12 @@ export class MergedTransactionService {
                     this.loading.set(false);
                 },
             }),
+        );
+    }
+
+    getMergedTransaction(id: string): Observable<MergedTransaction> {
+        return getMergedTransaction(this.http, this.apiConfig.rootUrl, { id }).pipe(
+            map((response) => response.body),
         );
     }
 

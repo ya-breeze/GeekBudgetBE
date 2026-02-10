@@ -56,6 +56,11 @@ func (c *MergedTransactionsAPIController) Routes() Routes {
 			"/v1/mergedTransactions",
 			c.GetMergedTransactions,
 		},
+		"GetMergedTransaction": Route{
+			strings.ToUpper("Get"),
+			"/v1/mergedTransactions/{id}",
+			c.GetMergedTransaction,
+		},
 		"UnmergeMergedTransaction": Route{
 			strings.ToUpper("Post"),
 			"/v1/mergedTransactions/{id}/unmerge",
@@ -67,6 +72,24 @@ func (c *MergedTransactionsAPIController) Routes() Routes {
 // GetMergedTransactions - get all merged (deduplicated) transactions
 func (c *MergedTransactionsAPIController) GetMergedTransactions(w http.ResponseWriter, r *http.Request) {
 	result, err := c.service.GetMergedTransactions(r.Context())
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// GetMergedTransaction - get merged transaction details by original transaction ID
+func (c *MergedTransactionsAPIController) GetMergedTransaction(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	result, err := c.service.GetMergedTransaction(r.Context(), idParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
