@@ -6,10 +6,12 @@ export interface ReconciliationStatus {
     accountName: string;
     appBalance: number;
     bankBalance?: number;
+    bankBalanceAt?: string | null;
     currencyId: string;
     currencySymbol?: string;
     delta: number;
     hasBankImporter?: boolean;
+    hasTransactionsAfterBankBalance?: boolean;
     hasUnprocessedTransactions?: boolean;
     isManualReconciliationEnabled?: boolean;
     lastReconciledAt?: string | null;

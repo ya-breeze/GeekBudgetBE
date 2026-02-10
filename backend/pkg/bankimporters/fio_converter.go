@@ -80,6 +80,40 @@ func (fc *FioConverter) ParseTransactions(ctx context.Context, data []byte) (*go
 
 	fc.logger.Info("Successfully parser FIO transactions", "count", len(res))
 
+	var lastUpdated *time.Time
+	fc.logger.Debug("FIO statement info", "dateEnd", fio.AccountStatement.Info.DateEnd.Value)
+	dateStr := fio.AccountStatement.Info.DateEnd.Value
+	if dateStr != "" {
+		// Try formats: 2006-01-02, 2006-01-02-0700, and 2006-01-02T15:04:05Z07:00
+		formats := []string{
+			"2006-01-02",
+			"2006-01-02-0700",
+			"2006-01-02T15:04:05",
+			time.RFC3339,
+		}
+
+		var t time.Time
+		var err error
+		for _, f := range formats {
+			t, err = time.ParseInLocation(f, dateStr, fc.location)
+			if err == nil {
+				break
+			}
+		}
+
+		if err == nil {
+			// If it's just a date (HH:mm:ss is 0), and it's today, use current time
+			now := time.Now().In(fc.location)
+			if t.Hour() == 0 && t.Minute() == 0 && t.Second() == 0 &&
+				t.Year() == now.Year() && t.Month() == now.Month() && t.Day() == now.Day() {
+				t = now
+			}
+			lastUpdated = &t
+		} else {
+			fc.logger.Warn("Failed to parse FIO DateEnd", "date", dateStr, "error", err)
+		}
+	}
+
 	info := goserver.BankAccountInfo{
 		AccountId: fio.AccountStatement.Info.AccountId,
 		BankId:    fio.AccountStatement.Info.BankId,
@@ -88,6 +122,7 @@ func (fc *FioConverter) ParseTransactions(ctx context.Context, data []byte) (*go
 				OpeningBalance: fio.AccountStatement.Info.OpeningBalance.Value.InexactFloat64(),
 				ClosingBalance: fio.AccountStatement.Info.ClosingBalance.Value.InexactFloat64(),
 				CurrencyId:     fio.AccountStatement.Info.Currency.Value,
+				LastUpdatedAt:  lastUpdated,
 			},
 		},
 	}
@@ -372,11 +407,10 @@ type FioAccountInfo struct {
 	BIC            string          `json:"bic"`
 	OpeningBalance FioFloatColumn  `json:"openingBalance"`
 	ClosingBalance FioFloatColumn  `json:"closingBalance"`
-	DateStart      interface{}     `json:"dateStart"`
-	DateEnd        interface{}     `json:"dateEnd"`
-	YearId         int             `json:"yearId"`
 	IdFrom         int64           `json:"idFrom"`
 	IdTo           int64           `json:"idTo"`
+	DateStart      FioStringColumn `json:"dateStart"`
+	DateEnd        FioStringColumn `json:"dateEnd"`
 }
 
 type FioTransactions struct {

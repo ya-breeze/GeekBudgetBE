@@ -90,6 +90,12 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 				Delta:                      appBalance - b.ClosingBalance,
 				HasUnprocessedTransactions: unprocessedCount > 0,
 				HasBankImporter:            hasImporter,
+				BankBalanceAt:              b.LastUpdatedAt,
+			}
+
+			if b.LastUpdatedAt != nil {
+				hasAfter, _ := s.db.HasTransactionsAfterDate(userID, acc.Id, *b.LastUpdatedAt)
+				status.HasTransactionsAfterBankBalance = hasAfter
 			}
 
 			if lastRec != nil {
@@ -140,7 +146,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 	}
 
 	// Validate that balance matches expected balance
-	if math.Abs(balance-expectedBalance) > 0.01 {
+	if math.Abs(balance-expectedBalance) > common.ReconciliationTolerance {
 		return goserver.Response(400, "Cannot reconcile: account balance does not match bank balance"), nil
 	}
 

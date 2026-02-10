@@ -118,6 +118,7 @@ type Storage interface {
 
 	GetAccountBalance(userID, accountID, currencyID string) (float64, error)
 	CountUnprocessedTransactionsForAccount(userID, accountID string, ignoreUnprocessedBefore time.Time) (int, error)
+	HasTransactionsAfterDate(userID, accountID string, date time.Time) (bool, error)
 
 	// Reconciliation methods
 	GetLatestReconciliation(userID, accountID, currencyID string) (*goserver.Reconciliation, error)
@@ -1752,8 +1753,18 @@ func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID strin
 		}
 	}
 
-	s.log.Debug("CountUnprocessedTransactionsForAccount result", "accountId", accountID, "count", count)
 	return count, nil
+}
+
+func (s *storage) HasTransactionsAfterDate(userID, accountID string, date time.Time) (bool, error) {
+	var count int64
+	err := s.db.Model(&models.Transaction{}).
+		Where("user_id = ? AND movements LIKE ? AND date > ? AND merged_into_id IS NULL", userID, "%"+accountID+"%", date).
+		Count(&count).Error
+	if err != nil {
+		return false, fmt.Errorf(StorageError, err)
+	}
+	return count > 0, nil
 }
 
 func (s *storage) recordTransactionHistory(tx *gorm.DB, userID string, transaction *models.Transaction, action string) error {

@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
+const RECONCILIATION_TOLERANCE = 0.01;
 @Component({
     selector: 'app-reconciliation',
     standalone: true,
@@ -44,8 +45,9 @@ export class ReconciliationComponent implements OnInit {
     loading = true;
     displayedColumns: string[] = [
         'accountName',
-        'appBalance',
         'bankBalance',
+        'bankBalanceAt',
+        'appBalance',
         'delta',
         'lastReconciledAt',
         'actions',
@@ -73,6 +75,17 @@ export class ReconciliationComponent implements OnInit {
                 this.loading = false;
             },
         });
+    }
+
+    getReconcileTooltip(element: ReconciliationStatus): string {
+        if (element.hasUnprocessedTransactions) {
+            return 'Cannot reconcile while there are unprocessed transactions';
+        }
+        const delta = Math.abs(element.delta || 0);
+        if (delta > RECONCILIATION_TOLERANCE) {
+            return `Delta is too large to reconcile (${delta.toFixed(2)})`;
+        }
+        return 'Mark as Reconciled';
     }
 
     reconcile(status: ReconciliationStatus): void {
@@ -130,7 +143,7 @@ export class ReconciliationComponent implements OnInit {
 
     getStatusClass(status: ReconciliationStatus): string {
         if (status.hasUnprocessedTransactions) return 'status-yellow';
-        if (Math.abs(status.delta || 0) > 0.01) return 'status-red';
+        if (Math.abs(status.delta || 0) > RECONCILIATION_TOLERANCE) return 'status-red';
         return 'status-green';
     }
 

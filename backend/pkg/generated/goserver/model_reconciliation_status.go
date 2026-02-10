@@ -39,6 +39,10 @@ type ReconciliationStatus struct {
 	HasBankImporter bool `json:"hasBankImporter,omitempty"`
 
 	IsManualReconciliationEnabled bool `json:"isManualReconciliationEnabled,omitempty"`
+
+	BankBalanceAt *time.Time `json:"bankBalanceAt,omitempty"`
+
+	HasTransactionsAfterBankBalance bool `json:"hasTransactionsAfterBankBalance,omitempty"`
 }
 
 type ReconciliationStatusInterface interface {
@@ -54,6 +58,8 @@ type ReconciliationStatusInterface interface {
 	GetHasUnprocessedTransactions() bool
 	GetHasBankImporter() bool
 	GetIsManualReconciliationEnabled() bool
+	GetBankBalanceAt() *time.Time
+	GetHasTransactionsAfterBankBalance() bool
 }
 
 func (c *ReconciliationStatus) GetAccountId() string {
@@ -91,6 +97,12 @@ func (c *ReconciliationStatus) GetHasBankImporter() bool {
 }
 func (c *ReconciliationStatus) GetIsManualReconciliationEnabled() bool {
 	return c.IsManualReconciliationEnabled
+}
+func (c *ReconciliationStatus) GetBankBalanceAt() *time.Time {
+	return c.BankBalanceAt
+}
+func (c *ReconciliationStatus) GetHasTransactionsAfterBankBalance() bool {
+	return c.HasTransactionsAfterBankBalance
 }
 
 // AssertReconciliationStatusRequired checks if the required fields are not zero-ed

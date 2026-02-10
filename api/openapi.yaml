@@ -1558,6 +1558,10 @@ components:
                 type: number
                 format: double
                 example: 321.0
+              lastUpdatedAt:
+                type: string
+                format: date-time
+                nullable: true
 
     AccountNoID:
       type: object
@@ -2261,6 +2265,12 @@ components:
         hasBankImporter:
           type: boolean
         isManualReconciliationEnabled:
+          type: boolean
+        bankBalanceAt:
+          type: string
+          format: date-time
+          nullable: true
+        hasTransactionsAfterBankBalance:
           type: boolean
       required:
         - accountId

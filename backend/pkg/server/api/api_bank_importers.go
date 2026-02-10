@@ -586,6 +586,9 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 							accNoId.BankInfo.Balances[i] = b
 						} else {
 							accNoId.BankInfo.Balances[i].ClosingBalance = b.ClosingBalance
+							if b.LastUpdatedAt != nil {
+								accNoId.BankInfo.Balances[i].LastUpdatedAt = b.LastUpdatedAt
+							}
 						}
 						found = true
 						break

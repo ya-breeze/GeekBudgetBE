@@ -848,6 +848,21 @@ func (mr *MockStorageMockRecorder) GetUserID(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserID", reflect.TypeOf((*MockStorage)(nil).GetUserID), arg0)
 }
 
+// HasTransactionsAfterDate mocks base method.
+func (m *MockStorage) HasTransactionsAfterDate(userID string, accountID string, date time.Time) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasTransactionsAfterDate", userID, accountID, date)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasTransactionsAfterDate indicates an expected call of HasTransactionsAfterDate.
+func (mr *MockStorageMockRecorder) HasTransactionsAfterDate(userID, accountID, date interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasTransactionsAfterDate", reflect.TypeOf((*MockStorage)(nil).HasTransactionsAfterDate), userID, accountID, date)
+}
+
 // InvalidateReconciliation mocks base method.
 func (m *MockStorage) InvalidateReconciliation(arg0, arg1, arg2 string) error {
 	m.ctrl.T.Helper()

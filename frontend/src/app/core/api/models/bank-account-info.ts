@@ -11,6 +11,7 @@ export interface BankAccountInfo {
         currencyId?: string;
         openingBalance?: number;
         closingBalance?: number;
+        lastUpdatedAt?: string | null;
     }>;
     bankId?: string;
 }

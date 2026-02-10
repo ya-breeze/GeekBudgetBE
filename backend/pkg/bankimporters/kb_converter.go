@@ -99,6 +99,8 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 	// Create a new reader that decodes windows-1250 to UTF-8
 	decoder := transform.NewReader(reader, charmap.Windows1250.NewDecoder())
 	scanner := bufio.NewScanner(decoder)
+	var newestDate time.Time
+	var headerDate *time.Time
 	for range 16 {
 		if !scanner.Scan() {
 			return nil, nil, errors.New("can't read CSV header")
@@ -108,12 +110,13 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 		fc.logger.Info("Processing header: " + line)
 		parts := strings.Split(line, ";")
 		if len(parts) < 2 {
-			return nil, nil, errors.New("can't read CSV header")
+			continue
 		}
-		if parts[0] == "Cislo uctu" {
+		cleanPart0 := strings.Trim(parts[0], "\"")
+		if cleanPart0 == "Cislo uctu" {
 			// Cislo uctu;123-177270217;;;;;;;;;;;;;;;;;
 			info.AccountId = parts[1]
-		} else if parts[0] == "Konecny zustatek" {
+		} else if cleanPart0 == "Konecny zustatek" {
 			// Konecny zustatek;13468,31;;;;;;;;;;;;;;;;;
 			amount, err := strconv.ParseFloat(strings.ReplaceAll(parts[1], ",", "."), 64)
 			if err == nil {
@@ -123,6 +126,16 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 						CurrencyId:     "CZK", // default to CZK as per example
 					},
 				}
+			}
+		} else if cleanPart0 == "Datum vypisu" || cleanPart0 == "Vytvoreno" || cleanPart0 == "Datum exportu" {
+			// Vytvoreno;10.02.2024 20:15:00
+			dateStr := strings.TrimSpace(parts[1])
+			t, err := time.ParseInLocation("02.01.2006 15:04:05", dateStr, fc.location)
+			if err != nil {
+				t, err = time.ParseInLocation("02.01.2006", dateStr, fc.location)
+			}
+			if err == nil {
+				headerDate = &t
 			}
 		}
 	}
@@ -159,6 +172,10 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 
 		res = append(res, tr)
 
+		if tr.Date.After(newestDate) {
+			newestDate = tr.Date
+		}
+
 		// Calculate sum of amounts for the account movements
 		for _, m := range tr.Movements {
 			if m.AccountId == fc.bankImporter.AccountId {
@@ -172,6 +189,13 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 	// If we found a balance, calculate opening balance
 	if len(info.Balances) > 0 {
 		info.Balances[0].OpeningBalance = info.Balances[0].ClosingBalance - sum
+
+		// Set LastUpdatedAt
+		if headerDate != nil {
+			info.Balances[0].LastUpdatedAt = headerDate
+		} else if !newestDate.IsZero() {
+			info.Balances[0].LastUpdatedAt = &newestDate
+		}
 	}
 
 	// If we found a balance, try to update the currency ID if we can infer it or if it's set in the transactions

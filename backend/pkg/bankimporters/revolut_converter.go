@@ -143,20 +143,27 @@ func (fc *RevolutConverter) ParseTransactions(ctx context.Context, format, data 
 		}
 
 		var closing, opening float64
+		var lastUpdatedDate time.Time
 		if s.firstDate.After(s.lastDate) || (s.firstDate.Equal(s.lastDate)) {
 			// Assume newest first if first date is after or equal to last date
 			closing = s.firstBalance
 			opening = s.lastBalance - s.lastAmount
+			lastUpdatedDate = s.firstDate
 		} else {
 			// Oldest first
 			closing = s.lastBalance
 			opening = s.firstBalance - s.firstAmount
+			lastUpdatedDate = s.lastDate
 		}
-		info.Balances = append(info.Balances, goserver.BankAccountInfoBalancesInner{
+		bal := goserver.BankAccountInfoBalancesInner{
 			CurrencyId:     currencyID,
 			ClosingBalance: closing,
 			OpeningBalance: opening,
-		})
+		}
+		if !lastUpdatedDate.IsZero() {
+			bal.LastUpdatedAt = &lastUpdatedDate
+		}
+		info.Balances = append(info.Balances, bal)
 	}
 
 	res, err = fc.joinExchanges(res)

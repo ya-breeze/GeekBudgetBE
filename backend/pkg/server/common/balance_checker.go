@@ -37,7 +37,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 			continue
 		}
 
-		if math.Abs(appBalance-b.ClosingBalance) > 0.01 {
+		if math.Abs(appBalance-b.ClosingBalance) > ReconciliationTolerance {
 			logger.Warn("Balance mismatch detected",
 				"account", acc.Name,
 				"currencyId", b.CurrencyId,
