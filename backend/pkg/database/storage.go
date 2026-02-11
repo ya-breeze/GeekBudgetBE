@@ -1473,14 +1473,17 @@ func (s *storage) GetCNBRates(date time.Time) (map[string]decimal.Decimal, error
 		query = query.Where("rate_date = ?", date)
 	} else {
 		// Otherwise get the most recent rates
-		var latestDate time.Time
+		var latestRate models.CNBCurrencyRate
 		if err := s.db.Model(&models.CNBCurrencyRate{}).
-			Select("MAX(rate_date)").
-			Scan(&latestDate).Error; err != nil {
+			Order("rate_date DESC").
+			First(&latestRate).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return make(map[string]decimal.Decimal), nil
+			}
 			return nil, fmt.Errorf(StorageError, err)
 		}
 
-		query = query.Where("rate_date = ?", latestDate)
+		query = query.Where("rate_date = ?", latestRate.RateDate)
 	}
 
 	if err := query.Find(&rates).Error; err != nil {
@@ -1533,7 +1536,6 @@ func (s *storage) DeleteImage(id string) error {
 }
 
 // #endregion Images
-//#endregion CNB rates
 
 // #region BudgetItems
 func (s *storage) CreateBudgetItem(userID string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error) {
