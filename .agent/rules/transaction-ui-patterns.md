@@ -13,18 +13,19 @@ When displaying entities that have associated IDs (Accounts, Currencies, Matcher
 - **Column Merging**: In tables, prefer merging related information (e.g., Currency next to Amount) to reduce horizontally sprawling columns.
 - **Account Icons**: Use the `AccountDisplayComponent` to show account names along with their icons for immediate visual recognition.
 
-### 3. Detail View Navigation
+### 3. Detail View and Navigation
 - **Accordion Layout**: Use `mat-accordion` for complex detail views to allow progressive disclosure of information (e.g., raw source data, metadata).
 - **History Preservation**: Use `Location.back()` for "Back" buttons in detail views. This allows users who navigated between linked transactions to go back through their specific path rather than jumping straight back to the transaction list.
+- **Drill-down Context**: When linking from overview components to reports, use query parameters to transmit filter state (Account ID, date range).
 
-### 5. Manual Merge & Cross-Month Selection
-- **Selection Persistence**: Use a dedicated `TransactionSelectionService` to manage selected transactions globally. This allows users to select a transaction in one month, navigate, and select another in a different month.
-- **Floating Bar Feedback**: Always show a persistent floating bar (`selection-floating-bar`) when transactions are selected. It should provide:
-    - Count of selected items.
-    - Brief preview (Date/Description) of selected items.
-    - Action buttons (Merge, Clear).
-- **Selection Constraints**: 
-    - Enforce a strict limit of 2 transactions for merging. 
-    - Disable checkboxes and show informative tooltips when the limit is reached.
-- **Responsive Comparison**: Manual merge dialogs must use responsive grids (`grid-template-columns: 1fr` on small screens) to prevent clipping when comparing dense transaction data side-by-side.
-- **Layout Spacing**: Add appropriate bottom padding or spacers in lists where a floating bar may overlap the footer content.
+- **DRY Dialogs**: Centralize common complex dialog results (like account editing) in service methods (e.g., `AccountService.handleAccountDialogResult`) to avoid duplicating 50+ lines of callback logic.
+
+### 4. Layout & Spacing
+- **Flexbox Centering**: For `mat-icon-button` or similar small interactive elements, use `display: flex; align-items: center; justify-content: center;` instead of `line-height` for vertically centering icons. This is more reliable across different browsers and themes.
+- **Card Icon Placement**: In card headers, place action icons (like settings) to the left of the title or use a toolbar-like arrangement. Use negative margins (e.g., `margin-left: -8px`) to pull icons closer to the card edge for a cleaner look.
+
+### 5. Filtered Drill-down Pattern
+- **Preserved Context**: When navigating from a dashboard summary (e.g., an account balance) to a detail report (e.g., Balance Report), always pass the context via query parameters:
+  - `accountId`: Specific entity ID.
+  - `from` and `to`: ISO timestamps for the relevant period (e.g., last 12 months).
+- **Reactive Receipt**: Detail components should subscribe to `route.queryParams` to automatically initialize their filters, ensuring the user sees exactly what they clicked on without extra steps.
