@@ -564,6 +564,21 @@ func (mr *MockStorageMockRecorder) GetBudgetItems(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBudgetItems", reflect.TypeOf((*MockStorage)(nil).GetBudgetItems), arg0)
 }
 
+// GetBulkReconciliationData mocks base method.
+func (m *MockStorage) GetBulkReconciliationData(arg0 string) (*database.BulkReconciliationData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBulkReconciliationData", arg0)
+	ret0, _ := ret[0].(*database.BulkReconciliationData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBulkReconciliationData indicates an expected call of GetBulkReconciliationData.
+func (mr *MockStorageMockRecorder) GetBulkReconciliationData(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBulkReconciliationData", reflect.TypeOf((*MockStorage)(nil).GetBulkReconciliationData), arg0)
+}
+
 // GetCNBRates mocks base method.
 func (m *MockStorage) GetCNBRates(arg0 time.Time) (map[string]decimal.Decimal, error) {
 	m.ctrl.T.Helper()

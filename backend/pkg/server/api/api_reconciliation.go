@@ -56,6 +56,12 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 		accountsWithImporter[bi.AccountId] = true
 	}
 
+	bulkData, err := s.db.GetBulkReconciliationData(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get bulk reconciliation data")
+		return goserver.Response(500, nil), nil
+	}
+
 	var statuses []goserver.ReconciliationStatus
 	for _, acc := range accounts {
 		if acc.Type != "asset" {
@@ -63,8 +69,10 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 		}
 
 		for _, b := range acc.BankInfo.Balances {
-			// Get latest reconciliation from new entity
-			lastRec, _ := s.db.GetLatestReconciliation(userID, acc.Id, b.CurrencyId)
+			var lastRec *goserver.Reconciliation
+			if accLatest, ok := bulkData.LatestReconciliations[acc.Id]; ok {
+				lastRec = accLatest[b.CurrencyId]
+			}
 
 			hasImporter := accountsWithImporter[acc.Id]
 			// Filter: only show if it has a bank importer OR it was already manually reconciled OR it's explicitly marked
@@ -72,13 +80,8 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 				continue
 			}
 
-			appBalance, err := s.db.GetAccountBalance(userID, acc.Id, b.CurrencyId)
-			if err != nil {
-				s.logger.With("error", err, "accountId", acc.Id, "currencyId", b.CurrencyId).Warn("Failed to get account balance")
-				continue
-			}
-
-			unprocessedCount, _ := s.db.CountUnprocessedTransactionsForAccount(userID, acc.Id, acc.IgnoreUnprocessedBefore)
+			appBalance := bulkData.Balances[acc.Id][b.CurrencyId]
+			unprocessedCount := bulkData.UnprocessedCounts[acc.Id]
 
 			bankBalance := b.ClosingBalance
 			var bankBalanceAt *time.Time = b.LastUpdatedAt
@@ -103,8 +106,8 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 			}
 
 			if bankBalanceAt != nil {
-				hasAfter, _ := s.db.HasTransactionsAfterDate(userID, acc.Id, *bankBalanceAt)
-				status.HasTransactionsAfterBankBalance = hasAfter
+				maxDate := bulkData.MaxTransactionDates[acc.Id][b.CurrencyId]
+				status.HasTransactionsAfterBankBalance = maxDate.After(*bankBalanceAt)
 			}
 
 			if lastRec != nil {
