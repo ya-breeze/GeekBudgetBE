@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
@@ -49,13 +50,13 @@ var _ = Describe("Aggregation API", func() {
 
 		Expect(sut.Currencies[0].Accounts[0].AccountId).To(Equal(accounts[2].Id))
 		Expect(sut.Currencies[0].Accounts[0].Amounts).To(HaveLen(2))
-		Expect(sut.Currencies[0].Accounts[0].Amounts[0]).To(Equal(450.0))
-		Expect(sut.Currencies[0].Accounts[0].Amounts[1]).To(Equal(10.0))
+		Expect(sut.Currencies[0].Accounts[0].Amounts[0].Equal(decimal.NewFromFloat(450.0))).To(BeTrue())
+		Expect(sut.Currencies[0].Accounts[0].Amounts[1].Equal(decimal.NewFromFloat(10.0))).To(BeTrue())
 
 		Expect(sut.Currencies[0].Accounts[1].AccountId).To(Equal(accounts[4].Id))
 		Expect(sut.Currencies[0].Accounts[1].Amounts).To(HaveLen(2))
-		Expect(sut.Currencies[0].Accounts[1].Amounts[0]).To(Equal(300.0))
-		Expect(sut.Currencies[0].Accounts[1].Amounts[1]).To(Equal(250.0))
+		Expect(sut.Currencies[0].Accounts[1].Amounts[0].Equal(decimal.NewFromFloat(300.0))).To(BeTrue())
+		Expect(sut.Currencies[0].Accounts[1].Amounts[1].Equal(decimal.NewFromFloat(250.0))).To(BeTrue())
 	})
 
 	It("handles edge cases for currency conversion", func() {
@@ -100,10 +101,10 @@ var _ = Describe("Aggregation API", func() {
 
 		// Mock storage to return realistic CNB exchange rates (rates to CZK)
 		// Use the actual currency names from test data
-		mockRates := map[string]float64{
-			currencies[0].Name: 22.5, // 1 USD = 22.5 CZK
-			currencies[1].Name: 25.0, // 1 EUR = 25.0 CZK
-			currencies[2].Name: 1.0,  // 1 CZK = 1 CZK (base currency)
+		mockRates := map[string]decimal.Decimal{
+			currencies[0].Name: decimal.NewFromFloat(22.5), // 1 USD = 22.5 CZK
+			currencies[1].Name: decimal.NewFromFloat(25.0), // 1 EUR = 25.0 CZK
+			currencies[2].Name: decimal.NewFromFloat(1.0),  // 1 CZK = 1 CZK (base currency)
 		}
 
 		// Expect storage calls for currency conversion
@@ -116,9 +117,9 @@ var _ = Describe("Aggregation API", func() {
 
 		// Create transactions in different currencies
 		mixedTransactions := []goserver.Transaction{
-			test.PrepareTransaction("USD expense", time.Date(2024, 9, 18, 0, 0, 0, 0, time.UTC), 100,
+			test.PrepareTransaction("USD expense", time.Date(2024, 9, 18, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(100),
 				currencies[0].Id, accounts[2].Id, accounts[0].Id), // 100 USD
-			test.PrepareTransaction("EUR expense", time.Date(2024, 9, 19, 0, 0, 0, 0, time.UTC), 50,
+			test.PrepareTransaction("EUR expense", time.Date(2024, 9, 19, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(50),
 				currencies[1].Id, accounts[2].Id, accounts[0].Id), // 50 EUR
 		}
 
@@ -134,13 +135,14 @@ var _ = Describe("Aggregation API", func() {
 		Expect(sut.Currencies[0].CurrencyId).To(Equal(currencies[2].Id)) // CZK
 
 		// Check that amounts were converted: 100 USD * 22.5 + 50 EUR * 25.0 = 2250 + 1250 = 3500 CZK
-		totalAmount := 0.0
+		totalAmount := decimal.Zero
 		for _, account := range sut.Currencies[0].Accounts {
 			for _, amount := range account.Amounts {
-				totalAmount += amount
+				totalAmount = totalAmount.Add(amount)
 			}
 		}
-		Expect(totalAmount).To(BeNumerically("~", 3500.0, 1.0)) // Allow small floating point variance
+		expectedAmount := decimal.NewFromInt(3500)
+		Expect(totalAmount.Sub(expectedAmount).Abs().LessThanOrEqual(decimal.NewFromFloat(1.0))).To(BeTrue())
 	})
 
 	It("aggregate balances (assets)", func() {
@@ -168,8 +170,8 @@ var _ = Describe("Aggregation API", func() {
 		// Sep: +2000 (salary), -300 (groceries). Net: +1700.
 		// Oct: +1000 (salary), -100 (groceries), -150 (groceries). Net: +750.
 		Expect(bankAcc.Amounts).To(HaveLen(2))
-		Expect(bankAcc.Amounts[0]).To(Equal(1700.0))
-		Expect(bankAcc.Amounts[1]).To(Equal(750.0))
+		Expect(bankAcc.Amounts[0].Equal(decimal.NewFromFloat(1700.0))).To(BeTrue())
+		Expect(bankAcc.Amounts[1].Equal(decimal.NewFromFloat(750.0))).To(BeTrue())
 
 		// Find "Cash" account (Id="0")
 		// Sep: -200 (food), -250 (food). Net: -450.
@@ -181,7 +183,36 @@ var _ = Describe("Aggregation API", func() {
 			}
 		}
 		Expect(cashAcc.AccountId).To(Equal("0"))
-		Expect(cashAcc.Amounts[0]).To(Equal(-450.0))
-		Expect(cashAcc.Amounts[1]).To(Equal(-10.0))
+		Expect(cashAcc.Amounts[0].Equal(decimal.NewFromFloat(-450.0))).To(BeTrue())
+		Expect(cashAcc.Amounts[1].Equal(decimal.NewFromFloat(-10.0))).To(BeTrue())
+	})
+
+	It("demonstrates compounding precision errors (baseline)", func() {
+		// Create 1000 transactions of 0.1
+		manyTransactions := make([]goserver.Transaction, 1000)
+		for i := 0; i < 1000; i++ {
+			manyTransactions[i] = test.PrepareTransaction("small", dateFrom.Add(time.Duration(i)*time.Minute), decimal.NewFromFloat(0.1), currencies[0].Id, accounts[0].Id, accounts[1].Id)
+		}
+
+		sut := api.Aggregate(
+			ctx, accounts, manyTransactions, dateFrom, dateTo, utils.GranularityMonth,
+			"", nil, currencyMap,
+			func(a goserver.Account) bool { return a.Type == "asset" },
+			log)
+
+		total := decimal.Zero
+		for _, acc := range sut.Currencies[0].Accounts {
+			if acc.AccountId == accounts[0].Id {
+				for _, amount := range acc.Amounts {
+					total = total.Add(amount)
+				}
+			}
+		}
+		// 1000 * 0.1 should be 100.0 exactly
+		expected := decimal.NewFromInt(100)
+		Expect(total.Equal(expected)).To(BeTrue())
+		if !total.Equal(expected) {
+			log.Info("Compounded error detected", "expected", expected, "actual", total, "diff", total.Sub(expected))
+		}
 	})
 })

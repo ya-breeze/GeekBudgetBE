@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -18,10 +19,10 @@ type Reconciliation struct {
 	AccountID  uuid.UUID `gorm:"type:uuid;index"`
 	CurrencyID string    `gorm:"index"`
 
-	ReconciledBalance float64
+	ReconciledBalance decimal.Decimal
 	ReconciledAt      time.Time
-	ExpectedBalance   float64 // Balance from bank importer or manually set
-	IsManual          bool    // True for manual reconciliation (no bank importer)
+	ExpectedBalance   decimal.Decimal // Balance from bank importer or manually set
+	IsManual          bool            // True for manual reconciliation (no bank importer)
 }
 
 // ReconciliationToAPI converts database model to API component

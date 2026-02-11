@@ -11,33 +11,37 @@
 
 package goserver
 
+import (
+	"github.com/shopspring/decimal"
+)
+
 type AccountAggregation struct {
 	AccountId string `json:"accountId"`
 
-	Amounts []float64 `json:"amounts"`
+	Amounts []decimal.Decimal `json:"amounts"`
 
-	Total float64 `json:"total,omitempty"`
+	Total decimal.Decimal `json:"total,omitempty"`
 
-	ChangePercent float64 `json:"changePercent,omitempty"`
+	ChangePercent decimal.Decimal `json:"changePercent,omitempty"`
 }
 
 type AccountAggregationInterface interface {
 	GetAccountId() string
-	GetAmounts() []float64
-	GetTotal() float64
-	GetChangePercent() float64
+	GetAmounts() []decimal.Decimal
+	GetTotal() decimal.Decimal
+	GetChangePercent() decimal.Decimal
 }
 
 func (c *AccountAggregation) GetAccountId() string {
 	return c.AccountId
 }
-func (c *AccountAggregation) GetAmounts() []float64 {
+func (c *AccountAggregation) GetAmounts() []decimal.Decimal {
 	return c.Amounts
 }
-func (c *AccountAggregation) GetTotal() float64 {
+func (c *AccountAggregation) GetTotal() decimal.Decimal {
 	return c.Total
 }
-func (c *AccountAggregation) GetChangePercent() float64 {
+func (c *AccountAggregation) GetChangePercent() decimal.Decimal {
 	return c.ChangePercent
 }
 

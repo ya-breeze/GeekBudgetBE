@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -79,7 +80,7 @@ func TestTransactionsStorage(t *testing.T) {
 		input := &goserver.TransactionNoId{
 			Date:        date,
 			Description: "Soft Delete Test",
-			Movements:   []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "acc-1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "acc-1"}},
 		}
 
 		created, err := st.CreateTransaction(userID, input)

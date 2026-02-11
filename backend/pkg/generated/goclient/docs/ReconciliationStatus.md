@@ -8,11 +8,11 @@ Name | Type | Description | Notes
 **AccountName** | **string** |  | 
 **CurrencyId** | **string** |  | 
 **CurrencySymbol** | Pointer to **string** |  | [optional] 
-**BankBalance** | Pointer to **float64** |  | [optional] 
-**AppBalance** | **float64** |  | 
-**Delta** | **float64** |  | 
+**BankBalance** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
+**AppBalance** | [**decimal.Decimal**](decimal.Decimal.md) |  | 
+**Delta** | [**decimal.Decimal**](decimal.Decimal.md) |  | 
 **LastReconciledAt** | Pointer to **NullableTime** |  | [optional] 
-**LastReconciledBalance** | Pointer to **float64** |  | [optional] 
+**LastReconciledBalance** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
 **HasUnprocessedTransactions** | Pointer to **bool** |  | [optional] 
 **HasBankImporter** | Pointer to **bool** |  | [optional] 
 **IsManualReconciliationEnabled** | Pointer to **bool** |  | [optional] 
@@ -23,7 +23,7 @@ Name | Type | Description | Notes
 
 ### NewReconciliationStatus
 
-`func NewReconciliationStatus(accountId string, accountName string, currencyId string, appBalance float64, delta float64, ) *ReconciliationStatus`
+`func NewReconciliationStatus(accountId string, accountName string, currencyId string, appBalance decimal.Decimal, delta decimal.Decimal, ) *ReconciliationStatus`
 
 NewReconciliationStatus instantiates a new ReconciliationStatus object
 This constructor will assign default values to properties that have it defined,
@@ -125,20 +125,20 @@ HasCurrencySymbol returns a boolean if a field has been set.
 
 ### GetBankBalance
 
-`func (o *ReconciliationStatus) GetBankBalance() float64`
+`func (o *ReconciliationStatus) GetBankBalance() decimal.Decimal`
 
 GetBankBalance returns the BankBalance field if non-nil, zero value otherwise.
 
 ### GetBankBalanceOk
 
-`func (o *ReconciliationStatus) GetBankBalanceOk() (*float64, bool)`
+`func (o *ReconciliationStatus) GetBankBalanceOk() (*decimal.Decimal, bool)`
 
 GetBankBalanceOk returns a tuple with the BankBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetBankBalance
 
-`func (o *ReconciliationStatus) SetBankBalance(v float64)`
+`func (o *ReconciliationStatus) SetBankBalance(v decimal.Decimal)`
 
 SetBankBalance sets BankBalance field to given value.
 
@@ -150,40 +150,40 @@ HasBankBalance returns a boolean if a field has been set.
 
 ### GetAppBalance
 
-`func (o *ReconciliationStatus) GetAppBalance() float64`
+`func (o *ReconciliationStatus) GetAppBalance() decimal.Decimal`
 
 GetAppBalance returns the AppBalance field if non-nil, zero value otherwise.
 
 ### GetAppBalanceOk
 
-`func (o *ReconciliationStatus) GetAppBalanceOk() (*float64, bool)`
+`func (o *ReconciliationStatus) GetAppBalanceOk() (*decimal.Decimal, bool)`
 
 GetAppBalanceOk returns a tuple with the AppBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAppBalance
 
-`func (o *ReconciliationStatus) SetAppBalance(v float64)`
+`func (o *ReconciliationStatus) SetAppBalance(v decimal.Decimal)`
 
 SetAppBalance sets AppBalance field to given value.
 
 
 ### GetDelta
 
-`func (o *ReconciliationStatus) GetDelta() float64`
+`func (o *ReconciliationStatus) GetDelta() decimal.Decimal`
 
 GetDelta returns the Delta field if non-nil, zero value otherwise.
 
 ### GetDeltaOk
 
-`func (o *ReconciliationStatus) GetDeltaOk() (*float64, bool)`
+`func (o *ReconciliationStatus) GetDeltaOk() (*decimal.Decimal, bool)`
 
 GetDeltaOk returns a tuple with the Delta field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetDelta
 
-`func (o *ReconciliationStatus) SetDelta(v float64)`
+`func (o *ReconciliationStatus) SetDelta(v decimal.Decimal)`
 
 SetDelta sets Delta field to given value.
 
@@ -225,20 +225,20 @@ HasLastReconciledAt returns a boolean if a field has been set.
 UnsetLastReconciledAt ensures that no value is present for LastReconciledAt, not even an explicit nil
 ### GetLastReconciledBalance
 
-`func (o *ReconciliationStatus) GetLastReconciledBalance() float64`
+`func (o *ReconciliationStatus) GetLastReconciledBalance() decimal.Decimal`
 
 GetLastReconciledBalance returns the LastReconciledBalance field if non-nil, zero value otherwise.
 
 ### GetLastReconciledBalanceOk
 
-`func (o *ReconciliationStatus) GetLastReconciledBalanceOk() (*float64, bool)`
+`func (o *ReconciliationStatus) GetLastReconciledBalanceOk() (*decimal.Decimal, bool)`
 
 GetLastReconciledBalanceOk returns a tuple with the LastReconciledBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetLastReconciledBalance
 
-`func (o *ReconciliationStatus) SetLastReconciledBalance(v float64)`
+`func (o *ReconciliationStatus) SetLastReconciledBalance(v decimal.Decimal)`
 
 SetLastReconciledBalance sets LastReconciledBalance field to given value.
 

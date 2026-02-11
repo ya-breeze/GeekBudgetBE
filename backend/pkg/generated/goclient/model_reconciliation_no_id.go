@@ -15,6 +15,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the ReconciliationNoId type satisfies the MappedNullable interface at compile time
@@ -22,11 +24,11 @@ var _ MappedNullable = &ReconciliationNoId{}
 
 // ReconciliationNoId struct for ReconciliationNoId
 type ReconciliationNoId struct {
-	AccountId         string   `json:"accountId"`
-	CurrencyId        string   `json:"currencyId"`
-	ReconciledBalance float64  `json:"reconciledBalance"`
-	ExpectedBalance   *float64 `json:"expectedBalance,omitempty"`
-	IsManual          *bool    `json:"isManual,omitempty"`
+	AccountId         string           `json:"accountId"`
+	CurrencyId        string           `json:"currencyId"`
+	ReconciledBalance decimal.Decimal  `json:"reconciledBalance"`
+	ExpectedBalance   *decimal.Decimal `json:"expectedBalance,omitempty"`
+	IsManual          *bool            `json:"isManual,omitempty"`
 }
 
 type _ReconciliationNoId ReconciliationNoId
@@ -35,7 +37,7 @@ type _ReconciliationNoId ReconciliationNoId
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReconciliationNoId(accountId string, currencyId string, reconciledBalance float64) *ReconciliationNoId {
+func NewReconciliationNoId(accountId string, currencyId string, reconciledBalance decimal.Decimal) *ReconciliationNoId {
 	this := ReconciliationNoId{}
 	this.AccountId = accountId
 	this.CurrencyId = currencyId
@@ -100,9 +102,9 @@ func (o *ReconciliationNoId) SetCurrencyId(v string) {
 }
 
 // GetReconciledBalance returns the ReconciledBalance field value
-func (o *ReconciliationNoId) GetReconciledBalance() float64 {
+func (o *ReconciliationNoId) GetReconciledBalance() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -111,7 +113,7 @@ func (o *ReconciliationNoId) GetReconciledBalance() float64 {
 
 // GetReconciledBalanceOk returns a tuple with the ReconciledBalance field value
 // and a boolean to check if the value has been set.
-func (o *ReconciliationNoId) GetReconciledBalanceOk() (*float64, bool) {
+func (o *ReconciliationNoId) GetReconciledBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -119,14 +121,14 @@ func (o *ReconciliationNoId) GetReconciledBalanceOk() (*float64, bool) {
 }
 
 // SetReconciledBalance sets field value
-func (o *ReconciliationNoId) SetReconciledBalance(v float64) {
+func (o *ReconciliationNoId) SetReconciledBalance(v decimal.Decimal) {
 	o.ReconciledBalance = v
 }
 
 // GetExpectedBalance returns the ExpectedBalance field value if set, zero value otherwise.
-func (o *ReconciliationNoId) GetExpectedBalance() float64 {
+func (o *ReconciliationNoId) GetExpectedBalance() decimal.Decimal {
 	if o == nil || IsNil(o.ExpectedBalance) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.ExpectedBalance
@@ -134,7 +136,7 @@ func (o *ReconciliationNoId) GetExpectedBalance() float64 {
 
 // GetExpectedBalanceOk returns a tuple with the ExpectedBalance field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ReconciliationNoId) GetExpectedBalanceOk() (*float64, bool) {
+func (o *ReconciliationNoId) GetExpectedBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.ExpectedBalance) {
 		return nil, false
 	}
@@ -150,8 +152,8 @@ func (o *ReconciliationNoId) HasExpectedBalance() bool {
 	return false
 }
 
-// SetExpectedBalance gets a reference to the given float64 and assigns it to the ExpectedBalance field.
-func (o *ReconciliationNoId) SetExpectedBalance(v float64) {
+// SetExpectedBalance gets a reference to the given decimal.Decimal and assigns it to the ExpectedBalance field.
+func (o *ReconciliationNoId) SetExpectedBalance(v decimal.Decimal) {
 	o.ExpectedBalance = &v
 }
 

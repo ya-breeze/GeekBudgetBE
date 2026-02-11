@@ -6,6 +6,7 @@
 When displaying entities that have associated IDs (Accounts, Currencies, Matchers), always resolve these to human-readable names.
 - **Signal-based Maps**: Use Angular `computed` signals to create lookup maps from services.
 - **Safe Fallbacks**: If a name is missing or the ID is not found, fallback to the ID itself or 'N/A' rather than leaving an empty space.
+- **Notifications**: When creating system notifications (e.g., via `CreateNotification`), always attempt to resolve entity IDs (like Account ID) to human-readable names before including them in the message description to avoid showing UUIDs to the user.
 
 ### 2. Information Density and Icons
 - **Icon Visibility**: Transactions should show status icons (Suspicious, Auto/Manual Matched, Merged) in both list and detail views. Use consistent icons and tooltips.

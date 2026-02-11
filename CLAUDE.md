@@ -41,7 +41,7 @@ GeekBudgetBE/
 
 ## Tech Stack
 
-- **Backend:** Go 1.24+, Gorilla Mux, GORM, SQLite, JWT, Cobra/Viper, slog
+- **Backend:** Go 1.24+, Gorilla Mux, GORM, SQLite, JWT, Cobra/Viper, slog, shopspring/decimal
 - **Frontend:** Angular 20, Angular Material, RxJS, Chart.js, SCSS
 - **Testing:** Ginkgo/Gomega (backend BDD), Karma/Jasmine (frontend)
 - **Code generation:** OpenAPI Generator (Go client/server + Angular client)
@@ -49,6 +49,7 @@ GeekBudgetBE/
 - **Linting:** golangci-lint (Go), ESLint with Angular rules (frontend)
 - **Workflows:** See `.agent/workflows/` for specialized task guides (e.g., deduplication)
 - **Investigation:** See `.agent/rules/database-investigation.md` for local DB querying guidelines
+- **Financial Details:** See `.agent/rules/financial-data-handling.md` for Decimal usage rules
 - **Bank Importers:** See `.agent/rules/bank-importers.md` for importer-specific dates and rules
 
 ## Common Commands
@@ -105,8 +106,9 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 4. When adding new API endpoints, update `api/openapi.yaml` first, then `make generate`.
 5. All database models must include `UserID` for multi-user isolation.
 6. All API endpoints require JWT auth except `/v1/authorize`.
-7. **API Strictness**: When updating transactions, ensure the request body does NOT contain an `id` or other `Entity` fields. The backend decodes directly into `TransactionNoId` (or similar interface) and will fail with `json: unknown field "id"` if extra fields are present. Strip these fields in the frontend service or component before sending.
-8. **For Next.js frontend**: Never import from `new-frontend/src/lib/api/generated/` directly. Always use custom hooks from `new-frontend/src/lib/api/hooks/` which wrap the generated code and won't be overwritten.
+8. **Financial Accuracy**: Always use `decimal.Decimal` (from `github.com/shopspring/decimal`) for money. In tests, use `.Equal()` instead of `==`. In the frontend, wrap amounts in `Number()` for safety.
+9. **API Strictness**: When updating transactions, ensure the request body does NOT contain an `id` or other `Entity` fields. The backend decodes directly into `TransactionNoId` (or similar interface) and will fail with `json: unknown field "id"` if extra fields are present. Strip these fields in the frontend service or component before sending.
+10. **For Next.js frontend**: Never import from `new-frontend/src/lib/api/generated/` directly. Always use custom hooks from `new-frontend/src/lib/api/hooks/` which wrap the generated code and won't be overwritten.
 
 ## Testing
 

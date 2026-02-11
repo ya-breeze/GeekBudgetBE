@@ -6,14 +6,14 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Date** | **time.Time** |  | 
 **AccountId** | **string** |  | 
-**Amount** | **float64** |  | 
+**Amount** | [**decimal.Decimal**](decimal.Decimal.md) |  | 
 **Description** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
 ### NewBudgetItemNoID
 
-`func NewBudgetItemNoID(date time.Time, accountId string, amount float64, ) *BudgetItemNoID`
+`func NewBudgetItemNoID(date time.Time, accountId string, amount decimal.Decimal, ) *BudgetItemNoID`
 
 NewBudgetItemNoID instantiates a new BudgetItemNoID object
 This constructor will assign default values to properties that have it defined,
@@ -70,20 +70,20 @@ SetAccountId sets AccountId field to given value.
 
 ### GetAmount
 
-`func (o *BudgetItemNoID) GetAmount() float64`
+`func (o *BudgetItemNoID) GetAmount() decimal.Decimal`
 
 GetAmount returns the Amount field if non-nil, zero value otherwise.
 
 ### GetAmountOk
 
-`func (o *BudgetItemNoID) GetAmountOk() (*float64, bool)`
+`func (o *BudgetItemNoID) GetAmountOk() (*decimal.Decimal, bool)`
 
 GetAmountOk returns a tuple with the Amount field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAmount
 
-`func (o *BudgetItemNoID) SetAmount(v float64)`
+`func (o *BudgetItemNoID) SetAmount(v decimal.Decimal)`
 
 SetAmount sets Amount field to given value.
 

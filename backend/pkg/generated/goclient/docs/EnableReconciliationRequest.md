@@ -5,13 +5,13 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CurrencyId** | **string** |  | 
-**InitialBalance** | **float64** |  | 
+**InitialBalance** | [**decimal.Decimal**](decimal.Decimal.md) |  | 
 
 ## Methods
 
 ### NewEnableReconciliationRequest
 
-`func NewEnableReconciliationRequest(currencyId string, initialBalance float64, ) *EnableReconciliationRequest`
+`func NewEnableReconciliationRequest(currencyId string, initialBalance decimal.Decimal, ) *EnableReconciliationRequest`
 
 NewEnableReconciliationRequest instantiates a new EnableReconciliationRequest object
 This constructor will assign default values to properties that have it defined,
@@ -48,20 +48,20 @@ SetCurrencyId sets CurrencyId field to given value.
 
 ### GetInitialBalance
 
-`func (o *EnableReconciliationRequest) GetInitialBalance() float64`
+`func (o *EnableReconciliationRequest) GetInitialBalance() decimal.Decimal`
 
 GetInitialBalance returns the InitialBalance field if non-nil, zero value otherwise.
 
 ### GetInitialBalanceOk
 
-`func (o *EnableReconciliationRequest) GetInitialBalanceOk() (*float64, bool)`
+`func (o *EnableReconciliationRequest) GetInitialBalanceOk() (*decimal.Decimal, bool)`
 
 GetInitialBalanceOk returns a tuple with the InitialBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetInitialBalance
 
-`func (o *EnableReconciliationRequest) SetInitialBalance(v float64)`
+`func (o *EnableReconciliationRequest) SetInitialBalance(v decimal.Decimal)`
 
 SetInitialBalance sets InitialBalance field to given value.
 

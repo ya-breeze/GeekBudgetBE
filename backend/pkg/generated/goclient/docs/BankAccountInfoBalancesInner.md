@@ -5,8 +5,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CurrencyId** | Pointer to **string** |  | [optional] 
-**OpeningBalance** | Pointer to **float64** |  | [optional] 
-**ClosingBalance** | Pointer to **float64** |  | [optional] 
+**OpeningBalance** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
+**ClosingBalance** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
 **LastUpdatedAt** | Pointer to **NullableTime** |  | [optional] 
 
 ## Methods
@@ -55,20 +55,20 @@ HasCurrencyId returns a boolean if a field has been set.
 
 ### GetOpeningBalance
 
-`func (o *BankAccountInfoBalancesInner) GetOpeningBalance() float64`
+`func (o *BankAccountInfoBalancesInner) GetOpeningBalance() decimal.Decimal`
 
 GetOpeningBalance returns the OpeningBalance field if non-nil, zero value otherwise.
 
 ### GetOpeningBalanceOk
 
-`func (o *BankAccountInfoBalancesInner) GetOpeningBalanceOk() (*float64, bool)`
+`func (o *BankAccountInfoBalancesInner) GetOpeningBalanceOk() (*decimal.Decimal, bool)`
 
 GetOpeningBalanceOk returns a tuple with the OpeningBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetOpeningBalance
 
-`func (o *BankAccountInfoBalancesInner) SetOpeningBalance(v float64)`
+`func (o *BankAccountInfoBalancesInner) SetOpeningBalance(v decimal.Decimal)`
 
 SetOpeningBalance sets OpeningBalance field to given value.
 
@@ -80,20 +80,20 @@ HasOpeningBalance returns a boolean if a field has been set.
 
 ### GetClosingBalance
 
-`func (o *BankAccountInfoBalancesInner) GetClosingBalance() float64`
+`func (o *BankAccountInfoBalancesInner) GetClosingBalance() decimal.Decimal`
 
 GetClosingBalance returns the ClosingBalance field if non-nil, zero value otherwise.
 
 ### GetClosingBalanceOk
 
-`func (o *BankAccountInfoBalancesInner) GetClosingBalanceOk() (*float64, bool)`
+`func (o *BankAccountInfoBalancesInner) GetClosingBalanceOk() (*decimal.Decimal, bool)`
 
 GetClosingBalanceOk returns a tuple with the ClosingBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetClosingBalance
 
-`func (o *BankAccountInfoBalancesInner) SetClosingBalance(v float64)`
+`func (o *BankAccountInfoBalancesInner) SetClosingBalance(v decimal.Decimal)`
 
 SetClosingBalance sets ClosingBalance field to given value.
 

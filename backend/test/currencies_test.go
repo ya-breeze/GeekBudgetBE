@@ -9,6 +9,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -126,8 +127,8 @@ var _ = Describe("Currencies API", func() {
 		_, _, err = client.TransactionsAPI.CreateTransaction(ctx).TransactionNoID(goclient.TransactionNoID{
 			Date: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 			Movements: []goclient.Movement{
-				{Amount: 100, CurrencyId: cur.Id, AccountId: utils.StrToRef(acc1.Id)},
-				{Amount: -100, CurrencyId: cur.Id, AccountId: utils.StrToRef(acc2.Id)},
+				{Amount: decimal.NewFromInt(100), CurrencyId: cur.Id, AccountId: utils.StrToRef(acc1.Id)},
+				{Amount: decimal.NewFromInt(-100), CurrencyId: cur.Id, AccountId: utils.StrToRef(acc2.Id)},
 			},
 		}).Execute()
 		Expect(err).ToNot(HaveOccurred())
@@ -157,8 +158,8 @@ var _ = Describe("Currencies API", func() {
 		tr, _, err := client.TransactionsAPI.CreateTransaction(ctx).TransactionNoID(goclient.TransactionNoID{
 			Date: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 			Movements: []goclient.Movement{
-				{Amount: 100, CurrencyId: cur1.Id, AccountId: utils.StrToRef(acc1.Id)},
-				{Amount: -100, CurrencyId: cur1.Id, AccountId: utils.StrToRef(acc2.Id)},
+				{Amount: decimal.NewFromInt(100), CurrencyId: cur1.Id, AccountId: utils.StrToRef(acc1.Id)},
+				{Amount: decimal.NewFromInt(-100), CurrencyId: cur1.Id, AccountId: utils.StrToRef(acc2.Id)},
 			},
 		}).Execute()
 		Expect(err).ToNot(HaveOccurred())

@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -39,7 +40,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 				Id:   "tx1",
 				Date: t1Date,
 				Movements: []goserver.Movement{
-					{Amount: 7.00, CurrencyId: "CZK", AccountId: ""}, // Unprocessed
+					{Amount: decimal.NewFromFloat(7.00), CurrencyId: "CZK", AccountId: ""}, // Unprocessed
 				},
 			}
 
@@ -48,7 +49,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 				Id:   "tx2",
 				Date: t2Date,
 				Movements: []goserver.Movement{
-					{Amount: 7.50, CurrencyId: "EUR", AccountId: "acc1"}, // Processed candidate
+					{Amount: decimal.NewFromFloat(7.50), CurrencyId: "EUR", AccountId: "acc1"}, // Processed candidate
 				},
 			}
 
@@ -64,7 +65,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 				Id:   "tx1",
 				Date: t1Date,
 				Movements: []goserver.Movement{
-					{Amount: 7.00, CurrencyId: "CZK", AccountId: ""},
+					{Amount: decimal.NewFromFloat(7.00), CurrencyId: "CZK", AccountId: ""},
 				},
 			}
 
@@ -73,7 +74,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 				Id:   "tx2",
 				Date: t2Date,
 				Movements: []goserver.Movement{
-					{Amount: 7.50, CurrencyId: "CZK", AccountId: "acc1"},
+					{Amount: decimal.NewFromFloat(7.50), CurrencyId: "CZK", AccountId: "acc1"},
 				},
 			}
 
@@ -89,8 +90,8 @@ var _ = Describe("UnprocessedTransactions API", func() {
 				Id:   "tx1",
 				Date: time.Now(),
 				Movements: []goserver.Movement{
-					{Amount: 100, CurrencyId: "CZK"},
-					{Amount: 50, CurrencyId: "EUR"},
+					{Amount: decimal.NewFromInt(100), CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(50), CurrencyId: "EUR"},
 				},
 			}
 
@@ -98,7 +99,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 				Id:   "tx2",
 				Date: time.Now(),
 				Movements: []goserver.Movement{
-					{Amount: 100, CurrencyId: "CZK", AccountId: "acc1"},
+					{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "acc1"},
 				},
 			}
 

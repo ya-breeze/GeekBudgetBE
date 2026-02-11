@@ -9,6 +9,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -110,12 +111,12 @@ var _ = Describe("Transactions API", func() {
 				{
 					AccountId:  &accounts[2].Id,
 					CurrencyId: currencies[2].Id,
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  &accounts[0].Id,
 					CurrencyId: currencies[2].Id,
-					Amount:     -100,
+					Amount:     decimal.NewFromInt(-100),
 				},
 			},
 		}
@@ -164,7 +165,7 @@ var _ = Describe("Transactions API", func() {
 
 		Expect(expenses.Currencies[0].Accounts[0].AccountId).To(Equal(accounts[2].Id))
 		Expect(expenses.Currencies[0].Accounts[0].Amounts).To(HaveLen(1))
-		Expect(expenses.Currencies[0].Accounts[0].Amounts[0]).To(Equal(100.0))
+		Expect(expenses.Currencies[0].Accounts[0].Amounts[0]).To(Equal(decimal.NewFromInt(100)))
 
 		// Delete transaction
 		_, err = client.TransactionsAPI.DeleteTransaction(ctx, created.Id).Execute()
@@ -187,12 +188,12 @@ var _ = Describe("Transactions API", func() {
 				{
 					AccountId:  &accounts[0].Id,
 					CurrencyId: currencies[0].Id,
-					Amount:     50,
+					Amount:     decimal.NewFromInt(50),
 				},
 				{
 					AccountId:  &accounts[1].Id,
 					CurrencyId: currencies[0].Id,
-					Amount:     -50,
+					Amount:     decimal.NewFromInt(-50),
 				},
 			},
 		}

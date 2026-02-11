@@ -79,7 +79,9 @@ generate:
 			-g go \
 			-t /local/backend/pkg/generated/templates/goclient \
 			-o /local/backend/pkg/generated/goclient \
-			--additional-properties=packageName=goclient,withGoMod=false; \
+			--additional-properties=packageName=goclient,withGoMod=false \
+			--type-mappings=double=decimal.Decimal,number=decimal.Decimal \
+			--import-mappings=decimal.Decimal=github.com/shopspring/decimal; \
 		rm -rf \
 			pkg/generated/goclient/api \
 			pkg/generated/goclient/.gitignore \
@@ -94,7 +96,9 @@ generate:
 			-g go-server \
 			-t /local/backend/pkg/generated/templates/goserver \
 			-o /local/backend/pkg/generated/goserver \
-			--additional-properties=packageName=goserver,featureCORS=true,hideGenerationTimestamp=true; \
+			--additional-properties=packageName=goserver,featureCORS=true,hideGenerationTimestamp=true \
+			--type-mappings=double=decimal.Decimal,number=decimal.Decimal \
+			--import-mappings=decimal.Decimal=github.com/shopspring/decimal; \
 		rm -rf \
 			pkg/generated/goserver/api \
 			pkg/generated/goserver/.openapi-generator-ignore \

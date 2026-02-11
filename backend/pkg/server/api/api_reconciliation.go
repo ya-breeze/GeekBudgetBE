@@ -3,9 +3,9 @@ package api
 import (
 	"context"
 	"log/slog"
-	"math"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
@@ -96,7 +96,7 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 				CurrencySymbol:             currencyMap[b.CurrencyId],
 				BankBalance:                bankBalance,
 				AppBalance:                 appBalance,
-				Delta:                      appBalance - bankBalance,
+				Delta:                      appBalance.Sub(bankBalance),
 				HasUnprocessedTransactions: unprocessedCount > 0,
 				HasBankImporter:            hasImporter,
 				BankBalanceAt:              bankBalanceAt,
@@ -131,7 +131,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 
 	// Get current account balance if not provided
 	balance := body.Balance
-	if balance == 0 {
+	if balance.IsZero() {
 		var err error
 		balance, err = s.db.GetAccountBalance(userID, id, body.CurrencyId)
 		if err != nil {
@@ -146,7 +146,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 		return goserver.Response(404, nil), nil
 	}
 
-	var expectedBalance float64
+	var expectedBalance decimal.Decimal
 	for _, b := range acc.BankInfo.Balances {
 		if b.CurrencyId == body.CurrencyId {
 			expectedBalance = b.ClosingBalance
@@ -155,7 +155,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 	}
 
 	// Validate that balance matches expected balance
-	if math.Abs(balance-expectedBalance) > common.ReconciliationTolerance {
+	if balance.Sub(expectedBalance).Abs().GreaterThan(common.ReconciliationTolerance) {
 		return goserver.Response(400, "Cannot reconcile: account balance does not match bank balance"), nil
 	}
 
@@ -165,7 +165,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 		CurrencyId:        body.CurrencyId,
 		ReconciledBalance: balance,
 		ExpectedBalance:   expectedBalance,
-		IsManual:          body.Balance > 0, // Manual if balance explicitly provided
+		IsManual:          body.Balance.IsPositive(), // Manual if balance explicitly provided
 	})
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create reconciliation")

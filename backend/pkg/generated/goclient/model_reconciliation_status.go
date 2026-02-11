@@ -16,6 +16,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the ReconciliationStatus type satisfies the MappedNullable interface at compile time
@@ -23,20 +25,20 @@ var _ MappedNullable = &ReconciliationStatus{}
 
 // ReconciliationStatus struct for ReconciliationStatus
 type ReconciliationStatus struct {
-	AccountId                       string       `json:"accountId"`
-	AccountName                     string       `json:"accountName"`
-	CurrencyId                      string       `json:"currencyId"`
-	CurrencySymbol                  *string      `json:"currencySymbol,omitempty"`
-	BankBalance                     *float64     `json:"bankBalance,omitempty"`
-	AppBalance                      float64      `json:"appBalance"`
-	Delta                           float64      `json:"delta"`
-	LastReconciledAt                NullableTime `json:"lastReconciledAt,omitempty"`
-	LastReconciledBalance           *float64     `json:"lastReconciledBalance,omitempty"`
-	HasUnprocessedTransactions      *bool        `json:"hasUnprocessedTransactions,omitempty"`
-	HasBankImporter                 *bool        `json:"hasBankImporter,omitempty"`
-	IsManualReconciliationEnabled   *bool        `json:"isManualReconciliationEnabled,omitempty"`
-	BankBalanceAt                   NullableTime `json:"bankBalanceAt,omitempty"`
-	HasTransactionsAfterBankBalance *bool        `json:"hasTransactionsAfterBankBalance,omitempty"`
+	AccountId                       string           `json:"accountId"`
+	AccountName                     string           `json:"accountName"`
+	CurrencyId                      string           `json:"currencyId"`
+	CurrencySymbol                  *string          `json:"currencySymbol,omitempty"`
+	BankBalance                     *decimal.Decimal `json:"bankBalance,omitempty"`
+	AppBalance                      decimal.Decimal  `json:"appBalance"`
+	Delta                           decimal.Decimal  `json:"delta"`
+	LastReconciledAt                NullableTime     `json:"lastReconciledAt,omitempty"`
+	LastReconciledBalance           *decimal.Decimal `json:"lastReconciledBalance,omitempty"`
+	HasUnprocessedTransactions      *bool            `json:"hasUnprocessedTransactions,omitempty"`
+	HasBankImporter                 *bool            `json:"hasBankImporter,omitempty"`
+	IsManualReconciliationEnabled   *bool            `json:"isManualReconciliationEnabled,omitempty"`
+	BankBalanceAt                   NullableTime     `json:"bankBalanceAt,omitempty"`
+	HasTransactionsAfterBankBalance *bool            `json:"hasTransactionsAfterBankBalance,omitempty"`
 }
 
 type _ReconciliationStatus ReconciliationStatus
@@ -45,7 +47,7 @@ type _ReconciliationStatus ReconciliationStatus
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReconciliationStatus(accountId string, accountName string, currencyId string, appBalance float64, delta float64) *ReconciliationStatus {
+func NewReconciliationStatus(accountId string, accountName string, currencyId string, appBalance decimal.Decimal, delta decimal.Decimal) *ReconciliationStatus {
 	this := ReconciliationStatus{}
 	this.AccountId = accountId
 	this.AccountName = accountName
@@ -168,9 +170,9 @@ func (o *ReconciliationStatus) SetCurrencySymbol(v string) {
 }
 
 // GetBankBalance returns the BankBalance field value if set, zero value otherwise.
-func (o *ReconciliationStatus) GetBankBalance() float64 {
+func (o *ReconciliationStatus) GetBankBalance() decimal.Decimal {
 	if o == nil || IsNil(o.BankBalance) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.BankBalance
@@ -178,7 +180,7 @@ func (o *ReconciliationStatus) GetBankBalance() float64 {
 
 // GetBankBalanceOk returns a tuple with the BankBalance field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ReconciliationStatus) GetBankBalanceOk() (*float64, bool) {
+func (o *ReconciliationStatus) GetBankBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.BankBalance) {
 		return nil, false
 	}
@@ -194,15 +196,15 @@ func (o *ReconciliationStatus) HasBankBalance() bool {
 	return false
 }
 
-// SetBankBalance gets a reference to the given float64 and assigns it to the BankBalance field.
-func (o *ReconciliationStatus) SetBankBalance(v float64) {
+// SetBankBalance gets a reference to the given decimal.Decimal and assigns it to the BankBalance field.
+func (o *ReconciliationStatus) SetBankBalance(v decimal.Decimal) {
 	o.BankBalance = &v
 }
 
 // GetAppBalance returns the AppBalance field value
-func (o *ReconciliationStatus) GetAppBalance() float64 {
+func (o *ReconciliationStatus) GetAppBalance() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -211,7 +213,7 @@ func (o *ReconciliationStatus) GetAppBalance() float64 {
 
 // GetAppBalanceOk returns a tuple with the AppBalance field value
 // and a boolean to check if the value has been set.
-func (o *ReconciliationStatus) GetAppBalanceOk() (*float64, bool) {
+func (o *ReconciliationStatus) GetAppBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -219,14 +221,14 @@ func (o *ReconciliationStatus) GetAppBalanceOk() (*float64, bool) {
 }
 
 // SetAppBalance sets field value
-func (o *ReconciliationStatus) SetAppBalance(v float64) {
+func (o *ReconciliationStatus) SetAppBalance(v decimal.Decimal) {
 	o.AppBalance = v
 }
 
 // GetDelta returns the Delta field value
-func (o *ReconciliationStatus) GetDelta() float64 {
+func (o *ReconciliationStatus) GetDelta() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -235,7 +237,7 @@ func (o *ReconciliationStatus) GetDelta() float64 {
 
 // GetDeltaOk returns a tuple with the Delta field value
 // and a boolean to check if the value has been set.
-func (o *ReconciliationStatus) GetDeltaOk() (*float64, bool) {
+func (o *ReconciliationStatus) GetDeltaOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -243,7 +245,7 @@ func (o *ReconciliationStatus) GetDeltaOk() (*float64, bool) {
 }
 
 // SetDelta sets field value
-func (o *ReconciliationStatus) SetDelta(v float64) {
+func (o *ReconciliationStatus) SetDelta(v decimal.Decimal) {
 	o.Delta = v
 }
 
@@ -291,9 +293,9 @@ func (o *ReconciliationStatus) UnsetLastReconciledAt() {
 }
 
 // GetLastReconciledBalance returns the LastReconciledBalance field value if set, zero value otherwise.
-func (o *ReconciliationStatus) GetLastReconciledBalance() float64 {
+func (o *ReconciliationStatus) GetLastReconciledBalance() decimal.Decimal {
 	if o == nil || IsNil(o.LastReconciledBalance) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.LastReconciledBalance
@@ -301,7 +303,7 @@ func (o *ReconciliationStatus) GetLastReconciledBalance() float64 {
 
 // GetLastReconciledBalanceOk returns a tuple with the LastReconciledBalance field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ReconciliationStatus) GetLastReconciledBalanceOk() (*float64, bool) {
+func (o *ReconciliationStatus) GetLastReconciledBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.LastReconciledBalance) {
 		return nil, false
 	}
@@ -317,8 +319,8 @@ func (o *ReconciliationStatus) HasLastReconciledBalance() bool {
 	return false
 }
 
-// SetLastReconciledBalance gets a reference to the given float64 and assigns it to the LastReconciledBalance field.
-func (o *ReconciliationStatus) SetLastReconciledBalance(v float64) {
+// SetLastReconciledBalance gets a reference to the given decimal.Decimal and assigns it to the LastReconciledBalance field.
+func (o *ReconciliationStatus) SetLastReconciledBalance(v decimal.Decimal) {
 	o.LastReconciledBalance = &v
 }
 

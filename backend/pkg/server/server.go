@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
@@ -235,15 +236,15 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 			Balances: []goserver.BankAccountInfoBalancesInner{
 				{
 					CurrencyId:     curCZK.Id,
-					OpeningBalance: 1000,
+					OpeningBalance: decimal.NewFromInt(1000),
 				},
 				{
 					CurrencyId:     curUSD.Id,
-					OpeningBalance: 1,
+					OpeningBalance: decimal.NewFromInt(1),
 				},
 				{
 					CurrencyId:     curEUR.Id,
-					OpeningBalance: 2,
+					OpeningBalance: decimal.NewFromInt(2),
 				},
 			},
 		},
@@ -333,17 +334,17 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accCash.Id,
-				Amount:     1000,
+				Amount:     decimal.NewFromInt(1000),
 				CurrencyId: curCZK.Id,
 			},
 			{
 				AccountId:  accCash.Id,
-				Amount:     1,
+				Amount:     decimal.NewFromInt(1),
 				CurrencyId: curUSD.Id,
 			},
 			{
 				AccountId:  accCash.Id,
-				Amount:     1,
+				Amount:     decimal.NewFromInt(1),
 				CurrencyId: curEUR.Id,
 			},
 		},
@@ -359,7 +360,7 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accFio.Id,
-				Amount:     10000,
+				Amount:     decimal.NewFromInt(10000),
 				CurrencyId: curCZK.Id,
 			},
 		},
@@ -374,12 +375,12 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accSalary.Id,
-				Amount:     -10000,
+				Amount:     decimal.NewFromInt(-10000),
 				CurrencyId: curCZK.Id,
 			},
 			{
 				AccountId:  accFio.Id,
-				Amount:     10000,
+				Amount:     decimal.NewFromInt(10000),
 				CurrencyId: curCZK.Id,
 			},
 		},
@@ -394,12 +395,12 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accGroceries.Id,
-				Amount:     100,
+				Amount:     decimal.NewFromInt(100),
 				CurrencyId: curCZK.Id,
 			},
 			{
 				AccountId:  accCash.Id,
-				Amount:     -100,
+				Amount:     decimal.NewFromInt(-100),
 				CurrencyId: curCZK.Id,
 			},
 		},
@@ -414,12 +415,12 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accGroceries.Id,
-				Amount:     150,
+				Amount:     decimal.NewFromInt(150),
 				CurrencyId: curCZK.Id,
 			},
 			{
 				AccountId:  accCash.Id,
-				Amount:     -150,
+				Amount:     decimal.NewFromInt(-150),
 				CurrencyId: curCZK.Id,
 			},
 		},
@@ -434,12 +435,12 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accTransport.Id,
-				Amount:     25,
+				Amount:     decimal.NewFromInt(25),
 				CurrencyId: curCZK.Id,
 			},
 			{
 				AccountId:  accCash.Id,
-				Amount:     -25,
+				Amount:     decimal.NewFromInt(-25),
 				CurrencyId: curCZK.Id,
 			},
 		},
@@ -454,12 +455,12 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accRent.Id,
-				Amount:     5000,
+				Amount:     decimal.NewFromInt(5000),
 				CurrencyId: curCZK.Id,
 			},
 			{
 				AccountId:  accFio.Id,
-				Amount:     -5000,
+				Amount:     decimal.NewFromInt(-5000),
 				CurrencyId: curCZK.Id,
 			},
 		},
@@ -474,12 +475,12 @@ func prefillNewUser(storage database.Storage, userID string, logger *slog.Logger
 		Movements: []goserver.Movement{
 			{
 				AccountId:  accGroceries.Id,
-				Amount:     1,
+				Amount:     decimal.NewFromInt(1),
 				CurrencyId: curUSD.Id,
 			},
 			{
 				AccountId:  accFio.Id,
-				Amount:     -25,
+				Amount:     decimal.NewFromInt(-25),
 				CurrencyId: curCZK.Id,
 			},
 		},

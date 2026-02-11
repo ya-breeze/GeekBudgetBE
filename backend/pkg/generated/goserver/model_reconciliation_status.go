@@ -13,6 +13,8 @@ package goserver
 
 import (
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 type ReconciliationStatus struct {
@@ -24,15 +26,15 @@ type ReconciliationStatus struct {
 
 	CurrencySymbol string `json:"currencySymbol,omitempty"`
 
-	BankBalance float64 `json:"bankBalance,omitempty"`
+	BankBalance decimal.Decimal `json:"bankBalance,omitempty"`
 
-	AppBalance float64 `json:"appBalance"`
+	AppBalance decimal.Decimal `json:"appBalance"`
 
-	Delta float64 `json:"delta"`
+	Delta decimal.Decimal `json:"delta"`
 
 	LastReconciledAt *time.Time `json:"lastReconciledAt,omitempty"`
 
-	LastReconciledBalance float64 `json:"lastReconciledBalance,omitempty"`
+	LastReconciledBalance decimal.Decimal `json:"lastReconciledBalance,omitempty"`
 
 	HasUnprocessedTransactions bool `json:"hasUnprocessedTransactions,omitempty"`
 
@@ -50,11 +52,11 @@ type ReconciliationStatusInterface interface {
 	GetAccountName() string
 	GetCurrencyId() string
 	GetCurrencySymbol() string
-	GetBankBalance() float64
-	GetAppBalance() float64
-	GetDelta() float64
+	GetBankBalance() decimal.Decimal
+	GetAppBalance() decimal.Decimal
+	GetDelta() decimal.Decimal
 	GetLastReconciledAt() *time.Time
-	GetLastReconciledBalance() float64
+	GetLastReconciledBalance() decimal.Decimal
 	GetHasUnprocessedTransactions() bool
 	GetHasBankImporter() bool
 	GetIsManualReconciliationEnabled() bool
@@ -74,19 +76,19 @@ func (c *ReconciliationStatus) GetCurrencyId() string {
 func (c *ReconciliationStatus) GetCurrencySymbol() string {
 	return c.CurrencySymbol
 }
-func (c *ReconciliationStatus) GetBankBalance() float64 {
+func (c *ReconciliationStatus) GetBankBalance() decimal.Decimal {
 	return c.BankBalance
 }
-func (c *ReconciliationStatus) GetAppBalance() float64 {
+func (c *ReconciliationStatus) GetAppBalance() decimal.Decimal {
 	return c.AppBalance
 }
-func (c *ReconciliationStatus) GetDelta() float64 {
+func (c *ReconciliationStatus) GetDelta() decimal.Decimal {
 	return c.Delta
 }
 func (c *ReconciliationStatus) GetLastReconciledAt() *time.Time {
 	return c.LastReconciledAt
 }
-func (c *ReconciliationStatus) GetLastReconciledBalance() float64 {
+func (c *ReconciliationStatus) GetLastReconciledBalance() decimal.Decimal {
 	return c.LastReconciledBalance
 }
 func (c *ReconciliationStatus) GetHasUnprocessedTransactions() bool {

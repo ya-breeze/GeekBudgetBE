@@ -1,7 +1,11 @@
 //nolint:tagliatelle
 package webapp
 
-import "time"
+import (
+	"time"
+
+	"github.com/shopspring/decimal"
+)
 
 type WebAggregation struct {
 	From        time.Time                `json:"from"`
@@ -17,23 +21,23 @@ type WebCurrencyAggregation struct {
 
 	Intervals []time.Time          `json:"intervals"`
 	Accounts  []AccountAggregation `json:"accounts"`
-	Total     []float64            `json:"total"`
+	Total     []decimal.Decimal    `json:"total"`
 }
 
 type AccountAggregation struct {
 	AccountID   string `json:"accountId"`
 	AccountName string `json:"accountName"`
 
-	Amounts      []float64 `json:"amounts"`
-	TotalForYear float64   `json:"totalForYear"`
+	Amounts      []decimal.Decimal `json:"amounts"`
+	TotalForYear decimal.Decimal   `json:"totalForYear"`
 }
 
 type WebMovement struct {
-	Amount       float64 `json:"amount"`
-	AccountID    string  `json:"accountID"`
-	AccountName  string  `json:"accountName"`
-	CurrencyID   string  `json:"currencyID"`
-	CurrencyName string  `json:"currencyName"`
+	Amount       decimal.Decimal `json:"amount"`
+	AccountID    string          `json:"accountID"`
+	AccountName  string          `json:"accountName"`
+	CurrencyID   string          `json:"currencyID"`
+	CurrencyName string          `json:"currencyName"`
 }
 
 type WebTransaction struct {

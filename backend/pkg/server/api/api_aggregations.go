@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 	"log/slog"
-	"math"
 	"slices"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -53,25 +53,25 @@ func (s *AggregationsAPIServiceImpl) calculatePostAggregationData(res *goserver.
 				if len(acc.Amounts) >= 2 {
 					prev := acc.Amounts[len(acc.Amounts)-2]
 					curr := acc.Amounts[len(acc.Amounts)-1]
-					if prev != 0 {
-						acc.ChangePercent = (curr - prev) / math.Abs(prev) * 100
-					} else if curr != 0 {
-						acc.ChangePercent = 100
+					if !prev.IsZero() {
+						acc.ChangePercent = curr.Sub(prev).Div(prev.Abs()).Mul(decimal.NewFromInt(100))
+					} else if !curr.IsZero() {
+						acc.ChangePercent = decimal.NewFromInt(100)
 					}
 				}
 			} else {
-				sum := 0.0
+				sum := decimal.Zero
 				for _, v := range acc.Amounts {
-					sum += v
+					sum = sum.Add(v)
 				}
 				acc.Total = sum
 				if len(acc.Amounts) >= 2 {
 					prev := acc.Amounts[len(acc.Amounts)-2]
 					curr := acc.Amounts[len(acc.Amounts)-1]
-					if prev != 0 {
-						acc.ChangePercent = (curr - prev) / math.Abs(prev) * 100
-					} else if curr != 0 {
-						acc.ChangePercent = 100
+					if !prev.IsZero() {
+						acc.ChangePercent = curr.Sub(prev).Div(prev.Abs()).Mul(decimal.NewFromInt(100))
+					} else if !curr.IsZero() {
+						acc.ChangePercent = decimal.NewFromInt(100)
 					}
 				}
 			}
@@ -277,13 +277,13 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 			accountID := res.Currencies[i].Accounts[j].AccountId
 
 			// Get initial balance for this account and currency
-			runningBalance := 0.0
+			runningBalance := decimal.Zero
 			if accountBalances, ok := initialBalances[currencyID]; ok {
 				runningBalance = accountBalances[accountID]
 			}
 
 			for k := range res.Currencies[i].Accounts[j].Amounts {
-				runningBalance += res.Currencies[i].Accounts[j].Amounts[k]
+				runningBalance = runningBalance.Add(res.Currencies[i].Accounts[j].Amounts[k])
 				res.Currencies[i].Accounts[j].Amounts[k] = runningBalance
 			}
 		}
@@ -304,7 +304,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 			accIdx := slices.IndexFunc(res.Currencies[currIdx].Accounts, func(a goserver.AccountAggregation) bool { return a.AccountId == accountID })
 			if accIdx == -1 {
 				// If account wasn't in the result (no transactions in period), add it with flat line = initialAmount
-				amounts := make([]float64, len(res.Intervals))
+				amounts := make([]decimal.Decimal, len(res.Intervals))
 				for k := range amounts {
 					amounts[k] = initialAmount
 				}
@@ -322,7 +322,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 			accountID := res.Currencies[i].Accounts[j].AccountId
 			for k, interval := range res.Intervals {
 				if !isAccountActive(accounts, accountID, interval, filter) {
-					res.Currencies[i].Accounts[j].Amounts[k] = 0
+					res.Currencies[i].Accounts[j].Amounts[k] = decimal.Zero
 				}
 			}
 		}
@@ -337,9 +337,9 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 	outputCurrencyID string, currencyMap map[string]string,
 	currenciesRatesFetcher *common.CurrenciesRatesFetcher,
 	filter AccountFilter,
-) (map[string]map[string]float64, error) {
+) (map[string]map[string]decimal.Decimal, error) {
 	// Map: CurrencyID -> AccountID -> Amount
-	balances := make(map[string]map[string]float64)
+	balances := make(map[string]map[string]decimal.Decimal)
 
 	// 1. Sum up Opening Balances from Accounts
 	for _, account := range accounts {
@@ -371,9 +371,9 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 				currencyMap, currenciesRatesFetcher, s.logger)
 
 			if _, ok := balances[targetCurrencyID]; !ok {
-				balances[targetCurrencyID] = make(map[string]float64)
+				balances[targetCurrencyID] = make(map[string]decimal.Decimal)
 			}
-			balances[targetCurrencyID][account.Id] += convertedAmount
+			balances[targetCurrencyID][account.Id] = balances[targetCurrencyID][account.Id].Add(convertedAmount)
 		}
 	}
 
@@ -400,15 +400,15 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 		for _, currAgg := range resPast.Currencies {
 			targetCurrencyID := currAgg.CurrencyId
 			if _, ok := balances[targetCurrencyID]; !ok {
-				balances[targetCurrencyID] = make(map[string]float64)
+				balances[targetCurrencyID] = make(map[string]decimal.Decimal)
 			}
 
 			for _, accAgg := range currAgg.Accounts {
-				total := 0.0
+				total := decimal.Zero
 				for _, amount := range accAgg.Amounts {
-					total += amount
+					total = total.Add(amount)
 				}
-				balances[targetCurrencyID][accAgg.AccountId] += total
+				balances[targetCurrencyID][accAgg.AccountId] = balances[targetCurrencyID][accAgg.AccountId].Add(total)
 			}
 		}
 	}
@@ -462,13 +462,13 @@ func processMovements(
 			res.Currencies[currencyIdx].Accounts = append(res.Currencies[currencyIdx].Accounts,
 				goserver.AccountAggregation{
 					AccountId: m.AccountId,
-					Amounts:   make([]float64, len(res.Intervals)),
+					Amounts:   make([]decimal.Decimal, len(res.Intervals)),
 				})
 			accountIdx = len(res.Currencies[currencyIdx].Accounts) - 1
 		}
 
 		// Use converted amount for aggregation
-		res.Currencies[currencyIdx].Accounts[accountIdx].Amounts[intervalIdx] += convertedAmount
+		res.Currencies[currencyIdx].Accounts[accountIdx].Amounts[intervalIdx] = res.Currencies[currencyIdx].Accounts[accountIdx].Amounts[intervalIdx].Add(convertedAmount)
 	}
 }
 
@@ -608,7 +608,7 @@ func convertMovementAmount(
 	outputCurrencyID string, outputCurrencyName string,
 	currencyMap map[string]string,
 	currenciesRatesFetcher *common.CurrenciesRatesFetcher, log *slog.Logger,
-) (float64, string) {
+) (decimal.Decimal, string) {
 	// If no output currency specified, return original
 	if outputCurrencyID == "" {
 		log.Debug("No output currency specified, using original currency",

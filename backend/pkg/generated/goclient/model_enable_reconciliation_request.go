@@ -15,6 +15,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the EnableReconciliationRequest type satisfies the MappedNullable interface at compile time
@@ -22,8 +24,8 @@ var _ MappedNullable = &EnableReconciliationRequest{}
 
 // EnableReconciliationRequest struct for EnableReconciliationRequest
 type EnableReconciliationRequest struct {
-	CurrencyId     string  `json:"currencyId"`
-	InitialBalance float64 `json:"initialBalance"`
+	CurrencyId     string          `json:"currencyId"`
+	InitialBalance decimal.Decimal `json:"initialBalance"`
 }
 
 type _EnableReconciliationRequest EnableReconciliationRequest
@@ -32,7 +34,7 @@ type _EnableReconciliationRequest EnableReconciliationRequest
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewEnableReconciliationRequest(currencyId string, initialBalance float64) *EnableReconciliationRequest {
+func NewEnableReconciliationRequest(currencyId string, initialBalance decimal.Decimal) *EnableReconciliationRequest {
 	this := EnableReconciliationRequest{}
 	this.CurrencyId = currencyId
 	this.InitialBalance = initialBalance
@@ -72,9 +74,9 @@ func (o *EnableReconciliationRequest) SetCurrencyId(v string) {
 }
 
 // GetInitialBalance returns the InitialBalance field value
-func (o *EnableReconciliationRequest) GetInitialBalance() float64 {
+func (o *EnableReconciliationRequest) GetInitialBalance() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -83,7 +85,7 @@ func (o *EnableReconciliationRequest) GetInitialBalance() float64 {
 
 // GetInitialBalanceOk returns a tuple with the InitialBalance field value
 // and a boolean to check if the value has been set.
-func (o *EnableReconciliationRequest) GetInitialBalanceOk() (*float64, bool) {
+func (o *EnableReconciliationRequest) GetInitialBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -91,7 +93,7 @@ func (o *EnableReconciliationRequest) GetInitialBalanceOk() (*float64, bool) {
 }
 
 // SetInitialBalance sets field value
-func (o *EnableReconciliationRequest) SetInitialBalance(v float64) {
+func (o *EnableReconciliationRequest) SetInitialBalance(v decimal.Decimal) {
 	o.InitialBalance = v
 }
 

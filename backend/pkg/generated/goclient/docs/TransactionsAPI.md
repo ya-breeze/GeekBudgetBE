@@ -33,7 +33,7 @@ import (
 )
 
 func main() {
-	transactionNoID := *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyId_example")}) // TransactionNoID | 
+	transactionNoID := *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement("TODO", "CurrencyId_example")}) // TransactionNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -233,8 +233,8 @@ import (
 
 func main() {
 	description := "description_example" // string | Filter by description (optional)
-	amountFrom := float64(1.2) // float64 | Don't return transactions with amount less than this (optional)
-	amountTo := float64(1.2) // float64 | Don't return transactions with amount more than this (optional)
+	amountFrom := decimal.Decimal(1.2) // decimal.Decimal | Don't return transactions with amount less than this (optional)
+	amountTo := decimal.Decimal(1.2) // decimal.Decimal | Don't return transactions with amount more than this (optional)
 	dateFrom := time.Now() // time.Time | Don't return transactions with date before this (optional)
 	dateTo := time.Now() // time.Time | Don't return transactions with date after this (optional)
 	onlySuspicious := true // bool | If true, return only suspicious transactions (optional) (default to false)
@@ -263,8 +263,8 @@ Other parameters are passed through a pointer to a apiGetTransactionsRequest str
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **description** | **string** | Filter by description | 
- **amountFrom** | **float64** | Don&#39;t return transactions with amount less than this | 
- **amountTo** | **float64** | Don&#39;t return transactions with amount more than this | 
+ **amountFrom** | **decimal.Decimal** | Don&#39;t return transactions with amount less than this | 
+ **amountTo** | **decimal.Decimal** | Don&#39;t return transactions with amount more than this | 
  **dateFrom** | **time.Time** | Don&#39;t return transactions with date before this | 
  **dateTo** | **time.Time** | Don&#39;t return transactions with date after this | 
  **onlySuspicious** | **bool** | If true, return only suspicious transactions | [default to false]
@@ -372,7 +372,7 @@ import (
 
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | 
-	transactionNoID := *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyId_example")}) // TransactionNoID | 
+	transactionNoID := *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement("TODO", "CurrencyId_example")}) // TransactionNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

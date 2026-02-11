@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -30,7 +31,7 @@ func TestStorageBalanceCheck(t *testing.T) {
 		Name: "Test Account",
 		BankInfo: goserver.BankAccountInfo{
 			Balances: []goserver.BankAccountInfoBalancesInner{
-				{CurrencyId: currencyID, OpeningBalance: 1000.0, ClosingBalance: 1500.0},
+				{CurrencyId: currencyID, OpeningBalance: decimal.NewFromInt(1000), ClosingBalance: decimal.NewFromInt(1500)},
 			},
 		},
 	}
@@ -46,8 +47,8 @@ func TestStorageBalanceCheck(t *testing.T) {
 		t1 := &goserver.TransactionNoId{
 			Description: "Unprocessed",
 			Movements: []goserver.Movement{
-				{Amount: 500, CurrencyId: currencyID, AccountId: accID},
-				{Amount: -500, CurrencyId: currencyID, AccountId: ""}, // Empty AccountId
+				{Amount: decimal.NewFromInt(500), CurrencyId: currencyID, AccountId: accID},
+				{Amount: decimal.NewFromInt(-500), CurrencyId: currencyID, AccountId: ""}, // Empty AccountId
 			},
 		}
 		_, err := st.CreateTransaction(userID, t1)
@@ -74,8 +75,8 @@ func TestStorageBalanceCheck(t *testing.T) {
 			t.Fatalf("failed to get balance: %v", err)
 		}
 
-		if bal != 1500.0 {
-			t.Errorf("expected balance 1500.0, got %f", bal)
+		if !bal.Equal(decimal.NewFromInt(1500)) {
+			t.Errorf("expected balance 1500.0, got %s", bal)
 		}
 	})
 
@@ -84,8 +85,8 @@ func TestStorageBalanceCheck(t *testing.T) {
 		t2 := &goserver.TransactionNoId{
 			Description: "Processed",
 			Movements: []goserver.Movement{
-				{Amount: 100, CurrencyId: currencyID, AccountId: accID},
-				{Amount: -100, CurrencyId: currencyID, AccountId: "other-acc"},
+				{Amount: decimal.NewFromInt(100), CurrencyId: currencyID, AccountId: accID},
+				{Amount: decimal.NewFromInt(-100), CurrencyId: currencyID, AccountId: "other-acc"},
 			},
 		}
 		_, err := st.CreateTransaction(userID, t2)

@@ -16,6 +16,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the Reconciliation type satisfies the MappedNullable interface at compile time
@@ -23,13 +25,13 @@ var _ MappedNullable = &Reconciliation{}
 
 // Reconciliation struct for Reconciliation
 type Reconciliation struct {
-	ReconciliationId  *string   `json:"reconciliationId,omitempty"`
-	AccountId         string    `json:"accountId"`
-	CurrencyId        string    `json:"currencyId"`
-	ReconciledBalance float64   `json:"reconciledBalance"`
-	ReconciledAt      time.Time `json:"reconciledAt"`
-	ExpectedBalance   *float64  `json:"expectedBalance,omitempty"`
-	IsManual          *bool     `json:"isManual,omitempty"`
+	ReconciliationId  *string          `json:"reconciliationId,omitempty"`
+	AccountId         string           `json:"accountId"`
+	CurrencyId        string           `json:"currencyId"`
+	ReconciledBalance decimal.Decimal  `json:"reconciledBalance"`
+	ReconciledAt      time.Time        `json:"reconciledAt"`
+	ExpectedBalance   *decimal.Decimal `json:"expectedBalance,omitempty"`
+	IsManual          *bool            `json:"isManual,omitempty"`
 }
 
 type _Reconciliation Reconciliation
@@ -38,7 +40,7 @@ type _Reconciliation Reconciliation
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReconciliation(accountId string, currencyId string, reconciledBalance float64, reconciledAt time.Time) *Reconciliation {
+func NewReconciliation(accountId string, currencyId string, reconciledBalance decimal.Decimal, reconciledAt time.Time) *Reconciliation {
 	this := Reconciliation{}
 	this.AccountId = accountId
 	this.CurrencyId = currencyId
@@ -136,9 +138,9 @@ func (o *Reconciliation) SetCurrencyId(v string) {
 }
 
 // GetReconciledBalance returns the ReconciledBalance field value
-func (o *Reconciliation) GetReconciledBalance() float64 {
+func (o *Reconciliation) GetReconciledBalance() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -147,7 +149,7 @@ func (o *Reconciliation) GetReconciledBalance() float64 {
 
 // GetReconciledBalanceOk returns a tuple with the ReconciledBalance field value
 // and a boolean to check if the value has been set.
-func (o *Reconciliation) GetReconciledBalanceOk() (*float64, bool) {
+func (o *Reconciliation) GetReconciledBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -155,7 +157,7 @@ func (o *Reconciliation) GetReconciledBalanceOk() (*float64, bool) {
 }
 
 // SetReconciledBalance sets field value
-func (o *Reconciliation) SetReconciledBalance(v float64) {
+func (o *Reconciliation) SetReconciledBalance(v decimal.Decimal) {
 	o.ReconciledBalance = v
 }
 
@@ -184,9 +186,9 @@ func (o *Reconciliation) SetReconciledAt(v time.Time) {
 }
 
 // GetExpectedBalance returns the ExpectedBalance field value if set, zero value otherwise.
-func (o *Reconciliation) GetExpectedBalance() float64 {
+func (o *Reconciliation) GetExpectedBalance() decimal.Decimal {
 	if o == nil || IsNil(o.ExpectedBalance) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.ExpectedBalance
@@ -194,7 +196,7 @@ func (o *Reconciliation) GetExpectedBalance() float64 {
 
 // GetExpectedBalanceOk returns a tuple with the ExpectedBalance field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Reconciliation) GetExpectedBalanceOk() (*float64, bool) {
+func (o *Reconciliation) GetExpectedBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.ExpectedBalance) {
 		return nil, false
 	}
@@ -210,8 +212,8 @@ func (o *Reconciliation) HasExpectedBalance() bool {
 	return false
 }
 
-// SetExpectedBalance gets a reference to the given float64 and assigns it to the ExpectedBalance field.
-func (o *Reconciliation) SetExpectedBalance(v float64) {
+// SetExpectedBalance gets a reference to the given decimal.Decimal and assigns it to the ExpectedBalance field.
+func (o *Reconciliation) SetExpectedBalance(v decimal.Decimal) {
 	o.ExpectedBalance = &v
 }
 

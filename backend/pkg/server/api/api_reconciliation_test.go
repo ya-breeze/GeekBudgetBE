@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
@@ -45,7 +46,7 @@ var _ = Describe("Reconciliation API", func() {
 					ShowInReconciliation: true,
 					BankInfo: goserver.BankAccountInfo{
 						Balances: []goserver.BankAccountInfoBalancesInner{
-							{CurrencyId: "curr1", ClosingBalance: 100},
+							{CurrencyId: "curr1", ClosingBalance: decimal.NewFromInt(100)},
 						},
 					},
 				},
@@ -56,7 +57,7 @@ var _ = Describe("Reconciliation API", func() {
 					ShowInReconciliation: false,
 					BankInfo: goserver.BankAccountInfo{
 						Balances: []goserver.BankAccountInfoBalancesInner{
-							{CurrencyId: "curr1", ClosingBalance: 100},
+							{CurrencyId: "curr1", ClosingBalance: decimal.NewFromInt(100)},
 						},
 					},
 				},
@@ -68,7 +69,7 @@ var _ = Describe("Reconciliation API", func() {
 
 			// acc1 expectations
 			mockStorage.EXPECT().GetLatestReconciliation("user1", "acc1", "curr1").Return(nil, nil)
-			mockStorage.EXPECT().GetAccountBalance("user1", "acc1", "curr1").Return(100.0, nil)
+			mockStorage.EXPECT().GetAccountBalance("user1", "acc1", "curr1").Return(decimal.NewFromFloat(100.0), nil)
 			mockStorage.EXPECT().CountUnprocessedTransactionsForAccount("user1", "acc1", gomock.Any()).Return(0, nil)
 
 			// acc2 expectations

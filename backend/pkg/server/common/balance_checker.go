@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math"
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -37,7 +36,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 			continue
 		}
 
-		if math.Abs(appBalance-b.ClosingBalance) > ReconciliationTolerance {
+		if appBalance.Sub(b.ClosingBalance).Abs().GreaterThan(ReconciliationTolerance) {
 			logger.Warn("Balance mismatch detected",
 				"account", acc.Name,
 				"currencyId", b.CurrencyId,
@@ -48,8 +47,8 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 				Date:  time.Now(),
 				Type:  string(models.NotificationTypeBalanceDoesntMatch),
 				Title: "Balance Mismatch Detected",
-				Description: fmt.Sprintf("Account %q has a balance mismatch. Account balance: %.2f, Bank balance: %.2f (Currency: %s). Please check your transactions.",
-					acc.Name, appBalance, b.ClosingBalance, b.CurrencyId),
+				Description: fmt.Sprintf("Account %q has a balance mismatch. Account balance: %s, Bank balance: %s (Currency: %s). Please check your transactions.",
+					acc.Name, appBalance.StringFixed(2), b.ClosingBalance.StringFixed(2), b.CurrencyId),
 			})
 			if err != nil {
 				logger.With("error", err).Error("Failed to create balance mismatch notification")

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math"
 	"sort"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -308,7 +308,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 		match := true
 		for c, v1 := range inc1 {
 			v2, ok := inc2[c]
-			if !ok || math.Abs(v1-v2) > 1 {
+			if !ok || v1.Sub(v2).Abs().GreaterThan(decimal.NewFromInt(1)) {
 				match = false
 				break
 			}

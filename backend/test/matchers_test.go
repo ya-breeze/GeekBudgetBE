@@ -9,6 +9,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -92,7 +93,7 @@ var _ = Describe("Matchers API", func() {
 			Tags:           []string{"test"},
 			Movements: []goclient.Movement{
 				{
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 					CurrencyId: currency.Id,
 					AccountId:  &account.Id,
 				},
@@ -207,7 +208,7 @@ var _ = Describe("Matchers API", func() {
 			Tags:           []string{"test"},
 			Movements: []goclient.Movement{
 				{
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 					CurrencyId: currency.Id,
 					AccountId:  &account.Id,
 				},

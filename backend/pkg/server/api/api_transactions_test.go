@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
@@ -44,7 +45,7 @@ var _ = Describe("Transactions API", func() {
 			GetTransactions(userID, dateFrom, dateTo, true).
 			Return([]goserver.Transaction{}, nil)
 
-		resp, err := sut.GetTransactions(ctx, "", 0, 0, dateFrom, dateTo, true)
+		resp, err := sut.GetTransactions(ctx, "", decimal.NewFromInt(0), decimal.NewFromInt(0), dateFrom, dateTo, true)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(resp.Code).To(Equal(http.StatusOK))
 	})

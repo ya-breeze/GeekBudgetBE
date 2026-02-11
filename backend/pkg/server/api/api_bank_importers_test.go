@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -98,7 +99,7 @@ var _ = Describe("BankImporters API", func() {
 					Date:        time.Now(),
 					Description: "Test Transaction",
 					ExternalIds: []string{"ext1"},
-					Movements:   []goserver.Movement{{Amount: -100, CurrencyId: "USD"}},
+					Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(-100), CurrencyId: "USD"}},
 				},
 			}
 
@@ -143,7 +144,7 @@ var _ = Describe("BankImporters API", func() {
 					Date:        time.Now(),
 					Description: "Test Transaction",
 					ExternalIds: []string{"ext1"},
-					Movements:   []goserver.Movement{{Amount: -100, CurrencyId: "USD"}},
+					Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(-100), CurrencyId: "USD"}},
 				},
 			}
 
@@ -193,7 +194,7 @@ var _ = Describe("BankImporters API", func() {
 					Date:        time.Now(),
 					Description: "Test Transaction",
 					ExternalIds: []string{"ext1"},
-					Movements:   []goserver.Movement{{Amount: -100, CurrencyId: "USD"}},
+					Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(-100), CurrencyId: "USD"}},
 				},
 			}
 
@@ -227,21 +228,21 @@ var _ = Describe("BankImporters API", func() {
 				Date:        time.Now(),
 				Description: "New Tx",
 				ExternalIds: []string{"ext-new"},
-				Movements:   []goserver.Movement{{Amount: 10, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(10), CurrencyId: "USD"}},
 			}
 
 			txDuplicateDB := goserver.TransactionNoId{
 				Date:        time.Now().AddDate(0, 0, -1), // Date doesn't strictly matter for ExternalID match but good for realism
 				Description: "Duplicate DB",
 				ExternalIds: []string{"ext-existing"},
-				Movements:   []goserver.Movement{{Amount: 20, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(20), CurrencyId: "USD"}},
 			}
 
 			txBatch1 := goserver.TransactionNoId{
 				Date:        time.Now(),
 				Description: "Batch Tx",
 				ExternalIds: []string{"ext-batch"},
-				Movements:   []goserver.Movement{{Amount: 30, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(30), CurrencyId: "USD"}},
 			}
 			// Exact copy of txBatch1
 			txBatch2 := txBatch1
@@ -287,19 +288,19 @@ var _ = Describe("BankImporters API", func() {
 				Id:          uuid.New().String(),
 				ExternalIds: []string{"ext-present"},
 				Date:        time.Now(),
-				Movements:   []goserver.Movement{{AccountId: accountID, Amount: -100, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{AccountId: accountID, Amount: decimal.NewFromInt(-100), CurrencyId: "USD"}},
 			}
 			txMissing := goserver.Transaction{
 				Id:          uuid.New().String(),
 				ExternalIds: []string{"ext-missing"},
 				Date:        time.Now(),
-				Movements:   []goserver.Movement{{AccountId: accountID, Amount: -200, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{AccountId: accountID, Amount: decimal.NewFromInt(-200), CurrencyId: "USD"}},
 			}
 			txOtherAccount := goserver.Transaction{
 				Id:          uuid.New().String(),
 				ExternalIds: []string{"ext-other"},
 				Date:        time.Now(),
-				Movements:   []goserver.Movement{{AccountId: "other-acc", Amount: -300, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{AccountId: "other-acc", Amount: decimal.NewFromInt(-300), CurrencyId: "USD"}},
 			}
 
 			// Mock DB return
@@ -346,7 +347,7 @@ var _ = Describe("BankImporters API", func() {
 
 			info := &goserver.BankAccountInfo{
 				Balances: []goserver.BankAccountInfoBalancesInner{
-					{CurrencyId: "USD", OpeningBalance: 1000, ClosingBalance: 900},
+					{CurrencyId: "USD", OpeningBalance: decimal.NewFromInt(1000), ClosingBalance: decimal.NewFromInt(900)},
 				},
 			}
 			_, err := sut.saveImportedTransactions(userID, importerID, info, importedTransactions, true)
@@ -507,13 +508,13 @@ var _ = Describe("BankImporters API", func() {
 			t1 := &goserver.TransactionNoId{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 123, CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(123), CurrencyId: "CZK"},
 				},
 			}
 			t2 := &goserver.Transaction{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 123, CurrencyId: "EUR"},
+					{Amount: decimal.NewFromInt(123), CurrencyId: "EUR"},
 				},
 			}
 
@@ -524,13 +525,13 @@ var _ = Describe("BankImporters API", func() {
 			t1 := &goserver.TransactionNoId{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 123, CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(123), CurrencyId: "CZK"},
 				},
 			}
 			t2 := &goserver.Transaction{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 123, CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(123), CurrencyId: "CZK"},
 				},
 			}
 
@@ -541,13 +542,13 @@ var _ = Describe("BankImporters API", func() {
 			t1 := &goserver.TransactionNoId{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 123, CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(123), CurrencyId: "CZK"},
 				},
 			}
 			t2 := &goserver.Transaction{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 124, CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(124), CurrencyId: "CZK"},
 				},
 			}
 
@@ -558,16 +559,16 @@ var _ = Describe("BankImporters API", func() {
 			t1 := &goserver.TransactionNoId{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 100, CurrencyId: "CZK"},
-					{Amount: -100, CurrencyId: "CZK"},
-					{Amount: 50, CurrencyId: "EUR"},
+					{Amount: decimal.NewFromInt(100), CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(-100), CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(50), CurrencyId: "EUR"},
 				},
 			}
 			t2 := &goserver.Transaction{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 100, CurrencyId: "CZK"},
-					{Amount: 50, CurrencyId: "EUR"},
+					{Amount: decimal.NewFromInt(100), CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(50), CurrencyId: "EUR"},
 				},
 			}
 			// Both have 100 CZK increase and 50 EUR increase
@@ -578,14 +579,14 @@ var _ = Describe("BankImporters API", func() {
 			t1 := &goserver.TransactionNoId{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 100, CurrencyId: "CZK"},
-					{Amount: 50, CurrencyId: "EUR"},
+					{Amount: decimal.NewFromInt(100), CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(50), CurrencyId: "EUR"},
 				},
 			}
 			t2 := &goserver.Transaction{
 				Date: time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{Amount: 100, CurrencyId: "CZK"},
+					{Amount: decimal.NewFromInt(100), CurrencyId: "CZK"},
 				},
 			}
 			Expect(common.IsDuplicate(t1.Date, t1.Movements, t2.Date, t2.Movements)).To(BeFalse())
@@ -603,7 +604,7 @@ var _ = Describe("BankImporters API", func() {
 				Id: accountID,
 				BankInfo: goserver.BankAccountInfo{
 					Balances: []goserver.BankAccountInfoBalancesInner{
-						{CurrencyId: currencyID, OpeningBalance: 1000, ClosingBalance: 1500},
+						{CurrencyId: currencyID, OpeningBalance: decimal.NewFromInt(1000), ClosingBalance: decimal.NewFromInt(1500)},
 					},
 				},
 			}
@@ -611,7 +612,7 @@ var _ = Describe("BankImporters API", func() {
 			// Imported info with NEW opening balance
 			importedInfo := &goserver.BankAccountInfo{
 				Balances: []goserver.BankAccountInfoBalancesInner{
-					{CurrencyId: currencyID, OpeningBalance: 2000, ClosingBalance: 2500},
+					{CurrencyId: currencyID, OpeningBalance: decimal.NewFromInt(2000), ClosingBalance: decimal.NewFromInt(2500)},
 				},
 			}
 
@@ -622,8 +623,8 @@ var _ = Describe("BankImporters API", func() {
 
 			// EXPECT: Entire balance object replaced (OpeningBalance updated to 2000)
 			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
-				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(float64(2000)))
-				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(float64(2500)))
+				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(decimal.NewFromInt(2000)))
+				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(decimal.NewFromInt(2500)))
 				return goserver.Account{}, nil
 			})
 
@@ -633,7 +634,7 @@ var _ = Describe("BankImporters API", func() {
 				{
 					Date:        time.Now(),
 					ExternalIds: []string{"ext1"},
-					Movements:   []goserver.Movement{{Amount: 100, CurrencyId: currencyID}},
+					Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: currencyID}},
 				},
 			}
 			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).Return(goserver.Transaction{}, nil)
@@ -652,7 +653,7 @@ var _ = Describe("BankImporters API", func() {
 				Id: accountID,
 				BankInfo: goserver.BankAccountInfo{
 					Balances: []goserver.BankAccountInfoBalancesInner{
-						{CurrencyId: currencyID, OpeningBalance: 1000, ClosingBalance: 1500},
+						{CurrencyId: currencyID, OpeningBalance: decimal.NewFromInt(1000), ClosingBalance: decimal.NewFromInt(1500)},
 					},
 				},
 			}
@@ -660,7 +661,7 @@ var _ = Describe("BankImporters API", func() {
 			// Imported info with DIFFERENT opening balance (which should be ignored)
 			importedInfo := &goserver.BankAccountInfo{
 				Balances: []goserver.BankAccountInfoBalancesInner{
-					{CurrencyId: currencyID, OpeningBalance: 2000, ClosingBalance: 2500},
+					{CurrencyId: currencyID, OpeningBalance: decimal.NewFromInt(2000), ClosingBalance: decimal.NewFromInt(2500)},
 				},
 			}
 
@@ -671,8 +672,8 @@ var _ = Describe("BankImporters API", func() {
 
 			// EXPECT: OpeningBalance preserved at 1000, but ClosingBalance updated to 2500
 			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
-				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(float64(1000))) // Preserved
-				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(float64(2500))) // Updated
+				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(decimal.NewFromInt(1000))) // Preserved
+				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(decimal.NewFromInt(2500))) // Updated
 				return goserver.Account{}, nil
 			})
 
@@ -682,7 +683,7 @@ var _ = Describe("BankImporters API", func() {
 				{
 					Date:        time.Now(),
 					ExternalIds: []string{"ext2"},
-					Movements:   []goserver.Movement{{Amount: 200, CurrencyId: currencyID}},
+					Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(200), CurrencyId: currencyID}},
 				},
 			}
 			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).Return(goserver.Transaction{}, nil)

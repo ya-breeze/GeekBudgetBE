@@ -13,6 +13,8 @@ package goserver
 
 import (
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 type BudgetStatus struct {
@@ -20,22 +22,22 @@ type BudgetStatus struct {
 
 	AccountId string `json:"accountId"`
 
-	Budgeted float64 `json:"budgeted"`
+	Budgeted decimal.Decimal `json:"budgeted"`
 
-	Spent float64 `json:"spent"`
+	Spent decimal.Decimal `json:"spent"`
 
-	Rollover float64 `json:"rollover"`
+	Rollover decimal.Decimal `json:"rollover"`
 
-	Available float64 `json:"available"`
+	Available decimal.Decimal `json:"available"`
 }
 
 type BudgetStatusInterface interface {
 	GetDate() time.Time
 	GetAccountId() string
-	GetBudgeted() float64
-	GetSpent() float64
-	GetRollover() float64
-	GetAvailable() float64
+	GetBudgeted() decimal.Decimal
+	GetSpent() decimal.Decimal
+	GetRollover() decimal.Decimal
+	GetAvailable() decimal.Decimal
 }
 
 func (c *BudgetStatus) GetDate() time.Time {
@@ -44,16 +46,16 @@ func (c *BudgetStatus) GetDate() time.Time {
 func (c *BudgetStatus) GetAccountId() string {
 	return c.AccountId
 }
-func (c *BudgetStatus) GetBudgeted() float64 {
+func (c *BudgetStatus) GetBudgeted() decimal.Decimal {
 	return c.Budgeted
 }
-func (c *BudgetStatus) GetSpent() float64 {
+func (c *BudgetStatus) GetSpent() decimal.Decimal {
 	return c.Spent
 }
-func (c *BudgetStatus) GetRollover() float64 {
+func (c *BudgetStatus) GetRollover() decimal.Decimal {
 	return c.Rollover
 }
-func (c *BudgetStatus) GetAvailable() float64 {
+func (c *BudgetStatus) GetAvailable() decimal.Decimal {
 	return c.Available
 }
 

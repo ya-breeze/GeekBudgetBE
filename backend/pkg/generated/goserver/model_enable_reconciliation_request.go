@@ -11,21 +11,25 @@
 
 package goserver
 
+import (
+	"github.com/shopspring/decimal"
+)
+
 type EnableReconciliationRequest struct {
 	CurrencyId string `json:"currencyId"`
 
-	InitialBalance float64 `json:"initialBalance"`
+	InitialBalance decimal.Decimal `json:"initialBalance"`
 }
 
 type EnableReconciliationRequestInterface interface {
 	GetCurrencyId() string
-	GetInitialBalance() float64
+	GetInitialBalance() decimal.Decimal
 }
 
 func (c *EnableReconciliationRequest) GetCurrencyId() string {
 	return c.CurrencyId
 }
-func (c *EnableReconciliationRequest) GetInitialBalance() float64 {
+func (c *EnableReconciliationRequest) GetInitialBalance() decimal.Decimal {
 	return c.InitialBalance
 }
 

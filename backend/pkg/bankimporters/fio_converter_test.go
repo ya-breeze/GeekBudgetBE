@@ -8,6 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
@@ -81,8 +82,8 @@ var _ = Describe("FIO converter", func() {
 		Expect(info.AccountId).To(Equal("123456789"))
 		Expect(info.BankId).To(Equal("2010"))
 		Expect(info.Balances).To(HaveLen(1))
-		Expect(info.Balances[0].OpeningBalance).To(BeNumerically("==", 1000.50))
-		Expect(info.Balances[0].ClosingBalance).To(BeNumerically("==", 1500.75))
+		Expect(info.Balances[0].OpeningBalance.Equal(decimal.NewFromFloat(1000.50))).To(BeTrue())
+		Expect(info.Balances[0].ClosingBalance.Equal(decimal.NewFromFloat(1500.75))).To(BeTrue())
 		Expect(info.Balances[0].CurrencyId).To(Equal("__CZK_ID__"))
 
 		// Verify transactions
@@ -91,9 +92,9 @@ var _ = Describe("FIO converter", func() {
 		Expect(transactions[0].PartnerAccount).To(Equal("987654321/0100 vs=12345"))
 		Expect(transactions[0].Description).To(ContainSubstring("Test payment"))
 		Expect(transactions[0].Movements).To(HaveLen(2))
-		Expect(transactions[0].Movements[0].Amount).To(BeNumerically("==", -100.00))
+		Expect(transactions[0].Movements[0].Amount.Equal(decimal.NewFromFloat(-100.00))).To(BeTrue())
 		Expect(transactions[0].Movements[0].CurrencyId).To(Equal("__CZK_ID__"))
-		Expect(transactions[0].Movements[1].Amount).To(BeNumerically("==", 100.00))
+		Expect(transactions[0].Movements[1].Amount.Equal(decimal.NewFromFloat(100.00))).To(BeTrue())
 		Expect(transactions[0].Movements[1].AccountId).To(Equal("__accountID__"))
 	})
 
@@ -173,8 +174,8 @@ var _ = Describe("FIO converter", func() {
 
 		// Verify plain value formats are correctly parsed
 		Expect(info.AccountId).To(Equal("444555666"))
-		Expect(info.Balances[0].OpeningBalance).To(BeNumerically("==", 2500.00))
-		Expect(info.Balances[0].ClosingBalance).To(BeNumerically("==", 3000.50))
+		Expect(info.Balances[0].OpeningBalance.Equal(decimal.NewFromFloat(2500.00))).To(BeTrue())
+		Expect(info.Balances[0].ClosingBalance.Equal(decimal.NewFromFloat(3000.50))).To(BeTrue())
 		Expect(info.Balances[0].CurrencyId).To(Equal("__CZK_ID__"))
 
 		Expect(transactions).To(HaveLen(1))
@@ -278,8 +279,8 @@ var _ = Describe("FIO converter", func() {
 
 		// Verify account info
 		Expect(info.AccountId).To(Equal("2400222222"))
-		Expect(info.Balances[0].OpeningBalance).To(BeNumerically("==", 195.00))
-		Expect(info.Balances[0].ClosingBalance).To(BeNumerically("==", 195.01))
+		Expect(info.Balances[0].OpeningBalance.Equal(decimal.NewFromFloat(195.00))).To(BeTrue())
+		Expect(info.Balances[0].ClosingBalance.Equal(decimal.NewFromFloat(195.01))).To(BeTrue())
 		Expect(info.Balances[0].CurrencyId).To(Equal("__CZK_ID__"))
 
 		// Verify transaction date was correctly parsed from timestamp
@@ -289,7 +290,7 @@ var _ = Describe("FIO converter", func() {
 		Expect(transactions[0].Date.Month()).To(Equal(time.June))
 		Expect(transactions[0].Date.Day()).To(Equal(26))
 
-		Expect(transactions[0].Movements[1].Amount).To(BeNumerically("==", 1.00))
+		Expect(transactions[0].Movements[1].Amount.Equal(decimal.NewFromFloat(1.00))).To(BeTrue())
 		Expect(transactions[0].PartnerName).To(Equal("Pavel, Novák"))
 	})
 

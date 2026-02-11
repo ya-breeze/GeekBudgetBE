@@ -8,6 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -75,12 +76,12 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 				{
 					AccountId:  nil, // undefined
 					CurrencyId: "CZK",
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  utils.StrToRef("valid-account"),
 					CurrencyId: "CZK",
-					Amount:     -100,
+					Amount:     decimal.NewFromInt(-100),
 				},
 			},
 		}
@@ -92,12 +93,12 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 				{
 					AccountId:  nil, // undefined
 					CurrencyId: "CZK",
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  utils.StrToRef("valid-account"),
 					CurrencyId: "CZK",
-					Amount:     -100,
+					Amount:     decimal.NewFromInt(-100),
 				},
 			},
 		}
@@ -132,12 +133,12 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 				{
 					AccountId:  utils.StrToRef("account-A"),
 					CurrencyId: "CZK",
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  utils.StrToRef("account-B"),
 					CurrencyId: "CZK",
-					Amount:     -100,
+					Amount:     decimal.NewFromInt(-100),
 				},
 			},
 		}
@@ -152,12 +153,12 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 				{
 					AccountId:  nil, // undefined
 					CurrencyId: "CZK",
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  utils.StrToRef("account-B"),
 					CurrencyId: "CZK",
-					Amount:     -100,
+					Amount:     decimal.NewFromInt(-100),
 				},
 			},
 		}

@@ -254,7 +254,7 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 	if info != nil {
 		for _, b := range info.Balances {
 			balances = append(balances, goserver.ImportResultBalancesInner{
-				Amount:     float32(b.ClosingBalance),
+				Amount:     b.ClosingBalance,
 				CurrencyId: b.CurrencyId,
 			})
 		}

@@ -9,6 +9,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -18,6 +19,10 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
+
+func ptrDecimal(d decimal.Decimal) *decimal.Decimal {
+	return &d
+}
 
 var _ = Describe("Unprocessed Transactions API", func() {
 	var ctx context.Context
@@ -83,12 +88,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 				{
 					AccountId:  nil,
 					CurrencyId: "currencyID",
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  utils.StrToRef("accountID"),
 					CurrencyId: "currencyID",
-					Amount:     -100,
+					Amount:     decimal.NewFromInt(-100),
 				},
 			},
 		}
@@ -159,12 +164,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 				{
 					AccountId:  nil,
 					CurrencyId: "currencyID",
-					Amount:     100,
+					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  &createdAccount.Id,
 					CurrencyId: "currencyID",
-					Amount:     -100,
+					Amount:     decimal.NewFromInt(-100),
 				},
 			},
 		}
@@ -180,12 +185,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 				{
 					AccountId:  nil,
 					CurrencyId: "currencyID",
-					Amount:     200,
+					Amount:     decimal.NewFromInt(200),
 				},
 				{
 					AccountId:  &createdAccount.Id,
 					CurrencyId: "currencyID",
-					Amount:     -200,
+					Amount:     decimal.NewFromInt(-200),
 				},
 			},
 		}
@@ -219,8 +224,8 @@ var _ = Describe("Unprocessed Transactions API", func() {
 				Balances: []goclient.BankAccountInfoBalancesInner{
 					{
 						CurrencyId:     &cur.Id,
-						OpeningBalance: goclient.PtrFloat64(1000.0),
-						ClosingBalance: goclient.PtrFloat64(1500.0),
+						OpeningBalance: ptrDecimal(decimal.NewFromFloat(1000.0)),
+						ClosingBalance: ptrDecimal(decimal.NewFromFloat(1500.0)),
 					},
 				},
 			},
@@ -236,12 +241,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 				{
 					AccountId:  nil, // Unprocessed
 					CurrencyId: cur.Id,
-					Amount:     400,
+					Amount:     decimal.NewFromInt(400),
 				},
 				{
 					AccountId:  &acc.Id,
 					CurrencyId: cur.Id,
-					Amount:     -400,
+					Amount:     decimal.NewFromInt(-400),
 				},
 			},
 		}
@@ -267,12 +272,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 				{
 					AccountId:  &acc.Id,
 					CurrencyId: cur.Id,
-					Amount:     400,
+					Amount:     decimal.NewFromInt(400),
 				},
 				{
 					AccountId:  &offsetAcc.Id, // No longer nil
 					CurrencyId: cur.Id,
-					Amount:     -400,
+					Amount:     decimal.NewFromInt(-400),
 				},
 			},
 		}

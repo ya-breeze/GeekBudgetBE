@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -36,7 +37,7 @@ func TestStorageRefactor_DeleteAccount(t *testing.T) {
 		Date:        time.Now(),
 		Description: "Tr 1",
 		Movements: []goserver.Movement{
-			{Amount: 100, CurrencyId: "CZK", AccountId: acc1.Id},
+			{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: acc1.Id},
 		},
 	}
 	tr1, err := st.CreateTransaction(userID, tr1Input)
@@ -100,7 +101,7 @@ func TestStorageRefactor_DeleteCurrency(t *testing.T) {
 		Name: "Account With Currency",
 		BankInfo: goserver.BankAccountInfo{
 			Balances: []goserver.BankAccountInfoBalancesInner{
-				{OpeningBalance: 100, CurrencyId: cur1.Id},
+				{OpeningBalance: decimal.NewFromInt(100), CurrencyId: cur1.Id},
 			},
 		},
 	}
@@ -114,7 +115,7 @@ func TestStorageRefactor_DeleteCurrency(t *testing.T) {
 		Date:        time.Now(),
 		Description: "Tr With Currency",
 		Movements: []goserver.Movement{
-			{Amount: 10, CurrencyId: cur1.Id, AccountId: acc.Id},
+			{Amount: decimal.NewFromInt(10), CurrencyId: cur1.Id, AccountId: acc.Id},
 		},
 	}
 	tr, err := st.CreateTransaction(userID, trInput)

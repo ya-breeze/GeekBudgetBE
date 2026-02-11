@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
@@ -75,8 +76,8 @@ func TestCurrenciesRatesFetcher_Convert(t *testing.T) {
 		day           time.Time
 		from          string
 		to            string
-		amount        float64
-		expected      float64
+		amount        decimal.Decimal
+		expected      decimal.Decimal
 		expectedError bool
 	}{
 		{
@@ -84,39 +85,39 @@ func TestCurrenciesRatesFetcher_Convert(t *testing.T) {
 			day:      testDate,
 			from:     "CZK",
 			to:       "USD",
-			amount:   100,
-			expected: 100 / 22.758,
+			amount:   decimal.NewFromInt(100),
+			expected: decimal.NewFromInt(100).Div(decimal.NewFromFloat(22.758)),
 		},
 		{
 			name:     "Convert USD to CZK",
 			day:      testDate,
 			from:     "USD",
 			to:       "CZK",
-			amount:   50,
-			expected: 50 * 22.758,
+			amount:   decimal.NewFromInt(50),
+			expected: decimal.NewFromInt(50).Mul(decimal.NewFromFloat(22.758)),
 		},
 		{
 			name:     "Convert EUR to USD",
 			day:      testDate,
 			from:     "EUR",
 			to:       "USD",
-			amount:   200,
-			expected: (200 * 25.490) / 22.758,
+			amount:   decimal.NewFromInt(200),
+			expected: decimal.NewFromInt(200).Mul(decimal.NewFromFloat(25.490)).Div(decimal.NewFromFloat(22.758)),
 		},
 		{
 			name:     "Convert JPY to EUR",
 			day:      testDate,
 			from:     "JPY",
 			to:       "EUR",
-			amount:   10000,
-			expected: (10000 * (19.651 / 100)) / 25.490,
+			amount:   decimal.NewFromInt(10000),
+			expected: decimal.NewFromInt(10000).Mul(decimal.NewFromFloat(19.651).Div(decimal.NewFromInt(100))).Div(decimal.NewFromFloat(25.490)),
 		},
 		{
 			name:          "Invalid source currency",
 			day:           testDate,
 			from:          "XYZ",
 			to:            "USD",
-			amount:        100,
+			amount:        decimal.NewFromInt(100),
 			expectedError: true,
 		},
 		{
@@ -124,7 +125,7 @@ func TestCurrenciesRatesFetcher_Convert(t *testing.T) {
 			day:           testDate,
 			from:          "USD",
 			to:            "XYZ",
-			amount:        100,
+			amount:        decimal.NewFromInt(100),
 			expectedError: true,
 		},
 	}
@@ -146,8 +147,8 @@ func TestCurrenciesRatesFetcher_Convert(t *testing.T) {
 			}
 
 			// Compare with a small delta to account for floating point imprecision
-			if !almostEqual(result, tt.expected, 0.0001) {
-				t.Errorf("expected %.4f, got %.4f", tt.expected, result)
+			if !almostEqualDecimal(result, tt.expected, decimal.NewFromFloat(0.0001)) {
+				t.Errorf("expected %s, got %s", tt.expected, result)
 			}
 		})
 	}
@@ -180,7 +181,7 @@ func TestCurrenciesRatesFetcher_FetchRates(t *testing.T) {
 	ctx := t.Context()
 
 	// First call should fetch from server
-	_, err := sut.Convert(ctx, testDate, "USD", "CZK", 100)
+	_, err := sut.Convert(ctx, testDate, "USD", "CZK", decimal.NewFromInt(100))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -189,7 +190,7 @@ func TestCurrenciesRatesFetcher_FetchRates(t *testing.T) {
 	}
 
 	// Second call with same date should use cache
-	_, err = sut.Convert(ctx, testDate, "USD", "CZK", 200)
+	_, err = sut.Convert(ctx, testDate, "USD", "CZK", decimal.NewFromInt(200))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -199,7 +200,7 @@ func TestCurrenciesRatesFetcher_FetchRates(t *testing.T) {
 
 	// Different date should cause another HTTP call
 	differentDate := time.Date(2025, 3, 15, 0, 0, 0, 0, time.UTC)
-	_, err = sut.Convert(ctx, differentDate, "USD", "CZK", 300)
+	_, err = sut.Convert(ctx, differentDate, "USD", "CZK", decimal.NewFromInt(300))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -219,11 +220,11 @@ func TestCurrenciesRatesFetcher_GetRatesFromStorage(t *testing.T) {
 	mockStorage := mocks.NewMockStorage(ctrl)
 
 	// Create mock rates to return from storage
-	mockRates := map[string]float64{
-		"USD": 20.5,
-		"EUR": 25.0,
-		"JPY": 0.18,
-		"AUD": 15.75,
+	mockRates := map[string]decimal.Decimal{
+		"USD": decimal.NewFromFloat(20.5),
+		"EUR": decimal.NewFromInt(25),
+		"JPY": decimal.NewFromFloat(0.18),
+		"AUD": decimal.NewFromFloat(15.75),
 	}
 
 	// Expect storage to return our mock rates
@@ -244,29 +245,29 @@ func TestCurrenciesRatesFetcher_GetRatesFromStorage(t *testing.T) {
 		name     string
 		from     string
 		to       string
-		amount   float64
-		expected float64
+		amount   decimal.Decimal
+		expected decimal.Decimal
 	}{
 		{
 			name:     "Convert USD to CZK using stored rates",
 			from:     "USD",
 			to:       "CZK",
-			amount:   100,
-			expected: 100 * 20.5,
+			amount:   decimal.NewFromInt(100),
+			expected: decimal.NewFromInt(100).Mul(decimal.NewFromFloat(20.5)),
 		},
 		{
 			name:     "Convert CZK to EUR using stored rates",
 			from:     "CZK",
 			to:       "EUR",
-			amount:   250,
-			expected: 250 / 25.0,
+			amount:   decimal.NewFromInt(250),
+			expected: decimal.NewFromInt(250).Div(decimal.NewFromInt(25)),
 		},
 		{
 			name:     "Convert EUR to JPY using stored rates",
 			from:     "EUR",
 			to:       "JPY",
-			amount:   50,
-			expected: (50 * 25.0) / 0.18,
+			amount:   decimal.NewFromInt(50),
+			expected: decimal.NewFromInt(50).Mul(decimal.NewFromInt(25)).Div(decimal.NewFromFloat(0.18)),
 		},
 	}
 
@@ -278,8 +279,8 @@ func TestCurrenciesRatesFetcher_GetRatesFromStorage(t *testing.T) {
 				return
 			}
 
-			if !almostEqual(result, tt.expected, 0.0001) {
-				t.Errorf("expected %.4f, got %.4f", tt.expected, result)
+			if !almostEqualDecimal(result, tt.expected, decimal.NewFromFloat(0.0001)) {
+				t.Errorf("expected %s, got %s", tt.expected, result)
 			}
 		})
 	}
@@ -290,13 +291,9 @@ func TestCurrenciesRatesFetcher_GetRatesFromStorage(t *testing.T) {
 	}
 }
 
-// Helper function to compare floating point numbers
-func almostEqual(a, b, delta float64) bool {
-	diff := a - b
-	if diff < 0 {
-		diff = -diff
-	}
-	return diff <= delta
+// Helper function to compare decimal numbers
+func almostEqualDecimal(a, b, delta decimal.Decimal) bool {
+	return a.Sub(b).Abs().LessThanOrEqual(delta)
 }
 
 func TestCurrenciesRatesFetcher_ErrorHandling(t *testing.T) {
@@ -323,7 +320,7 @@ func TestCurrenciesRatesFetcher_ErrorHandling(t *testing.T) {
 	sut.BaseURL = cnbMockServer.URL
 	ctx := t.Context()
 
-	_, err := sut.Convert(ctx, testDate, "USD", "CZK", 100)
+	_, err := sut.Convert(ctx, testDate, "USD", "CZK", decimal.NewFromInt(100))
 	if err == nil {
 		t.Error("expected error for bad HTTP status but got nil")
 	}
@@ -353,7 +350,7 @@ func TestCurrenciesRatesFetcher_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 1*time.Millisecond)
 	defer cancel()
 
-	_, err := sut.Convert(ctx, testDate, "USD", "CZK", 100)
+	_, err := sut.Convert(ctx, testDate, "USD", "CZK", decimal.NewFromInt(100))
 	if err == nil {
 		t.Error("expected error due to context timeout but got nil")
 	}

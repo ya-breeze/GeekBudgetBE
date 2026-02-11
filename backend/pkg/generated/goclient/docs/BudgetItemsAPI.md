@@ -33,7 +33,7 @@ import (
 )
 
 func main() {
-	budgetItemNoID := *openapiclient.NewBudgetItemNoID(time.Now(), "AccountId_example", float64(123)) // BudgetItemNoID | 
+	budgetItemNoID := *openapiclient.NewBudgetItemNoID(time.Now(), "AccountId_example", "TODO") // BudgetItemNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -363,7 +363,7 @@ import (
 
 func main() {
 	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the budgetItem
-	budgetItemNoID := *openapiclient.NewBudgetItemNoID(time.Now(), "AccountId_example", float64(123)) // BudgetItemNoID | 
+	budgetItemNoID := *openapiclient.NewBudgetItemNoID(time.Now(), "AccountId_example", "TODO") // BudgetItemNoID | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

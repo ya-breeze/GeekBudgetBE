@@ -36,7 +36,7 @@ import (
 )
 
 func main() {
-	checkMatcherRequest := *openapiclient.NewCheckMatcherRequest(*openapiclient.NewMatcherNoID("OutputAccountId_example"), *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement(float64(123), "CurrencyId_example")})) // CheckMatcherRequest | 
+	checkMatcherRequest := *openapiclient.NewCheckMatcherRequest(*openapiclient.NewMatcherNoID("OutputAccountId_example"), *openapiclient.NewTransactionNoID(time.Now(), []openapiclient.Movement{*openapiclient.NewMovement("TODO", "CurrencyId_example")})) // CheckMatcherRequest | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

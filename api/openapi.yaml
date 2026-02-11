@@ -1207,7 +1207,7 @@ paths:
       operationId: import
       requestBody:
         content:
-          application/json::
+          application/json:
             schema:
               $ref: "#/components/schemas/WholeUserData"
       responses:

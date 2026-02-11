@@ -9,7 +9,8 @@
       "Bash(sqlite3:*)",
       "Bash(git log:*)",
       "Bash(wc:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(__NEW_LINE_49fd850130c77a7c__ python3 << 'PYTHON'\nimport re\n\nwith open\\('/Users/ek/work/GeekBudgetBE/backend/pkg/database/storage.go'\\) as f:\n    lines = f.readlines\\(\\)\n\nfuncs = []\nfor i, line in enumerate\\(lines\\):\n    if 'func \\(s *storage\\)' in line:\n        # Extract method name\n        match = re.search\\(r'func \\\\\\(s \\\\*storage\\\\\\) \\(\\\\w+\\)', line\\)\n        if match:\n            funcs.append\\(\\(i+1, match.group\\(1\\), line.strip\\(\\)\\)\\)\n\n# Calculate method lengths and find long ones\nlong_methods = []\nfor idx, \\(linenum, funcname, _\\) in enumerate\\(funcs\\):\n    if idx < len\\(funcs\\) - 1:\n        next_linenum = funcs[idx + 1][0]\n        length = next_linenum - linenum\n    else:\n        length = len\\(lines\\) - linenum\n    \n    if length > 70:\n        long_methods.append\\(\\(length, funcname, linenum\\)\\)\n\n# Sort by length\nlong_methods.sort\\(reverse=True\\)\nprint\\(\"METHODS OVER 70 LINES:\"\\)\nfor length, name, line in long_methods:\n    print\\(f\"  {length:3d} lines: {name:40s} @ line {line}\"\\)\n\nPYTHON)"
     ]
   }
 }

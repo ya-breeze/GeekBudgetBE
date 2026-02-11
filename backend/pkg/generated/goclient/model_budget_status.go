@@ -16,6 +16,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the BudgetStatus type satisfies the MappedNullable interface at compile time
@@ -23,12 +25,12 @@ var _ MappedNullable = &BudgetStatus{}
 
 // BudgetStatus struct for BudgetStatus
 type BudgetStatus struct {
-	Date      time.Time `json:"date"`
-	AccountId string    `json:"accountId"`
-	Budgeted  float64   `json:"budgeted"`
-	Spent     float64   `json:"spent"`
-	Rollover  float64   `json:"rollover"`
-	Available float64   `json:"available"`
+	Date      time.Time       `json:"date"`
+	AccountId string          `json:"accountId"`
+	Budgeted  decimal.Decimal `json:"budgeted"`
+	Spent     decimal.Decimal `json:"spent"`
+	Rollover  decimal.Decimal `json:"rollover"`
+	Available decimal.Decimal `json:"available"`
 }
 
 type _BudgetStatus BudgetStatus
@@ -37,7 +39,7 @@ type _BudgetStatus BudgetStatus
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewBudgetStatus(date time.Time, accountId string, budgeted float64, spent float64, rollover float64, available float64) *BudgetStatus {
+func NewBudgetStatus(date time.Time, accountId string, budgeted decimal.Decimal, spent decimal.Decimal, rollover decimal.Decimal, available decimal.Decimal) *BudgetStatus {
 	this := BudgetStatus{}
 	this.Date = date
 	this.AccountId = accountId
@@ -105,9 +107,9 @@ func (o *BudgetStatus) SetAccountId(v string) {
 }
 
 // GetBudgeted returns the Budgeted field value
-func (o *BudgetStatus) GetBudgeted() float64 {
+func (o *BudgetStatus) GetBudgeted() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -116,7 +118,7 @@ func (o *BudgetStatus) GetBudgeted() float64 {
 
 // GetBudgetedOk returns a tuple with the Budgeted field value
 // and a boolean to check if the value has been set.
-func (o *BudgetStatus) GetBudgetedOk() (*float64, bool) {
+func (o *BudgetStatus) GetBudgetedOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -124,14 +126,14 @@ func (o *BudgetStatus) GetBudgetedOk() (*float64, bool) {
 }
 
 // SetBudgeted sets field value
-func (o *BudgetStatus) SetBudgeted(v float64) {
+func (o *BudgetStatus) SetBudgeted(v decimal.Decimal) {
 	o.Budgeted = v
 }
 
 // GetSpent returns the Spent field value
-func (o *BudgetStatus) GetSpent() float64 {
+func (o *BudgetStatus) GetSpent() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -140,7 +142,7 @@ func (o *BudgetStatus) GetSpent() float64 {
 
 // GetSpentOk returns a tuple with the Spent field value
 // and a boolean to check if the value has been set.
-func (o *BudgetStatus) GetSpentOk() (*float64, bool) {
+func (o *BudgetStatus) GetSpentOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -148,14 +150,14 @@ func (o *BudgetStatus) GetSpentOk() (*float64, bool) {
 }
 
 // SetSpent sets field value
-func (o *BudgetStatus) SetSpent(v float64) {
+func (o *BudgetStatus) SetSpent(v decimal.Decimal) {
 	o.Spent = v
 }
 
 // GetRollover returns the Rollover field value
-func (o *BudgetStatus) GetRollover() float64 {
+func (o *BudgetStatus) GetRollover() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -164,7 +166,7 @@ func (o *BudgetStatus) GetRollover() float64 {
 
 // GetRolloverOk returns a tuple with the Rollover field value
 // and a boolean to check if the value has been set.
-func (o *BudgetStatus) GetRolloverOk() (*float64, bool) {
+func (o *BudgetStatus) GetRolloverOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -172,14 +174,14 @@ func (o *BudgetStatus) GetRolloverOk() (*float64, bool) {
 }
 
 // SetRollover sets field value
-func (o *BudgetStatus) SetRollover(v float64) {
+func (o *BudgetStatus) SetRollover(v decimal.Decimal) {
 	o.Rollover = v
 }
 
 // GetAvailable returns the Available field value
-func (o *BudgetStatus) GetAvailable() float64 {
+func (o *BudgetStatus) GetAvailable() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -188,7 +190,7 @@ func (o *BudgetStatus) GetAvailable() float64 {
 
 // GetAvailableOk returns a tuple with the Available field value
 // and a boolean to check if the value has been set.
-func (o *BudgetStatus) GetAvailableOk() (*float64, bool) {
+func (o *BudgetStatus) GetAvailableOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -196,7 +198,7 @@ func (o *BudgetStatus) GetAvailableOk() (*float64, bool) {
 }
 
 // SetAvailable sets field value
-func (o *BudgetStatus) SetAvailable(v float64) {
+func (o *BudgetStatus) SetAvailable(v decimal.Decimal) {
 	o.Available = v
 }
 

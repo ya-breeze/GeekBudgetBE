@@ -119,8 +119,8 @@ func (fc *FioConverter) ParseTransactions(ctx context.Context, data []byte) (*go
 		BankId:    fio.AccountStatement.Info.BankId,
 		Balances: []goserver.BankAccountInfoBalancesInner{
 			{
-				OpeningBalance: fio.AccountStatement.Info.OpeningBalance.Value.InexactFloat64(),
-				ClosingBalance: fio.AccountStatement.Info.ClosingBalance.Value.InexactFloat64(),
+				OpeningBalance: fio.AccountStatement.Info.OpeningBalance.Value,
+				ClosingBalance: fio.AccountStatement.Info.ClosingBalance.Value,
 				CurrencyId:     fio.AccountStatement.Info.Currency.Value,
 				LastUpdatedAt:  lastUpdated,
 			},
@@ -177,14 +177,14 @@ func (fc *FioConverter) ConvertFioToTransaction(ctx context.Context, bi goserver
 			Description: d,
 			Movements: func() []goserver.Movement {
 				m := make([]goserver.Movement, 0, 2)
-				if fio.Amount.Value.InexactFloat64() != 0 {
+				if !fio.Amount.Value.IsZero() {
 					m = append(m, goserver.Movement{
-						Amount:     -fio.Amount.Value.InexactFloat64(),
+						Amount:     fio.Amount.Value.Neg(),
 						CurrencyId: strCurrencyID,
 					})
 					m = append(m, goserver.Movement{
 						AccountId:  fc.bankImporter.AccountId,
-						Amount:     fio.Amount.Value.InexactFloat64(),
+						Amount:     fio.Amount.Value,
 						CurrencyId: strCurrencyID,
 					})
 				}
@@ -225,16 +225,16 @@ func (fc *FioConverter) ConvertFioToTransaction(ctx context.Context, bi goserver
 			Description: fmt.Sprintf("%s: %s", tokens[0][1], strings.Trim(tokens[0][2], ",  ")),
 			Movements: func() []goserver.Movement {
 				m := make([]goserver.Movement, 0, 2)
-				if val := amountUnknown.InexactFloat64(); val != 0 {
+				if !amountUnknown.IsZero() {
 					m = append(m, goserver.Movement{
-						Amount:     val,
+						Amount:     amountUnknown,
 						CurrencyId: strPaidCurrencyID,
 					})
 				}
-				if val := amountFio.InexactFloat64(); val != 0 {
+				if !amountFio.IsZero() {
 					m = append(m, goserver.Movement{
 						AccountId:  fc.bankImporter.AccountId,
-						Amount:     val,
+						Amount:     amountFio,
 						CurrencyId: strCurrencyID,
 					})
 				}

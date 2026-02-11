@@ -8,10 +8,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
@@ -118,7 +118,7 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 			info.AccountId = parts[1]
 		} else if cleanPart0 == "Konecny zustatek" {
 			// Konecny zustatek;13468,31;;;;;;;;;;;;;;;;;
-			amount, err := strconv.ParseFloat(strings.ReplaceAll(parts[1], ",", "."), 64)
+			amount, err := decimal.NewFromString(strings.ReplaceAll(parts[1], ",", "."))
 			if err == nil {
 				info.Balances = []goserver.BankAccountInfoBalancesInner{
 					{
@@ -162,7 +162,7 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 
 	// Convert transactions
 	res := make([]goserver.TransactionNoId, 0, len(records))
-	var sum float64
+	sum := decimal.Zero
 	for _, record := range records {
 		var tr goserver.TransactionNoId
 		tr, err = fc.ConvertToTransaction(ctx, record)
@@ -179,7 +179,7 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 		// Calculate sum of amounts for the account movements
 		for _, m := range tr.Movements {
 			if m.AccountId == fc.bankImporter.AccountId {
-				sum += m.Amount
+				sum = sum.Add(m.Amount)
 			}
 		}
 	}
@@ -188,7 +188,7 @@ func (fc *KBConverter) ParseTransactions(ctx context.Context, data string,
 
 	// If we found a balance, calculate opening balance
 	if len(info.Balances) > 0 {
-		info.Balances[0].OpeningBalance = info.Balances[0].ClosingBalance - sum
+		info.Balances[0].OpeningBalance = info.Balances[0].ClosingBalance.Sub(sum)
 
 		// Set LastUpdatedAt
 		if headerDate != nil {
@@ -266,15 +266,15 @@ func (fc *KBConverter) ConvertToTransaction(ctx context.Context, record []string
 		res.PartnerAccount += "; SS:" + record[KBIndexSS]
 	}
 
-	amount, err := strconv.ParseFloat(strings.ReplaceAll(record[KBIndexAmount], ",", "."), 64)
+	amount, err := decimal.NewFromString(strings.ReplaceAll(record[KBIndexAmount], ",", "."))
 	if err != nil {
 		return res, fmt.Errorf("can't parse amount %q: %w", record[KBIndexAmount], err)
 	}
 
 	res.Movements = make([]goserver.Movement, 0, 2)
-	if amount != 0 {
+	if !amount.IsZero() {
 		res.Movements = append(res.Movements, goserver.Movement{
-			Amount:     -amount,
+			Amount:     amount.Neg(),
 			CurrencyId: strCurrencyID,
 		})
 		res.Movements = append(res.Movements, goserver.Movement{

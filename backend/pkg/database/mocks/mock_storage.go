@@ -9,6 +9,7 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
+	decimal "github.com/shopspring/decimal"
 	database "github.com/ya-breeze/geekbudgetbe/pkg/database"
 	models "github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	goserver "github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -429,10 +430,10 @@ func (mr *MockStorageMockRecorder) GetAccount(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // GetAccountBalance mocks base method.
-func (m *MockStorage) GetAccountBalance(arg0, arg1, arg2 string) (float64, error) {
+func (m *MockStorage) GetAccountBalance(arg0, arg1, arg2 string) (decimal.Decimal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccountBalance", arg0, arg1, arg2)
-	ret0, _ := ret[0].(float64)
+	ret0, _ := ret[0].(decimal.Decimal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -564,10 +565,10 @@ func (mr *MockStorageMockRecorder) GetBudgetItems(arg0 interface{}) *gomock.Call
 }
 
 // GetCNBRates mocks base method.
-func (m *MockStorage) GetCNBRates(arg0 time.Time) (map[string]float64, error) {
+func (m *MockStorage) GetCNBRates(arg0 time.Time) (map[string]decimal.Decimal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCNBRates", arg0)
-	ret0, _ := ret[0].(map[string]float64)
+	ret0, _ := ret[0].(map[string]decimal.Decimal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -849,18 +850,18 @@ func (mr *MockStorageMockRecorder) GetUserID(arg0 interface{}) *gomock.Call {
 }
 
 // HasTransactionsAfterDate mocks base method.
-func (m *MockStorage) HasTransactionsAfterDate(userID string, accountID string, date time.Time) (bool, error) {
+func (m *MockStorage) HasTransactionsAfterDate(arg0, arg1 string, arg2 time.Time) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HasTransactionsAfterDate", userID, accountID, date)
+	ret := m.ctrl.Call(m, "HasTransactionsAfterDate", arg0, arg1, arg2)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // HasTransactionsAfterDate indicates an expected call of HasTransactionsAfterDate.
-func (mr *MockStorageMockRecorder) HasTransactionsAfterDate(userID, accountID, date interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) HasTransactionsAfterDate(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasTransactionsAfterDate", reflect.TypeOf((*MockStorage)(nil).HasTransactionsAfterDate), userID, accountID, date)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasTransactionsAfterDate", reflect.TypeOf((*MockStorage)(nil).HasTransactionsAfterDate), arg0, arg1, arg2)
 }
 
 // InvalidateReconciliation mocks base method.
@@ -935,7 +936,7 @@ func (mr *MockStorageMockRecorder) RemoveDuplicateRelationship(arg0, arg1, arg2 
 }
 
 // SaveCNBRates mocks base method.
-func (m *MockStorage) SaveCNBRates(arg0 map[string]float64, arg1 time.Time) error {
+func (m *MockStorage) SaveCNBRates(arg0 map[string]decimal.Decimal, arg1 time.Time) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveCNBRates", arg0, arg1)
 	ret0, _ := ret[0].(error)

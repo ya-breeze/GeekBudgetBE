@@ -11,22 +11,26 @@
 
 package goserver
 
+import (
+	"github.com/shopspring/decimal"
+)
+
 type ReconcileAccountRequest struct {
 	CurrencyId string `json:"currencyId"`
 
 	// Manual balance to set. If 0, current Account balance is used.
-	Balance float64 `json:"balance,omitempty"`
+	Balance decimal.Decimal `json:"balance,omitempty"`
 }
 
 type ReconcileAccountRequestInterface interface {
 	GetCurrencyId() string
-	GetBalance() float64
+	GetBalance() decimal.Decimal
 }
 
 func (c *ReconcileAccountRequest) GetCurrencyId() string {
 	return c.CurrencyId
 }
-func (c *ReconcileAccountRequest) GetBalance() float64 {
+func (c *ReconcileAccountRequest) GetBalance() decimal.Decimal {
 	return c.Balance
 }
 

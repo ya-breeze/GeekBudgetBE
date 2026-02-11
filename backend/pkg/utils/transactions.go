@@ -1,28 +1,28 @@
 package utils
 
 import (
-	"math"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
 // GetIncreases calculates the net increase per currency from a list of movements.
-func GetIncreases(movements []goserver.Movement) map[string]float64 {
-	pos := make(map[string]float64)
-	neg := make(map[string]float64)
+func GetIncreases(movements []goserver.Movement) map[string]decimal.Decimal {
+	pos := make(map[string]decimal.Decimal)
+	neg := make(map[string]decimal.Decimal)
 	for _, m := range movements {
-		if m.Amount > 0 {
-			pos[m.CurrencyId] += m.Amount
+		if m.Amount.IsPositive() {
+			pos[m.CurrencyId] = pos[m.CurrencyId].Add(m.Amount)
 		} else {
-			neg[m.CurrencyId] -= m.Amount
+			neg[m.CurrencyId] = neg[m.CurrencyId].Sub(m.Amount)
 		}
 	}
 
-	res := make(map[string]float64)
+	res := make(map[string]decimal.Decimal)
 	for c, p := range pos {
 		n := neg[c]
-		if p > n {
+		if p.GreaterThan(n) {
 			res[c] = p
 		} else {
 			res[c] = n
@@ -55,9 +55,11 @@ func IsDuplicate(t1Date time.Time, t1Movements []goserver.Movement, t2Date time.
 		return false
 	}
 
+	tolerance := decimal.NewFromFloat(0.01)
+
 	for c, v1 := range inc1 {
 		v2, ok := inc2[c]
-		if !ok || math.Abs(v1-v2) >= 0.01 {
+		if !ok || v1.Sub(v2).Abs().GreaterThanOrEqual(tolerance) {
 			return false
 		}
 	}

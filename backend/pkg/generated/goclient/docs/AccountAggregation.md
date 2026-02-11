@@ -5,15 +5,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **AccountId** | **string** |  | 
-**Amounts** | **[]float64** |  | 
-**Total** | Pointer to **float64** |  | [optional] 
-**ChangePercent** | Pointer to **float64** |  | [optional] 
+**Amounts** | [**[]decimal.Decimal**](decimal.Decimal.md) |  | 
+**Total** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
+**ChangePercent** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
 
 ## Methods
 
 ### NewAccountAggregation
 
-`func NewAccountAggregation(accountId string, amounts []float64, ) *AccountAggregation`
+`func NewAccountAggregation(accountId string, amounts []decimal.Decimal, ) *AccountAggregation`
 
 NewAccountAggregation instantiates a new AccountAggregation object
 This constructor will assign default values to properties that have it defined,
@@ -50,40 +50,40 @@ SetAccountId sets AccountId field to given value.
 
 ### GetAmounts
 
-`func (o *AccountAggregation) GetAmounts() []float64`
+`func (o *AccountAggregation) GetAmounts() []decimal.Decimal`
 
 GetAmounts returns the Amounts field if non-nil, zero value otherwise.
 
 ### GetAmountsOk
 
-`func (o *AccountAggregation) GetAmountsOk() (*[]float64, bool)`
+`func (o *AccountAggregation) GetAmountsOk() (*[]decimal.Decimal, bool)`
 
 GetAmountsOk returns a tuple with the Amounts field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAmounts
 
-`func (o *AccountAggregation) SetAmounts(v []float64)`
+`func (o *AccountAggregation) SetAmounts(v []decimal.Decimal)`
 
 SetAmounts sets Amounts field to given value.
 
 
 ### GetTotal
 
-`func (o *AccountAggregation) GetTotal() float64`
+`func (o *AccountAggregation) GetTotal() decimal.Decimal`
 
 GetTotal returns the Total field if non-nil, zero value otherwise.
 
 ### GetTotalOk
 
-`func (o *AccountAggregation) GetTotalOk() (*float64, bool)`
+`func (o *AccountAggregation) GetTotalOk() (*decimal.Decimal, bool)`
 
 GetTotalOk returns a tuple with the Total field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetTotal
 
-`func (o *AccountAggregation) SetTotal(v float64)`
+`func (o *AccountAggregation) SetTotal(v decimal.Decimal)`
 
 SetTotal sets Total field to given value.
 
@@ -95,20 +95,20 @@ HasTotal returns a boolean if a field has been set.
 
 ### GetChangePercent
 
-`func (o *AccountAggregation) GetChangePercent() float64`
+`func (o *AccountAggregation) GetChangePercent() decimal.Decimal`
 
 GetChangePercent returns the ChangePercent field if non-nil, zero value otherwise.
 
 ### GetChangePercentOk
 
-`func (o *AccountAggregation) GetChangePercentOk() (*float64, bool)`
+`func (o *AccountAggregation) GetChangePercentOk() (*decimal.Decimal, bool)`
 
 GetChangePercentOk returns a tuple with the ChangePercent field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetChangePercent
 
-`func (o *AccountAggregation) SetChangePercent(v float64)`
+`func (o *AccountAggregation) SetChangePercent(v decimal.Decimal)`
 
 SetChangePercent sets ChangePercent field to given value.
 

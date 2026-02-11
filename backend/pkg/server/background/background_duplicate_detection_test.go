@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -38,13 +39,13 @@ var _ = Describe("Background Duplicate Detection", func() {
 				Id:          uuid.New().String(),
 				Date:        time.Now(),
 				ExternalIds: []string{"source1"},
-				Movements:   []goserver.Movement{{Amount: 100, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 			}
 			t2 := goserver.Transaction{
 				Id:          uuid.New().String(),
 				Date:        time.Now(),
 				ExternalIds: []string{"source2"}, // different source
-				Movements:   []goserver.Movement{{Amount: 100, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 			}
 
 			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
@@ -68,13 +69,13 @@ var _ = Describe("Background Duplicate Detection", func() {
 				Id:          uuid.New().String(),
 				Date:        time.Now(),
 				ExternalIds: []string{"source1"},
-				Movements:   []goserver.Movement{{Amount: 100, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 			}
 			t2 := goserver.Transaction{
 				Id:          uuid.New().String(),
 				Date:        time.Now(),
 				ExternalIds: []string{"source2"},
-				Movements:   []goserver.Movement{{Amount: 200, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(200), CurrencyId: "USD"}},
 			}
 
 			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
@@ -88,13 +89,13 @@ var _ = Describe("Background Duplicate Detection", func() {
 				Id:          uuid.New().String(),
 				Date:        time.Now(),
 				ExternalIds: []string{"source1"},
-				Movements:   []goserver.Movement{{Amount: 100, CurrencyId: "USD"}},
+				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 			}
 			t2 := goserver.Transaction{
 				Id:                 uuid.New().String(),
 				Date:               time.Now(),
 				ExternalIds:        []string{"source2"},
-				Movements:          []goserver.Movement{{Amount: 100, CurrencyId: "USD"}},
+				Movements:          []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 				DuplicateDismissed: true, // User dismissed it
 			}
 
@@ -109,14 +110,14 @@ var _ = Describe("Background Duplicate Detection", func() {
 				Id:                uuid.New().String(),
 				Date:              time.Now(),
 				ExternalIds:       []string{"source1"},
-				Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "USD"}},
+				Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 				SuspiciousReasons: []string{models.DuplicateReason}, // Already marked
 			}
 			t2 := goserver.Transaction{
 				Id:                uuid.New().String(),
 				Date:              time.Now(),
 				ExternalIds:       []string{"source2"},
-				Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "USD"}},
+				Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 				SuspiciousReasons: []string{models.DuplicateReason}, // Already marked
 			}
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/dusted-go/logging/prettylog"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
@@ -39,42 +40,42 @@ func PrepareTransactions(accounts []goserver.Account, currencies []goserver.Curr
 	return []goserver.Transaction{
 		PrepareTransaction(
 			"salary 9",
-			time.Date(2024, 9, 15, 0, 0, 0, 0, time.UTC), 2000,
+			time.Date(2024, 9, 15, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(2000),
 			currencies[0].Id, accounts[1].Id, accounts[3].Id),
 		PrepareTransaction(
 			"food 9",
-			time.Date(2024, 9, 18, 0, 0, 0, 0, time.UTC), 200,
+			time.Date(2024, 9, 18, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(200),
 			currencies[0].Id, accounts[2].Id, accounts[0].Id),
 		PrepareTransaction(
 			"food 9.2",
-			time.Date(2024, 9, 19, 0, 0, 0, 0, time.UTC), 250,
+			time.Date(2024, 9, 19, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(250),
 			currencies[0].Id, accounts[2].Id, accounts[0].Id),
 		PrepareTransaction(
 			"groceries 9",
-			time.Date(2024, 9, 18, 0, 0, 0, 0, time.UTC), 300,
+			time.Date(2024, 9, 18, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(300),
 			currencies[0].Id, accounts[4].Id, accounts[1].Id),
 
 		PrepareTransaction(
 			"salary 10",
-			time.Date(2024, 10, 15, 0, 0, 0, 0, time.UTC), 1000,
+			time.Date(2024, 10, 15, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(1000),
 			currencies[0].Id, accounts[1].Id, accounts[3].Id),
 		PrepareTransaction(
 			"food 10",
-			time.Date(2024, 10, 17, 0, 0, 0, 0, time.UTC), 10,
+			time.Date(2024, 10, 17, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(10),
 			currencies[0].Id, accounts[2].Id, accounts[0].Id),
 		PrepareTransaction(
 			"groceries 10",
-			time.Date(2024, 10, 17, 0, 0, 0, 0, time.UTC), 100,
+			time.Date(2024, 10, 17, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(100),
 			currencies[0].Id, accounts[4].Id, accounts[1].Id),
 		PrepareTransaction(
 			"groceries 10.2",
-			time.Date(2024, 10, 18, 0, 0, 0, 0, time.UTC), 150,
+			time.Date(2024, 10, 18, 0, 0, 0, 0, time.UTC), decimal.NewFromInt(150),
 			currencies[0].Id, accounts[4].Id, accounts[1].Id),
 	}
 }
 
 func PrepareTransaction(
-	description string, date time.Time, amount float64, currencyID, accountPlus, accountMinus string,
+	description string, date time.Time, amount decimal.Decimal, currencyID, accountPlus, accountMinus string,
 ) goserver.Transaction {
 	return goserver.Transaction{
 		Id:          uuid.New().String(),
@@ -82,7 +83,7 @@ func PrepareTransaction(
 		Date:        date,
 		Movements: []goserver.Movement{
 			{Amount: amount, CurrencyId: currencyID, AccountId: accountPlus},
-			{Amount: -amount, CurrencyId: currencyID, AccountId: accountMinus},
+			{Amount: amount.Neg(), CurrencyId: currencyID, AccountId: accountMinus},
 		},
 	}
 }

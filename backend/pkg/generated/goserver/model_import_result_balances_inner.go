@@ -11,18 +11,22 @@
 
 package goserver
 
+import (
+	"github.com/shopspring/decimal"
+)
+
 type ImportResultBalancesInner struct {
-	Amount float32 `json:"amount,omitempty"`
+	Amount decimal.Decimal `json:"amount,omitempty"`
 
 	CurrencyId string `json:"currencyId,omitempty"`
 }
 
 type ImportResultBalancesInnerInterface interface {
-	GetAmount() float32
+	GetAmount() decimal.Decimal
 	GetCurrencyId() string
 }
 
-func (c *ImportResultBalancesInner) GetAmount() float32 {
+func (c *ImportResultBalancesInner) GetAmount() decimal.Decimal {
 	return c.Amount
 }
 func (c *ImportResultBalancesInner) GetCurrencyId() string {

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
@@ -28,7 +29,7 @@ func StartCurrenciesRatesFetcher(
 				logger.Info("Fetching currencies rates...")
 
 				fetcher := common.NewCurrenciesRatesFetcher(logger, db)
-				_, err := fetcher.Convert(ctx, time.Now(), "CZK", "USD", 100)
+				_, err := fetcher.Convert(ctx, time.Now(), "CZK", "USD", decimal.NewFromInt(100))
 				if err != nil {
 					logger.With("error", err).Error("Failed to fetch currencies rates, retring in 1 hour")
 

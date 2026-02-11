@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
@@ -57,19 +58,19 @@ var _ = Describe("Expenses Aggregation API", func() {
 			{
 				Date: time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{AccountId: "acc-a", Amount: 100.0, CurrencyId: "USD"},
+					{AccountId: "acc-a", Amount: decimal.NewFromInt(100), CurrencyId: "USD"},
 				},
 			},
 			{
 				Date: time.Date(2023, 6, 15, 0, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{AccountId: "acc-a", Amount: 200.0, CurrencyId: "USD"},
+					{AccountId: "acc-a", Amount: decimal.NewFromInt(200), CurrencyId: "USD"},
 				},
 			},
 			{
 				Date: time.Date(2023, 12, 15, 0, 0, 0, 0, time.UTC),
 				Movements: []goserver.Movement{
-					{AccountId: "acc-a", Amount: 300.0, CurrencyId: "USD"},
+					{AccountId: "acc-a", Amount: decimal.NewFromInt(300), CurrencyId: "USD"},
 				},
 			},
 		}
@@ -101,6 +102,6 @@ var _ = Describe("Expenses Aggregation API", func() {
 		Expect(acc.Amounts).To(HaveLen(1))
 
 		// Total: 100 + 200 + 300 = 600
-		Expect(acc.Amounts[0]).To(Equal(600.0))
+		Expect(acc.Amounts[0]).To(Equal(decimal.NewFromInt(600)))
 	})
 })

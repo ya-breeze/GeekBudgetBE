@@ -2,11 +2,13 @@ package models
 
 import (
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // CNBCurrencyRate represents currency rate for a specific date from Czech National Bank
 type CNBCurrencyRate struct {
-	CurrencyCode string    `gorm:"not null"`
-	RateToCZK    float64   `gorm:"not null"`
-	RateDate     time.Time `gorm:"not null;index"`
+	CurrencyCode string          `gorm:"not null"`
+	RateToCZK    decimal.Decimal `gorm:"not null"`
+	RateDate     time.Time       `gorm:"not null;index"`
 }

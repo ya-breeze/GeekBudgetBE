@@ -10,6 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
@@ -55,10 +56,10 @@ var _ = Describe("KB converter", func() {
 			Expect(transaction.Extra).To(Equal(expectedTransaction.Extra))
 			Expect(transaction.ExternalIds).To(Equal(expectedTransaction.ExternalIds))
 			Expect(transaction.Movements).To(HaveLen(len(expectedTransaction.Movements)))
-			Expect(transaction.Movements[0].Amount).To(Equal(expectedTransaction.Movements[0].Amount))
+			Expect(transaction.Movements[0].Amount.Equal(expectedTransaction.Movements[0].Amount)).To(BeTrue())
 			Expect(transaction.Movements[0].CurrencyId).To(Equal(expectedTransaction.Movements[0].CurrencyId))
 			Expect(transaction.Movements[0].AccountId).To(Equal(expectedTransaction.Movements[0].AccountId))
-			Expect(transaction.Movements[1].Amount).To(Equal(expectedTransaction.Movements[1].Amount))
+			Expect(transaction.Movements[1].Amount.Equal(expectedTransaction.Movements[1].Amount)).To(BeTrue())
 			Expect(transaction.Movements[1].CurrencyId).To(Equal(expectedTransaction.Movements[1].CurrencyId))
 			Expect(transaction.Movements[1].AccountId).To(Equal(expectedTransaction.Movements[1].AccountId))
 		},
@@ -74,12 +75,12 @@ var _ = Describe("KB converter", func() {
 				ExternalIds:    []string{"externalid"},
 				Movements: []goserver.Movement{
 					{
-						Amount:     12345,
+						Amount:     decimal.NewFromInt(12345),
 						CurrencyId: "__CZK_ID__",
 					},
 					{
 						AccountId:  "__accountID__",
-						Amount:     -12345,
+						Amount:     decimal.NewFromInt(-12345),
 						CurrencyId: "__CZK_ID__",
 					},
 				},
@@ -112,7 +113,7 @@ Datum zauctovani;Datum provedeni;Protistrana;Nazev protiuctu;Castka;Mena;Origina
 		Expect(err).ToNot(HaveOccurred())
 		Expect(info.AccountId).To(Equal("123-123123"))
 		Expect(info.Balances).To(HaveLen(1))
-		Expect(info.Balances[0].ClosingBalance).To(BeNumerically("==", 123123.12))
+		Expect(info.Balances[0].ClosingBalance.Equal(decimal.NewFromFloat(123123.12))).To(BeTrue())
 		Expect(info.Balances[0].CurrencyId).To(Equal("__CZK_ID__"))
 
 		Expect(transactions).To(HaveLen(3))
@@ -120,7 +121,7 @@ Datum zauctovani;Datum provedeni;Protistrana;Nazev protiuctu;Castka;Mena;Origina
 		// Check Incoming Payment
 		Expect(transactions[0].ExternalIds).To(ContainElement("tx1"))
 		Expect(transactions[0].PartnerName).To(Equal("Employer Corp"))
-		Expect(transactions[0].Movements[0].Amount).To(BeNumerically("==", -12345.00))
+		Expect(transactions[0].Movements[0].Amount.Equal(decimal.NewFromFloat(-12345.00))).To(BeTrue())
 		Expect(transactions[0].Description).To(ContainSubstring("Incoming payment"))
 		Expect(transactions[0].Description).To(ContainSubstring("Salary"))
 		Expect(transactions[0].Description).To(ContainSubstring("September"))
@@ -128,14 +129,14 @@ Datum zauctovani;Datum provedeni;Protistrana;Nazev protiuctu;Castka;Mena;Origina
 		// Check Outgoing Payment
 		Expect(transactions[1].ExternalIds).To(ContainElement("tx2"))
 		Expect(transactions[1].PartnerName).To(Equal("Landlord"))
-		Expect(transactions[1].Movements[0].Amount).To(BeNumerically("==", 10000.00))
-		Expect(transactions[1].Movements[1].Amount).To(BeNumerically("==", -10000.00))
+		Expect(transactions[1].Movements[0].Amount.Equal(decimal.NewFromFloat(10000.00))).To(BeTrue())
+		Expect(transactions[1].Movements[1].Amount.Equal(decimal.NewFromFloat(-10000.00))).To(BeTrue())
 
 		// Check Fee
 		Expect(transactions[2].ExternalIds).To(ContainElement("tx3"))
 		Expect(transactions[2].PartnerName).To(Equal("Bank"))
 		Expect(transactions[2].Description).To(ContainSubstring("Fee"))
-		Expect(transactions[2].Movements[1].Amount).To(BeNumerically("==", -15.00))
+		Expect(transactions[2].Movements[1].Amount.Equal(decimal.NewFromFloat(-15.00))).To(BeTrue())
 	})
 
 	It("filters out zero-amount movements", func() {

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -103,8 +104,8 @@ func (f *TestFixture) createTransaction(t *testing.T, description string) goserv
 		Description: description,
 		Tags:        []string{"unprocessed"},
 		Movements: []goserver.Movement{
-			{AccountId: "", CurrencyId: f.Currency.Id, Amount: -100.0},
-			{AccountId: f.Account.Id, CurrencyId: f.Currency.Id, Amount: 100.0},
+			{AccountId: "", CurrencyId: f.Currency.Id, Amount: decimal.NewFromInt(-100)},
+			{AccountId: f.Account.Id, CurrencyId: f.Currency.Id, Amount: decimal.NewFromInt(100)},
 		},
 	}
 	createdTransaction, err := f.Storage.CreateTransaction(f.UserID, transaction)

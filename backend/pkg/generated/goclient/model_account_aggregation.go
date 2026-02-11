@@ -15,6 +15,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the AccountAggregation type satisfies the MappedNullable interface at compile time
@@ -22,10 +24,10 @@ var _ MappedNullable = &AccountAggregation{}
 
 // AccountAggregation struct for AccountAggregation
 type AccountAggregation struct {
-	AccountId     string    `json:"accountId"`
-	Amounts       []float64 `json:"amounts"`
-	Total         *float64  `json:"total,omitempty"`
-	ChangePercent *float64  `json:"changePercent,omitempty"`
+	AccountId     string            `json:"accountId"`
+	Amounts       []decimal.Decimal `json:"amounts"`
+	Total         *decimal.Decimal  `json:"total,omitempty"`
+	ChangePercent *decimal.Decimal  `json:"changePercent,omitempty"`
 }
 
 type _AccountAggregation AccountAggregation
@@ -34,7 +36,7 @@ type _AccountAggregation AccountAggregation
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewAccountAggregation(accountId string, amounts []float64) *AccountAggregation {
+func NewAccountAggregation(accountId string, amounts []decimal.Decimal) *AccountAggregation {
 	this := AccountAggregation{}
 	this.AccountId = accountId
 	this.Amounts = amounts
@@ -74,9 +76,9 @@ func (o *AccountAggregation) SetAccountId(v string) {
 }
 
 // GetAmounts returns the Amounts field value
-func (o *AccountAggregation) GetAmounts() []float64 {
+func (o *AccountAggregation) GetAmounts() []decimal.Decimal {
 	if o == nil {
-		var ret []float64
+		var ret []decimal.Decimal
 		return ret
 	}
 
@@ -85,7 +87,7 @@ func (o *AccountAggregation) GetAmounts() []float64 {
 
 // GetAmountsOk returns a tuple with the Amounts field value
 // and a boolean to check if the value has been set.
-func (o *AccountAggregation) GetAmountsOk() ([]float64, bool) {
+func (o *AccountAggregation) GetAmountsOk() ([]decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -93,14 +95,14 @@ func (o *AccountAggregation) GetAmountsOk() ([]float64, bool) {
 }
 
 // SetAmounts sets field value
-func (o *AccountAggregation) SetAmounts(v []float64) {
+func (o *AccountAggregation) SetAmounts(v []decimal.Decimal) {
 	o.Amounts = v
 }
 
 // GetTotal returns the Total field value if set, zero value otherwise.
-func (o *AccountAggregation) GetTotal() float64 {
+func (o *AccountAggregation) GetTotal() decimal.Decimal {
 	if o == nil || IsNil(o.Total) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.Total
@@ -108,7 +110,7 @@ func (o *AccountAggregation) GetTotal() float64 {
 
 // GetTotalOk returns a tuple with the Total field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AccountAggregation) GetTotalOk() (*float64, bool) {
+func (o *AccountAggregation) GetTotalOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.Total) {
 		return nil, false
 	}
@@ -124,15 +126,15 @@ func (o *AccountAggregation) HasTotal() bool {
 	return false
 }
 
-// SetTotal gets a reference to the given float64 and assigns it to the Total field.
-func (o *AccountAggregation) SetTotal(v float64) {
+// SetTotal gets a reference to the given decimal.Decimal and assigns it to the Total field.
+func (o *AccountAggregation) SetTotal(v decimal.Decimal) {
 	o.Total = &v
 }
 
 // GetChangePercent returns the ChangePercent field value if set, zero value otherwise.
-func (o *AccountAggregation) GetChangePercent() float64 {
+func (o *AccountAggregation) GetChangePercent() decimal.Decimal {
 	if o == nil || IsNil(o.ChangePercent) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.ChangePercent
@@ -140,7 +142,7 @@ func (o *AccountAggregation) GetChangePercent() float64 {
 
 // GetChangePercentOk returns a tuple with the ChangePercent field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AccountAggregation) GetChangePercentOk() (*float64, bool) {
+func (o *AccountAggregation) GetChangePercentOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.ChangePercent) {
 		return nil, false
 	}
@@ -156,8 +158,8 @@ func (o *AccountAggregation) HasChangePercent() bool {
 	return false
 }
 
-// SetChangePercent gets a reference to the given float64 and assigns it to the ChangePercent field.
-func (o *AccountAggregation) SetChangePercent(v float64) {
+// SetChangePercent gets a reference to the given decimal.Decimal and assigns it to the ChangePercent field.
+func (o *AccountAggregation) SetChangePercent(v decimal.Decimal) {
 	o.ChangePercent = &v
 }
 

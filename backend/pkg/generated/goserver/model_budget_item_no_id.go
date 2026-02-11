@@ -13,6 +13,8 @@ package goserver
 
 import (
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 type BudgetItemNoId struct {
@@ -20,7 +22,7 @@ type BudgetItemNoId struct {
 
 	AccountId string `json:"accountId"`
 
-	Amount float64 `json:"amount"`
+	Amount decimal.Decimal `json:"amount"`
 
 	Description string `json:"description,omitempty"`
 }
@@ -28,7 +30,7 @@ type BudgetItemNoId struct {
 type BudgetItemNoIdInterface interface {
 	GetDate() time.Time
 	GetAccountId() string
-	GetAmount() float64
+	GetAmount() decimal.Decimal
 	GetDescription() string
 }
 
@@ -38,7 +40,7 @@ func (c *BudgetItemNoId) GetDate() time.Time {
 func (c *BudgetItemNoId) GetAccountId() string {
 	return c.AccountId
 }
-func (c *BudgetItemNoId) GetAmount() float64 {
+func (c *BudgetItemNoId) GetAmount() decimal.Decimal {
 	return c.Amount
 }
 func (c *BudgetItemNoId) GetDescription() string {

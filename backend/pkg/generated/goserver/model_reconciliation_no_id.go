@@ -11,14 +11,18 @@
 
 package goserver
 
+import (
+	"github.com/shopspring/decimal"
+)
+
 type ReconciliationNoId struct {
 	AccountId string `json:"accountId"`
 
 	CurrencyId string `json:"currencyId"`
 
-	ReconciledBalance float64 `json:"reconciledBalance"`
+	ReconciledBalance decimal.Decimal `json:"reconciledBalance"`
 
-	ExpectedBalance float64 `json:"expectedBalance,omitempty"`
+	ExpectedBalance decimal.Decimal `json:"expectedBalance,omitempty"`
 
 	IsManual bool `json:"isManual,omitempty"`
 }
@@ -26,8 +30,8 @@ type ReconciliationNoId struct {
 type ReconciliationNoIdInterface interface {
 	GetAccountId() string
 	GetCurrencyId() string
-	GetReconciledBalance() float64
-	GetExpectedBalance() float64
+	GetReconciledBalance() decimal.Decimal
+	GetExpectedBalance() decimal.Decimal
 	GetIsManual() bool
 }
 
@@ -37,10 +41,10 @@ func (c *ReconciliationNoId) GetAccountId() string {
 func (c *ReconciliationNoId) GetCurrencyId() string {
 	return c.CurrencyId
 }
-func (c *ReconciliationNoId) GetReconciledBalance() float64 {
+func (c *ReconciliationNoId) GetReconciledBalance() decimal.Decimal {
 	return c.ReconciledBalance
 }
-func (c *ReconciliationNoId) GetExpectedBalance() float64 {
+func (c *ReconciliationNoId) GetExpectedBalance() decimal.Decimal {
 	return c.ExpectedBalance
 }
 func (c *ReconciliationNoId) GetIsManual() bool {

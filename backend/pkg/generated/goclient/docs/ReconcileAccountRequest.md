@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CurrencyId** | **string** |  | 
-**Balance** | Pointer to **float64** | Manual balance to set. If 0, current Account balance is used. | [optional] 
+**Balance** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) | Manual balance to set. If 0, current Account balance is used. | [optional] 
 
 ## Methods
 
@@ -48,20 +48,20 @@ SetCurrencyId sets CurrencyId field to given value.
 
 ### GetBalance
 
-`func (o *ReconcileAccountRequest) GetBalance() float64`
+`func (o *ReconcileAccountRequest) GetBalance() decimal.Decimal`
 
 GetBalance returns the Balance field if non-nil, zero value otherwise.
 
 ### GetBalanceOk
 
-`func (o *ReconcileAccountRequest) GetBalanceOk() (*float64, bool)`
+`func (o *ReconcileAccountRequest) GetBalanceOk() (*decimal.Decimal, bool)`
 
 GetBalanceOk returns a tuple with the Balance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetBalance
 
-`func (o *ReconcileAccountRequest) SetBalance(v float64)`
+`func (o *ReconcileAccountRequest) SetBalance(v decimal.Decimal)`
 
 SetBalance sets Balance field to given value.
 

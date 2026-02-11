@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 )
 
@@ -17,7 +17,7 @@ type CurrenciesRatesFetcher struct {
 	logger  *slog.Logger
 	storage database.Storage
 	// date -> currency -> rate
-	rateCache map[string]map[string]float64
+	rateCache map[string]map[string]decimal.Decimal
 
 	BaseURL string
 }
@@ -26,18 +26,15 @@ func NewCurrenciesRatesFetcher(logger *slog.Logger, storage database.Storage) *C
 	return &CurrenciesRatesFetcher{
 		logger:    logger,
 		storage:   storage,
-		rateCache: make(map[string]map[string]float64),
+		rateCache: make(map[string]map[string]decimal.Decimal),
 		BaseURL: "https://www.cnb.cz/" +
 			"cs/financni-trhy/devizovy-trh/kurzy-devizoveho-trhu/kurzy-devizoveho-trhu/denni_kurz.txt",
 	}
 }
 
 func (f *CurrenciesRatesFetcher) Convert(
-	ctx context.Context, day time.Time, from, to string, amount float64,
-) (float64, error) {
-	// Format date for the URL in DD.MM.YYYY format
-	dateStr := day.Format("02.01.2006")
-
+	ctx context.Context, day time.Time, from, to string, amount decimal.Decimal,
+) (decimal.Decimal, error) {
 	// Check if we have cached rates for this date
 	dateKey := day.Format("2006-01-02")
 	rates, ok := f.rateCache[dateKey]
@@ -54,9 +51,11 @@ func (f *CurrenciesRatesFetcher) Convert(
 			f.logger.Debug("using rates from DB", "date", dateKey)
 		} else {
 			// Fetch rates if not in DB
+			// Format date for the URL in DD.MM.YYYY format
+			dateStr := day.Format("02.01.2006")
 			rates, err = f.fetchRates(ctx, dateStr)
 			if err != nil {
-				return 0, fmt.Errorf("failed to fetch currency rates: %w", err)
+				return decimal.Zero, fmt.Errorf("failed to fetch currency rates: %w", err)
 			}
 
 			// Store rates in DB
@@ -75,40 +74,44 @@ func (f *CurrenciesRatesFetcher) Convert(
 
 // performConversion handles the actual currency conversion calculation
 func (f *CurrenciesRatesFetcher) performConversion(
-	from, to string, amount float64, rates map[string]float64,
-) (float64, error) {
+	from, to string, amount decimal.Decimal, rates map[string]decimal.Decimal,
+) (decimal.Decimal, error) {
+	if from == to {
+		return amount, nil
+	}
+
 	// Convert CZK to another currency or vice versa
 	switch {
 	case from == "CZK":
 		rate, ok := rates[to]
 		if !ok {
-			return 0, fmt.Errorf("currency not found: %s", to)
+			return decimal.Zero, fmt.Errorf("currency not found: %s", to)
 		}
-		return amount / rate, nil
+		return amount.Div(rate), nil
 	case to == "CZK":
 		rate, ok := rates[from]
 		if !ok {
-			return 0, fmt.Errorf("currency not found: %s", from)
+			return decimal.Zero, fmt.Errorf("currency not found: %s", from)
 		}
-		return amount * rate, nil
+		return amount.Mul(rate), nil
 	default:
 		// For other currency pairs, convert via CZK
 		fromRate, ok := rates[from]
 		if !ok {
-			return 0, fmt.Errorf("currency not found: %s", from)
+			return decimal.Zero, fmt.Errorf("currency not found: %s", from)
 		}
 		toRate, ok := rates[to]
 		if !ok {
-			return 0, fmt.Errorf("currency not found: %s", to)
+			return decimal.Zero, fmt.Errorf("currency not found: %s", to)
 		}
 
 		// First convert to CZK, then to target currency
-		czk := amount * fromRate
-		return czk / toRate, nil
+		czk := amount.Mul(fromRate)
+		return czk.Div(toRate), nil
 	}
 }
 
-func (f *CurrenciesRatesFetcher) fetchRates(ctx context.Context, date string) (map[string]float64, error) {
+func (f *CurrenciesRatesFetcher) fetchRates(ctx context.Context, date string) (map[string]decimal.Decimal, error) {
 	url := fmt.Sprintf("%s?date=%s", f.BaseURL, date)
 	f.logger.Debug("fetching rates", "url", url)
 
@@ -130,7 +133,7 @@ func (f *CurrenciesRatesFetcher) fetchRates(ctx context.Context, date string) (m
 	}
 
 	// Parse the CNB format
-	rates := make(map[string]float64)
+	rates := make(map[string]decimal.Decimal)
 	scanner := bufio.NewScanner(resp.Body)
 
 	// Skip the first two lines (header)
@@ -151,18 +154,18 @@ func (f *CurrenciesRatesFetcher) fetchRates(ctx context.Context, date string) (m
 		amountStr := parts[2]
 		rateStr := strings.Replace(parts[4], ",", ".", 1) // Replace comma with dot for decimal point
 
-		amount, err := strconv.ParseFloat(amountStr, 64)
+		amount, err := decimal.NewFromString(amountStr)
 		if err != nil {
 			continue
 		}
 
-		rate, err := strconv.ParseFloat(rateStr, 64)
+		rate, err := decimal.NewFromString(rateStr)
 		if err != nil {
 			continue
 		}
 
 		// Store rate per unit of currency
-		rates[currencyCode] = rate / amount
+		rates[currencyCode] = rate.Div(amount)
 	}
 
 	if err := scanner.Err(); err != nil {

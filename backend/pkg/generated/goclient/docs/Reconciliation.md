@@ -7,16 +7,16 @@ Name | Type | Description | Notes
 **ReconciliationId** | Pointer to **string** |  | [optional] [readonly] 
 **AccountId** | **string** |  | 
 **CurrencyId** | **string** |  | 
-**ReconciledBalance** | **float64** |  | 
+**ReconciledBalance** | [**decimal.Decimal**](decimal.Decimal.md) |  | 
 **ReconciledAt** | **time.Time** |  | 
-**ExpectedBalance** | Pointer to **float64** |  | [optional] 
+**ExpectedBalance** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
 **IsManual** | Pointer to **bool** |  | [optional] 
 
 ## Methods
 
 ### NewReconciliation
 
-`func NewReconciliation(accountId string, currencyId string, reconciledBalance float64, reconciledAt time.Time, ) *Reconciliation`
+`func NewReconciliation(accountId string, currencyId string, reconciledBalance decimal.Decimal, reconciledAt time.Time, ) *Reconciliation`
 
 NewReconciliation instantiates a new Reconciliation object
 This constructor will assign default values to properties that have it defined,
@@ -98,20 +98,20 @@ SetCurrencyId sets CurrencyId field to given value.
 
 ### GetReconciledBalance
 
-`func (o *Reconciliation) GetReconciledBalance() float64`
+`func (o *Reconciliation) GetReconciledBalance() decimal.Decimal`
 
 GetReconciledBalance returns the ReconciledBalance field if non-nil, zero value otherwise.
 
 ### GetReconciledBalanceOk
 
-`func (o *Reconciliation) GetReconciledBalanceOk() (*float64, bool)`
+`func (o *Reconciliation) GetReconciledBalanceOk() (*decimal.Decimal, bool)`
 
 GetReconciledBalanceOk returns a tuple with the ReconciledBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetReconciledBalance
 
-`func (o *Reconciliation) SetReconciledBalance(v float64)`
+`func (o *Reconciliation) SetReconciledBalance(v decimal.Decimal)`
 
 SetReconciledBalance sets ReconciledBalance field to given value.
 
@@ -138,20 +138,20 @@ SetReconciledAt sets ReconciledAt field to given value.
 
 ### GetExpectedBalance
 
-`func (o *Reconciliation) GetExpectedBalance() float64`
+`func (o *Reconciliation) GetExpectedBalance() decimal.Decimal`
 
 GetExpectedBalance returns the ExpectedBalance field if non-nil, zero value otherwise.
 
 ### GetExpectedBalanceOk
 
-`func (o *Reconciliation) GetExpectedBalanceOk() (*float64, bool)`
+`func (o *Reconciliation) GetExpectedBalanceOk() (*decimal.Decimal, bool)`
 
 GetExpectedBalanceOk returns a tuple with the ExpectedBalance field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetExpectedBalance
 
-`func (o *Reconciliation) SetExpectedBalance(v float64)`
+`func (o *Reconciliation) SetExpectedBalance(v decimal.Decimal)`
 
 SetExpectedBalance sets ExpectedBalance field to given value.
 

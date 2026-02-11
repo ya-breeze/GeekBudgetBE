@@ -162,7 +162,7 @@ func printTransactionNoID(t goserver.TransactionNoId) {
 	minusMovements := []goserver.Movement{}
 	plusMovements := []goserver.Movement{}
 	for _, m := range t.Movements {
-		if m.Amount < 0 {
+		if m.Amount.IsNegative() {
 			minusMovements = append(minusMovements, m)
 		} else {
 			plusMovements = append(plusMovements, m)
@@ -176,7 +176,7 @@ func printTransactionNoID(t goserver.TransactionNoId) {
 			minusMoney += and
 		}
 		minusStr += fmt.Sprintf("%q", m.AccountId)
-		minusMoney += fmt.Sprintf("%v %s", -m.Amount, m.CurrencyId)
+		minusMoney += fmt.Sprintf("%v %s", m.Amount.Neg(), m.CurrencyId)
 	}
 	plusStr := ""
 	plusMoney := ""

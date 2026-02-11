@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -49,7 +50,7 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 			Type: "asset",
 			BankInfo: goserver.BankAccountInfo{
 				Balances: []goserver.BankAccountInfoBalancesInner{
-					{CurrencyId: usdID, OpeningBalance: 1000.0},
+					{CurrencyId: usdID, OpeningBalance: decimal.NewFromFloat(1000.0)},
 				},
 			},
 		})
@@ -70,8 +71,8 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 			Date:        date,
 			Description: "Expense to keep",
 			Movements: []goserver.Movement{
-				{AccountId: assetAcc.Id, CurrencyId: usdID, Amount: -100.0},
-				{AccountId: expenseAcc.Id, CurrencyId: usdID, Amount: 100.0},
+				{AccountId: assetAcc.Id, CurrencyId: usdID, Amount: decimal.NewFromFloat(-100.0)},
+				{AccountId: expenseAcc.Id, CurrencyId: usdID, Amount: decimal.NewFromFloat(100.0)},
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -82,8 +83,8 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 			Date:        date,
 			Description: "Expense to delete",
 			Movements: []goserver.Movement{
-				{AccountId: assetAcc.Id, CurrencyId: usdID, Amount: -500.0},
-				{AccountId: expenseAcc.Id, CurrencyId: usdID, Amount: 500.0},
+				{AccountId: assetAcc.Id, CurrencyId: usdID, Amount: decimal.NewFromFloat(-500.0)},
+				{AccountId: expenseAcc.Id, CurrencyId: usdID, Amount: decimal.NewFromFloat(500.0)},
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -93,7 +94,7 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 		expResp, err := sut.GetExpenses(ctx, dateFrom, dateTo, usdID, "month", false)
 		Expect(err).ToNot(HaveOccurred())
 		expAgg := expResp.Body.(*goserver.Aggregation)
-		Expect(expAgg.Currencies[0].Accounts[0].Total).To(Equal(100.0))
+		Expect(expAgg.Currencies[0].Accounts[0].Total.Equal(decimal.NewFromFloat(100.0))).To(BeTrue())
 
 		// 5. Verify Balances - should be 900 (1000 - 100), not 400 (1000 - 100 - 500)
 		balResp, err := sut.GetBalances(ctx, dateFrom, dateTo, usdID, false)
@@ -101,7 +102,7 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 		balAgg := balResp.Body.(*goserver.Aggregation)
 
 		// Find bank account in balances
-		var bankTotal float64
+		var bankTotal decimal.Decimal
 		found := false
 		for _, cur := range balAgg.Currencies {
 			for _, acc := range cur.Accounts {
@@ -112,6 +113,6 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 			}
 		}
 		Expect(found).To(BeTrue())
-		Expect(bankTotal).To(Equal(900.0))
+		Expect(bankTotal.Equal(decimal.NewFromFloat(900.0))).To(BeTrue())
 	})
 })

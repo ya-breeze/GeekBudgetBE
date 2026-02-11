@@ -20,9 +20,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/gorilla/mux"
 )
@@ -191,7 +194,7 @@ func parseTime(param string) (time.Time, error) {
 }
 
 type Number interface {
-	~int32 | ~int64 | ~float32 | ~float64
+	~int32 | ~int64 | ~float32 | ~float64 | decimal.Decimal
 }
 
 type ParseString[T Number | string | bool] func(v string) (T, error)
@@ -203,6 +206,15 @@ func parseFloat64(param string) (float64, error) {
 	}
 
 	return strconv.ParseFloat(param, 64)
+}
+
+// parseDecimal parses a string parameter to a decimal.Decimal.
+func parseDecimal(param string) (decimal.Decimal, error) {
+	if param == "" {
+		return decimal.Zero, nil
+	}
+
+	return decimal.NewFromString(param)
 }
 
 // parseFloat32 parses a string parameter to an float32.
@@ -279,7 +291,16 @@ type Constraint[T Number | string | bool] func(actual T) error
 
 func WithMinimum[T Number](expected T) Constraint[T] {
 	return func(actual T) error {
-		if actual < expected {
+		var comp bool
+		if eth, ok := any(actual).(decimal.Decimal); ok {
+			comp = eth.LessThan(any(expected).(decimal.Decimal))
+		} else {
+			// fallback for basic types
+			v1 := reflect.ValueOf(actual).Float()
+			v2 := reflect.ValueOf(expected).Float()
+			comp = v1 < v2
+		}
+		if comp {
 			return errors.New(errMsgMinValueConstraint)
 		}
 
@@ -289,7 +310,16 @@ func WithMinimum[T Number](expected T) Constraint[T] {
 
 func WithMaximum[T Number](expected T) Constraint[T] {
 	return func(actual T) error {
-		if actual > expected {
+		var comp bool
+		if eth, ok := any(actual).(decimal.Decimal); ok {
+			comp = eth.GreaterThan(any(expected).(decimal.Decimal))
+		} else {
+			// fallback for basic types
+			v1 := reflect.ValueOf(actual).Float()
+			v2 := reflect.ValueOf(expected).Float()
+			comp = v1 > v2
+		}
+		if comp {
 			return errors.New(errMsgMaxValueConstraint)
 		}
 
@@ -301,13 +331,15 @@ func WithMaximum[T Number](expected T) Constraint[T] {
 func parseNumericParameter[T Number](param string, fn Operation[T], checks ...Constraint[T]) (T, error) {
 	v, ok, err := fn(param)
 	if err != nil {
-		return 0, err
+		var zero T
+		return zero, err
 	}
 
 	if !ok {
 		for _, check := range checks {
 			if err := check(v); err != nil {
-				return 0, err
+				var zero T
+				return zero, err
 			}
 		}
 	}

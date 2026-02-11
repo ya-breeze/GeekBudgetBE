@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Amount** | **float64** |  | 
+**Amount** | [**decimal.Decimal**](decimal.Decimal.md) |  | 
 **CurrencyId** | **string** |  | 
 **AccountId** | Pointer to **string** |  | [optional] 
 **Description** | Pointer to **string** |  | [optional] 
@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 
 ### NewMovement
 
-`func NewMovement(amount float64, currencyId string, ) *Movement`
+`func NewMovement(amount decimal.Decimal, currencyId string, ) *Movement`
 
 NewMovement instantiates a new Movement object
 This constructor will assign default values to properties that have it defined,
@@ -30,20 +30,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetAmount
 
-`func (o *Movement) GetAmount() float64`
+`func (o *Movement) GetAmount() decimal.Decimal`
 
 GetAmount returns the Amount field if non-nil, zero value otherwise.
 
 ### GetAmountOk
 
-`func (o *Movement) GetAmountOk() (*float64, bool)`
+`func (o *Movement) GetAmountOk() (*decimal.Decimal, bool)`
 
 GetAmountOk returns a tuple with the Amount field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAmount
 
-`func (o *Movement) SetAmount(v float64)`
+`func (o *Movement) SetAmount(v decimal.Decimal)`
 
 SetAmount sets Amount field to given value.
 

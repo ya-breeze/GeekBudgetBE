@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
@@ -87,11 +87,11 @@ func (fc *RevolutConverter) ParseTransactions(ctx context.Context, format, data 
 
 	// Convert transactions
 	type currencyState struct {
-		firstBalance float64
-		firstAmount  float64
+		firstBalance decimal.Decimal
+		firstAmount  decimal.Decimal
 		firstDate    time.Time
-		lastBalance  float64
-		lastAmount   float64
+		lastBalance  decimal.Decimal
+		lastAmount   decimal.Decimal
 		lastDate     time.Time
 		currencyName string
 	}
@@ -111,11 +111,11 @@ func (fc *RevolutConverter) ParseTransactions(ctx context.Context, format, data 
 		}
 		res = append(res, tr)
 
-		balance, err := strconv.ParseFloat(record[RevolutIndexBalance], 64)
+		balance, err := decimal.NewFromString(record[RevolutIndexBalance])
 		if err != nil {
 			return nil, nil, fmt.Errorf("can't parse balance (%v): %w", record, err)
 		}
-		amount, err := strconv.ParseFloat(record[RevolutIndexAmount], 64)
+		amount, err := decimal.NewFromString(record[RevolutIndexAmount])
 		if err != nil {
 			return nil, nil, fmt.Errorf("can't parse amount (%v): %w", record, err)
 		}
@@ -142,17 +142,17 @@ func (fc *RevolutConverter) ParseTransactions(ctx context.Context, format, data 
 			return nil, nil, fmt.Errorf("can't resolve currency %q: %w", curr, err)
 		}
 
-		var closing, opening float64
+		var closing, opening decimal.Decimal
 		var lastUpdatedDate time.Time
 		if s.firstDate.After(s.lastDate) || (s.firstDate.Equal(s.lastDate)) {
 			// Assume newest first if first date is after or equal to last date
 			closing = s.firstBalance
-			opening = s.lastBalance - s.lastAmount
+			opening = s.lastBalance.Sub(s.lastAmount)
 			lastUpdatedDate = s.firstDate
 		} else {
 			// Oldest first
 			closing = s.lastBalance
-			opening = s.firstBalance - s.firstAmount
+			opening = s.firstBalance.Sub(s.firstAmount)
 			lastUpdatedDate = s.lastDate
 		}
 		bal := goserver.BankAccountInfoBalancesInner{
@@ -235,30 +235,31 @@ func (fc *RevolutConverter) convertToTransaction(ctx context.Context, _ goserver
 
 	res.Description = record[RevolutIndexType] + ": " + record[RevolutIndexDescription]
 
-	amount, err := strconv.ParseFloat(record[RevolutIndexAmount], 64)
+	amount, err := decimal.NewFromString(record[RevolutIndexAmount])
 	if err != nil {
 		return res, fmt.Errorf("can't parse amount %q: %w", record[RevolutIndexAmount], err)
 	}
-	feeAmount, err := strconv.ParseFloat(record[RevolutIndexFee], 64)
+	feeAmount, err := decimal.NewFromString(record[RevolutIndexFee])
 	if err != nil {
 		return res, fmt.Errorf("can't parse fee %q: %w", record[RevolutIndexFee], err)
 	}
 
 	res.Movements = make([]goserver.Movement, 0, 3)
-	if amount != 0 {
+	if !amount.IsZero() {
 		res.Movements = append(res.Movements, goserver.Movement{
-			Amount:     -amount,
+			Amount:     amount.Neg(),
 			CurrencyId: strCurrencyID,
 		})
 	}
-	if amount-feeAmount != 0 {
+	remainingAmount := amount.Sub(feeAmount)
+	if !remainingAmount.IsZero() {
 		res.Movements = append(res.Movements, goserver.Movement{
 			AccountId:  fc.bankImporter.AccountId,
-			Amount:     amount - feeAmount,
+			Amount:     remainingAmount,
 			CurrencyId: strCurrencyID,
 		})
 	}
-	if feeAmount != 0 {
+	if !feeAmount.IsZero() {
 		res.Movements = append(res.Movements, goserver.Movement{
 			AccountId:  fc.bankImporter.FeeAccountId,
 			Amount:     feeAmount,

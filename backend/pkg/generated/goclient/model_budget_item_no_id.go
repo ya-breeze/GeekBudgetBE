@@ -16,6 +16,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the BudgetItemNoID type satisfies the MappedNullable interface at compile time
@@ -23,10 +25,10 @@ var _ MappedNullable = &BudgetItemNoID{}
 
 // BudgetItemNoID struct for BudgetItemNoID
 type BudgetItemNoID struct {
-	Date        time.Time `json:"date"`
-	AccountId   string    `json:"accountId"`
-	Amount      float64   `json:"amount"`
-	Description *string   `json:"description,omitempty"`
+	Date        time.Time       `json:"date"`
+	AccountId   string          `json:"accountId"`
+	Amount      decimal.Decimal `json:"amount"`
+	Description *string         `json:"description,omitempty"`
 }
 
 type _BudgetItemNoID BudgetItemNoID
@@ -35,7 +37,7 @@ type _BudgetItemNoID BudgetItemNoID
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewBudgetItemNoID(date time.Time, accountId string, amount float64) *BudgetItemNoID {
+func NewBudgetItemNoID(date time.Time, accountId string, amount decimal.Decimal) *BudgetItemNoID {
 	this := BudgetItemNoID{}
 	this.Date = date
 	this.AccountId = accountId
@@ -100,9 +102,9 @@ func (o *BudgetItemNoID) SetAccountId(v string) {
 }
 
 // GetAmount returns the Amount field value
-func (o *BudgetItemNoID) GetAmount() float64 {
+func (o *BudgetItemNoID) GetAmount() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -111,7 +113,7 @@ func (o *BudgetItemNoID) GetAmount() float64 {
 
 // GetAmountOk returns a tuple with the Amount field value
 // and a boolean to check if the value has been set.
-func (o *BudgetItemNoID) GetAmountOk() (*float64, bool) {
+func (o *BudgetItemNoID) GetAmountOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -119,7 +121,7 @@ func (o *BudgetItemNoID) GetAmountOk() (*float64, bool) {
 }
 
 // SetAmount sets field value
-func (o *BudgetItemNoID) SetAmount(v float64) {
+func (o *BudgetItemNoID) SetAmount(v decimal.Decimal) {
 	o.Amount = v
 }
 

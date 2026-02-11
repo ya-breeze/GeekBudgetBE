@@ -19,6 +19,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // TransactionsAPIService TransactionsAPI service
@@ -329,8 +331,8 @@ type ApiGetTransactionsRequest struct {
 	ctx            context.Context
 	ApiService     *TransactionsAPIService
 	description    *string
-	amountFrom     *float64
-	amountTo       *float64
+	amountFrom     *decimal.Decimal
+	amountTo       *decimal.Decimal
 	dateFrom       *time.Time
 	dateTo         *time.Time
 	onlySuspicious *bool
@@ -343,13 +345,13 @@ func (r ApiGetTransactionsRequest) Description(description string) ApiGetTransac
 }
 
 // Don&#39;t return transactions with amount less than this
-func (r ApiGetTransactionsRequest) AmountFrom(amountFrom float64) ApiGetTransactionsRequest {
+func (r ApiGetTransactionsRequest) AmountFrom(amountFrom decimal.Decimal) ApiGetTransactionsRequest {
 	r.amountFrom = &amountFrom
 	return r
 }
 
 // Don&#39;t return transactions with amount more than this
-func (r ApiGetTransactionsRequest) AmountTo(amountTo float64) ApiGetTransactionsRequest {
+func (r ApiGetTransactionsRequest) AmountTo(amountTo decimal.Decimal) ApiGetTransactionsRequest {
 	r.amountTo = &amountTo
 	return r
 }

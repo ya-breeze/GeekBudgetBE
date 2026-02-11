@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/shopspring/decimal"
 	"github.com/spf13/cobra"
 	"github.com/ya-breeze/geekbudgetbe/cmd/commands"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
@@ -44,6 +45,10 @@ func newRootCmd(cfgFile *string, logger *slog.Logger) *cobra.Command {
 	)
 
 	return rootCmd
+}
+
+func init() {
+	decimal.MarshalJSONWithoutQuotes = true
 }
 
 func main() {

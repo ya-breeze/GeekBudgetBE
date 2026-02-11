@@ -11,8 +11,12 @@
 
 package goserver
 
+import (
+	"github.com/shopspring/decimal"
+)
+
 type Movement struct {
-	Amount float64 `json:"amount"`
+	Amount decimal.Decimal `json:"amount"`
 
 	CurrencyId string `json:"currencyId"`
 
@@ -22,13 +26,13 @@ type Movement struct {
 }
 
 type MovementInterface interface {
-	GetAmount() float64
+	GetAmount() decimal.Decimal
 	GetCurrencyId() string
 	GetAccountId() string
 	GetDescription() string
 }
 
-func (c *Movement) GetAmount() float64 {
+func (c *Movement) GetAmount() decimal.Decimal {
 	return c.Amount
 }
 func (c *Movement) GetCurrencyId() string {

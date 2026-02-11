@@ -3,12 +3,13 @@ package common
 import (
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
 // GetIncreases is a wrapper around utils.GetIncreases.
-func GetIncreases(movements []goserver.Movement) map[string]float64 {
+func GetIncreases(movements []goserver.Movement) map[string]decimal.Decimal {
 	return utils.GetIncreases(movements)
 }
 

@@ -13,6 +13,8 @@ package goclient
 
 import (
 	"encoding/json"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the ImportResultBalancesInner type satisfies the MappedNullable interface at compile time
@@ -20,8 +22,8 @@ var _ MappedNullable = &ImportResultBalancesInner{}
 
 // ImportResultBalancesInner struct for ImportResultBalancesInner
 type ImportResultBalancesInner struct {
-	Amount     *float32 `json:"amount,omitempty"`
-	CurrencyId *string  `json:"currencyId,omitempty"`
+	Amount     *decimal.Decimal `json:"amount,omitempty"`
+	CurrencyId *string          `json:"currencyId,omitempty"`
 }
 
 // NewImportResultBalancesInner instantiates a new ImportResultBalancesInner object
@@ -42,9 +44,9 @@ func NewImportResultBalancesInnerWithDefaults() *ImportResultBalancesInner {
 }
 
 // GetAmount returns the Amount field value if set, zero value otherwise.
-func (o *ImportResultBalancesInner) GetAmount() float32 {
+func (o *ImportResultBalancesInner) GetAmount() decimal.Decimal {
 	if o == nil || IsNil(o.Amount) {
-		var ret float32
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.Amount
@@ -52,7 +54,7 @@ func (o *ImportResultBalancesInner) GetAmount() float32 {
 
 // GetAmountOk returns a tuple with the Amount field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ImportResultBalancesInner) GetAmountOk() (*float32, bool) {
+func (o *ImportResultBalancesInner) GetAmountOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.Amount) {
 		return nil, false
 	}
@@ -68,8 +70,8 @@ func (o *ImportResultBalancesInner) HasAmount() bool {
 	return false
 }
 
-// SetAmount gets a reference to the given float32 and assigns it to the Amount field.
-func (o *ImportResultBalancesInner) SetAmount(v float32) {
+// SetAmount gets a reference to the given decimal.Decimal and assigns it to the Amount field.
+func (o *ImportResultBalancesInner) SetAmount(v decimal.Decimal) {
 	o.Amount = &v
 }
 

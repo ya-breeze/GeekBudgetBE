@@ -10,6 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -96,7 +97,7 @@ var _ = Describe("Auto Match API", func() {
 				PartnerName: ptrString("Netflix"), // Common pattern
 				Movements: []goclient.Movement{
 					{
-						Amount:     float64(100 + i),
+						Amount:     decimal.NewFromInt(int64(100 + i)),
 						CurrencyId: currency.Id,
 						// AccountId is intentionally missing to make it unprocessed
 					},

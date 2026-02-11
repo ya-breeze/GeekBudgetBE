@@ -13,32 +13,34 @@ package goserver
 
 import (
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 type BankAccountInfoBalancesInner struct {
 	CurrencyId string `json:"currencyId,omitempty"`
 
-	OpeningBalance float64 `json:"openingBalance,omitempty"`
+	OpeningBalance decimal.Decimal `json:"openingBalance,omitempty"`
 
-	ClosingBalance float64 `json:"closingBalance,omitempty"`
+	ClosingBalance decimal.Decimal `json:"closingBalance,omitempty"`
 
 	LastUpdatedAt *time.Time `json:"lastUpdatedAt,omitempty"`
 }
 
 type BankAccountInfoBalancesInnerInterface interface {
 	GetCurrencyId() string
-	GetOpeningBalance() float64
-	GetClosingBalance() float64
+	GetOpeningBalance() decimal.Decimal
+	GetClosingBalance() decimal.Decimal
 	GetLastUpdatedAt() *time.Time
 }
 
 func (c *BankAccountInfoBalancesInner) GetCurrencyId() string {
 	return c.CurrencyId
 }
-func (c *BankAccountInfoBalancesInner) GetOpeningBalance() float64 {
+func (c *BankAccountInfoBalancesInner) GetOpeningBalance() decimal.Decimal {
 	return c.OpeningBalance
 }
-func (c *BankAccountInfoBalancesInner) GetClosingBalance() float64 {
+func (c *BankAccountInfoBalancesInner) GetClosingBalance() decimal.Decimal {
 	return c.ClosingBalance
 }
 func (c *BankAccountInfoBalancesInner) GetLastUpdatedAt() *time.Time {

@@ -16,6 +16,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // AccountsAPIRouter defines the required methods for binding the api requests to a responses for the AccountsAPI
@@ -305,7 +307,7 @@ type ReconciliationAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type TransactionsAPIServicer interface {
-	GetTransactions(context.Context, string, float64, float64, time.Time, time.Time, bool) (ImplResponse, error)
+	GetTransactions(context.Context, string, decimal.Decimal, decimal.Decimal, time.Time, time.Time, bool) (ImplResponse, error)
 	CreateTransaction(context.Context, TransactionNoId) (ImplResponse, error)
 	GetTransaction(context.Context, string) (ImplResponse, error)
 	UpdateTransaction(context.Context, string, TransactionNoId) (ImplResponse, error)

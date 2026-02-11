@@ -105,10 +105,11 @@ export class TransactionUtils {
             }
 
             const group = currencyGroups.get(currencyId)!;
-            if (movement.amount > 0) {
-                group.positive += movement.amount;
+            const amount = Number(movement.amount);
+            if (amount > 0) {
+                group.positive += amount;
             } else {
-                group.negative += movement.amount;
+                group.negative += amount;
             }
         });
 

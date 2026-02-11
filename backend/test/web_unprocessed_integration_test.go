@@ -14,6 +14,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -78,8 +79,8 @@ var _ = Describe("Web unprocessed convert integration", func() {
 			Description: utils.StrToRef("Purchase at WEBSTORE"),
 			Tags:        []string{"tag1"},
 			Movements: []goclient.Movement{
-				{AccountId: nil, CurrencyId: "cur", Amount: 100},
-				{AccountId: utils.StrToRef("accountID"), CurrencyId: "cur", Amount: -100},
+				{AccountId: nil, CurrencyId: "cur", Amount: decimal.NewFromInt(100)},
+				{AccountId: utils.StrToRef("accountID"), CurrencyId: "cur", Amount: decimal.NewFromInt(-100)},
 			},
 		}
 

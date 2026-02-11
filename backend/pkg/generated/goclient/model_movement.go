@@ -15,6 +15,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the Movement type satisfies the MappedNullable interface at compile time
@@ -22,10 +24,10 @@ var _ MappedNullable = &Movement{}
 
 // Movement struct for Movement
 type Movement struct {
-	Amount      float64 `json:"amount"`
-	CurrencyId  string  `json:"currencyId"`
-	AccountId   *string `json:"accountId,omitempty"`
-	Description *string `json:"description,omitempty"`
+	Amount      decimal.Decimal `json:"amount"`
+	CurrencyId  string          `json:"currencyId"`
+	AccountId   *string         `json:"accountId,omitempty"`
+	Description *string         `json:"description,omitempty"`
 }
 
 type _Movement Movement
@@ -34,7 +36,7 @@ type _Movement Movement
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewMovement(amount float64, currencyId string) *Movement {
+func NewMovement(amount decimal.Decimal, currencyId string) *Movement {
 	this := Movement{}
 	this.Amount = amount
 	this.CurrencyId = currencyId
@@ -50,9 +52,9 @@ func NewMovementWithDefaults() *Movement {
 }
 
 // GetAmount returns the Amount field value
-func (o *Movement) GetAmount() float64 {
+func (o *Movement) GetAmount() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -61,7 +63,7 @@ func (o *Movement) GetAmount() float64 {
 
 // GetAmountOk returns a tuple with the Amount field value
 // and a boolean to check if the value has been set.
-func (o *Movement) GetAmountOk() (*float64, bool) {
+func (o *Movement) GetAmountOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -69,7 +71,7 @@ func (o *Movement) GetAmountOk() (*float64, bool) {
 }
 
 // SetAmount sets field value
-func (o *Movement) SetAmount(v float64) {
+func (o *Movement) SetAmount(v decimal.Decimal) {
 	o.Amount = v
 }
 

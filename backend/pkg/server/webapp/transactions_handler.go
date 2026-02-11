@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
@@ -160,7 +161,7 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 			transaction.Movements[i].CurrencyId = req.Form.Get(fmt.Sprintf("currency_%d", i))
 
 			amountStr := req.Form.Get(fmt.Sprintf("amount_%d", i))
-			transaction.Movements[i].Amount, err = strconv.ParseFloat(amountStr, 64)
+			transaction.Movements[i].Amount, err = decimal.NewFromString(amountStr)
 			if err != nil {
 				r.logger.Error("Failed to parse amount", "error", err)
 				r.RespondError(w, "Invalid amount", http.StatusBadRequest)

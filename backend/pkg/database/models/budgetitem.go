@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -14,7 +15,7 @@ type BudgetItem struct {
 
 	Date        time.Time
 	AccountID   string
-	Amount      float64
+	Amount      decimal.Decimal `gorm:"type:decimal(20,8)"`
 	Description string
 
 	UserID string    `gorm:"index"`

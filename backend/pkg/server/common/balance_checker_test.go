@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -59,7 +60,7 @@ var _ = Describe("BalanceChecker", func() {
 					Balances: []goserver.BankAccountInfoBalancesInner{
 						{
 							CurrencyId:     "CZK",
-							ClosingBalance: 1500.0,
+							ClosingBalance: decimal.NewFromFloat(1500.0),
 						},
 					},
 				},
@@ -68,7 +69,7 @@ var _ = Describe("BalanceChecker", func() {
 			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
 			// App balance is 1400, Bank says 1500 -> Mismatch
-			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(1400.0, nil)
+			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(1400.0), nil)
 
 			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Type).To(Equal(string(models.NotificationTypeBalanceDoesntMatch)))
@@ -90,7 +91,7 @@ var _ = Describe("BalanceChecker", func() {
 					Balances: []goserver.BankAccountInfoBalancesInner{
 						{
 							CurrencyId:     "CZK",
-							ClosingBalance: 1000.0,
+							ClosingBalance: decimal.NewFromFloat(1000.0),
 						},
 					},
 				},
@@ -98,7 +99,7 @@ var _ = Describe("BalanceChecker", func() {
 			mockDB.EXPECT().GetAccount(userID, accID).Return(acc, nil)
 			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
-			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(1000.0, nil)
+			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(1000.0), nil)
 
 			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
 
@@ -114,17 +115,17 @@ var _ = Describe("BalanceChecker", func() {
 				Name: "Multi Currency",
 				BankInfo: goserver.BankAccountInfo{
 					Balances: []goserver.BankAccountInfoBalancesInner{
-						{CurrencyId: "CZK", ClosingBalance: 100.0},
-						{CurrencyId: "USD", ClosingBalance: 200.0},
+						{CurrencyId: "CZK", ClosingBalance: decimal.NewFromFloat(100.0)},
+						{CurrencyId: "USD", ClosingBalance: decimal.NewFromFloat(200.0)},
 					},
 				},
 			}
 			mockDB.EXPECT().GetAccount(userID, accID).Return(acc, nil)
 			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
-			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(100.0, nil)
+			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(100.0), nil)
 			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
-			mockDB.EXPECT().GetAccountBalance(userID, accID, "USD").Return(250.0, nil) // USD mismatch!
+			mockDB.EXPECT().GetAccountBalance(userID, accID, "USD").Return(decimal.NewFromFloat(250.0), nil) // USD mismatch!
 
 			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Description).To(ContainSubstring("Currency: USD"))
@@ -141,6 +142,30 @@ var _ = Describe("BalanceChecker", func() {
 			err := CheckBalanceForAccount(ctx, logger, mockDB, userID, accID)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("failed to get account"))
+		})
+
+		It("should handle tolerance correctly (baseline)", func() {
+			acc := goserver.Account{
+				Id:   accID,
+				Name: "Tolerance Account",
+				BankInfo: goserver.BankAccountInfo{
+					Balances: []goserver.BankAccountInfoBalancesInner{
+						{
+							CurrencyId:     "CZK",
+							ClosingBalance: decimal.NewFromFloat(100.0),
+						},
+					},
+				},
+			}
+			mockDB.EXPECT().GetAccount(userID, accID).Return(acc, nil)
+			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
+
+			// Difference is exactly 0.01 in human terms, should be tolerated
+			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(100.01), nil)
+			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
+
+			err := CheckBalanceForAccount(ctx, logger, mockDB, userID, accID)
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 })

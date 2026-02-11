@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -28,13 +29,13 @@ func TestDuplicateSynchronization(t *testing.T) {
 			Date:              time.Now(),
 			Description:       "T1",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "T2",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
 		})
 
 		// 2. Link them
@@ -75,14 +76,14 @@ func TestDuplicateSynchronization(t *testing.T) {
 			Description:       "Keep",
 			SuspiciousReasons: []string{models.DuplicateReason},
 			ExternalIds:       []string{"ext1"},
-			Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "Merge",
 			SuspiciousReasons: []string{models.DuplicateReason},
 			ExternalIds:       []string{"ext2"},
-			Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
 		})
 
 		// 2. Link them
@@ -117,19 +118,19 @@ func TestDuplicateSynchronization(t *testing.T) {
 			Date:              time.Now(),
 			Description:       "T1",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "A"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A"}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "T2",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "B"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "B"}},
 		})
 		t3, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "T3",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: 100, CurrencyId: "CZK", AccountId: "C"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "C"}},
 		})
 
 		st.AddDuplicateRelationship(userID, t1.Id, t2.Id)
@@ -174,13 +175,13 @@ func TestDuplicateSynchronization(t *testing.T) {
 			Date:              now,
 			Description:       "Revalidate T1",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: 500, CurrencyId: "EUR", AccountId: "R1"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(500), CurrencyId: "EUR", AccountId: "R1"}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              now.Add(24 * time.Hour), // 1 day apart
 			Description:       "Revalidate T2",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: 500, CurrencyId: "EUR", AccountId: "R2"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(500), CurrencyId: "EUR", AccountId: "R2"}},
 		})
 
 		// Link them

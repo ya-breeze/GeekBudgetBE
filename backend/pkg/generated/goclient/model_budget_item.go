@@ -16,6 +16,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the BudgetItem type satisfies the MappedNullable interface at compile time
@@ -23,11 +25,11 @@ var _ MappedNullable = &BudgetItem{}
 
 // BudgetItem struct for BudgetItem
 type BudgetItem struct {
-	Id          string    `json:"id"`
-	Date        time.Time `json:"date"`
-	AccountId   string    `json:"accountId"`
-	Amount      float64   `json:"amount"`
-	Description *string   `json:"description,omitempty"`
+	Id          string          `json:"id"`
+	Date        time.Time       `json:"date"`
+	AccountId   string          `json:"accountId"`
+	Amount      decimal.Decimal `json:"amount"`
+	Description *string         `json:"description,omitempty"`
 }
 
 type _BudgetItem BudgetItem
@@ -36,7 +38,7 @@ type _BudgetItem BudgetItem
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewBudgetItem(id string, date time.Time, accountId string, amount float64) *BudgetItem {
+func NewBudgetItem(id string, date time.Time, accountId string, amount decimal.Decimal) *BudgetItem {
 	this := BudgetItem{}
 	this.Id = id
 	this.Date = date
@@ -126,9 +128,9 @@ func (o *BudgetItem) SetAccountId(v string) {
 }
 
 // GetAmount returns the Amount field value
-func (o *BudgetItem) GetAmount() float64 {
+func (o *BudgetItem) GetAmount() decimal.Decimal {
 	if o == nil {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 
@@ -137,7 +139,7 @@ func (o *BudgetItem) GetAmount() float64 {
 
 // GetAmountOk returns a tuple with the Amount field value
 // and a boolean to check if the value has been set.
-func (o *BudgetItem) GetAmountOk() (*float64, bool) {
+func (o *BudgetItem) GetAmountOk() (*decimal.Decimal, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -145,7 +147,7 @@ func (o *BudgetItem) GetAmountOk() (*float64, bool) {
 }
 
 // SetAmount sets field value
-func (o *BudgetItem) SetAmount(v float64) {
+func (o *BudgetItem) SetAmount(v decimal.Decimal) {
 	o.Amount = v
 }
 

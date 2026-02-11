@@ -15,6 +15,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the ReconcileAccountRequest type satisfies the MappedNullable interface at compile time
@@ -24,7 +26,7 @@ var _ MappedNullable = &ReconcileAccountRequest{}
 type ReconcileAccountRequest struct {
 	CurrencyId string `json:"currencyId"`
 	// Manual balance to set. If 0, current Account balance is used.
-	Balance *float64 `json:"balance,omitempty"`
+	Balance *decimal.Decimal `json:"balance,omitempty"`
 }
 
 type _ReconcileAccountRequest ReconcileAccountRequest
@@ -72,9 +74,9 @@ func (o *ReconcileAccountRequest) SetCurrencyId(v string) {
 }
 
 // GetBalance returns the Balance field value if set, zero value otherwise.
-func (o *ReconcileAccountRequest) GetBalance() float64 {
+func (o *ReconcileAccountRequest) GetBalance() decimal.Decimal {
 	if o == nil || IsNil(o.Balance) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.Balance
@@ -82,7 +84,7 @@ func (o *ReconcileAccountRequest) GetBalance() float64 {
 
 // GetBalanceOk returns a tuple with the Balance field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ReconcileAccountRequest) GetBalanceOk() (*float64, bool) {
+func (o *ReconcileAccountRequest) GetBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.Balance) {
 		return nil, false
 	}
@@ -98,8 +100,8 @@ func (o *ReconcileAccountRequest) HasBalance() bool {
 	return false
 }
 
-// SetBalance gets a reference to the given float64 and assigns it to the Balance field.
-func (o *ReconcileAccountRequest) SetBalance(v float64) {
+// SetBalance gets a reference to the given decimal.Decimal and assigns it to the Balance field.
+func (o *ReconcileAccountRequest) SetBalance(v decimal.Decimal) {
 	o.Balance = &v
 }
 

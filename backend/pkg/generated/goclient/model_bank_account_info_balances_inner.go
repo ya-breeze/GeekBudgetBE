@@ -14,6 +14,8 @@ package goclient
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // checks if the BankAccountInfoBalancesInner type satisfies the MappedNullable interface at compile time
@@ -21,10 +23,10 @@ var _ MappedNullable = &BankAccountInfoBalancesInner{}
 
 // BankAccountInfoBalancesInner struct for BankAccountInfoBalancesInner
 type BankAccountInfoBalancesInner struct {
-	CurrencyId     *string      `json:"currencyId,omitempty"`
-	OpeningBalance *float64     `json:"openingBalance,omitempty"`
-	ClosingBalance *float64     `json:"closingBalance,omitempty"`
-	LastUpdatedAt  NullableTime `json:"lastUpdatedAt,omitempty"`
+	CurrencyId     *string          `json:"currencyId,omitempty"`
+	OpeningBalance *decimal.Decimal `json:"openingBalance,omitempty"`
+	ClosingBalance *decimal.Decimal `json:"closingBalance,omitempty"`
+	LastUpdatedAt  NullableTime     `json:"lastUpdatedAt,omitempty"`
 }
 
 // NewBankAccountInfoBalancesInner instantiates a new BankAccountInfoBalancesInner object
@@ -77,9 +79,9 @@ func (o *BankAccountInfoBalancesInner) SetCurrencyId(v string) {
 }
 
 // GetOpeningBalance returns the OpeningBalance field value if set, zero value otherwise.
-func (o *BankAccountInfoBalancesInner) GetOpeningBalance() float64 {
+func (o *BankAccountInfoBalancesInner) GetOpeningBalance() decimal.Decimal {
 	if o == nil || IsNil(o.OpeningBalance) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.OpeningBalance
@@ -87,7 +89,7 @@ func (o *BankAccountInfoBalancesInner) GetOpeningBalance() float64 {
 
 // GetOpeningBalanceOk returns a tuple with the OpeningBalance field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BankAccountInfoBalancesInner) GetOpeningBalanceOk() (*float64, bool) {
+func (o *BankAccountInfoBalancesInner) GetOpeningBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.OpeningBalance) {
 		return nil, false
 	}
@@ -103,15 +105,15 @@ func (o *BankAccountInfoBalancesInner) HasOpeningBalance() bool {
 	return false
 }
 
-// SetOpeningBalance gets a reference to the given float64 and assigns it to the OpeningBalance field.
-func (o *BankAccountInfoBalancesInner) SetOpeningBalance(v float64) {
+// SetOpeningBalance gets a reference to the given decimal.Decimal and assigns it to the OpeningBalance field.
+func (o *BankAccountInfoBalancesInner) SetOpeningBalance(v decimal.Decimal) {
 	o.OpeningBalance = &v
 }
 
 // GetClosingBalance returns the ClosingBalance field value if set, zero value otherwise.
-func (o *BankAccountInfoBalancesInner) GetClosingBalance() float64 {
+func (o *BankAccountInfoBalancesInner) GetClosingBalance() decimal.Decimal {
 	if o == nil || IsNil(o.ClosingBalance) {
-		var ret float64
+		var ret decimal.Decimal
 		return ret
 	}
 	return *o.ClosingBalance
@@ -119,7 +121,7 @@ func (o *BankAccountInfoBalancesInner) GetClosingBalance() float64 {
 
 // GetClosingBalanceOk returns a tuple with the ClosingBalance field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *BankAccountInfoBalancesInner) GetClosingBalanceOk() (*float64, bool) {
+func (o *BankAccountInfoBalancesInner) GetClosingBalanceOk() (*decimal.Decimal, bool) {
 	if o == nil || IsNil(o.ClosingBalance) {
 		return nil, false
 	}
@@ -135,8 +137,8 @@ func (o *BankAccountInfoBalancesInner) HasClosingBalance() bool {
 	return false
 }
 
-// SetClosingBalance gets a reference to the given float64 and assigns it to the ClosingBalance field.
-func (o *BankAccountInfoBalancesInner) SetClosingBalance(v float64) {
+// SetClosingBalance gets a reference to the given decimal.Decimal and assigns it to the ClosingBalance field.
+func (o *BankAccountInfoBalancesInner) SetClosingBalance(v decimal.Decimal) {
 	o.ClosingBalance = &v
 }
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -99,8 +100,8 @@ type Storage interface {
 	UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
 	DeleteMatcher(userID string, id string) error
 
-	SaveCNBRates(rates map[string]float64, day time.Time) error
-	GetCNBRates(day time.Time) (map[string]float64, error)
+	SaveCNBRates(rates map[string]decimal.Decimal, day time.Time) error
+	GetCNBRates(day time.Time) (map[string]decimal.Decimal, error)
 
 	CreateBudgetItem(userID string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
 	GetBudgetItems(userID string) ([]goserver.BudgetItem, error)
@@ -116,7 +117,7 @@ type Storage interface {
 	GetNotifications(userID string) ([]goserver.Notification, error)
 	DeleteNotification(userID string, id string) error
 
-	GetAccountBalance(userID, accountID, currencyID string) (float64, error)
+	GetAccountBalance(userID, accountID, currencyID string) (decimal.Decimal, error)
 	CountUnprocessedTransactionsForAccount(userID, accountID string, ignoreUnprocessedBefore time.Time) (int, error)
 	HasTransactionsAfterDate(userID, accountID string, date time.Time) (bool, error)
 
@@ -1437,7 +1438,7 @@ func (s *storage) AddMatcherConfirmation(userID string, id string, confirmed boo
 //#endregion Matchers
 
 // #region CNB rates
-func (s *storage) SaveCNBRates(rates map[string]float64, date time.Time) error {
+func (s *storage) SaveCNBRates(rates map[string]decimal.Decimal, date time.Time) error {
 	// Use a transaction to ensure all rates are saved together
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		// First delete all existing rates for this date to avoid duplicates
@@ -1462,7 +1463,7 @@ func (s *storage) SaveCNBRates(rates map[string]float64, date time.Time) error {
 	})
 }
 
-func (s *storage) GetCNBRates(date time.Time) (map[string]float64, error) {
+func (s *storage) GetCNBRates(date time.Time) (map[string]decimal.Decimal, error) {
 	var rates []models.CNBCurrencyRate
 	query := s.db.Model(&models.CNBCurrencyRate{})
 
@@ -1486,7 +1487,7 @@ func (s *storage) GetCNBRates(date time.Time) (map[string]float64, error) {
 	}
 
 	// Convert to map
-	result := make(map[string]float64, len(rates))
+	result := make(map[string]decimal.Decimal, len(rates))
 	for _, rate := range rates {
 		result[rate.CurrencyCode] = rate.RateToCZK
 	}
@@ -1662,16 +1663,16 @@ func (s *storage) DeleteNotification(userID string, id string) error {
 
 // #endregion Notifications
 
-func (s *storage) GetAccountBalance(userID, accountID, currencyID string) (float64, error) {
+func (s *storage) GetAccountBalance(userID, accountID, currencyID string) (decimal.Decimal, error) {
 	acc, err := s.GetAccount(userID, accountID)
 	if err != nil {
-		return 0, err
+		return decimal.Zero, err
 	}
 
-	var total float64
+	var total decimal.Decimal
 	for _, b := range acc.BankInfo.Balances {
 		if b.CurrencyId == currencyID {
-			total += b.OpeningBalance
+			total = total.Add(b.OpeningBalance)
 			break
 		}
 	}
@@ -1684,13 +1685,13 @@ func (s *storage) GetAccountBalance(userID, accountID, currencyID string) (float
 	var transactions []models.Transaction
 	err = s.db.Where("user_id = ? AND movements LIKE ? AND merged_into_id IS NULL", userID, "%"+accountID+"%").Find(&transactions).Error
 	if err != nil {
-		return 0, fmt.Errorf(StorageError, err)
+		return decimal.Zero, fmt.Errorf(StorageError, err)
 	}
 
 	for _, t := range transactions {
 		for _, m := range t.Movements {
 			if m.AccountId == accountID && m.CurrencyId == currencyID {
-				total += m.Amount
+				total = total.Add(m.Amount)
 			}
 		}
 	}
@@ -1721,7 +1722,7 @@ func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID strin
 		for _, m := range t.Movements {
 			// If a movement has 0 amount, it doesn't represent a financial impact
 			// and shouldn't block reconciliation even if its AccountId is empty.
-			if m.Amount == 0 {
+			if m.Amount.IsZero() {
 				continue
 			}
 			if m.AccountId == "" {
@@ -1867,12 +1868,17 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 				continue
 			}
 
+			accountName := accountId
+			if acc, err := s.GetAccount(userID, accountId); err == nil {
+				accountName = acc.Name
+			}
+
 			_, _ = s.CreateNotification(userID, &goserver.Notification{
 				Date:  time.Now(),
 				Type:  string(models.NotificationTypeInfo),
 				Title: "Reconciliation Invalidated",
-				Description: fmt.Sprintf("Financial change to transaction before checkpoint invalidated reconciliation for account %s",
-					accountId),
+				Description: fmt.Sprintf("Financial change to transaction before checkpoint invalidated reconciliation for account %q",
+					accountName),
 			})
 		}
 	}

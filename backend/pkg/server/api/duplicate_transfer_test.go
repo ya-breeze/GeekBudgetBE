@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -48,8 +49,8 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 				Id:   uuid.New().String(),
 				Date: existingDate,
 				Movements: []goserver.Movement{
-					{AccountId: "accA", Amount: -1000, CurrencyId: "CZK"},
-					{AccountId: "accB", Amount: 1000, CurrencyId: "CZK"},
+					{AccountId: "accA", Amount: decimal.NewFromInt(-1000), CurrencyId: "CZK"},
+					{AccountId: "accB", Amount: decimal.NewFromInt(1000), CurrencyId: "CZK"},
 				},
 				Description: "Existing Transfer",
 				ExternalIds: []string{"ext-existing"},
@@ -73,8 +74,8 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 				Description: "Imported Transfer",
 				ExternalIds: []string{"ext-imported"},
 				Movements: []goserver.Movement{
-					{AccountId: "accB", Amount: 1000, CurrencyId: "CZK"},
-					{AccountId: "", Amount: -1000, CurrencyId: "CZK"}, // Second leg empty
+					{AccountId: "accB", Amount: decimal.NewFromInt(1000), CurrencyId: "CZK"},
+					{AccountId: "", Amount: decimal.NewFromInt(-1000), CurrencyId: "CZK"}, // Second leg empty
 				},
 			}
 
@@ -108,8 +109,8 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 				Id:   uuid.New().String(),
 				Date: existingDate,
 				Movements: []goserver.Movement{
-					{AccountId: "accA", Amount: -1000, CurrencyId: "CZK"},
-					{AccountId: "accB", Amount: 1000, CurrencyId: "CZK"},
+					{AccountId: "accA", Amount: decimal.NewFromInt(-1000), CurrencyId: "CZK"},
+					{AccountId: "accB", Amount: decimal.NewFromInt(1000), CurrencyId: "CZK"},
 				},
 				Description: "Existing Transfer",
 			}
@@ -119,8 +120,8 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 				Id:   uuid.New().String(),
 				Date: existingDate,
 				Movements: []goserver.Movement{
-					{AccountId: "accB", Amount: 1000, CurrencyId: "CZK"},
-					{AccountId: "", Amount: -1000, CurrencyId: "CZK"},
+					{AccountId: "accB", Amount: decimal.NewFromInt(1000), CurrencyId: "CZK"},
+					{AccountId: "", Amount: decimal.NewFromInt(-1000), CurrencyId: "CZK"},
 				},
 				Description: "Unprocessed Transfer",
 			}

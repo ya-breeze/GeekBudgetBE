@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
@@ -22,7 +23,7 @@ func NewTransactionsAPIService(logger *slog.Logger, db database.Storage) goserve
 func (s *TransactionsAPIServiceImpl) GetTransactions(
 	ctx context.Context,
 	descriptionParam string,
-	amountFromParam, amountToParam float64,
+	amountFromParam, amountToParam decimal.Decimal,
 	dateFrom, dateTo time.Time,
 	onlySuspicious bool,
 ) (goserver.ImplResponse, error) {

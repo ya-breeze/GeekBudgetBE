@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
@@ -82,7 +83,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 			CurrencyID:   currency.CurrencyId,
 			CurrencyName: utils.GetCurrency(currency.CurrencyId, currencies).Name,
 			Intervals:    expenses.Intervals,
-			Total:        make([]float64, len(expenses.Intervals)),
+			Total:        make([]decimal.Decimal, len(expenses.Intervals)),
 		}
 		if webCurrency.CurrencyName == "" {
 			webCurrency.CurrencyName = "Unknown"
@@ -98,10 +99,10 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 				webAccount.AccountName = "Unknown"
 			}
 			for _, amount := range account.Amounts {
-				webAccount.TotalForYear += amount
+				webAccount.TotalForYear = webAccount.TotalForYear.Add(amount)
 			}
 			for i := range expenses.Intervals {
-				webCurrency.Total[i] += account.Amounts[i]
+				webCurrency.Total[i] = webCurrency.Total[i].Add(account.Amounts[i])
 			}
 
 			webCurrency.Accounts = append(webCurrency.Accounts, webAccount)

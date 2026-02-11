@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
@@ -85,11 +86,10 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 		return goserver.Response(http.StatusInternalServerError, nil), err
 	}
 
-	// Prepare data structures for calculation
 	// Map: Month -> AccountID -> BudgetedAmount (Converted)
-	budgetMap := make(map[string]map[string]float64)
+	budgetMap := make(map[string]map[string]decimal.Decimal)
 	// Map: Month -> AccountID -> SpentAmount (Converted)
-	spentMap := make(map[string]map[string]float64)
+	spentMap := make(map[string]map[string]decimal.Decimal)
 
 	// Helper to keys
 	getMonthKey := func(d time.Time) string {
@@ -102,7 +102,7 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 		}
 		key := getMonthKey(b.Date)
 		if _, ok := budgetMap[key]; !ok {
-			budgetMap[key] = make(map[string]float64)
+			budgetMap[key] = make(map[string]decimal.Decimal)
 		}
 
 		amount := b.Amount
@@ -119,7 +119,7 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 			}
 		}
 
-		budgetMap[key][b.AccountId] += amount
+		budgetMap[key][b.AccountId] = budgetMap[key][b.AccountId].Add(amount)
 	}
 
 	for _, t := range transactions {
@@ -128,9 +128,9 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 			if !allowedAccounts[m.AccountId] {
 				continue
 			}
-			if m.Amount > 0 {
+			if m.Amount.IsPositive() {
 				if _, ok := spentMap[tMonth]; !ok {
-					spentMap[tMonth] = make(map[string]float64)
+					spentMap[tMonth] = make(map[string]decimal.Decimal)
 				}
 
 				amount := m.Amount
@@ -144,12 +144,12 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 					}
 				}
 
-				spentMap[tMonth][m.AccountId] += amount
+				spentMap[tMonth][m.AccountId] = spentMap[tMonth][m.AccountId].Add(amount)
 			}
 		}
 	}
 
-	rolloverMap := make(map[string]float64) // AccountID -> Current Rollover
+	rolloverMap := make(map[string]decimal.Decimal) // AccountID -> Current Rollover
 
 	// Iterate months from minDate to 'to'
 	current := minDate
@@ -175,8 +175,8 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 			spent := spentMap[monthKey][accId]
 			previousRollover := rolloverMap[accId]
 
-			available := budgeted + previousRollover
-			remainder := available - spent
+			available := budgeted.Add(previousRollover)
+			remainder := available.Sub(spent)
 
 			rolloverMap[accId] = remainder
 
