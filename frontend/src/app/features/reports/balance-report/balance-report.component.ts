@@ -132,10 +132,7 @@ export class BalanceReportComponent implements OnInit {
             const accountSummaries: AccountSummary[] = [];
 
             currencyAgg.accounts.forEach((accAgg) => {
-                if (
-                    this.filteredAccountId() &&
-                    this.filteredAccountId() !== accAgg.accountId
-                ) {
+                if (this.filteredAccountId() && this.filteredAccountId() !== accAgg.accountId) {
                     return;
                 }
                 const account = accounts.find((a) => a.id === accAgg.accountId);

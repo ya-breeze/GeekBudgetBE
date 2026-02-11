@@ -169,15 +169,15 @@ export class AccountFormDialogComponent implements OnInit {
                 bankInfo:
                     formValue.type === 'asset'
                         ? {
-                            ...this.data.account?.bankInfo,
-                            bankId: formValue.bankId || undefined,
-                            accountId: formValue.bankAccountId || undefined,
-                            balances: formValue.balances?.map((b: any) => ({
-                                currencyId: b.currencyId || undefined,
-                                openingBalance: b.openingBalance || 0,
-                                closingBalance: b.closingBalance,
-                            })),
-                        }
+                              ...this.data.account?.bankInfo,
+                              bankId: formValue.bankId || undefined,
+                              accountId: formValue.bankAccountId || undefined,
+                              balances: formValue.balances?.map((b: any) => ({
+                                  currencyId: b.currencyId || undefined,
+                                  openingBalance: b.openingBalance || 0,
+                                  closingBalance: b.closingBalance,
+                              })),
+                          }
                         : undefined,
                 ignoreUnprocessedBefore:
                     formValue.type === 'asset' && formValue.ignoreUnprocessedBefore

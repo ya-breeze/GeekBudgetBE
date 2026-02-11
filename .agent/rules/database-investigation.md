@@ -18,4 +18,6 @@ Use the `sqlite3` command-line tool to run queries. Always use `.header on` and 
 2. **NO Mutations**: NEVER perform INSERT/UPDATE/DELETE operations.
 3. **Data Privacy**: the local DB contains sensitive personal data.
 4. **UserID Isolation**: Remember that most tables have a `user_id`. When querying for a specific user, include `WHERE user_id = ...`.
-5. **JSON Fields**: Some fields like `suspicious_reasons` are stored as JSON strings. Use `json_extract` or similar SQLite functions if needed, or just pipe to `jq` if you are comfortable.
+5. **JSON Fields**: Some fields like `suspicious_reasons` are stored as JSON strings. Use `json_extract` or similar SQLite functions if needed.
+   *   **CLI Example**: `SELECT * FROM transactions, json_each(transactions.movements) WHERE json_extract(json_each.value, '$.accountId') = '...';`
+   *   **GORM Pitfall**: Use `Group("table.id")` instead of `Distinct("id")` when joining with `json_each` to avoid selecting only the ID column.

@@ -304,15 +304,12 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			// Since movements are stored as JSON, we need to fetch, modify, and save.
 			// Ideally we should process in batches, but for simplicity/MVP we do it here.
 			// We find all transactions that have a movement with this account ID.
-			// Note: simpler approach is to iterate over all transactions for this user.
-			// Optimization: Use a LIKE query on the JSON column if possible, but GORM/SQLite support varies.
-			// Assuming low volume or acceptable performance for now.
-			// A safer approach for SQLite/Postgres JSON: .Where("movements LIKE ?", "%"+id+"%")
-
+			// Optimization: Use SQLite's JSON functions for accurate querying.
 			var transactions []models.Transaction
-			// Use LIKE to pre-filter transactions that *might* have the account ID in movements
-			// "movements" column contains the JSON.
-			if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
+			if err := tx.Joins("CROSS JOIN json_each(transactions.movements)").
+				Where("transactions.user_id = ? AND json_extract(json_each.value, '$.accountId') = ?", userID, id).
+				Group("transactions.id").
+				Find(&transactions).Error; err != nil {
 				return fmt.Errorf("failed to find transactions for reassignment: %w", err)
 			}
 
@@ -364,23 +361,15 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			}
 
 			// Check Transactions (Movements)
-			// Using the same LIKE query as before
-			if err := tx.Model(&models.Transaction{}).Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Count(&count).Error; err != nil {
+			// Using SQLite's JSON functions for accurate checking
+			if err := tx.Table("transactions").
+				Joins("CROSS JOIN json_each(transactions.movements)").
+				Where("transactions.user_id = ? AND json_extract(json_each.value, '$.accountId') = ?", userID, id).
+				Count(&count).Error; err != nil {
 				return fmt.Errorf("failed to check transactions: %w", err)
 			}
 			if count > 0 {
-				// We need to double check because LIKE is loose
-				var transactions []models.Transaction
-				if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
-					return fmt.Errorf("failed to fetch transactions for verification: %w", err)
-				}
-				for _, t := range transactions {
-					for _, m := range t.Movements {
-						if m.AccountId == id {
-							return ErrAccountInUse
-						}
-					}
-				}
+				return ErrAccountInUse
 			}
 		}
 
@@ -501,7 +490,10 @@ func (s *storage) DeleteCurrency(userID string, id string, replaceWithCurrencyID
 
 			// 2. Reassign in Accounts (BankInfo)
 			var accounts []models.Account
-			if err := tx.Where("user_id = ? AND bank_info LIKE ?", userID, "%"+id+"%").Find(&accounts).Error; err != nil {
+			if err := tx.Joins("CROSS JOIN json_each(accounts.bank_info, '$.balances')").
+				Where("accounts.user_id = ? AND json_extract(json_each.value, '$.currencyId') = ?", userID, id).
+				Group("accounts.id").
+				Find(&accounts).Error; err != nil {
 				return fmt.Errorf("failed to find accounts for currency reassignment: %w", err)
 			}
 			for _, acc := range accounts {
@@ -526,7 +518,10 @@ func (s *storage) DeleteCurrency(userID string, id string, replaceWithCurrencyID
 
 			// 3. Reassign in Transactions (Movements)
 			var transactions []models.Transaction
-			if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
+			if err := tx.Joins("CROSS JOIN json_each(transactions.movements)").
+				Where("transactions.user_id = ? AND json_extract(json_each.value, '$.currencyId') = ?", userID, id).
+				Group("transactions.id").
+				Find(&transactions).Error; err != nil {
 				return fmt.Errorf("failed to find transactions for currency reassignment: %w", err)
 			}
 
@@ -561,39 +556,27 @@ func (s *storage) DeleteCurrency(userID string, id string, replaceWithCurrencyID
 			}
 
 			// Check Accounts
-			if err := tx.Model(&models.Account{}).Where("user_id = ? AND bank_info LIKE ?", userID, "%"+id+"%").Count(&count).Error; err != nil {
+			// Using SQLite's JSON functions for accurate checking
+			if err := tx.Table("accounts").
+				Joins("CROSS JOIN json_each(accounts.bank_info, '$.balances')").
+				Where("accounts.user_id = ? AND json_extract(json_each.value, '$.currencyId') = ?", userID, id).
+				Count(&count).Error; err != nil {
 				return fmt.Errorf("failed to check accounts for currency usage: %w", err)
 			}
 			if count > 0 {
-				var accounts []models.Account
-				if err := tx.Where("user_id = ? AND bank_info LIKE ?", userID, "%"+id+"%").Find(&accounts).Error; err != nil {
-					return fmt.Errorf("failed to fetch accounts for currency usage verification: %w", err)
-				}
-				for _, acc := range accounts {
-					for _, b := range acc.BankInfo.Balances {
-						if b.CurrencyId == id {
-							return ErrCurrencyInUse
-						}
-					}
-				}
+				return ErrCurrencyInUse
 			}
 
 			// Check Transactions
-			if err := tx.Model(&models.Transaction{}).Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Count(&count).Error; err != nil {
+			// Using SQLite's JSON functions for accurate checking
+			if err := tx.Table("transactions").
+				Joins("CROSS JOIN json_each(transactions.movements)").
+				Where("transactions.user_id = ? AND json_extract(json_each.value, '$.currencyId') = ?", userID, id).
+				Count(&count).Error; err != nil {
 				return fmt.Errorf("failed to check transactions for currency usage: %w", err)
 			}
 			if count > 0 {
-				var transactions []models.Transaction
-				if err := tx.Where("user_id = ? AND movements LIKE ?", userID, "%"+id+"%").Find(&transactions).Error; err != nil {
-					return fmt.Errorf("failed to fetch transactions for currency usage verification: %w", err)
-				}
-				for _, t := range transactions {
-					for _, m := range t.Movements {
-						if m.CurrencyId == id {
-							return ErrCurrencyInUse
-						}
-					}
-				}
+				return ErrCurrencyInUse
 			}
 		}
 

@@ -152,7 +152,7 @@ export class ReconciliationComponent implements OnInit {
 
         if (
             confirm(
-                `Enable manual reconciliation starting with balance ${status.appBalance} ${status.currencySymbol}?`
+                `Enable manual reconciliation starting with balance ${status.appBalance} ${status.currencySymbol}?`,
             )
         ) {
             this.reconciliationService

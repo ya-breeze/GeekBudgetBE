@@ -161,3 +161,14 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 | `GB_DISABLEIMPORTERS` | Disable bank importers | `false` |
 | `GB_PORT` | API server port | `8080` |
 | `GB_ALLOWEDORIGINS` | CORS origins | - |
+
+## JSON Querying Patterns
+
+When querying records with JSON columns like `movements` (in `transactions`) or `bank_info` (in `accounts`), use SQLite's native JSON functions for precision:
+
+-   **SQLite Example**: `SELECT * FROM transactions, json_each(transactions.movements) WHERE json_extract(json_each.value, '$.accountId') = '...';`
+-   **GORM Joins**: Use `Joins("CROSS JOIN json_each(table.column)")` for array fields.
+-   **GORM Grouping**: **CRITICAL**: Use `.Group("table.id")` instead of `.Distinct("id")` when joining with `json_each`. `Distinct("id")` restricts the selected columns to *only* the ID, which breaks full record retrieval/Save operations.
+-   **JSON Paths**:
+    *   Transactions: `$.accountId`, `$.currencyId`, `$.amount`
+    *   Accounts: `$.balances[*].currencyId`, `$.balances[*].openingBalance`

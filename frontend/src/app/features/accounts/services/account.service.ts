@@ -156,19 +156,15 @@ export class AccountService {
                     this.deleteAccountImage({ id: account.id! }).subscribe({
                         next: () => {
                             this.loadAccounts().subscribe();
-                            snackBar.open(
-                                'Account and image updated successfully',
-                                'Close',
-                                { duration: 3000 },
-                            );
+                            snackBar.open('Account and image updated successfully', 'Close', {
+                                duration: 3000,
+                            });
                         },
                         error: () => {
                             this.loadAccounts().subscribe();
-                            snackBar.open(
-                                'Account updated but image deletion failed',
-                                'Close',
-                                { duration: 3000 },
-                            );
+                            snackBar.open('Account updated but image deletion failed', 'Close', {
+                                duration: 3000,
+                            });
                         },
                     });
                 }
@@ -182,19 +178,15 @@ export class AccountService {
                     }).subscribe({
                         next: () => {
                             this.loadAccounts().subscribe();
-                            snackBar.open(
-                                'Account and image updated successfully',
-                                'Close',
-                                { duration: 3000 },
-                            );
+                            snackBar.open('Account and image updated successfully', 'Close', {
+                                duration: 3000,
+                            });
                         },
                         error: () => {
                             this.loadAccounts().subscribe();
-                            snackBar.open(
-                                'Account updated but image upload failed',
-                                'Close',
-                                { duration: 3000 },
-                            );
+                            snackBar.open('Account updated but image upload failed', 'Close', {
+                                duration: 3000,
+                            });
                         },
                     });
                 } else {
