@@ -33,7 +33,7 @@ describe('AccountFormDialogComponent', () => {
 
         mockUserService = jasmine.createSpyObj('UserService', ['loadUser']);
         mockUserService.loadUser.and.returnValue(
-            of({ id: '1', email: 'test@example.com', startDate: '2025-01-01' }),
+            of({ id: '1', email: 'test@test.com', startDate: '2025-01-01' }),
         );
 
         await TestBed.configureTestingModule({

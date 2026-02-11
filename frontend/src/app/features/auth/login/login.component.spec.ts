@@ -71,20 +71,20 @@ describe('LoginComponent', () => {
         authService.login.and.returnValue(of(void 0));
 
         component.loginForm.setValue({
-            email: 'test@example.com',
+            email: 'test@test.com',
             password: 'password123',
         });
 
         component.onSubmit();
 
-        expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password123');
+        expect(authService.login).toHaveBeenCalledWith('test@test.com', 'password123');
     });
 
     it('should navigate to dashboard on successful login', () => {
         authService.login.and.returnValue(of(void 0));
 
         component.loginForm.setValue({
-            email: 'test@example.com',
+            email: 'test@test.com',
             password: 'password123',
         });
 
@@ -98,7 +98,7 @@ describe('LoginComponent', () => {
         authService.login.and.returnValue(throwError(() => mockError));
 
         component.loginForm.setValue({
-            email: 'test@example.com',
+            email: 'test@test.com',
             password: 'wrong-password',
         });
 
@@ -130,7 +130,7 @@ describe('LoginComponent', () => {
         });
 
         component.loginForm.setValue({
-            email: 'test@example.com',
+            email: 'test@test.com',
             password: 'password123',
         });
 
@@ -145,7 +145,7 @@ describe('LoginComponent', () => {
 
     it('should enable submit button when form is valid', () => {
         component.loginForm.setValue({
-            email: 'test@example.com',
+            email: 'test@test.com',
             password: 'password123',
         });
 

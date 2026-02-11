@@ -23,17 +23,17 @@ GeekBudgetBE/
 │   │   └── utils/         # Utility functions
 │   ├── test/              # Integration tests
 │   └── webapp/            # Static assets and HTML templates
-├── frontend/              # Angular 20 SPA (Legacy but Active)
+├── app/                   # Next.js 15 SPA (In Development - Future UI)
+│   ├── app/               # Next.js App Router pages
+│   ├── components/        # React components (shared + shadcn/ui)
+│   ├── hooks/             # Custom React hooks
+│   └── lib/               # API client, auth, utilities
+├── frontend/              # Angular 20 SPA (Active - Current UI)
 │   └── src/app/
 │       ├── core/api/      # Generated API client
 │       ├── features/      # Feature modules (accounts, transactions, matchers, etc.)
 │       ├── layout/        # Layout components
 │       └── shared/        # Shared components, pipes, directives
-├── new-frontend/          # Next.js 15 SPA (not active yet)
-│   └── src/
-│       ├── app/           # Next.js App Router pages
-│       ├── components/    # React components (shared + shadcn/ui)
-│       └── lib/           # API client, hooks, utilities
 ├── nginx/                 # Reverse proxy configuration
 ├── Makefile               # Build, test, lint, docker orchestration
 └── docker-compose.yml     # Multi-service deployment
@@ -42,8 +42,9 @@ GeekBudgetBE/
 ## Tech Stack
 
 - **Backend:** Go 1.24+, Gorilla Mux, GORM, SQLite, JWT, Cobra/Viper, slog, shopspring/decimal
-- **Frontend:** Angular 20, Angular Material, RxJS, Chart.js, SCSS
-- **Testing:** Ginkgo/Gomega (backend BDD), Karma/Jasmine (frontend)
+- **Frontend (Active):** Angular 20, React 19, TanStack Query, shadcn/ui, Tailwind CSS 3, TypeScript
+- **Frontend (In Development):** Next.js 15, Angular Material, RxJS, Chart.js, SCSS
+- **Testing:** Ginkgo/Gomega (backend BDD)
 - **Code generation:** OpenAPI Generator (Go client/server + Angular client)
 - **Formatting:** gofumpt (Go), Prettier + ESLint (frontend)
 - **Linting:** golangci-lint (Go), ESLint with Angular rules (frontend)
@@ -108,15 +109,16 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 6. All API endpoints require JWT auth except `/v1/authorize`.
 8. **Financial Accuracy**: Always use `decimal.Decimal` (from `github.com/shopspring/decimal`) for money. In tests, use `.Equal()` instead of `==`. In the frontend, wrap amounts in `Number()` for safety.
 9. **API Strictness**: When updating transactions, ensure the request body does NOT contain an `id` or other `Entity` fields. The backend decodes directly into `TransactionNoId` (or similar interface) and will fail with `json: unknown field "id"` if extra fields are present. Strip these fields in the frontend service or component before sending.
-10. **For Next.js frontend**: Never import from `new-frontend/src/lib/api/generated/` directly. Always use custom hooks from `new-frontend/src/lib/api/hooks/` which wrap the generated code and won't be overwritten.
+10. **For Next.js frontend**: API calls should use the axios client in `app/lib/api/client.ts` with JWT interceptor. Use TanStack Query hooks in `app/lib/api/hooks/` for data fetching.
 
 ## Testing
 
 - Backend uses Ginkgo BDD framework with Gomega matchers. Tests live alongside source files (`*_test.go`) and in `backend/test/` for integration tests.
 - Frontend uses Karma/Jasmine. Tests are `*.spec.ts` files alongside components.
-- Use `test@example.com` / `test` credentials for browser testing.
+- Legacy Angular frontend uses Karma/Jasmine. Tests are `*.spec.ts` files alongside components.
+- Use `test@test.com` / `test` credentials for browser testing.
 - If `make run-backend` fails with "address already in use", the backend is already running.
-- If `make run-frontend` fails with "Port 4200 is already in use", the frontend is already running.
+- If `make run-frontend` fails with "Port 4200 is already in use", the frontend is already running. Use `make run-app` for the Next.js frontend (port 3000).
 
 ## Deduplication & Archiving Flow
  

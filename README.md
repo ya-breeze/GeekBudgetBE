@@ -12,10 +12,15 @@ GeekBudgetBE/
 │   ├── pkg/              # Go packages
 │   ├── test/             # Backend tests
 │   └── webapp/           # Static web assets
-├── frontend/             # Angular frontend application
+├── frontend/             # Angular frontend (active)
 │   ├── src/              # Angular source code
 │   ├── public/           # Static assets
 │   └── dist/             # Built frontend (generated)
+├── app/                  # Next.js frontend (in development)
+│   ├── app/              # Next.js App Router pages
+│   ├── components/       # React components
+│   ├── lib/              # API client, auth, utilities
+│   └── hooks/            # Custom React hooks
 ├── nginx/                # Nginx reverse proxy configuration
 ├── docker-compose.yml    # Docker orchestration
 └── Makefile             # Build and development commands
@@ -68,9 +73,11 @@ GeekBudgetBE/
 The application follows a microservices architecture with:
 
 - **Backend**: Go REST API server with SQLite database
-- **Frontend**: Angular SPA with Angular Material UI (also: Next.js 15 alternative in `new-frontend/`)
+- **Frontend**: Angular 20 SPA with Angular Material UI
 - **Reverse Proxy**: Nginx for routing and load balancing
 - **Containerization**: Docker for consistent deployment
+
+> **Note**: A new Next.js 15 frontend is in development in the `app/` directory. Use `make dev-app` to run it.
 
 ## Features
 

@@ -30,7 +30,7 @@ describe('AuthService', () => {
 
     describe('login', () => {
         it('should login successfully with valid credentials', (done) => {
-            const mockCredentials = { email: 'test@example.com', password: 'password123' };
+            const mockCredentials = { email: 'test@test.com', password: 'password123' };
             const mockResponse = { token: 'mock-jwt-token' }; // Backend still returns token, but service ignores it
 
             service.login(mockCredentials.email, mockCredentials.password).subscribe({
@@ -49,7 +49,7 @@ describe('AuthService', () => {
         it('should update authentication state after successful login', (done) => {
             const mockResponse = { token: 'mock-jwt-token' };
 
-            service.login('test@example.com', 'password123').subscribe({
+            service.login('test@test.com', 'password123').subscribe({
                 next: () => {
                     expect(service.isLoggedIn()).toBe(true);
                     done();
@@ -63,7 +63,7 @@ describe('AuthService', () => {
         it('should return error on invalid credentials', (done) => {
             const mockError = { status: 401, statusText: 'Unauthorized' };
 
-            service.login('test@example.com', 'wrong-password').subscribe({
+            service.login('test@test.com', 'wrong-password').subscribe({
                 error: (error) => {
                     expect(error.status).toBe(401);
                     done();

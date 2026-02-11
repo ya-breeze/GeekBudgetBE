@@ -14,10 +14,10 @@ build:
 	@cd ${ROOT_DIR}/frontend && npm run build
 	@echo "✅ Build complete"
 
-.PHONY: build-new-frontend
-build-new-frontend:
-	@echo "🚀 Building new frontend..."
-	@cd ${ROOT_DIR}/new-frontend && npm run build
+.PHONY: build-app
+build-app:
+	@echo "🚀 Building new Next.js frontend..."
+	@cd ${ROOT_DIR}/app && npm run build
 	@echo "✅ Build complete"
 
 .PHONY: run-backend
@@ -35,19 +35,19 @@ run-backend:
 run-frontend:
 	@cd ${ROOT_DIR}/frontend && echo 'n' | npm run start
 
-.PHONY: run-new-frontend
-run-new-frontend:
-	@cd ${ROOT_DIR}/new-frontend && npm run dev
+.PHONY: run-app
+run-app:
+	@cd ${ROOT_DIR}/app && npm run dev
 
 .PHONY: dev
 dev:
 	@echo "🚀 Starting backend and frontend..."
 	@(trap 'kill 0' SIGINT; $(MAKE) run-backend & $(MAKE) run-frontend & wait)
 
-.PHONY: dev-new
-dev-new:
-	@echo "🚀 Starting backend and new frontend..."
-	@(trap 'kill 0' SIGINT; $(MAKE) run-backend & $(MAKE) run-new-frontend & wait)
+.PHONY: dev-app
+dev-app:
+	@echo "🚀 Starting backend and new Next.js frontend..."
+	@(trap 'kill 0' SIGINT; $(MAKE) run-backend & $(MAKE) run-app & wait)
 
 .PHONY: replace-templates
 replace-templates:
@@ -134,11 +134,12 @@ lint:
 	@cd ${ROOT_DIR}/frontend; \
 		npx prettier --write "src/**/*.{ts,html,css,scss,json}"; \
 		npm run lint -- --fix
+	@echo "✅ Lint complete"
 
-.PHONY: lint-new-frontend
-lint-new-frontend:
-	@echo "🚀 Linting new frontend..."
-	@cd ${ROOT_DIR}/new-frontend && npm run lint && npm run type-check
+.PHONY: lint-app
+lint-app:
+	@echo "🚀 Linting new Next.js frontend..."
+	@cd ${ROOT_DIR}/app && npm run lint
 	@echo "✅ Lint complete"
 
 .PHONY: test
@@ -177,9 +178,9 @@ install: check-deps
 	cd ${ROOT_DIR}/backend && go mod download
 	cd ${ROOT_DIR}/frontend && npm install
 
-.PHONE: install-new-frontend
-install-new-frontend:
-	cd ${ROOT_DIR}/new-frontend && npm install
+.PHONE: install-app
+install-app:
+	cd ${ROOT_DIR}/app && npm install
 
 .PHONE: clean
 clean:
@@ -191,11 +192,12 @@ clean:
 		rm -rf node_modules/; \
 		rm -rf coverage/; \
 		npm cache clean --force
+	@echo "✅ Clean complete"
 
-.PHONE: clean-new-frontend
-clean-new-frontend:
-	@echo "🚀 Cleaning new frontend..."
-	@cd ${ROOT_DIR}/new-frontend && rm -rf .next/ out/ node_modules/
+.PHONE: clean-app
+clean-app:
+	@echo "🚀 Cleaning new Next.js frontend..."
+	@cd ${ROOT_DIR}/app && rm -rf .next/ out/ node_modules/
 	@echo "✅ Clean complete"
 
 .PHONE: analyze
@@ -204,6 +206,12 @@ analyze:
 	@cd ${ROOT_DIR}/frontend; \
 		npm run build -- --stats-json; \
 		npx webpack-bundle-analyzer dist/stats.json
+	@echo "✅ Analysis complete"
+
+.PHONE: analyze-app
+analyze-app:
+	@echo "📈 Analyzing Next.js bundle size..."
+	@cd ${ROOT_DIR}/app && npm run build && npx @next/bundle-analyzer
 	@echo "✅ Analysis complete"
 
 # ============================================
