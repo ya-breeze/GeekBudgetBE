@@ -144,6 +144,7 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 7. **Manual Reconciliation**: 
    - **Auto-Balance**: When enabling manual reconciliation, the system defaults to using the *current* `AppBalance` as the starting bank balance, avoiding manual input.
    - **Display**: For accounts without bank importers, manual reconciliation records are used to populate "Bank Balance" and "Balance Date" columns in the UI, mimicking a bank feed for consistency.
+8. **Performance & Batching**: Status retrieval is optimized via `GetBulkReconciliationData`. It fetches all accounts, latest reconciliations, and transactions in a single pass to avoid N+1 queries.
 
 ## Code Patterns
 

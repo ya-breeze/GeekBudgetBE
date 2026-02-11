@@ -19,3 +19,8 @@ Guidelines and facts discovered regarding the reconciliation system.
 ## Frontend UI Patterns
 - **Disabled Buttons**: Angular Material tooltips on disabled buttons require a wrapper element (like a `<span>`) to capture mouse events.
 - **Stale Balance Warning**: A ⚠️ icon appears if `hasTransactionsAfterBankBalance` is true, indicating the bank balance metadata might be older than the current transaction set.
++
++## Performance & Batching
++- **Optimization**: `GetReconciliationStatus` uses a bulk fetching strategy via `s.db.GetBulkReconciliationData(userID)`.
++- **Logic**: It aggregates balances, latest reconciliations, and unprocessed counts in memory after a single pass over the user's transactions.
++- **Data Availability**: The `BulkReconciliationData` struct (defined in `pkg/database/bulk_types.go`) provides efficient lookups by `AccountID` and `CurrencyID`.
