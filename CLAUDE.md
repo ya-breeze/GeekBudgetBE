@@ -104,12 +104,13 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 1. After making changes, run `make all` to build, test, validate, and lint.
 2. For Go files, always run `gofumpt -w` on changed files.
 3. Never manually edit files in `backend/pkg/generated/` -- they are auto-generated.
-4. When adding new API endpoints, update `api/openapi.yaml` first, then `make generate`.
+4. When changing API definitions, update `api/openapi.yaml` first, then `make generate`.
 5. All database models must include `UserID` for multi-user isolation.
 6. All API endpoints require JWT auth except `/v1/authorize`.
 8. **Financial Accuracy**: Always use `decimal.Decimal` (from `github.com/shopspring/decimal`) for money. In tests, use `.Equal()` instead of `==`. In the frontend, wrap amounts in `Number()` for safety.
 9. **API Strictness**: When updating transactions, ensure the request body does NOT contain an `id` or other `Entity` fields. The backend decodes directly into `TransactionNoId` (or similar interface) and will fail with `json: unknown field "id"` if extra fields are present. Strip these fields in the frontend service or component before sending.
 10. **For Next.js frontend**: API calls should use the axios client in `app/lib/api/client.ts` with JWT interceptor. Use TanStack Query hooks in `app/lib/api/hooks/` for data fetching.
+11. **Refactoring Workflow**: Always ensure existing code is covered by tests *before* refactoring or fixing bugs. If tests are missing, add them first (e.g., `storage_images_test.go`).
 
 ## Testing
 
@@ -177,3 +178,11 @@ When querying records with JSON columns like `movements` (in `transactions`) or 
 -   **JSON Paths**:
     *   Transactions: `$.accountId`, `$.currencyId`, `$.amount`
     *   Accounts: `$.balances[*].currencyId`, `$.balances[*].openingBalance`
+
+## Database Development Tips
+
+1.  **SQLite & time.Time**: When querying the latest record by date, do **NOT** use `SELECT MAX(created_at)`. SQLite returns this as a string, which GORM cannot scan into a `time.Time` destination.
+    -   ❌ `db.Select("MAX(date)").Scan(&t)`
+    -   ✅ `db.Order("date DESC").First(&record)`
+2.  **Region Markers**: This project uses `#region` and `#endregion` comments. Ensure they are balanced and descriptive.
+    -   Use `// #region Name` and `// #endregion Name`.
