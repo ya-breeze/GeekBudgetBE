@@ -4,3 +4,4 @@ trigger: always_on
 
 - always run 'make all' after changes to make sure that it's not broken.
 - Ensure decimal values in Go test struct literals use `decimal.NewFromFloat()` instead of raw float constants to avoid type mismatch errors.
+- **Decimal Comparisons**: When comparing `decimal.Decimal` in tests using Gomega, use the `.Equal()` method (e.g., `Expect(val.Equal(expected)).To(BeTrue())`) instead of `Expect(val).To(Equal(expected))`. The latter is scale-sensitive and may fail if one value is `10` and the other is `10.00`.

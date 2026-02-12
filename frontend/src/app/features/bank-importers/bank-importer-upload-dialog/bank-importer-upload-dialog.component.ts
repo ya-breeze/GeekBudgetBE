@@ -36,12 +36,12 @@ const IMPORTER_CONFIGS: Record<string, ImporterConfig> = {
         description: 'Upload CSV file exported from KB internet banking.',
     },
     revolut: {
-        allowedExtensions: ['xlsx', 'xls'],
-        accept: '.xlsx, .xls',
+        allowedExtensions: ['xlsx', 'xls', 'csv'],
+        accept: '.xlsx, .xls, .csv',
         defaultFormat: 'xlsx',
         fixedFormat: true,
         description:
-            'Upload <b>Excel</b> file exported from Revolut.<br>Make sure to export transactions in the Revolut <b>mobile app</b> not in the website. Because the website exports transactions in a different format and only for a single currency.',
+            'Upload <b>Excel</b> or <b>CSV</b> file exported from Revolut.<br>Make sure to export transactions in the Revolut <b>mobile app</b> not in the website. Because the website exports transactions in a different format and only for a single currency.',
     },
     default: {
         allowedExtensions: ['csv', 'xlsx', 'xls'],
@@ -116,6 +116,11 @@ export class BankImporterUploadDialogComponent {
 
         if (extension && this.config.allowedExtensions.includes(extension)) {
             this.selectedFile.set(file);
+            if (extension === 'csv') {
+                this.selectedFormat.set('csv');
+            } else if (extension === 'xlsx' || extension === 'xls') {
+                this.selectedFormat.set('xlsx');
+            }
         } else {
             // Ideally notify user about wrong format
             console.warn(

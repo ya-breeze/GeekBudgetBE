@@ -27,14 +27,22 @@ const (
 	RevolutIndexState         = 8
 	RevolutIndexBalance       = 9
 
-	RevolutExchangePrefix = "EXCHANGE: Exchanged to "
+	RevolutExchangePrefix   = "EXCHANGE: Exchanged to "
+	RevolutExchangePrefixRU = "Обмен валюты: Обменено на "
 )
 
 //nolint:gochecknoglobals // const list of fields in Revolut file
-var revolutCSVFields = []string{
+var revolutCSVFieldsEN = []string{
 	"Type", "Product", "Started Date",
 	"Completed Date", "Description",
 	"Amount", "Fee", "Currency", "State", "Balance",
+}
+
+//nolint:gochecknoglobals // const list of fields in Revolut file (Russian)
+var revolutCSVFieldsRU = []string{
+	"Тип", "Продукт", "Дата начала",
+	"Дата выполнения", "Описание",
+	"Сумма", "Комиссия", "Валюта", "State", "Остаток средств",
 }
 
 type RevolutConverter struct {
@@ -180,17 +188,26 @@ func (fc *RevolutConverter) checkFormat(records [][]string) error {
 		return errors.New("no records in CSV file")
 	}
 
-	if len(records[0]) != len(revolutCSVFields) {
+	if len(records[0]) != len(revolutCSVFieldsEN) {
 		return fmt.Errorf(
 			"revolut record has unexpected number of columns (%d), expected number is %d",
-			len(records[0]), len(revolutCSVFields))
+			len(records[0]), len(revolutCSVFieldsEN))
 	}
-	for i, field := range revolutCSVFields {
-		if records[0][i] != field {
-			return fmt.Errorf(
-				"revolut record has unexpected column %q at position %d, expected column is %q",
-				records[0][i], i, field)
+
+	isEN := true
+	isRU := true
+	for i := range records[0] {
+		if records[0][i] != revolutCSVFieldsEN[i] {
+			isEN = false
 		}
+		if records[0][i] != revolutCSVFieldsRU[i] {
+			isRU = false
+		}
+	}
+
+	if !isEN && !isRU {
+		return fmt.Errorf(
+			"revolut record has unexpected columns: %v", records[0])
 	}
 
 	return nil
@@ -202,8 +219,9 @@ func (fc *RevolutConverter) shouldSkipRecord(i int, record []string) bool {
 		return true
 	}
 
-	if record[RevolutIndexState] != "COMPLETED" {
-		fc.logger.Info("Skipping transaction because of state", "state", record[RevolutIndexState])
+	state := record[RevolutIndexState]
+	if state != "COMPLETED" && state != "ВЫПОЛНЕНО" {
+		fc.logger.Info("Skipping transaction because of state", "state", state)
 		return true
 	}
 
@@ -322,11 +340,17 @@ outerLoop:
 		if toSkip[i] {
 			continue
 		}
-		if !strings.HasPrefix(transactions[i].Description, RevolutExchangePrefix) {
+		isExchange := strings.HasPrefix(transactions[i].Description, RevolutExchangePrefix)
+		isExchangeRU := strings.HasPrefix(transactions[i].Description, RevolutExchangePrefixRU)
+		if !isExchange && !isExchangeRU {
 			res = append(res, transactions[i])
 			continue
 		}
-		cur := strings.TrimPrefix(transactions[i].Description, RevolutExchangePrefix)
+		prefix := RevolutExchangePrefix
+		if isExchangeRU {
+			prefix = RevolutExchangePrefixRU
+		}
+		cur := strings.TrimPrefix(transactions[i].Description, prefix)
 		fc.logger.Info("Found exchange transaction", "transaction", transactions[i], "currency", cur)
 
 		// Find matching exchange transaction
