@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -64,20 +65,13 @@ func (s *TransactionsAPIServiceImpl) CreateTransaction(
 func (s *TransactionsAPIServiceImpl) UpdateTransaction(
 	ctx context.Context, transactionID string, transactionNoID goserver.TransactionNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
-	if !ok {
-		s.logger.Error("UserID not found in context")
-		return goserver.Response(500, nil), nil
-	}
-	s.logger.Info("Processing transaction update", "transaction", transactionID, "user", userID)
-
-	transaction, err := s.db.UpdateTransaction(userID, transactionID, &transactionNoID)
+	s.logger.Info("Processing transaction update", "transaction", transactionID)
+	res, _, err := updateEntity[goserver.TransactionNoIdInterface, goserver.Transaction](ctx, s.logger, "transaction", transactionID, &transactionNoID, s.db.UpdateTransaction)
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to update transaction")
-		return goserver.Response(500, nil), nil
+		return mapErrorToResponse(err), nil
 	}
 
-	return goserver.Response(200, transaction), nil
+	return goserver.Response(http.StatusOK, res), nil
 }
 
 func (s *TransactionsAPIServiceImpl) DeleteTransaction(

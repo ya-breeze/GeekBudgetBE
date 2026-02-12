@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"slices"
 	"time"
@@ -84,15 +85,9 @@ func (s *BankImportersAPIServiceImpl) GetBankImporters(ctx context.Context) (gos
 func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 	ctx context.Context, id string, input goserver.BankImporterNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
-	if !ok {
-		return goserver.Response(500, nil), nil
-	}
-
-	res, err := s.db.UpdateBankImporter(userID, id, &input)
+	res, userID, err := updateEntity[goserver.BankImporterNoIdInterface, goserver.BankImporter](ctx, s.logger, "BankImporter", id, &input, s.db.UpdateBankImporter)
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to update BankImporter")
-		return goserver.Response(500, nil), nil
+		return mapErrorToResponse(err), nil
 	}
 
 	if forcedImports := common.GetForcedImportChannel(ctx); forcedImports != nil {
@@ -103,7 +98,7 @@ func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 		}
 	}
 
-	return goserver.Response(200, res), nil
+	return goserver.Response(http.StatusOK, res), nil
 }
 
 func (s *BankImportersAPIServiceImpl) Fetch(

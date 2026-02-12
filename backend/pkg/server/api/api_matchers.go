@@ -170,16 +170,9 @@ func (s *MatchersAPIServiceImpl) DeleteMatcher(ctx context.Context, id string) (
 
 func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
-	if !ok {
-		s.logger.Error("UserID not found in context")
-		return goserver.Response(500, nil), nil
-	}
-
-	res, err := s.db.UpdateMatcher(userID, id, &m)
+	res, userID, err := updateEntity[goserver.MatcherNoIdInterface, goserver.Matcher](ctx, s.logger, "matcher", id, &m, s.db.UpdateMatcher)
 	if err != nil {
-		s.logger.With("error", err).Error("Failed to update matcher")
-		return goserver.Response(500, nil), nil
+		return mapErrorToResponse(err), nil
 	}
 
 	var autoProcessedIds []string
@@ -192,7 +185,7 @@ func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m
 		autoProcessedIds = autoIds
 	}
 
-	return goserver.Response(200, goserver.UpdateMatcher200Response{
+	return goserver.Response(http.StatusOK, goserver.UpdateMatcher200Response{
 		Matcher:          res,
 		AutoProcessedIds: autoProcessedIds,
 	}), nil

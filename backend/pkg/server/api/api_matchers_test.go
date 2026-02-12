@@ -65,4 +65,44 @@ var _ = Describe("Matchers API", func() {
 			Expect(resp.Code).To(Equal(http.StatusInternalServerError))
 		})
 	})
+
+	Describe("UpdateMatcher", func() {
+		It("updates a matcher successfully", func() {
+			matcherID := "matcher-update"
+			userID := "user1"
+			input := goserver.MatcherNoId{
+				DescriptionRegExp: "^Test$",
+				OutputDescription: "Matched",
+				OutputAccountId:   "acc1",
+			}
+			updatedMatcher := goserver.Matcher{
+				Id:                matcherID,
+				DescriptionRegExp: input.DescriptionRegExp,
+				OutputDescription: input.OutputDescription,
+				OutputAccountId:   input.OutputAccountId,
+			}
+
+			// Instantiate real UnprocessedTransactionsAPIServiceImpl with mockStorage
+			unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(log, mockStorage)
+			// Re-instantiate SUT with the service
+			sut = api.NewMatchersAPIServiceImpl(log, mockStorage, cfg, unprocessedService)
+
+			mockStorage.EXPECT().UpdateMatcher(userID, matcherID, &input).Return(updatedMatcher, nil)
+
+			// ProcessUnprocessedTransactionsAgainstMatcher calls:
+			mockStorage.EXPECT().GetMatcher(userID, matcherID).Return(updatedMatcher, nil)
+			// Assuming no confirmation history, it returns early.
+			// Let's check logic: if len(matcher.ConfirmationHistory) < 10 { return nil, nil }
+			// So we MUST return a matcher with enough history OR expect it to return early.
+			// Default updatedMatcher has no history, so it should return early.
+			// BUT GetMatcher is called first.
+
+			resp, err := sut.UpdateMatcher(ctx, matcherID, input)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusOK))
+			body := resp.Body.(goserver.UpdateMatcher200Response)
+			Expect(body.Matcher.Id).To(Equal(updatedMatcher.Id))
+			Expect(body.AutoProcessedIds).To(BeEmpty())
+		})
+	})
 })

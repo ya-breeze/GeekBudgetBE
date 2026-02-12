@@ -692,4 +692,32 @@ var _ = Describe("BankImporters API", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
+
+	Describe("UpdateBankImporter", func() {
+		It("updates a bank importer successfully", func() {
+			importerID := "imp-update"
+			input := goserver.BankImporterNoId{
+				Name:      "Updated Importer",
+				Type:      "fio",
+				AccountId: "acc1",
+			}
+
+			// Mock update
+			mockDB.EXPECT().UpdateBankImporter(userID, importerID, &input).Return(goserver.BankImporter{
+				Id:        importerID,
+				Name:      input.Name,
+				Type:      input.Type,
+				AccountId: input.AccountId,
+			}, nil)
+
+			// Expect forced import trigger check (GetForcedImportChannel returns nil in test ctx by default)
+			// The handler checks common.GetForcedImportChannel(ctx). If it's nil, it skips sending.
+			// Test context setup in BeforeEach doesn't set it, so safe.
+
+			resp, err := sut.UpdateBankImporter(context.WithValue(context.Background(), common.UserIDKey, userID), importerID, input)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusOK))
+			Expect(resp.Body.(goserver.BankImporter).Name).To(Equal(input.Name))
+		})
+	})
 })

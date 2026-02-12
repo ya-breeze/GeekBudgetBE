@@ -49,4 +49,31 @@ var _ = Describe("Transactions API", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(resp.Code).To(Equal(http.StatusOK))
 	})
+
+	It("updates a transaction successfully", func() {
+		userID := "user-1"
+		transactionID := "tx-1"
+
+		input := goserver.TransactionNoId{
+			Description: "Updated transaction",
+			Date:        time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromFloat(100.50), CurrencyId: "USD"}},
+		}
+
+		expectedOutput := goserver.Transaction{
+			Id:          transactionID,
+			Description: input.Description,
+			Date:        input.Date,
+			Movements:   input.Movements,
+		}
+
+		mockStorage.EXPECT().
+			UpdateTransaction(userID, transactionID, &input).
+			Return(expectedOutput, nil)
+
+		resp, err := sut.UpdateTransaction(ctx, transactionID, input)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(resp.Code).To(Equal(http.StatusOK))
+		Expect(resp.Body).To(Equal(expectedOutput))
+	})
 })

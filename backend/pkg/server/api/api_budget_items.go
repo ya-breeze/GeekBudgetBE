@@ -263,17 +263,9 @@ func (s *budgetItemsAPIService) GetBudgetItems(ctx context.Context) (goserver.Im
 
 // UpdateBudgetItem - update budgetItem
 func (s *budgetItemsAPIService) UpdateBudgetItem(ctx context.Context, id string, budgetItemNoID goserver.BudgetItemNoId) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
-	if !ok {
-		return goserver.Response(http.StatusInternalServerError, nil), nil
-	}
-	budgetItem, err := s.db.UpdateBudgetItem(userID, id, &budgetItemNoID)
+	res, _, err := updateEntity(ctx, s.logger, "budgetItem", id, &budgetItemNoID, s.db.UpdateBudgetItem)
 	if err != nil {
-		if err == database.ErrNotFound {
-			return goserver.Response(http.StatusNotFound, nil), nil
-		}
-		s.logger.Error("Failed to update budget item", "error", err)
-		return goserver.Response(http.StatusInternalServerError, nil), err
+		return mapErrorToResponse(err), nil
 	}
-	return goserver.Response(http.StatusOK, budgetItem), nil
+	return goserver.Response(http.StatusOK, res), nil
 }

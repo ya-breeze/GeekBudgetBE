@@ -143,4 +143,27 @@ var _ = Describe("BudgetItems API", func() {
 		Expect(feb.Rollover.Equal(decimal.NewFromInt(-50))).To(BeTrue())
 		Expect(feb.Available.Equal(decimal.NewFromInt(50))).To(BeTrue())
 	})
+
+	It("updates a budget item successfully", func() {
+		budgetItemID := "bi-1"
+		input := goserver.BudgetItemNoId{
+			AccountId: "acc-1",
+			Amount:    decimal.NewFromFloat(200.0),
+			Date:      time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		updatedItem := goserver.BudgetItem{
+			Id:        budgetItemID,
+			AccountId: input.AccountId,
+			Amount:    input.Amount,
+			Date:      input.Date,
+		}
+
+		mockStorage.EXPECT().UpdateBudgetItem("user1", budgetItemID, &input).Return(updatedItem, nil)
+
+		resp, err := sut.UpdateBudgetItem(ctx, budgetItemID, input)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(resp.Code).To(Equal(http.StatusOK))
+		Expect(resp.Body).To(Equal(updatedItem))
+	})
 })

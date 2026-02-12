@@ -148,6 +148,39 @@ type storage struct {
 	db  *gorm.DB
 }
 
+func performUpdate[M any, I any, O any](
+	s *storage,
+	userID string,
+	id string,
+	input I,
+	toDB func(I, string) *M,
+	fromDB func(*M) O,
+	setID func(*M, uuid.UUID),
+) (O, error) {
+	var empty O
+	idUUID, err := uuid.Parse(id)
+	if err != nil {
+		return empty, fmt.Errorf(StorageError+"; id is not UUID", err)
+	}
+
+	var data *M
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return empty, ErrNotFound
+		}
+
+		return empty, fmt.Errorf(StorageError, err)
+	}
+
+	data = toDB(input, userID)
+	setID(data, idUUID)
+	if err := s.db.Save(data).Error; err != nil {
+		return empty, fmt.Errorf(StorageError, err)
+	}
+
+	return fromDB(data), nil
+}
+
 func NewStorage(logger *slog.Logger, cfg *config.Config) Storage {
 	return &storage{log: logger, db: nil, cfg: cfg}
 }
@@ -260,23 +293,11 @@ func (s *storage) GetUserID(username string) (string, error) {
 }
 
 func (s *storage) UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error) {
-	var acc models.Account
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&acc).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return goserver.Account{}, ErrNotFound
-		}
-
-		return goserver.Account{}, fmt.Errorf(StorageError, err)
-	}
-
-	accID := acc.ID
-	acc = *models.AccountToDB(account, userID)
-	acc.ID = accID
-	if err := s.db.Save(&acc).Error; err != nil {
-		return goserver.Account{}, fmt.Errorf(StorageError, err)
-	}
-
-	return acc.FromDB(), nil
+	return performUpdate[models.Account, goserver.AccountNoIdInterface, goserver.Account](s, userID, id, account,
+		models.AccountToDB,
+		func(m *models.Account) goserver.Account { return m.FromDB() },
+		func(m *models.Account, id uuid.UUID) { m.ID = id },
+	)
 }
 
 func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *string) error {
@@ -462,21 +483,13 @@ func (s *storage) GetCurrency(userID string, id string) (goserver.Currency, erro
 }
 
 func (s *storage) UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error) {
-	var cur models.Currency
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&cur).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return goserver.Currency{}, ErrNotFound
-		}
-
-		return goserver.Currency{}, fmt.Errorf(StorageError, err)
-	}
-
-	cur.CurrencyNoId = *currency
-	if err := s.db.Save(&cur).Error; err != nil {
-		return goserver.Currency{}, fmt.Errorf(StorageError, err)
-	}
-
-	return cur.FromDB(), nil
+	return performUpdate(s, userID, id, currency,
+		func(i *goserver.CurrencyNoId, userID string) *models.Currency {
+			return &models.Currency{UserID: userID, CurrencyNoId: *i}
+		},
+		func(m *models.Currency) goserver.Currency { return m.FromDB() },
+		func(m *models.Currency, id uuid.UUID) { m.ID = id },
+	)
 }
 
 func (s *storage) DeleteCurrency(userID string, id string, replaceWithCurrencyID *string) error {
@@ -719,7 +732,6 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 	return t.FromDB(), nil
 }
 
-//nolint:dupl // TODO: refactor
 func (s *storage) UpdateTransaction(userID string, id string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)
@@ -1143,30 +1155,13 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 	return data.FromDB(), nil
 }
 
-//nolint:dupl // TODO: refactor
 func (s *storage) UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
 ) (goserver.BankImporter, error) {
-	idUUID, err := uuid.Parse(id)
-	if err != nil {
-		return goserver.BankImporter{}, fmt.Errorf(StorageError+"; id is not UUID", err)
-	}
-
-	var data *models.BankImporter
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return goserver.BankImporter{}, ErrNotFound
-		}
-
-		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
-	}
-
-	data = models.BankImporterToDB(bankImporter, userID)
-	data.ID = idUUID
-	if err := s.db.Save(&data).Error; err != nil {
-		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
-	}
-
-	return data.FromDB(), nil
+	return performUpdate[models.BankImporter, goserver.BankImporterNoIdInterface, goserver.BankImporter](s, userID, id, bankImporter,
+		models.BankImporterToDB,
+		func(m *models.BankImporter) goserver.BankImporter { return m.FromDB() },
+		func(m *models.BankImporter, id uuid.UUID) { m.ID = id },
+	)
 }
 
 func (s *storage) DeleteBankImporter(userID string, id string) error {
@@ -1371,30 +1366,13 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 	return res, nil
 }
 
-//nolint:dupl
 func (s *storage) UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface,
 ) (goserver.Matcher, error) {
-	idUUID, err := uuid.Parse(id)
-	if err != nil {
-		return goserver.Matcher{}, fmt.Errorf(StorageError+"; id is not UUID", err)
-	}
-
-	var data *models.Matcher
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return goserver.Matcher{}, ErrNotFound
-		}
-
-		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
-	}
-
-	data = models.MatcherToDB(matcher, userID)
-	data.ID = idUUID
-	if err := s.db.Save(&data).Error; err != nil {
-		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
-	}
-
-	return data.FromDB(), nil
+	return performUpdate[models.Matcher, goserver.MatcherNoIdInterface, goserver.Matcher](s, userID, id, matcher,
+		models.MatcherToDB,
+		func(m *models.Matcher) goserver.Matcher { return m.FromDB() },
+		func(m *models.Matcher, id uuid.UUID) { m.ID = id },
+	)
 }
 
 func (s *storage) GetMatcher(userID string, id string) (goserver.Matcher, error) {
@@ -1593,27 +1571,11 @@ func (s *storage) GetBudgetItem(userID string, id string) (goserver.BudgetItem, 
 func (s *storage) UpdateBudgetItem(
 	userID string, id string, budgetItem *goserver.BudgetItemNoId,
 ) (goserver.BudgetItem, error) {
-	idUUID, err := uuid.Parse(id)
-	if err != nil {
-		return goserver.BudgetItem{}, fmt.Errorf(StorageError+"; id is not UUID", err)
-	}
-
-	var data *models.BudgetItem
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return goserver.BudgetItem{}, ErrNotFound
-		}
-
-		return goserver.BudgetItem{}, fmt.Errorf(StorageError, err)
-	}
-
-	data = models.BudgetItemToDB(budgetItem, userID)
-	data.ID = idUUID
-	if err := s.db.Save(&data).Error; err != nil {
-		return goserver.BudgetItem{}, fmt.Errorf(StorageError, err)
-	}
-
-	return data.FromDB(), nil
+	return performUpdate[models.BudgetItem, goserver.BudgetItemNoIdInterface, goserver.BudgetItem](s, userID, id, budgetItem,
+		models.BudgetItemToDB,
+		func(m *models.BudgetItem) goserver.BudgetItem { return m.FromDB() },
+		func(m *models.BudgetItem, id uuid.UUID) { m.ID = id },
+	)
 }
 
 func (s *storage) DeleteBudgetItem(userID string, id string) error {

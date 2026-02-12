@@ -38,6 +38,14 @@ for {
 }
 ```
 
+## Update Operations
+
+### Generic Update Helper (API Layer)
+Use the `updateEntity` helper in `backend/pkg/server/api/helpers.go` to handle the standard update flow (UserID extraction, DB update call, and error mapping). This reduces boilerplate in API handlers.
+
+### Generic Update Helper (Storage Layer)
+Use the `performUpdate` helper in `backend/pkg/database/storage.go` for standard CRUD updates. It handles the `UUID parsing -> Record fetching -> Model conversion -> Save -> Result conversion` sequence generically.
+
 ## Testing
 
 ### Mocking Storage
@@ -60,3 +68,6 @@ func (m *MockStorage) FetchData() (Data, error) {
     return m.Storage.FetchData()
 }
 ```
+
+### Decimal Literals
+When writing tests in Go, avoid using untyped float constants (e.g., `100.50`) where a `decimal.Decimal` is expected in a struct literal. This causes compiler errors. Always use `decimal.NewFromFloat(100.50)` or similar.
