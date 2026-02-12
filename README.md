@@ -1,30 +1,6 @@
 # GeekBudget - Personal Finance Management
 
-A full-stack personal finance management application with Go backend and Angular frontend.
-
-## Project Structure
-
-```
-GeekBudgetBE/
-├── api/                    # OpenAPI specifications
-├── backend/               # Go backend application
-│   ├── cmd/              # Application entry points
-│   ├── pkg/              # Go packages
-│   ├── test/             # Backend tests
-│   └── webapp/           # Static web assets
-├── frontend/             # Angular frontend (active)
-│   ├── src/              # Angular source code
-│   ├── public/           # Static assets
-│   └── dist/             # Built frontend (generated)
-├── app/                  # Next.js frontend (in development)
-│   ├── app/              # Next.js App Router pages
-│   ├── components/       # React components
-│   ├── lib/              # API client, auth, utilities
-│   └── hooks/            # Custom React hooks
-├── nginx/                # Nginx reverse proxy configuration
-├── docker-compose.yml    # Docker orchestration
-└── Makefile             # Build and development commands
-```
+A full-stack personal finance management application with Go backend, Angular frontend (active), and Next.js frontend (in development).
 
 ## Quick Start
 
@@ -35,75 +11,54 @@ GeekBudgetBE/
 - Docker & Docker Compose
 - Make
 
-### Development Setup
+### Local Development
 
-1. **Install dependencies:**
-   ```bash
-   make install
-   ```
+```bash
+# Install dependencies
+make install
 
-2. **Build the application:**
-   ```bash
-   make build
-   ```
+# Build everything
+make build
 
-3. **Run with Docker Compose:**
-   ```bash
-   make compose
-   ```
+# Run backend (port 8080)
+make run-backend
 
-4. **Access the application:**
-   - Web Interface: http://localhost
-   - API Documentation: http://localhost/v1/docs (if available)
+# Run Angular frontend (port 4200)
+make run-frontend
 
-### Development Commands
+# Or run Next.js frontend (port 3000, in development)
+make dev-app
+```
 
-- `make build` - Build both backend and frontend
-- `make test` - Run all tests
-- `make lint` - Lint code
-- `make run-backend` - Run backend in development mode
-- `make run-frontend` - Run frontend in development mode
-- `make docker-up` - Start Docker containers
-- `make docker-down` - Stop Docker containers
-- `make docker-logs` - View container logs
-- `make clean` - Clean build artifacts
+### Docker Deployment
+
+```bash
+# Build and start all services
+make compose
+
+# Access at http://localhost
+```
 
 ## Architecture
 
-The application follows a microservices architecture with:
+- **Backend**: Go 1.24+ REST API with SQLite database
+- **Frontend**: Angular 20 SPA (active) + Next.js 15 (in development)
+- **Reverse Proxy**: Nginx
+- **Testing**: Ginkgo/Gomega (backend), Karma/Jasmine (Angular)
 
-- **Backend**: Go REST API server with SQLite database
-- **Frontend**: Angular 20 SPA with Angular Material UI
-- **Reverse Proxy**: Nginx for routing and load balancing
-- **Containerization**: Docker for consistent deployment
+## Key Features
 
-> **Note**: A new Next.js 15 frontend is in development in the `app/` directory. Use `make dev-app` to run it.
+- Multi-user finance tracking with JWT authentication
+- Bank transaction import (FIO, KB, Revolut)
+- Automated transaction matching and categorization
+- Budget planning and reconciliation
+- Duplicate detection and merging
 
-## Features
+## Documentation
 
-- Personal finance tracking
-- Transaction management
-- Account management
-- Budget planning
-- Import/export functionality
-- User authentication
-- Responsive web interface
-
-## Configuration
-
-Environment variables can be set in `.env` file or passed to Docker Compose:
-
-- `GB_USERS` - User credentials
-- `GB_DBPATH` - Database file path
-- `GEEKBUDGET_DATA_PATH` - Data volume mount path
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests: `make test`
-5. Submit a pull request
+- **[CLAUDE.md](CLAUDE.md)** - Comprehensive developer guide (tech stack, commands, patterns, workflows)
+- **[backend/README.md](backend/README.md)** - Backend-specific development guide
+- **[app/README.md](app/README.md)** - Next.js frontend status and roadmap
 
 ## License
 

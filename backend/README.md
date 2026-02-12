@@ -1,110 +1,72 @@
 # GeekBudget Backend
 
-> **Note**: For AI assistant context (Claude, Copilot, etc.), see the comprehensive [`CLAUDE.md`](../CLAUDE.md) file in the project root.
+> **For comprehensive developer documentation**, see [`CLAUDE.md`](../CLAUDE.md) in the project root.
 
-## Project Overview
+## Overview
 
-GeekBudget is a personal finance management application backend written in Go which supports multiple users.
-It provides RESTful APIs and a web interface for managing personal financial data, including accounts,
-transactions, bank imports, and budgeting features.
+Go 1.24+ backend providing RESTful APIs and web interface for personal finance management. Supports multiple users, bank imports, transaction matching, and budgeting.
 
-## Architecture & Structure
+### Architecture
 
-### Core Components
-
-- **API Layer**: RESTful endpoints generated from OpenAPI 3.0 specification (`api/openapi.yaml`)
-- **Web Layer**: HTML templates and web handlers for browser interface
-- **Database Layer**: SQLite with GORM for data persistence
-- **Authentication**: JWT-based authentication system
-- **Bank Importers**: Automated transaction import from various banks (FIO, KB, Revolut)
+- **API Layer**: OpenAPI 3.0 generated endpoints (`api/openapi.yaml`)
+- **Web Layer**: Go templates and web handlers
+- **Database**: SQLite with GORM
+- **Authentication**: JWT-based
+- **Bank Importers**: FIO, KB, Revolut
 
 ### Directory Structure
 
 ```
-cmd/                    - CLI application entry points
+cmd/                    - CLI entry points (Cobra)
 pkg/
-├── auth/              - Authentication & JWT handling
-├── bankimporters/     - Bank-specific transaction importers
-├── config/            - Application configuration
-├── constants/         - Application constants
-├── database/          - Database models, migrations, storage interface
-├── generated/         - Auto-generated API client/server code
-├── server/            - HTTP server, middleware, API handlers
-├── utils/             - Utility functions
-└── webapp/            - Web interface handlers and templates
-test/                  - Integration and unit tests
-webapp/                - Static assets and HTML templates
+├── auth/              - JWT authentication
+├── bankimporters/     - Bank-specific importers (FIO, KB, Revolut)
+├── config/            - Viper configuration
+├── database/          - GORM models, migrations, storage interface, mocks
+├── generated/         - Auto-generated from OpenAPI (DO NOT EDIT)
+├── server/            - HTTP server, middleware, handlers
+└── utils/             - Utilities
+test/                  - Integration tests
+webapp/                - Static assets and templates
 ```
 
-## Development Guidelines
-
-### General
-
-- Project allows multiple users to manage their financial data securely.
-- Project stores each financial event as a transaction linked to a user.
-- Project supports automatic import of transactions from various sources.
-- Project allows to define "matchers" for categorizing transactions based on rules.
-- Always run 'gofumpt -w' for every changed file and then 'make all' after finishing changes.
+## Development Workflow
 
 ### Code Generation
 
-- The project uses OpenAPI Generator for API client/server code
-- Run `make generate` to regenerate code from `api/openapi.yaml`
-- Never manually edit files in `pkg/generated/` - they are auto-generated
-- When adding new endpoints, update `api/openapi.yaml` first
-- Run code generation after API changes
+```bash
+# Regenerate API code from OpenAPI spec
+make generate
 
-### API Development
-
-- Follow RESTful principles for new endpoints
-- All APIs require authentication except `/v1/authorize`
-- Use proper HTTP status codes and error handling
-- Validate input parameters and request bodies
-- Include proper OpenAPI documentation for new endpoints
-
-### WEB UI
-
-- Use golang templates for rendering HTML
-- Follow existing patterns in `pkg/server/webapp/`
-- Use `webapp/templates/` for HTML templates
-- Serve static assets from `webapp/static/`
-- Implement CSRF protection for forms
-- Ensure user sessions are managed securely
-- User token is passed in cookies for web requests
-- Run 'make run' to start webserver and use user 'test' with password 'test' to login
-
-### Database & Models
-
-- Use GORM for database operations
-- Follow the existing model patterns in `pkg/database/models/`
-- All models should include user isolation (UserID field)
-- Use transactions for multi-step operations
-- Implement proper database migrations
-
-### Error Handling
-
-- Use structured logging with slog
-- Return appropriate HTTP status codes
-- Provide meaningful error messages
-- Log errors with context for debugging
-
-### Authentication & Security
-
-- All API endpoints (except auth) require JWT authentication
-- Use middleware for authentication checks
-- Validate user permissions for data access
-- Ensure users can only access their own data
+# NEVER manually edit pkg/generated/ - it's auto-generated
+# Always update api/openapi.yaml first, then regenerate
+```
 
 ### Testing
 
-- Write tests for new functionality
-- Use the existing test patterns in `test/` directory
-- Mock database operations for unit tests
-- Include integration tests for API endpoints
+```bash
+# Run backend tests with Ginkgo
+cd backend && go tool github.com/onsi/ginkgo/v2/ginkgo -r
 
-## Coding Patterns
+# Or use the Makefile
+make test
+```
+
+### Formatting
+
+```bash
+# Format changed files
+go tool mvdan.cc/gofumpt -w <file>
+
+# Always run before committing
+make all
+```
+
+## Backend-Specific Code Patterns
 
 ### Service Layer Pattern
+
+All business logic lives in service structs with logger and database dependencies:
 
 ```go
 type ServiceImpl struct {
@@ -120,7 +82,9 @@ func (s *ServiceImpl) Method(ctx context.Context, userID string, params) (result
 }
 ```
 
-### Handler Pattern (API)
+### API Handler Pattern
+
+API handlers extract userID from context and return `goserver.ImplResponse`:
 
 ```go
 func (s *APIServiceImpl) HandleEndpoint(ctx context.Context, request Request) (goserver.ImplResponse, error) {
@@ -135,7 +99,9 @@ func (s *APIServiceImpl) HandleEndpoint(ctx context.Context, request Request) (g
 }
 ```
 
-### Handler Pattern (Web)
+### Web Handler Pattern
+
+Web handlers validate userID, create template data, and execute templates:
 
 ```go
 func (r *WebAppRouter) pageHandler(w http.ResponseWriter, req *http.Request) {
@@ -161,75 +127,48 @@ func (r *WebAppRouter) pageHandler(w http.ResponseWriter, req *http.Request) {
 
 ## Bank Importers
 
-- Each bank has its own converter in `pkg/bankimporters/`
-- Implement the `Importer` interface for new banks
-- Handle different file formats (CSV, Excel, etc.)
-- Convert bank-specific formats to internal transaction format
-- Include proper error handling and validation
+Each bank has its own importer in `pkg/bankimporters/`:
 
-## Configuration
+- **Interface**: Implement `Importer` interface for new banks
+- **File Formats**: Handle CSV, Excel, etc.
+- **Conversion**: Transform bank-specific formats to internal transaction model
+- **Error Handling**: Validate and report errors clearly
 
-- Use Viper for configuration management
-- Support environment variables and config files
-- Store sensitive data (JWT secrets, DB paths) in config
-- Validate configuration on startup
+**Supported Banks**: FIO, KB (Komerční banka), Revolut
 
-## Key Technologies & Dependencies
-
-- **Go 1.24+**: Primary language
-- **Gorilla Mux**: HTTP routing
-- **GORM**: ORM for database operations
-- **SQLite**: Database engine
-- **JWT**: Authentication tokens
-- **OpenAPI Generator**: API code generation
-- **Cobra**: CLI framework
-- **Viper**: Configuration management
-- **Slog**: Structured logging
+See [`.agent/rules/bank-importers.md`](../.agent/rules/bank-importers.md) for importer-specific guidelines.
 
 ## Common Tasks
 
 ### Adding New API Endpoint
 
-1. Update `api/openapi.yaml` with new endpoint definition
-2. Regenerate code
-3. Implement service method in appropriate `pkg/server/api/` file
+1. Update `api/openapi.yaml` with endpoint definition
+2. Run `make generate` to regenerate code
+3. Implement handler in `pkg/server/api/`
 4. Add business logic and database operations
-5. Test the endpoint
-
-### Adding New Web Page
-
-1. Create handler in `pkg/server/webapp/`
-2. Add route in webapp router
-3. Create HTML template in `webapp/templates/`
-4. Add any required static assets
+5. Test with `make test`
 
 ### Adding New Database Model
 
 1. Create model struct in `pkg/database/models/`
 2. Add migration in `pkg/database/migration.go`
-3. Update storage interface if needed
-4. Implement CRUD operations
+3. Update `database.Storage` interface if needed
+4. Generate mocks: `make generate_mocks`
+5. Implement CRUD operations
 
-### Bank Importer
+### Adding Bank Importer
 
-1. Create converter in `pkg/bankimporters/`
-2. Implement required interface methods
+1. Create new file in `pkg/bankimporters/`
+2. Implement `Importer` interface
 3. Handle bank-specific data format
 4. Add tests for conversion logic
 
-## Performance Considerations
+## Key Dependencies
 
-- Use database connections efficiently
-- Implement proper caching where appropriate
-- Handle file uploads for bank import efficiently
-- Use background processing for long-running tasks
-- Monitor memory usage for large datasets
-
-## Security Best Practices
-
-- Validate all user inputs
-- Use parameterized queries to prevent SQL injection
-- Implement rate limiting for sensitive endpoints
-- Ensure proper session management
-- Log security-relevant events
-- Keep dependencies updated for security patches
+- **Gorilla Mux**: HTTP routing
+- **GORM**: ORM for SQLite
+- **JWT-go**: Authentication tokens
+- **Cobra/Viper**: CLI and configuration
+- **slog**: Structured logging
+- **shopspring/decimal**: Financial precision
+- **Ginkgo/Gomega**: BDD testing

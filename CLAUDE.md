@@ -153,6 +153,9 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 
 ## Code Patterns
 
+> **See [backend/README.md](backend/README.md)** for detailed backend patterns and examples.
+
+**Quick reference:**
 - **Service layer:** `ServiceImpl` structs with `logger` and `db` fields, methods take `context.Context` and `userID`.
 - **API handlers:** Extract `userID` from context via `ctx.Value(common.UserIDKey)`, return `goserver.ImplResponse`.
 - **Web handlers:** Use `r.ValidateUserID()` for auth, `utils.CreateTemplateData()` for template data, `tmpl.ExecuteTemplate()` for rendering.
@@ -190,3 +193,20 @@ When querying records with JSON columns like `movements` (in `transactions`) or 
     -   ✅ `db.Order("date DESC").First(&record)`
 2.  **Region Markers**: This project uses `#region` and `#endregion` comments. Ensure they are balanced and descriptive.
     -   Use `// #region Name` and `// #endregion Name`.
+
+## Next.js Frontend Development (app/)
+
+**Status**: Phase 1 complete. Angular remains default until all phases finished.
+
+> **See [app/README.md](app/README.md)** for current status, commands, and tech stack.
+> **See [app/PLAN.md](app/PLAN.md)** for detailed implementation plan and architecture.
+
+**Quick Start**:
+```bash
+make dev-app          # Backend + Next.js (port 3000)
+make run-app          # Next.js only
+make build-app        # Build Next.js
+make lint-app         # Lint Next.js
+```
+
+**Test Credentials**: `test@test.com` / `test`
