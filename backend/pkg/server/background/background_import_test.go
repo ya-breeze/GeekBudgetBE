@@ -1,6 +1,7 @@
 package background_test
 
 import (
+	"context"
 	"log/slog"
 	"testing"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
+	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 // TestFixture holds commonly created entities for tests
@@ -338,5 +340,62 @@ func TestProcessUnprocessedTransactionsInsufficientConfirmationHistory(t *testin
 	history := updatedMatcher.GetConfirmationHistory()
 	if len(history) != 9 { // Should remain at 9 confirmations
 		t.Fatalf("expected 9 confirmations in history (unchanged), got %d", len(history))
+	}
+}
+
+// MockStorage wraps database.Storage to intercept calls for testing
+type MockStorage struct {
+	database.Storage
+	OnGetAllBankImporters func() ([]database.ImportInfo, error)
+}
+
+func (m *MockStorage) GetAllBankImporters() ([]database.ImportInfo, error) {
+	if m.OnGetAllBankImporters != nil {
+		return m.OnGetAllBankImporters()
+	}
+	return m.Storage.GetAllBankImporters()
+}
+
+func TestStartBankImporters_RunsOnStartup(t *testing.T) {
+	logger := slog.Default()
+	fixture := setupTestFixture(t, logger, "testuser_import")
+	defer fixture.Storage.Close()
+
+	// Channel to signal that GetAllBankImporters was called
+	called := make(chan struct{}, 1)
+
+	// Create mock storage
+	mock := &MockStorage{
+		Storage: fixture.Storage,
+		OnGetAllBankImporters: func() ([]database.ImportInfo, error) {
+			select {
+			case called <- struct{}{}:
+			default:
+			}
+			return fixture.Storage.GetAllBankImporters()
+		},
+	}
+
+	ctx, cancel := context.WithCancel(t.Context())
+	forcedImports := make(chan common.ForcedImport)
+
+	// Start the background task
+	done := background.StartBankImporters(ctx, logger, mock, forcedImports)
+
+	// Verify it runs immediately (within reasonable time)
+	select {
+	case <-called:
+		// Success: called immediately on startup
+	case <-time.After(5 * time.Second):
+		t.Fatal("StartBankImporters did not run GetAllBankImporters on startup")
+	}
+
+	// Clean up
+	cancel()
+	select {
+	case <-done:
+		// Success: stopped correctly
+	case <-time.After(5 * time.Second):
+		t.Fatal("StartBankImporters did not stop after context cancellation")
 	}
 }

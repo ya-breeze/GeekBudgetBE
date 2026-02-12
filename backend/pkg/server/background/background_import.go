@@ -21,34 +21,44 @@ func StartBankImporters(
 	done := make(chan struct{})
 
 	go func() {
+		defer close(done)
+
+		// Start immediately
+		timer := time.NewTimer(0)
+		defer timer.Stop()
+
 		for {
 			select {
 			case <-ctx.Done():
-				close(done)
 				logger.Info("Stopped bank importers")
 				return
 			case forcedImport := <-forcedImports:
 				logger.Info("Forced import", "userID", forcedImport.UserID, "BankImporterID", forcedImport.BankImporterID)
-			default:
-				// Do something
-				logger.Info("Importing from bank importers...")
 
-				importer := api.NewBankImportersAPIServiceImpl(logger, db)
-				pairs, err := db.GetAllBankImporters()
-				if err != nil {
-					logger.With("error", err).Error("Failed to get bank importers")
-
-					// Retry in 1 hour
+				// Stop the timer if it was running to avoid double execution
+				if !timer.Stop() {
 					select {
-					case forcedImport := <-forcedImports:
-						logger.Info("Forced import", "userID", forcedImport.UserID, "BankImporterID", forcedImport.BankImporterID)
-					case <-time.After(time.Hour):
-						continue
-					case <-ctx.Done():
-						continue
+					case <-timer.C:
+					default:
 					}
 				}
+			case <-timer.C:
+				// Timer fired, run scheduled import
+			}
 
+			// Do the work
+			logger.Info("Importing from bank importers...")
+
+			importer := api.NewBankImportersAPIServiceImpl(logger, db)
+			pairs, err := db.GetAllBankImporters()
+
+			var nextDelay time.Duration
+
+			if err != nil {
+				logger.With("error", err).Error("Failed to get bank importers")
+				nextDelay = time.Hour
+				logger.Info("Retrying in 1 hour...")
+			} else {
 				for _, pair := range pairs {
 					if pair.BankImporterType != "fio" {
 						logger.Info("Skipping bank importer type", "type", pair.BankImporterType)
@@ -68,16 +78,11 @@ func StartBankImporters(
 				// Process unprocessed transactions for auto-conversion before delay
 				processUnprocessedTransactionsForAutoConversion(ctx, logger, db)
 
+				nextDelay = 24 * time.Hour
 				logger.Info("Delaying bank imports for 24 hours...")
-				select {
-				case forcedImport := <-forcedImports:
-					logger.Info("Forced import", "userID", forcedImport.UserID, "BankImporterID", forcedImport.BankImporterID)
-				case <-time.After(24 * time.Hour):
-					continue
-				case <-ctx.Done():
-					continue
-				}
 			}
+
+			timer.Reset(nextDelay)
 		}
 	}()
 
