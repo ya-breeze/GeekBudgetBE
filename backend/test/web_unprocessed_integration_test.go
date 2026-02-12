@@ -73,14 +73,22 @@ var _ = Describe("Web unprocessed convert integration", func() {
 	})
 
 	It("converting matched suggestion from web updates matcher confirmation history", func() {
+		// Create currency
+		curReq := goclient.CurrencyNoID{Name: "CZK"}
+		cur, _, _ := client.CurrenciesAPI.CreateCurrency(ctx).CurrencyNoID(curReq).Execute()
+
+		// Create account
+		accReq := goclient.AccountNoID{Name: "TestAccount", Type: "asset"}
+		acc, _, _ := client.AccountsAPI.CreateAccount(ctx).AccountNoID(accReq).Execute()
+
 		// create transaction that will be matched
 		txn := goclient.TransactionNoID{
 			Date:        time.Now(),
 			Description: utils.StrToRef("Purchase at WEBSTORE"),
 			Tags:        []string{"tag1"},
 			Movements: []goclient.Movement{
-				{AccountId: nil, CurrencyId: "cur", Amount: decimal.NewFromInt(100)},
-				{AccountId: utils.StrToRef("accountID"), CurrencyId: "cur", Amount: decimal.NewFromInt(-100)},
+				{AccountId: nil, CurrencyId: cur.Id, Amount: decimal.NewFromInt(100)},
+				{AccountId: &acc.Id, CurrencyId: cur.Id, Amount: decimal.NewFromInt(-100)},
 			},
 		}
 
@@ -90,7 +98,7 @@ var _ = Describe("Web unprocessed convert integration", func() {
 		// create matcher that matches description
 		m := goclient.MatcherNoID{
 			OutputDescription: utils.StrToRef("WEBSTORE"),
-			OutputAccountId:   "accountID",
+			OutputAccountId:   acc.Id,
 			DescriptionRegExp: utils.StrToRef(`(?i)webstore`),
 		}
 		createdMatcher, _, err := client.MatchersAPI.CreateMatcher(ctx).MatcherNoID(m).Execute()

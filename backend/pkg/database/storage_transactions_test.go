@@ -22,6 +22,18 @@ func TestTransactionsStorage(t *testing.T) {
 
 	userID := "user-1"
 
+	// Create CZK currency for all tests
+	curCZK, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Czech Koruna"})
+	if err != nil {
+		t.Fatalf("failed to create currency: %v", err)
+	}
+
+	// Create a default account for all tests
+	acc1, err := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Account 1"})
+	if err != nil {
+		t.Fatalf("failed to create account: %v", err)
+	}
+
 	t.Run("GetTransactions with onlySuspicious filter", func(t *testing.T) {
 		t1 := goserver.Transaction{
 			Date:              time.Now(),
@@ -80,7 +92,7 @@ func TestTransactionsStorage(t *testing.T) {
 		input := &goserver.TransactionNoId{
 			Date:        date,
 			Description: "Soft Delete Test",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "acc-1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: acc1.Id}},
 		}
 
 		created, err := st.CreateTransaction(userID, input)

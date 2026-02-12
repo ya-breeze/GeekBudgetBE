@@ -79,6 +79,15 @@ var _ = Describe("Unprocessed Transactions API", func() {
 
 	It("converts transaction with empty account to unprocessed", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
+
+		// Create currency
+		curReq := goclient.CurrencyNoID{Name: "CZK"}
+		cur, _, _ := client.CurrenciesAPI.CreateCurrency(ctx).CurrencyNoID(curReq).Execute()
+
+		// Create account
+		accReq := goclient.AccountNoID{Name: "TestAccount", Type: "asset"}
+		acc, _, _ := client.AccountsAPI.CreateAccount(ctx).AccountNoID(accReq).Execute()
+
 		t := goclient.TransactionNoID{
 			Date:        time.Now(),
 			Description: utils.StrToRef("Purchase in BILLA"),
@@ -87,12 +96,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 			Movements: []goclient.Movement{
 				{
 					AccountId:  nil,
-					CurrencyId: "currencyID",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(100),
 				},
 				{
-					AccountId:  utils.StrToRef("accountID"),
-					CurrencyId: "currencyID",
+					AccountId:  &acc.Id,
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(-100),
 				},
 			},
@@ -107,7 +116,7 @@ var _ = Describe("Unprocessed Transactions API", func() {
 		// Create matcher
 		m := goclient.MatcherNoID{
 			OutputDescription: utils.StrToRef("Billa"),
-			OutputAccountId:   "accountID",
+			OutputAccountId:   acc.Id,
 			DescriptionRegExp: utils.StrToRef(`(?i)\bBilla\b`),
 		}
 		_, _, err = client.MatchersAPI.CreateMatcher(ctx).MatcherNoID(m).Execute()
@@ -145,6 +154,10 @@ var _ = Describe("Unprocessed Transactions API", func() {
 	It("ignores unprocessed transactions older than account's ignoreUnprocessedBefore date", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
+		// 0. Create currency
+		curReq := goclient.CurrencyNoID{Name: "CZK"}
+		cur, _, _ := client.CurrenciesAPI.CreateCurrency(ctx).CurrencyNoID(curReq).Execute()
+
 		// 1. Create an account with ignoreUnprocessedBefore set
 		ignoreDate := time.Now().Add(-24 * time.Hour)
 		acc := goclient.AccountNoID{
@@ -163,12 +176,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 			Movements: []goclient.Movement{
 				{
 					AccountId:  nil,
-					CurrencyId: "currencyID",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(100),
 				},
 				{
 					AccountId:  &createdAccount.Id,
-					CurrencyId: "currencyID",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(-100),
 				},
 			},
@@ -184,12 +197,12 @@ var _ = Describe("Unprocessed Transactions API", func() {
 			Movements: []goclient.Movement{
 				{
 					AccountId:  nil,
-					CurrencyId: "currencyID",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(200),
 				},
 				{
 					AccountId:  &createdAccount.Id,
-					CurrencyId: "currencyID",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(-200),
 				},
 			},

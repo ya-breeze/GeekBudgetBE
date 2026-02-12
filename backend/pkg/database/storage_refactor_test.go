@@ -32,12 +32,18 @@ func TestStorageRefactor_DeleteAccount(t *testing.T) {
 		t.Fatalf("failed to create acc2: %v", err)
 	}
 
+	// Create currency
+	curCZK, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Czech Koruna"})
+	if err != nil {
+		t.Fatalf("failed to create currency: %v", err)
+	}
+
 	// Create a transaction with a movement in acc1
 	tr1Input := &goserver.TransactionNoId{
 		Date:        time.Now(),
 		Description: "Tr 1",
 		Movements: []goserver.Movement{
-			{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: acc1.Id},
+			{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: acc1.Id},
 		},
 	}
 	tr1, err := st.CreateTransaction(userID, tr1Input)

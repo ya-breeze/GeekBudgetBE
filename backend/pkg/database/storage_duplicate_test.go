@@ -23,19 +23,36 @@ func TestDuplicateSynchronization(t *testing.T) {
 
 	userID := "user-1"
 
+	// Create CZK and EUR currencies
+	curCZK, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Czech Koruna"})
+	if err != nil {
+		t.Fatalf("failed to create CZK: %v", err)
+	}
+	curEUR, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Euro"})
+	if err != nil {
+		t.Fatalf("failed to create EUR: %v", err)
+	}
+
+	// Create some accounts
+	accA, _ := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Acc A"})
+	accB, _ := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Acc B"})
+	accC, _ := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Acc C"})
+	accR1, _ := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Acc R1"})
+	accR2, _ := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Acc R2"})
+
 	t.Run("Dismissal clears suspicious reason in linked transaction", func(t *testing.T) {
 		// 1. Create two suspicious transactions
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "T1",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "T2",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accB.Id}},
 		})
 
 		// 2. Link them
@@ -76,14 +93,14 @@ func TestDuplicateSynchronization(t *testing.T) {
 			Description:       "Keep",
 			SuspiciousReasons: []string{models.DuplicateReason},
 			ExternalIds:       []string{"ext1"},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "Merge",
 			SuspiciousReasons: []string{models.DuplicateReason},
 			ExternalIds:       []string{"ext2"},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accB.Id}},
 		})
 
 		// 2. Link them
@@ -118,19 +135,19 @@ func TestDuplicateSynchronization(t *testing.T) {
 			Date:              time.Now(),
 			Description:       "T1",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "T2",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "B"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accB.Id}},
 		})
 		t3, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              time.Now(),
 			Description:       "T3",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "C"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accC.Id}},
 		})
 
 		st.AddDuplicateRelationship(userID, t1.Id, t2.Id)
@@ -175,13 +192,13 @@ func TestDuplicateSynchronization(t *testing.T) {
 			Date:              now,
 			Description:       "Revalidate T1",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(500), CurrencyId: "EUR", AccountId: "R1"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(500), CurrencyId: curEUR.Id, AccountId: accR1.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:              now.Add(24 * time.Hour), // 1 day apart
 			Description:       "Revalidate T2",
 			SuspiciousReasons: []string{models.DuplicateReason},
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(500), CurrencyId: "EUR", AccountId: "R2"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(500), CurrencyId: curEUR.Id, AccountId: accR2.Id}},
 		})
 
 		// Link them

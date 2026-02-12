@@ -22,17 +22,33 @@ func TestMergeArchive(t *testing.T) {
 
 	userID := "user-1"
 
+	// Create CZK currency
+	curCZK, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Czech Koruna"})
+	if err != nil {
+		t.Fatalf("failed to create currency: %v", err)
+	}
+
+	// Create accounts
+	accA1, err := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Account A1"})
+	if err != nil {
+		t.Fatalf("failed to create account A1: %v", err)
+	}
+	accA2, err := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Account A2"})
+	if err != nil {
+		t.Fatalf("failed to create account A2: %v", err)
+	}
+
 	t.Run("Merge archives transaction data", func(t *testing.T) {
 		// 1. Create two transactions
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Keep",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA1.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Merge",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA2.Id}},
 		})
 
 		// 2. Merge T2 into T1
@@ -80,12 +96,12 @@ func TestMergeArchive(t *testing.T) {
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Keep",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA1.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Duplicate",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA2.Id}},
 		})
 
 		if err := st.DeleteDuplicateTransaction(userID, t2.Id, t1.Id); err != nil {
@@ -109,12 +125,12 @@ func TestMergeArchive(t *testing.T) {
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Keep",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA1.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Merge",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA2.Id}},
 		})
 
 		st.MergeTransactions(userID, t1.Id, t2.Id)
@@ -145,7 +161,7 @@ func TestMergeArchive(t *testing.T) {
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        now,
 			Description: "Keep",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA1.Id}},
 			ExternalIds: []string{"ext1"},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
@@ -156,7 +172,7 @@ func TestMergeArchive(t *testing.T) {
 			PartnerName:       "Test Partner",
 			PartnerAccount:    "12345",
 			Extra:             "Extra data",
-			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:         []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA2.Id}},
 			ExternalIds:       []string{"ext2"},
 			SuspiciousReasons: []string{"test reason"},
 		})
@@ -203,13 +219,13 @@ func TestMergeArchive(t *testing.T) {
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Keep",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA1.Id}},
 			ExternalIds: []string{"ext1", "ext_keep"},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Merge",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA2.Id}},
 			ExternalIds: []string{"ext2"},
 		})
 
@@ -247,7 +263,7 @@ func TestMergeArchive(t *testing.T) {
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Not merged",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA1.Id}},
 		})
 
 		err := st.UnmergeTransaction(userID, t1.Id)
@@ -267,12 +283,12 @@ func TestMergeArchive(t *testing.T) {
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Keep for list test",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A1"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA1.Id}},
 		})
 		t2, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Merge for list test",
-			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "CZK", AccountId: "A2"}},
+			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA2.Id}},
 		})
 
 		// Before merge - both should appear

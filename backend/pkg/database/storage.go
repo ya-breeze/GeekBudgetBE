@@ -700,6 +700,10 @@ func (s *storage) GetTransactionsIncludingDeleted(userID string, dateFrom, dateT
 
 func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
+	if err := s.validateTransaction(userID, input); err != nil {
+		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
+
 	t := models.TransactionToDB(input, userID)
 	t.ID = uuid.New()
 	if err := s.db.Create(t).Error; err != nil {
@@ -738,6 +742,10 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 
 	// Get old movements for smart invalidation
 	oldMovements := models.MovementsToAPI(t.Movements)
+
+	if err := s.validateTransaction(userID, input); err != nil {
+		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
 
 	t = models.TransactionToDB(input, userID)
 	t.ID = idUUID
@@ -2235,4 +2243,36 @@ func (s *storage) archiveMergedTransaction(tx *gorm.DB, userID string,
 
 func (s *storage) Backup(destination string) error {
 	return s.db.Exec("VACUUM INTO ?", destination).Error
+}
+
+func (s *storage) validateTransaction(userID string, transaction goserver.TransactionNoIdInterface) error {
+	for _, m := range transaction.GetMovements() {
+		// 1. Validate Amount (decimal.Decimal doesn't have NaN/Inf, but we can check if it's uninitialized if needed)
+		// No specific check for decimal.Decimal yet, as it's inherently more stable than float64
+
+		// 2. Validate AccountId
+		if m.AccountId != "" {
+			var count int64
+			if err := s.db.Model(&models.Account{}).Where("user_id = ? AND id = ?", userID, m.AccountId).Count(&count).Error; err != nil {
+				return err
+			}
+			if count == 0 {
+				return fmt.Errorf("account %s not found", m.AccountId)
+			}
+		}
+
+		// 3. Validate CurrencyId
+		if m.CurrencyId != "" {
+			var count int64
+			if err := s.db.Model(&models.Currency{}).Where("user_id = ? AND id = ?", userID, m.CurrencyId).Count(&count).Error; err != nil {
+				return err
+			}
+			if count == 0 {
+				return fmt.Errorf("currency %s not found", m.CurrencyId)
+			}
+		} else {
+			return errors.New("currency ID is required")
+		}
+	}
+	return nil
 }

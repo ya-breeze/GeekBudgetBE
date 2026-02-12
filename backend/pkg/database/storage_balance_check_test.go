@@ -21,13 +21,16 @@ func TestStorageBalanceCheck(t *testing.T) {
 	defer st.Close()
 
 	userID := "user-1"
-	accID := "acc-1"
-	currencyID := "CZK"
+
+	// Create CZK currency
+	createdCur, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Czech Koruna"})
+	if err != nil {
+		t.Fatalf("failed to create currency: %v", err)
+	}
+	currencyID := createdCur.Id
 
 	// Setup: Create an account
-	// Actually, I don't need to create user explicitly for mock memory DB if I don't check constraints.
-
-	acc := &goserver.AccountNoId{
+	accInput := &goserver.AccountNoId{
 		Name: "Test Account",
 		BankInfo: goserver.BankAccountInfo{
 			Balances: []goserver.BankAccountInfoBalancesInner{
@@ -35,11 +38,17 @@ func TestStorageBalanceCheck(t *testing.T) {
 			},
 		},
 	}
-	createdAcc, err := st.CreateAccount(userID, acc)
+	createdAcc, err := st.CreateAccount(userID, accInput)
 	if err != nil {
 		t.Fatalf("failed to create account: %v", err)
 	}
-	accID = createdAcc.Id
+	accID := createdAcc.Id
+
+	// Create other account
+	otherAcc, err := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Other Account"})
+	if err != nil {
+		t.Fatalf("failed to create other account: %v", err)
+	}
 
 	t.Run("CountUnprocessedTransactionsForAccount handles omitempty AccountId", func(t *testing.T) {
 		// Create a transaction where one side is the account and the other side is empty (unprocessed)
@@ -62,14 +71,11 @@ func TestStorageBalanceCheck(t *testing.T) {
 		}
 
 		if count != 1 {
-			t.Errorf("expected 1 unprocessed transaction, got %d. This might be due to the 'omitempty' bug where the field is missing from JSON.", count)
+			t.Errorf("expected 1 unprocessed transaction, got %d", count)
 		}
 	})
 
 	t.Run("GetAccountBalance calculates correctly", func(t *testing.T) {
-		// Account started with 1000.
-		// We added a transaction with +500 for the account.
-		// So balance should be 1500.
 		bal, err := st.GetAccountBalance(userID, accID, currencyID)
 		if err != nil {
 			t.Fatalf("failed to get balance: %v", err)
@@ -86,16 +92,13 @@ func TestStorageBalanceCheck(t *testing.T) {
 			Description: "Processed",
 			Movements: []goserver.Movement{
 				{Amount: decimal.NewFromInt(100), CurrencyId: currencyID, AccountId: accID},
-				{Amount: decimal.NewFromInt(-100), CurrencyId: currencyID, AccountId: "other-acc"},
+				{Amount: decimal.NewFromInt(-100), CurrencyId: currencyID, AccountId: otherAcc.Id},
 			},
 		}
 		_, err := st.CreateTransaction(userID, t2)
 		if err != nil {
 			t.Fatalf("failed to create transaction: %v", err)
 		}
-
-		// Before, we had 1 unprocessed. Now we added 1 processed.
-		// But wait, the previous test added 1 unprocessed.
 
 		count, err := st.CountUnprocessedTransactionsForAccount(userID, accID, time.Time{})
 		if err != nil {

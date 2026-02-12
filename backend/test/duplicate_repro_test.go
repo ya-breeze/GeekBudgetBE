@@ -67,6 +67,14 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 	It("does NOT show unprocessed transactions as duplicates of each other", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
+		// Create CZK currency
+		curReq := goclient.CurrencyNoID{Name: "CZK"}
+		cur, _, _ := client.CurrenciesAPI.CreateCurrency(ctx).CurrencyNoID(curReq).Execute()
+
+		// Create valid-account
+		accReq := goclient.AccountNoID{Name: "Valid Account", Type: "asset"}
+		acc, _, _ := client.AccountsAPI.CreateAccount(ctx).AccountNoID(accReq).Execute()
+
 		now := time.Now().Truncate(time.Second)
 
 		t1 := goclient.TransactionNoID{
@@ -75,12 +83,12 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 			Movements: []goclient.Movement{
 				{
 					AccountId:  nil, // undefined
-					CurrencyId: "CZK",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(100),
 				},
 				{
-					AccountId:  utils.StrToRef("valid-account"),
-					CurrencyId: "CZK",
+					AccountId:  &acc.Id,
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(-100),
 				},
 			},
@@ -92,12 +100,12 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 			Movements: []goclient.Movement{
 				{
 					AccountId:  nil, // undefined
-					CurrencyId: "CZK",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(100),
 				},
 				{
-					AccountId:  utils.StrToRef("valid-account"),
-					CurrencyId: "CZK",
+					AccountId:  &acc.Id,
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(-100),
 				},
 			},
@@ -123,6 +131,16 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 	It("shows processed transactions as duplicates", func() {
 		ctx = context.WithValue(ctx, goclient.ContextAccessToken, accessToken)
 
+		// Create CZK currency
+		curReq := goclient.CurrencyNoID{Name: "CZK"}
+		cur, _, _ := client.CurrenciesAPI.CreateCurrency(ctx).CurrencyNoID(curReq).Execute()
+
+		// Create accounts
+		accAReq := goclient.AccountNoID{Name: "Account A", Type: "asset"}
+		accA, _, _ := client.AccountsAPI.CreateAccount(ctx).AccountNoID(accAReq).Execute()
+		accBReq := goclient.AccountNoID{Name: "Account B", Type: "asset"}
+		accB, _, _ := client.AccountsAPI.CreateAccount(ctx).AccountNoID(accBReq).Execute()
+
 		now := time.Now().Truncate(time.Second)
 
 		// Create a PROCESSED transaction (all accounts defined)
@@ -131,13 +149,13 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 			Description: utils.StrToRef("Processed Transaction"),
 			Movements: []goclient.Movement{
 				{
-					AccountId:  utils.StrToRef("account-A"),
-					CurrencyId: "CZK",
+					AccountId:  &accA.Id,
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(100),
 				},
 				{
-					AccountId:  utils.StrToRef("account-B"),
-					CurrencyId: "CZK",
+					AccountId:  &accB.Id,
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(-100),
 				},
 			},
@@ -152,12 +170,12 @@ var _ = Describe("Duplicate Unprocessed Transactions REPRO", func() {
 			Movements: []goclient.Movement{
 				{
 					AccountId:  nil, // undefined
-					CurrencyId: "CZK",
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(100),
 				},
 				{
-					AccountId:  utils.StrToRef("account-B"),
-					CurrencyId: "CZK",
+					AccountId:  &accB.Id,
+					CurrencyId: cur.Id,
 					Amount:     decimal.NewFromInt(-100),
 				},
 			},
