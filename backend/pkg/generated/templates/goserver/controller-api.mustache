@@ -233,6 +233,33 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 	}
 	{{/isDateTime}}
 	{{#isNumber}}
+	{{#vendorExtensions.x-is-decimal}}
+	var {{paramName}}Param {{#isNullable}}*{{/isNullable}}decimal.Decimal
+	if query.Has("{{baseName}}") {
+		param, err := parseDecimalParameter(
+			query.Get("{{baseName}}"),
+			WithParse[decimal.Decimal](parseDecimal),
+		)
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "{{baseName}}", Err: err}, nil)
+			return
+		}
+
+		{{paramName}}Param = {{#isNullable}}&{{/isNullable}}param
+	} else {
+		{{#required}}
+		c.errorHandler(w, r, &RequiredError{Field: "{{baseName}}"}, nil)
+		return
+		{{/required}}
+		{{^required}}
+		{{#defaultValue}}
+		param, _ := decimal.NewFromString("{{defaultValue}}")
+		{{paramName}}Param = {{#isNullable}}&{{/isNullable}}param
+		{{/defaultValue}}
+		{{/required}}
+	}
+	{{/vendorExtensions.x-is-decimal}}
+	{{^vendorExtensions.x-is-decimal}}
 	var {{paramName}}Param {{#isNullable}}*{{/isNullable}}float32
 	if query.Has("{{baseName}}") {
 		param, err := parseNumericParameter[float32](
@@ -259,8 +286,36 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 		{{/defaultValue}}
 		{{/required}}
 	}
+	{{/vendorExtensions.x-is-decimal}}
 	{{/isNumber}}
 	{{#isFloat}}
+	{{#vendorExtensions.x-is-decimal}}
+	var {{paramName}}Param {{#isNullable}}*{{/isNullable}}decimal.Decimal
+	if query.Has("{{baseName}}") {
+		param, err := parseDecimalParameter(
+			query.Get("{{baseName}}"),
+			WithParse[decimal.Decimal](parseDecimal),
+		)
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "{{baseName}}", Err: err}, nil)
+			return
+		}
+
+		{{paramName}}Param = {{#isNullable}}&{{/isNullable}}param
+	} else {
+		{{#required}}
+		c.errorHandler(w, r, &RequiredError{Field: "{{baseName}}"}, nil)
+		return
+		{{/required}}
+		{{^required}}
+		{{#defaultValue}}
+		param, _ := decimal.NewFromString("{{defaultValue}}")
+		{{paramName}}Param = {{#isNullable}}&{{/isNullable}}param
+		{{/defaultValue}}
+		{{/required}}
+	}
+	{{/vendorExtensions.x-is-decimal}}
+	{{^vendorExtensions.x-is-decimal}}
 	var {{paramName}}Param {{#isNullable}}*{{/isNullable}}float32
 	if query.Has("{{baseName}}") {
 		param, err := parseNumericParameter[float32](
@@ -287,8 +342,36 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 		{{/defaultValue}}
 		{{/required}}
 	}
+	{{/vendorExtensions.x-is-decimal}}
 	{{/isFloat}}
 	{{#isDouble}}
+	{{#vendorExtensions.x-is-decimal}}
+	var {{paramName}}Param {{#isNullable}}*{{/isNullable}}decimal.Decimal
+	if query.Has("{{baseName}}") {
+		param, err := parseDecimalParameter(
+			query.Get("{{baseName}}"),
+			WithParse[decimal.Decimal](parseDecimal),
+		)
+		if err != nil {
+			c.errorHandler(w, r, &ParsingError{Param: "{{baseName}}", Err: err}, nil)
+			return
+		}
+
+		{{paramName}}Param = {{#isNullable}}&{{/isNullable}}param
+	} else {
+		{{#required}}
+		c.errorHandler(w, r, &RequiredError{Field: "{{baseName}}"}, nil)
+		return
+		{{/required}}
+		{{^required}}
+		{{#defaultValue}}
+		param, _ := decimal.NewFromString("{{defaultValue}}")
+		{{paramName}}Param = {{#isNullable}}&{{/isNullable}}param
+		{{/defaultValue}}
+		{{/required}}
+	}
+	{{/vendorExtensions.x-is-decimal}}
+	{{^vendorExtensions.x-is-decimal}}
 	var {{paramName}}Param {{#isNullable}}*{{/isNullable}}float64
 	if query.Has("{{baseName}}") {
 		param, err := parseNumericParameter[float64](
@@ -315,6 +398,7 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 		{{/defaultValue}}
 		{{/required}}
 	}
+	{{/vendorExtensions.x-is-decimal}}
 	{{/isDouble}}
 	{{#isLong}}
 	var {{paramName}}Param {{#isNullable}}*{{/isNullable}}int64
@@ -551,6 +635,18 @@ func (c *{{classname}}Controller) {{nickname}}(w http.ResponseWriter, r *http.Re
 
 		{{paramName}}Param = param
 	}
+	{{#isArray}}
+	for _, f := range {{paramName}}Param {
+		if f != nil {
+			defer f.Close()
+		}
+	}
+	{{/isArray}}
+	{{^isArray}}
+	if {{paramName}}Param != nil {
+		defer {{paramName}}Param.Close()
+	}
+	{{/isArray}}
 	{{/isFile}}
 	{{#isLong}}{{#isArray}}
 	{{paramName}}Param, err := parseNumericArrayParameter[int64](

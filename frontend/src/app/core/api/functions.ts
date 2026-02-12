@@ -43,6 +43,12 @@ export type { FetchBankImporter$Params } from './fn/bank-importers/fetch-bank-im
 export { fetchBankImporter } from './fn/bank-importers/fetch-bank-importer';
 export type { UploadBankImporter$Params } from './fn/bank-importers/upload-bank-importer';
 export { uploadBankImporter } from './fn/bank-importers/upload-bank-importer';
+export type { GetBankImporterFiles$Params } from './fn/bank-importers/get-bank-importer-files';
+export { getBankImporterFiles } from './fn/bank-importers/get-bank-importer-files';
+export type { DownloadBankImporterFile$Params } from './fn/bank-importers/download-bank-importer-file';
+export { downloadBankImporterFile } from './fn/bank-importers/download-bank-importer-file';
+export type { DeleteBankImporterFile$Params } from './fn/bank-importers/delete-bank-importer-file';
+export { deleteBankImporterFile } from './fn/bank-importers/delete-bank-importer-file';
 export type { GetTransactions$Params } from './fn/transactions/get-transactions';
 export { getTransactions } from './fn/transactions/get-transactions';
 export type { CreateTransaction$Params } from './fn/transactions/create-transaction';

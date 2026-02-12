@@ -17,8 +17,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
+
+	"github.com/gorilla/mux"
 )
 
 // TransactionsAPIController binds http requests to an api service and writes the service results to the http response
@@ -103,7 +104,7 @@ func (c *TransactionsAPIController) GetTransactions(w http.ResponseWriter, r *ht
 	}
 	var amountFromParam decimal.Decimal
 	if query.Has("amountFrom") {
-		param, err := parseNumericParameter[decimal.Decimal](
+		param, err := parseDecimalParameter(
 			query.Get("amountFrom"),
 			WithParse[decimal.Decimal](parseDecimal),
 		)
@@ -117,7 +118,7 @@ func (c *TransactionsAPIController) GetTransactions(w http.ResponseWriter, r *ht
 	}
 	var amountToParam decimal.Decimal
 	if query.Has("amountTo") {
-		param, err := parseNumericParameter[decimal.Decimal](
+		param, err := parseDecimalParameter(
 			query.Get("amountTo"),
 			WithParse[decimal.Decimal](parseDecimal),
 		)

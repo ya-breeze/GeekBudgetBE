@@ -10,136 +10,215 @@
         </button>
     </div>
 
-    @if (loading()) {
-        <div class="loading-container">
-            <mat-spinner></mat-spinner>
-        </div>
-    } @else {
-        <div class="table-container">
-            <table
-                mat-table
-                [dataSource]="bankImporters()"
-                matSort
-                (matSortChange)="onSortChange($event)"
-                [matSortActive]="sortActive() ?? displayedColumns()[0]"
-                [matSortDirection]="sortDirection()"
-                class="bank-importers-table"
-            >
-                <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-                    <td mat-cell *matCellDef="let importer">{{ importer.name }}</td>
-                </ng-container>
+    <mat-tab-group class="bank-importers-tabs">
+        <mat-tab label="Importers">
+            @if (loading()) {
+                <div class="loading-container">
+                    <mat-spinner></mat-spinner>
+                </div>
+            } @else {
+                <div class="table-container tab-content">
+                    <table
+                        mat-table
+                        [dataSource]="bankImporters()"
+                        matSort
+                        (matSortChange)="onSortChange($event)"
+                        [matSortActive]="sortActive() ?? displayedColumns()[0]"
+                        [matSortDirection]="sortDirection()"
+                        class="bank-importers-table"
+                    >
+                        <ng-container matColumnDef="name">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+                            <td mat-cell *matCellDef="let importer">{{ importer.name }}</td>
+                        </ng-container>
 
-                <ng-container matColumnDef="type">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
-                    <td mat-cell *matCellDef="let importer">
-                        <mat-chip color="primary">{{ getBankTypeLabel(importer.type) }}</mat-chip>
-                    </td>
-                </ng-container>
+                        <ng-container matColumnDef="type">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+                            <td mat-cell *matCellDef="let importer">
+                                <mat-chip color="primary">{{
+                                    getBankTypeLabel(importer.type)
+                                }}</mat-chip>
+                            </td>
+                        </ng-container>
 
-                <ng-container matColumnDef="account">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Account</th>
-                    <td mat-cell *matCellDef="let importer">
-                        <app-account-display
-                            [name]="importer.accountName || importer.accountId"
-                            [image]="importer.accountImage"
-                            size="small"
-                        ></app-account-display>
-                    </td>
-                </ng-container>
+                        <ng-container matColumnDef="account">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Account</th>
+                            <td mat-cell *matCellDef="let importer">
+                                <app-account-display
+                                    [name]="importer.accountName || importer.accountId"
+                                    [image]="importer.accountImage"
+                                    size="small"
+                                ></app-account-display>
+                            </td>
+                        </ng-container>
 
-                <ng-container matColumnDef="lastImport">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Import</th>
-                    <td mat-cell *matCellDef="let importer">
-                        <div class="import-info">
-                            <div class="date">
-                                {{
-                                    importer.lastSuccessfulImport
-                                        ? (importer.lastSuccessfulImport
-                                          | appDate: 'dd/MM/yyyy HH:mm')
-                                        : '-'
-                                }}
-                            </div>
-                            @if (importer.isStopped) {
-                                <div class="status-warn">
-                                    <mat-icon color="warn" class="small-icon">warning</mat-icon>
-                                    Stopped
+                        <ng-container matColumnDef="lastImport">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Import</th>
+                            <td mat-cell *matCellDef="let importer">
+                                <div class="import-info">
+                                    <div class="date">
+                                        {{
+                                            importer.lastSuccessfulImport
+                                                ? (importer.lastSuccessfulImport
+                                                  | appDate: 'dd/MM/yyyy HH:mm')
+                                                : '-'
+                                        }}
+                                    </div>
+                                    @if (importer.isStopped) {
+                                        <div class="status-warn">
+                                            <mat-icon color="warn" class="small-icon"
+                                                >warning</mat-icon
+                                            >
+                                            Stopped
+                                        </div>
+                                    }
+                                    @if (importer.lastImports?.length) {
+                                        <div
+                                            class="summary"
+                                            [style.color]="getImportsStatusColor(importer)"
+                                        >
+                                            {{ getImportsSummary(importer) }}
+                                        </div>
+                                    }
                                 </div>
-                            }
-                            @if (importer.lastImports?.length) {
-                                <div
-                                    class="summary"
-                                    [style.color]="getImportsStatusColor(importer)"
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef>Actions</th>
+                            <td mat-cell *matCellDef="let importer">
+                                @if (importer.isStopped) {
+                                    <button
+                                        mat-icon-button
+                                        color="primary"
+                                        (click)="resumeBankImporter(importer)"
+                                        aria-label="Resume"
+                                        matTooltip="Resume automatic fetching"
+                                    >
+                                        <mat-icon>play_arrow</mat-icon>
+                                    </button>
+                                }
+                                @if (importer.type === 'fio') {
+                                    <button
+                                        mat-icon-button
+                                        color="primary"
+                                        (click)="fetchBankImporter(importer)"
+                                        aria-label="Fetch"
+                                        matTooltip="Fetch transactions from bank"
+                                    >
+                                        <mat-icon>refresh</mat-icon>
+                                    </button>
+                                }
+                                @if (importer.type === 'kb' || importer.type === 'revolut') {
+                                    <button
+                                        mat-icon-button
+                                        color="primary"
+                                        (click)="openUploadDialog(importer)"
+                                        aria-label="Upload"
+                                    >
+                                        <mat-icon>cloud_upload</mat-icon>
+                                    </button>
+                                }
+                                <button
+                                    mat-icon-button
+                                    (click)="openEditDialog(importer)"
+                                    aria-label="Edit"
                                 >
-                                    {{ getImportsSummary(importer) }}
-                                </div>
-                            }
-                        </div>
-                    </td>
-                </ng-container>
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                                <button
+                                    mat-icon-button
+                                    color="warn"
+                                    (click)="deleteBankImporter(importer)"
+                                    aria-label="Delete"
+                                >
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
 
-                <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef>Actions</th>
-                    <td mat-cell *matCellDef="let importer">
-                        @if (importer.isStopped) {
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+
+                        <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" [attr.colspan]="displayedColumns().length">
+                                No bank importers found. Click "Add Bank Importer" to create one.
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            }
+        </mat-tab>
+
+        <mat-tab label="Uploaded Files">
+            <div class="table-container tab-content">
+                <table
+                    mat-table
+                    [dataSource]="files()"
+                    matSort
+                    (matSortChange)="onFileSortChange($event)"
+                    [matSortActive]="fileSortActive() ?? 'uploadDate'"
+                    [matSortDirection]="fileSortDirection()"
+                    class="bank-importers-table"
+                >
+                    <ng-container matColumnDef="id">
+                        <th mat-header-cell *matHeaderCellDef>ID</th>
+                        <td mat-cell *matCellDef="let file">{{ file.id | slice: 0 : 8 }}...</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="filename">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Filename</th>
+                        <td mat-cell *matCellDef="let file">{{ file.filename }}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="bankImporter">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Bank Importer</th>
+                        <td mat-cell *matCellDef="let file">
+                            {{ getBankImporterName(file.bankImporterId) }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="uploadDate">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Upload Date</th>
+                        <td mat-cell *matCellDef="let file">
+                            {{ file.uploadDate | appDate: 'dd/MM/yyyy HH:mm' }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef>Actions</th>
+                        <td mat-cell *matCellDef="let file">
                             <button
                                 mat-icon-button
                                 color="primary"
-                                (click)="resumeBankImporter(importer)"
-                                aria-label="Resume"
-                                matTooltip="Resume automatic fetching"
+                                (click)="downloadFile(file)"
+                                aria-label="Download"
+                                matTooltip="Download file"
                             >
-                                <mat-icon>play_arrow</mat-icon>
+                                <mat-icon>download</mat-icon>
                             </button>
-                        }
-                        @if (importer.type === 'fio') {
                             <button
                                 mat-icon-button
-                                color="primary"
-                                (click)="fetchBankImporter(importer)"
-                                aria-label="Fetch"
-                                matTooltip="Fetch transactions from bank"
+                                color="warn"
+                                (click)="deleteFile(file)"
+                                aria-label="Delete"
+                                matTooltip="Delete file"
                             >
-                                <mat-icon>refresh</mat-icon>
+                                <mat-icon>delete</mat-icon>
                             </button>
-                        }
-                        @if (importer.type === 'kb' || importer.type === 'revolut') {
-                            <button
-                                mat-icon-button
-                                color="primary"
-                                (click)="openUploadDialog(importer)"
-                                aria-label="Upload"
-                            >
-                                <mat-icon>cloud_upload</mat-icon>
-                            </button>
-                        }
-                        <button
-                            mat-icon-button
-                            (click)="openEditDialog(importer)"
-                            aria-label="Edit"
-                        >
-                            <mat-icon>edit</mat-icon>
-                        </button>
-                        <button
-                            mat-icon-button
-                            color="warn"
-                            (click)="deleteBankImporter(importer)"
-                            aria-label="Delete"
-                        >
-                            <mat-icon>delete</mat-icon>
-                        </button>
-                    </td>
-                </ng-container>
+                        </td>
+                    </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+                    <tr mat-header-row *matHeaderRowDef="fileDisplayedColumns()"></tr>
+                    <tr mat-row *matRowDef="let row; columns: fileDisplayedColumns()"></tr>
 
-                <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" [attr.colspan]="displayedColumns().length">
-                        No bank importers found. Click "Add Bank Importer" to create one.
-                    </td>
-                </tr>
-            </table>
-        </div>
-    }
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" [attr.colspan]="fileDisplayedColumns().length">
+                            No uploaded files found.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
 </div>

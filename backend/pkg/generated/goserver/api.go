@@ -60,6 +60,9 @@ type BankImportersAPIRouter interface {
 	DeleteBankImporter(http.ResponseWriter, *http.Request)
 	FetchBankImporter(http.ResponseWriter, *http.Request)
 	UploadBankImporter(http.ResponseWriter, *http.Request)
+	GetBankImporterFiles(http.ResponseWriter, *http.Request)
+	DownloadBankImporterFile(http.ResponseWriter, *http.Request)
+	DeleteBankImporterFile(http.ResponseWriter, *http.Request)
 }
 
 // BudgetItemsAPIRouter defines the required methods for binding the api requests to a responses for the BudgetItemsAPI
@@ -214,6 +217,9 @@ type BankImportersAPIServicer interface {
 	DeleteBankImporter(context.Context, string) (ImplResponse, error)
 	FetchBankImporter(context.Context, string) (ImplResponse, error)
 	UploadBankImporter(context.Context, string, string, bool, *os.File) (ImplResponse, error)
+	GetBankImporterFiles(context.Context) (ImplResponse, error)
+	DownloadBankImporterFile(context.Context, string) (ImplResponse, error)
+	DeleteBankImporterFile(context.Context, string) (ImplResponse, error)
 }
 
 // BudgetItemsAPIServicer defines the api actions for the BudgetItemsAPI service

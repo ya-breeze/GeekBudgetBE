@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"time"
+	"github.com/shopspring/decimal"
 {{#routers}}
 	{{#mux}}
 	"github.com/gorilla/mux"
@@ -188,7 +189,6 @@ func readFileHeaderToTempFile(fileHeader *multipart.FileHeader) (*os.File, error
 		return nil, err
 	}
 
-	defer file.Close()
 
 	_, err = io.Copy(file, formFile)
 	if err != nil {
@@ -223,7 +223,20 @@ type Number interface {
 	~int32 | ~int64 | ~float32 | ~float64
 }
 
-type ParseString[T Number | string | bool] func(v string) (T, error)
+type ParseString[T Number | string | bool | decimal.Decimal] func(v string) (T, error)
+
+func parseDecimal(param string) (decimal.Decimal, error) {
+	if param == "" {
+		return decimal.Zero, nil
+	}
+
+	return decimal.NewFromString(param)
+}
+
+func parseDecimalParameter(param string, fn Operation[decimal.Decimal]) (decimal.Decimal, error) {
+	v, _, err := fn(param)
+	return v, err
+}
 
 // parseFloat64 parses a string parameter to an float64.
 func parseFloat64(param string) (float64, error) {
@@ -272,9 +285,9 @@ func parseBool(param string) (bool, error) {
 	return strconv.ParseBool(param)
 }
 
-type Operation[T Number | string | bool] func(actual string) (T, bool, error)
+type Operation[T Number | string | bool | decimal.Decimal] func(actual string) (T, bool, error)
 
-func WithRequire[T Number | string | bool](parse ParseString[T]) Operation[T] {
+func WithRequire[T Number | string | bool | decimal.Decimal](parse ParseString[T]) Operation[T] {
 	var empty T
 	return func(actual string) (T, bool, error) {
 		if actual == "" {
@@ -286,7 +299,7 @@ func WithRequire[T Number | string | bool](parse ParseString[T]) Operation[T] {
 	}
 }
 
-func WithDefaultOrParse[T Number | string | bool](def T, parse ParseString[T]) Operation[T] {
+func WithDefaultOrParse[T Number | string | bool | decimal.Decimal](def T, parse ParseString[T]) Operation[T] {
 	return func(actual string) (T, bool, error) {
 		if actual == "" {
 			return def, true, nil
@@ -297,14 +310,14 @@ func WithDefaultOrParse[T Number | string | bool](def T, parse ParseString[T]) O
 	}
 }
 
-func WithParse[T Number | string | bool](parse ParseString[T]) Operation[T] {
+func WithParse[T Number | string | bool | decimal.Decimal](parse ParseString[T]) Operation[T] {
 	return func(actual string) (T, bool, error) {
 		v, err := parse(actual)
 		return v, false, err
 	}
 }
 
-type Constraint[T Number | string | bool] func(actual T) error
+type Constraint[T Number | string | bool | decimal.Decimal] func(actual T) error
 
 func WithMinimum[T Number](expected T) Constraint[T] {
 	return func(actual T) error {

@@ -9,6 +9,7 @@ export type { Aggregation } from './models/aggregation';
 export type { AuthData } from './models/auth-data';
 export type { BankAccountInfo } from './models/bank-account-info';
 export type { BankImporter } from './models/bank-importer';
+export type { BankImporterFile } from './models/bank-importer-file';
 export type { BankImporterNoId } from './models/bank-importer-no-id';
 export type { BudgetItem } from './models/budget-item';
 export type { BudgetItemNoId } from './models/budget-item-no-id';

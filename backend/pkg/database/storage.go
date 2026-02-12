@@ -87,6 +87,11 @@ type Storage interface {
 	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
 	GetAllBankImporters() ([]ImportInfo, error)
 
+	GetBankImporterFiles(userID string) ([]goserver.BankImporterFile, error)
+	GetBankImporterFile(userID string, id string) (models.BankImporterFile, error)
+	CreateBankImporterFile(userID string, file *models.BankImporterFile) (goserver.BankImporterFile, error)
+	DeleteBankImporterFile(userID string, id string) error
+
 	GetMatchers(userID string) ([]goserver.Matcher, error)
 	GetMatcher(userID string, id string) (goserver.Matcher, error)
 	// Add a single confirmation (true = confirmed, false = rejected) to a matcher
@@ -2205,6 +2210,53 @@ func (s *storage) archiveMergedTransaction(tx *gorm.DB, userID string,
 
 func (s *storage) Backup(destination string) error {
 	return s.db.Exec("VACUUM INTO ?", destination).Error
+}
+
+func (s *storage) GetBankImporterFiles(userID string) ([]goserver.BankImporterFile, error) {
+	var files []models.BankImporterFile
+	if err := s.db.Where("user_id = ?", userID).Order("upload_date DESC").Find(&files).Error; err != nil {
+		return nil, fmt.Errorf(StorageError, err)
+	}
+
+	result := make([]goserver.BankImporterFile, len(files))
+	for i, f := range files {
+		result[i] = f.FromDB()
+	}
+
+	return result, nil
+}
+
+func (s *storage) GetBankImporterFile(userID string, id string) (models.BankImporterFile, error) {
+	var file models.BankImporterFile
+	if err := s.db.Where("user_id = ? AND id = ?", userID, id).First(&file).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.BankImporterFile{}, ErrNotFound
+		}
+		return models.BankImporterFile{}, fmt.Errorf(StorageError, err)
+	}
+
+	return file, nil
+}
+
+func (s *storage) CreateBankImporterFile(userID string, file *models.BankImporterFile) (goserver.BankImporterFile, error) {
+	file.UserID = userID
+	file.ID = uuid.New()
+	if file.UploadDate.IsZero() {
+		file.UploadDate = time.Now()
+	}
+
+	if err := s.db.Create(file).Error; err != nil {
+		return goserver.BankImporterFile{}, fmt.Errorf(StorageError, err)
+	}
+
+	return file.FromDB(), nil
+}
+
+func (s *storage) DeleteBankImporterFile(userID string, id string) error {
+	if err := s.db.Where("user_id = ? AND id = ?", userID, id).Delete(&models.BankImporterFile{}).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+	return nil
 }
 
 func (s *storage) validateTransaction(userID string, transaction goserver.TransactionNoIdInterface) error {

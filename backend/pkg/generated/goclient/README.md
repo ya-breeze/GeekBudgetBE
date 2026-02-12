@@ -92,7 +92,10 @@ Class | Method | HTTP request | Description
 *AuthAPI* | [**Authorize**](docs/AuthAPI.md#authorize) | **Post** /v1/authorize | validate user/password and return token
 *BankImportersAPI* | [**CreateBankImporter**](docs/BankImportersAPI.md#createbankimporter) | **Post** /v1/bankImporters | create new bank importer
 *BankImportersAPI* | [**DeleteBankImporter**](docs/BankImportersAPI.md#deletebankimporter) | **Delete** /v1/bankImporters/{id} | delete bank importer
+*BankImportersAPI* | [**DeleteBankImporterFile**](docs/BankImportersAPI.md#deletebankimporterfile) | **Delete** /v1/bankImporters/files/{id} | delete bank importer file
+*BankImportersAPI* | [**DownloadBankImporterFile**](docs/BankImportersAPI.md#downloadbankimporterfile) | **Get** /v1/bankImporters/files/{id} | download bank importer file
 *BankImportersAPI* | [**FetchBankImporter**](docs/BankImportersAPI.md#fetchbankimporter) | **Post** /v1/bankImporters/{id}/fetch | fetch new transactions from bank
+*BankImportersAPI* | [**GetBankImporterFiles**](docs/BankImportersAPI.md#getbankimporterfiles) | **Get** /v1/bankImporters/files | get all bank importer files
 *BankImportersAPI* | [**GetBankImporters**](docs/BankImportersAPI.md#getbankimporters) | **Get** /v1/bankImporters | get all bank importers
 *BankImportersAPI* | [**UpdateBankImporter**](docs/BankImportersAPI.md#updatebankimporter) | **Put** /v1/bankImporters/{id} | update bank importer
 *BankImportersAPI* | [**UploadBankImporter**](docs/BankImportersAPI.md#uploadbankimporter) | **Post** /v1/bankImporters/{id}/upload | Upload new transactions from bank
@@ -151,6 +154,7 @@ Class | Method | HTTP request | Description
  - [BankAccountInfo](docs/BankAccountInfo.md)
  - [BankAccountInfoBalancesInner](docs/BankAccountInfoBalancesInner.md)
  - [BankImporter](docs/BankImporter.md)
+ - [BankImporterFile](docs/BankImporterFile.md)
  - [BankImporterNoID](docs/BankImporterNoID.md)
  - [BankImporterNoIDMappingsInner](docs/BankImporterNoIDMappingsInner.md)
  - [BudgetItem](docs/BudgetItem.md)

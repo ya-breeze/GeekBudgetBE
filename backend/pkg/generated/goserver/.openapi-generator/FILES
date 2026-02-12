@@ -47,6 +47,7 @@ go/model_authorize_200_response.go
 go/model_bank_account_info.go
 go/model_bank_account_info_balances_inner.go
 go/model_bank_importer.go
+go/model_bank_importer_file.go
 go/model_bank_importer_no_id.go
 go/model_bank_importer_no_id_mappings_inner.go
 go/model_budget_item.go

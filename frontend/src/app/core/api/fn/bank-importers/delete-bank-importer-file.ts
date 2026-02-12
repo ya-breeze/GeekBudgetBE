@@ -7,21 +7,22 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { WholeUserData } from '../../models/whole-user-data';
-
-export interface Import$Params {
-    body?: WholeUserData;
+export interface DeleteBankImporterFile$Params {
+    /**
+     * ID of the bank importer file
+     */
+    id: string;
 }
 
-export function import$(
+export function deleteBankImporterFile(
     http: HttpClient,
     rootUrl: string,
-    params?: Import$Params,
+    params: DeleteBankImporterFile$Params,
     context?: HttpContext,
 ): Observable<StrictHttpResponse<void>> {
-    const rb = new RequestBuilder(rootUrl, import$.PATH, 'post');
+    const rb = new RequestBuilder(rootUrl, deleteBankImporterFile.PATH, 'delete');
     if (params) {
-        rb.body(params.body, 'application/json');
+        rb.path('id', params.id, {});
     }
 
     return http.request(rb.build({ responseType: 'text', accept: '*/*', context })).pipe(
@@ -32,4 +33,4 @@ export function import$(
     );
 }
 
-import$.PATH = '/v1/import';
+deleteBankImporterFile.PATH = '/v1/bankImporters/files/{id}';

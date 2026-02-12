@@ -380,7 +380,8 @@ func TestStartBankImporters_RunsOnStartup(t *testing.T) {
 	forcedImports := make(chan common.ForcedImport)
 
 	// Start the background task
-	done := background.StartBankImporters(ctx, logger, mock, forcedImports)
+	cfg := &config.Config{}
+	done := background.StartBankImporters(ctx, logger, mock, cfg, forcedImports)
 
 	// Verify it runs immediately (within reasonable time)
 	select {

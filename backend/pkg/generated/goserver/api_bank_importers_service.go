@@ -32,6 +32,12 @@ type BankImportersAPIService interface {
 	FetchBankImporter(ctx context.Context, id string) (ImplResponse, error)
 	// UploadBankImporter - Upload new transactions from bank
 	UploadBankImporter(ctx context.Context, id string, format string, containsAllTransactions bool, file *os.File) (ImplResponse, error)
+	// GetBankImporterFiles - get all bank importer files
+	GetBankImporterFiles(ctx context.Context) (ImplResponse, error)
+	// DownloadBankImporterFile - download bank importer file
+	DownloadBankImporterFile(ctx context.Context, id string) (ImplResponse, error)
+	// DeleteBankImporterFile - delete bank importer file
+	DeleteBankImporterFile(ctx context.Context, id string) (ImplResponse, error)
 }
 
 // BankImportersAPIService is a service that implements the logic for the BankImportersAPIServicer
@@ -112,4 +118,37 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(ctx context.Context, id
 	// return Response(200, ImportResult{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("UploadBankImporter method not implemented")
+}
+
+// GetBankImporterFiles - get all bank importer files
+func (s *BankImportersAPIServiceImpl) GetBankImporterFiles(ctx context.Context) (ImplResponse, error) {
+	// TODO - update GetBankImporterFiles with the required logic for this service method.
+	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, []BankImporterFile{}) or use other options such as http.Ok ...
+	// return Response(200, []BankImporterFile{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("GetBankImporterFiles method not implemented")
+}
+
+// DownloadBankImporterFile - download bank importer file
+func (s *BankImportersAPIServiceImpl) DownloadBankImporterFile(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update DownloadBankImporterFile with the required logic for this service method.
+	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, *os.File{}) or use other options such as http.Ok ...
+	// return Response(200, *os.File{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DownloadBankImporterFile method not implemented")
+}
+
+// DeleteBankImporterFile - delete bank importer file
+func (s *BankImportersAPIServiceImpl) DeleteBankImporterFile(ctx context.Context, id string) (ImplResponse, error) {
+	// TODO - update DeleteBankImporterFile with the required logic for this service method.
+	// Add api_bank_importers_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
+	// return Response(200, nil),nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DeleteBankImporterFile method not implemented")
 }

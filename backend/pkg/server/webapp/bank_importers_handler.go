@@ -108,7 +108,7 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 		return
 	}
 
-	parser := api.NewBankImportersAPIServiceImpl(r.logger, r.db)
+	parser := api.NewBankImportersAPIServiceImpl(r.logger, r.db, r.cfg)
 	containsAllTransactions := req.URL.Query().Get("containsAllTransactions") == "true"
 	lastImport, err := parser.Upload(userID, bankImporterID, format, fileData, containsAllTransactions)
 	if err != nil {

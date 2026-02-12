@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -30,7 +31,10 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 	BeforeEach(func() {
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockDB = mocks.NewMockStorage(mockCtrl)
-		sutBI = NewBankImportersAPIServiceImpl(logger, mockDB)
+		cfg := &config.Config{
+			BankImporterFilesPath: "storage/bank-importer-files",
+		}
+		sutBI = NewBankImportersAPIServiceImpl(logger, mockDB, cfg)
 		sutUT = &UnprocessedTransactionsAPIServiceImpl{logger: logger, db: mockDB}
 
 		mockDB.EXPECT().CountUnprocessedTransactionsForAccount(gomock.Any(), gomock.Any(), gomock.Any()).Return(1, nil).AnyTimes()

@@ -233,8 +233,8 @@ import (
 
 func main() {
 	description := "description_example" // string | Filter by description (optional)
-	amountFrom := decimal.Decimal(1.2) // decimal.Decimal | Don't return transactions with amount less than this (optional)
-	amountTo := decimal.Decimal(1.2) // decimal.Decimal | Don't return transactions with amount more than this (optional)
+	amountFrom := decimal.Decimal(8.14) // decimal.Decimal | Don't return transactions with amount less than this (optional)
+	amountTo := decimal.Decimal(8.14) // decimal.Decimal | Don't return transactions with amount more than this (optional)
 	dateFrom := time.Now() // time.Time | Don't return transactions with date before this (optional)
 	dateTo := time.Now() // time.Time | Don't return transactions with date after this (optional)
 	onlySuspicious := true // bool | If true, return only suspicious transactions (optional) (default to false)

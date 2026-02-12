@@ -46,7 +46,7 @@ func Server(logger *slog.Logger, cfg *config.Config) error {
 	// Start bank importers
 	var importFinishChan <-chan struct{}
 	if !cfg.DisableImporters {
-		importFinishChan = background.StartBankImporters(ctx, logger, storage, forcedImportChan)
+		importFinishChan = background.StartBankImporters(ctx, logger, storage, cfg, forcedImportChan)
 	} else {
 		logger.Info("Bank importers are disabled")
 	}
@@ -95,7 +95,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 		TransactionsAPIService:            api.NewTransactionsAPIService(logger, db),
 		UnprocessedTransactionsAPIService: unprocessedService,
 		MatchersAPIService:                api.NewMatchersAPIServiceImpl(logger, db, cfg, unprocessedService),
-		BankImportersAPIService:           api.NewBankImportersAPIServiceImpl(logger, db),
+		BankImportersAPIService:           api.NewBankImportersAPIServiceImpl(logger, db, cfg),
 		AggregationsAPIService:            api.NewAggregationsAPIServiceImpl(logger, db),
 		NotificationsAPIService:           api.NewNotificationsAPIServiceImpl(logger, db),
 		ImportAPIService:                  api.NewImportAPIServiceImpl(logger, db),

@@ -6,7 +6,10 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**CreateBankImporter**](BankImportersAPI.md#CreateBankImporter) | **Post** /v1/bankImporters | create new bank importer
 [**DeleteBankImporter**](BankImportersAPI.md#DeleteBankImporter) | **Delete** /v1/bankImporters/{id} | delete bank importer
+[**DeleteBankImporterFile**](BankImportersAPI.md#DeleteBankImporterFile) | **Delete** /v1/bankImporters/files/{id} | delete bank importer file
+[**DownloadBankImporterFile**](BankImportersAPI.md#DownloadBankImporterFile) | **Get** /v1/bankImporters/files/{id} | download bank importer file
 [**FetchBankImporter**](BankImportersAPI.md#FetchBankImporter) | **Post** /v1/bankImporters/{id}/fetch | fetch new transactions from bank
+[**GetBankImporterFiles**](BankImportersAPI.md#GetBankImporterFiles) | **Get** /v1/bankImporters/files | get all bank importer files
 [**GetBankImporters**](BankImportersAPI.md#GetBankImporters) | **Get** /v1/bankImporters | get all bank importers
 [**UpdateBankImporter**](BankImportersAPI.md#UpdateBankImporter) | **Put** /v1/bankImporters/{id} | update bank importer
 [**UploadBankImporter**](BankImportersAPI.md#UploadBankImporter) | **Post** /v1/bankImporters/{id}/upload | Upload new transactions from bank
@@ -143,6 +146,140 @@ Name | Type | Description  | Notes
 [[Back to README]](../README.md)
 
 
+## DeleteBankImporterFile
+
+> DeleteBankImporterFile(ctx, id).Execute()
+
+delete bank importer file
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | ID of the bank importer file
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	r, err := apiClient.BankImportersAPI.DeleteBankImporterFile(context.Background(), id).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.DeleteBankImporterFile``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** | ID of the bank importer file | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiDeleteBankImporterFileRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## DownloadBankImporterFile
+
+> *os.File DownloadBankImporterFile(ctx, id).Execute()
+
+download bank importer file
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	id := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | ID of the bank importer file
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.BankImportersAPI.DownloadBankImporterFile(context.Background(), id).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.DownloadBankImporterFile``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `DownloadBankImporterFile`: *os.File
+	fmt.Fprintf(os.Stdout, "Response from `BankImportersAPI.DownloadBankImporterFile`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**id** | **string** | ID of the bank importer file | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiDownloadBankImporterFileRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[***os.File**](*os.File.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/octet-stream
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
 ## FetchBankImporter
 
 > ImportResult FetchBankImporter(ctx, id).Execute()
@@ -196,6 +333,65 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ImportResult**](ImportResult.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## GetBankImporterFiles
+
+> []BankImporterFile GetBankImporterFiles(ctx).Execute()
+
+get all bank importer files
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.BankImportersAPI.GetBankImporterFiles(context.Background()).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `BankImportersAPI.GetBankImporterFiles``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `GetBankImporterFiles`: []BankImporterFile
+	fmt.Fprintf(os.Stdout, "Response from `BankImportersAPI.GetBankImporterFiles`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiGetBankImporterFilesRequest struct via the builder pattern
+
+
+### Return type
+
+[**[]BankImporterFile**](BankImporterFile.md)
 
 ### Authorization
 

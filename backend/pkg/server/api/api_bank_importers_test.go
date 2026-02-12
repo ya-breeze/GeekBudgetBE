@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -41,7 +42,10 @@ var _ = Describe("BankImporters API", func() {
 	BeforeEach(func() {
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockDB = mocks.NewMockStorage(mockCtrl)
-		sut = NewBankImportersAPIServiceImpl(logger, mockDB)
+		cfg := &config.Config{
+			BankImporterFilesPath: "storage/bank-importer-files",
+		}
+		sut = NewBankImportersAPIServiceImpl(logger, mockDB, cfg)
 
 		// Default expectation for balance checks triggered during imports
 		// CountUnprocessedTransactionsForAccount returning 1 causes early return in CheckBalanceForAccount

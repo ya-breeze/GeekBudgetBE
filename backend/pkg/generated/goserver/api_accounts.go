@@ -256,6 +256,9 @@ func (c *AccountsAPIController) UploadAccountImage(w http.ResponseWriter, r *htt
 
 		fileParam = param
 	}
+	if fileParam != nil {
+		defer fileParam.Close()
+	}
 
 	result, err := c.service.UploadAccountImage(r.Context(), idParam, fileParam)
 	// If an error occurred, encode the error with the status code

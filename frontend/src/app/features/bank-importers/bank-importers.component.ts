@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { SlicePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -9,6 +10,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTabsModule } from '@angular/material/tabs';
 import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { BankImporterService } from './services/bank-importer.service';
 import { BankImporter } from '../../core/api/models/bank-importer';
@@ -40,8 +42,10 @@ import { ImportResult } from '../../core/api/models/import-result';
         MatSnackBarModule,
         MatChipsModule,
         MatTooltipModule,
+        MatTabsModule,
         AppDatePipe,
         AccountDisplayComponent,
+        SlicePipe,
     ],
     templateUrl: './bank-importers.component.html',
     styleUrl: './bank-importers.component.scss',
@@ -68,6 +72,29 @@ export class BankImportersComponent implements OnInit {
 
     protected readonly sortActive = signal<string | null>(null);
     protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
+
+    protected readonly fileSortActive = signal<string | null>('uploadDate');
+    protected readonly fileSortDirection = signal<'asc' | 'desc'>('desc');
+
+    private readonly rawFiles = signal<any[]>([]);
+    protected readonly files = computed(() => {
+        const files = this.rawFiles();
+        const active = this.fileSortActive();
+        const direction = this.fileSortDirection();
+
+        if (!active || !direction) {
+            return files;
+        }
+
+        return [...files].sort((a, b) => this.compareFiles(a, b, active, direction));
+    });
+    protected readonly fileDisplayedColumns = signal([
+        'id',
+        'filename',
+        'bankImporter',
+        'uploadDate',
+        'actions',
+    ]);
 
     // Computed signal that enriches bank importers with account names and sorts
     protected readonly bankImporters = computed(() => {
@@ -103,12 +130,19 @@ export class BankImportersComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadBankImporters();
+        this.loadFiles();
     }
 
     loadBankImporters(): void {
         this.accountService.loadAccounts().subscribe();
         this.currenciesService.loadCurrencies().subscribe();
         this.bankImporterService.loadBankImporters().subscribe();
+    }
+
+    loadFiles(): void {
+        this.bankImporterService.getFiles().subscribe((files) => {
+            this.rawFiles.set(files);
+        });
     }
 
     openCreateDialog(): void {
@@ -181,6 +215,7 @@ export class BankImportersComponent implements OnInit {
                     .subscribe({
                         next: (response) => {
                             this.handleImportResponse(response);
+                            this.loadFiles();
                         },
                         error: (err) => {
                             this.dialog.open<ImportResultDialogComponent, ImportResultDialogData>(
@@ -329,6 +364,17 @@ export class BankImportersComponent implements OnInit {
         this.sortDirection.set(sort.direction);
     }
 
+    protected onFileSortChange(sort: Sort): void {
+        if (!sort.direction) {
+            this.fileSortActive.set(null);
+            this.fileSortDirection.set('asc');
+            return;
+        }
+
+        this.fileSortActive.set(sort.active);
+        this.fileSortDirection.set(sort.direction);
+    }
+
     private compareBankImporters(
         a: BankImporter & {
             accountName?: string;
@@ -396,6 +442,61 @@ export class BankImportersComponent implements OnInit {
         const hasError = importer.lastImports.some((i) => i.status === 'error');
         if (hasError) return '#f44336'; // Red
         return '#4caf50'; // Green
+    }
+
+    protected downloadFile(file: any): void {
+        this.bankImporterService.downloadFile(file.id!).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.filename || 'bank-importer-file';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+                this.snackBar.open('Failed to download file', 'Close', { duration: 3000 });
+            },
+        });
+    }
+
+    protected deleteFile(file: any): void {
+        if (confirm(`Are you sure you want to delete file "${file.filename}"?`)) {
+            this.bankImporterService.deleteFile(file.id!).subscribe({
+                next: () => {
+                    this.snackBar.open('File deleted successfully', 'Close', { duration: 3000 });
+                    this.loadFiles();
+                },
+                error: (err) => {
+                    this.snackBar.open('Failed to delete file', 'Close', { duration: 3000 });
+                },
+            });
+        }
+    }
+
+    protected getBankImporterName(importerId: string): string {
+        const importers = this.bankImporterService.bankImporters();
+        const importer = importers.find((i) => i.id === importerId);
+        return importer?.name || importerId;
+    }
+
+    private compareFiles(a: any, b: any, active: string, direction: 'asc' | 'desc'): number {
+        const valueA = this.getFileSortValue(a, active);
+        const valueB = this.getFileSortValue(b, active);
+        return this.comparePrimitiveValues(valueA, valueB, direction);
+    }
+
+    private getFileSortValue(file: any, active: string): string | Date | null {
+        switch (active) {
+            case 'filename':
+                return file.filename ?? '';
+            case 'bankImporter':
+                return this.getBankImporterName(file.bankImporterId);
+            case 'uploadDate':
+                return file.uploadDate ? new Date(file.uploadDate) : null;
+            default:
+                return null;
+        }
     }
 
     private comparePrimitiveValues(

@@ -20,14 +20,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/shopspring/decimal"
-
 	"github.com/gorilla/mux"
+	"github.com/shopspring/decimal"
 )
 
 // A Route defines the parameters for an api endpoint
@@ -162,8 +160,6 @@ func readFileHeaderToTempFile(fileHeader *multipart.FileHeader) (*os.File, error
 		return nil, err
 	}
 
-	defer file.Close()
-
 	_, err = io.Copy(file, formFile)
 	if err != nil {
 		return nil, err
@@ -194,10 +190,23 @@ func parseTime(param string) (time.Time, error) {
 }
 
 type Number interface {
-	~int32 | ~int64 | ~float32 | ~float64 | decimal.Decimal
+	~int32 | ~int64 | ~float32 | ~float64
 }
 
-type ParseString[T Number | string | bool] func(v string) (T, error)
+type ParseString[T Number | string | bool | decimal.Decimal] func(v string) (T, error)
+
+func parseDecimal(param string) (decimal.Decimal, error) {
+	if param == "" {
+		return decimal.Zero, nil
+	}
+
+	return decimal.NewFromString(param)
+}
+
+func parseDecimalParameter(param string, fn Operation[decimal.Decimal]) (decimal.Decimal, error) {
+	v, _, err := fn(param)
+	return v, err
+}
 
 // parseFloat64 parses a string parameter to an float64.
 func parseFloat64(param string) (float64, error) {
@@ -206,15 +215,6 @@ func parseFloat64(param string) (float64, error) {
 	}
 
 	return strconv.ParseFloat(param, 64)
-}
-
-// parseDecimal parses a string parameter to a decimal.Decimal.
-func parseDecimal(param string) (decimal.Decimal, error) {
-	if param == "" {
-		return decimal.Zero, nil
-	}
-
-	return decimal.NewFromString(param)
 }
 
 // parseFloat32 parses a string parameter to an float32.
@@ -255,9 +255,9 @@ func parseBool(param string) (bool, error) {
 	return strconv.ParseBool(param)
 }
 
-type Operation[T Number | string | bool] func(actual string) (T, bool, error)
+type Operation[T Number | string | bool | decimal.Decimal] func(actual string) (T, bool, error)
 
-func WithRequire[T Number | string | bool](parse ParseString[T]) Operation[T] {
+func WithRequire[T Number | string | bool | decimal.Decimal](parse ParseString[T]) Operation[T] {
 	var empty T
 	return func(actual string) (T, bool, error) {
 		if actual == "" {
@@ -269,7 +269,7 @@ func WithRequire[T Number | string | bool](parse ParseString[T]) Operation[T] {
 	}
 }
 
-func WithDefaultOrParse[T Number | string | bool](def T, parse ParseString[T]) Operation[T] {
+func WithDefaultOrParse[T Number | string | bool | decimal.Decimal](def T, parse ParseString[T]) Operation[T] {
 	return func(actual string) (T, bool, error) {
 		if actual == "" {
 			return def, true, nil
@@ -280,27 +280,18 @@ func WithDefaultOrParse[T Number | string | bool](def T, parse ParseString[T]) O
 	}
 }
 
-func WithParse[T Number | string | bool](parse ParseString[T]) Operation[T] {
+func WithParse[T Number | string | bool | decimal.Decimal](parse ParseString[T]) Operation[T] {
 	return func(actual string) (T, bool, error) {
 		v, err := parse(actual)
 		return v, false, err
 	}
 }
 
-type Constraint[T Number | string | bool] func(actual T) error
+type Constraint[T Number | string | bool | decimal.Decimal] func(actual T) error
 
 func WithMinimum[T Number](expected T) Constraint[T] {
 	return func(actual T) error {
-		var comp bool
-		if eth, ok := any(actual).(decimal.Decimal); ok {
-			comp = eth.LessThan(any(expected).(decimal.Decimal))
-		} else {
-			// fallback for basic types
-			v1 := reflect.ValueOf(actual).Float()
-			v2 := reflect.ValueOf(expected).Float()
-			comp = v1 < v2
-		}
-		if comp {
+		if actual < expected {
 			return errors.New(errMsgMinValueConstraint)
 		}
 
@@ -310,16 +301,7 @@ func WithMinimum[T Number](expected T) Constraint[T] {
 
 func WithMaximum[T Number](expected T) Constraint[T] {
 	return func(actual T) error {
-		var comp bool
-		if eth, ok := any(actual).(decimal.Decimal); ok {
-			comp = eth.GreaterThan(any(expected).(decimal.Decimal))
-		} else {
-			// fallback for basic types
-			v1 := reflect.ValueOf(actual).Float()
-			v2 := reflect.ValueOf(expected).Float()
-			comp = v1 > v2
-		}
-		if comp {
+		if actual > expected {
 			return errors.New(errMsgMaxValueConstraint)
 		}
 
@@ -331,15 +313,13 @@ func WithMaximum[T Number](expected T) Constraint[T] {
 func parseNumericParameter[T Number](param string, fn Operation[T], checks ...Constraint[T]) (T, error) {
 	v, ok, err := fn(param)
 	if err != nil {
-		var zero T
-		return zero, err
+		return 0, err
 	}
 
 	if !ok {
 		for _, check := range checks {
 			if err := check(v); err != nil {
-				var zero T
-				return zero, err
+				return 0, err
 			}
 		}
 	}

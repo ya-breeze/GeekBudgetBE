@@ -3,13 +3,18 @@ package api
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/bankimporters"
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -19,12 +24,13 @@ import (
 type BankImportersAPIServiceImpl struct {
 	logger *slog.Logger
 	db     database.Storage
+	config *config.Config
 }
 
 func NewBankImportersAPIServiceImpl(
-	logger *slog.Logger, db database.Storage,
+	logger *slog.Logger, db database.Storage, cfg *config.Config,
 ) *BankImportersAPIServiceImpl {
-	return &BankImportersAPIServiceImpl{logger: logger, db: db}
+	return &BankImportersAPIServiceImpl{logger: logger, db: db, config: cfg}
 }
 
 func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, input goserver.BankImporterNoId,
@@ -691,7 +697,13 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
-	data, err := os.ReadFile(file.Name())
+	// Read file content using the provided handle
+	if _, err := file.Seek(0, 0); err != nil {
+		s.logger.With("error", err).Error("Failed to seek to beginning of uploaded file for service upload")
+		return goserver.Response(500, nil), nil
+	}
+
+	data, err := io.ReadAll(file)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to read uploaded file")
 		return goserver.Response(500, nil), nil
@@ -703,7 +715,129 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
+	// Save file locally
+	userDir := filepath.Join(s.config.BankImporterFilesPath, userID)
+	if err := os.MkdirAll(userDir, 0o755); err != nil {
+		s.logger.With("error", err).Error("Failed to create user directory for bank importer files")
+		return goserver.Response(500, nil), nil
+	}
+
+	// Generate a unique disk filename using UUID to avoid collisions
+	fileID := uuid.New()
+	tempPath := file.Name()
+	tempBase := filepath.Base(tempPath)
+
+	// Remove the temporary suffix added by ReadFormFileToTempFile (e.g. .* at the end)
+	// to obtain the original filename
+	originalFilename := tempBase
+	lastDot := strings.LastIndex(tempBase, ".")
+	if lastDot != -1 {
+		originalFilename = tempBase[:lastDot]
+	}
+
+	ext := filepath.Ext(originalFilename)
+	diskFilename := fileID.String() + ext
+	filePath := filepath.Join(userDir, diskFilename)
+
+	dst, err := os.Create(filePath)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to create file for storage")
+		return goserver.Response(500, nil), nil
+	}
+	defer dst.Close()
+
+	if _, err := file.Seek(0, 0); err != nil {
+		s.logger.With("error", err).Error("Failed to seek to beginning of uploaded file for copy")
+		return goserver.Response(500, nil), nil
+	}
+
+	if _, err := io.Copy(dst, file); err != nil {
+		s.logger.With("error", err).Error("Failed to copy uploaded file to storage")
+		return goserver.Response(500, nil), nil
+	}
+
+	// Create database record
+	importerUUID, _ := uuid.Parse(id)
+	_, err = s.db.CreateBankImporterFile(userID, &models.BankImporterFile{
+		ID:             fileID,
+		UserID:         userID,
+		BankImporterID: importerUUID,
+		Filename:       originalFilename,
+		Path:           filepath.Join(userID, diskFilename),
+		UploadDate:     time.Now(),
+	})
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to create BankImporterFile record")
+		// We don't return error here because the main action (upload) succeeded
+	}
+
 	return goserver.Response(200, lastImport), nil
+}
+
+func (s *BankImportersAPIServiceImpl) GetBankImporterFiles(ctx context.Context) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(http.StatusUnauthorized, nil), nil
+	}
+
+	files, err := s.db.GetBankImporterFiles(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get bank importer files")
+		return goserver.Response(http.StatusInternalServerError, nil), nil
+	}
+
+	return goserver.Response(http.StatusOK, files), nil
+}
+
+func (s *BankImportersAPIServiceImpl) DownloadBankImporterFile(ctx context.Context, id string) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(http.StatusUnauthorized, nil), nil
+	}
+
+	fileRecord, err := s.db.GetBankImporterFile(userID, id)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get bank importer file record")
+		return goserver.Response(http.StatusNotFound, nil), nil
+	}
+
+	fullPath := filepath.Join(s.config.BankImporterFilesPath, fileRecord.Path)
+	f, err := os.Open(fullPath)
+	if err != nil {
+		s.logger.With("error", err, "path", fullPath).Error("Failed to open file for download")
+		return goserver.Response(http.StatusNotFound, nil), nil
+	}
+	// Note: goserver expects *os.File for binary responses and will handle closing it
+	// but we should probably set the filename. goserver's EncodeJSONResponse handles *os.File.
+	return goserver.Response(http.StatusOK, f), nil
+}
+
+func (s *BankImportersAPIServiceImpl) DeleteBankImporterFile(ctx context.Context, id string) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(http.StatusUnauthorized, nil), nil
+	}
+
+	fileRecord, err := s.db.GetBankImporterFile(userID, id)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get bank importer file record for deletion")
+		return goserver.Response(http.StatusNotFound, nil), nil
+	}
+
+	// Delete from disk
+	fullPath := filepath.Join(s.config.BankImporterFilesPath, fileRecord.Path)
+	if err := os.Remove(fullPath); err != nil && !os.IsNotExist(err) {
+		s.logger.With("error", err, "path", fullPath).Error("Failed to delete file from disk")
+		return goserver.Response(http.StatusInternalServerError, nil), nil
+	}
+
+	// Delete from database
+	if err := s.db.DeleteBankImporterFile(userID, id); err != nil {
+		s.logger.With("error", err).Error("Failed to delete bank importer file record")
+		return goserver.Response(http.StatusInternalServerError, nil), nil
+	}
+
+	return goserver.Response(http.StatusOK, nil), nil
 }
 
 func isPerfectMatch(m *goserver.Matcher) bool {

@@ -11,6 +11,10 @@ import { updateBankImporter } from '../../../core/api/fn/bank-importers/update-b
 import { deleteBankImporter } from '../../../core/api/fn/bank-importers/delete-bank-importer';
 import { uploadBankImporter } from '../../../core/api/fn/bank-importers/upload-bank-importer';
 import { fetchBankImporter } from '../../../core/api/fn/bank-importers/fetch-bank-importer';
+import { getBankImporterFiles } from '../../../core/api/fn/bank-importers/get-bank-importer-files';
+import { downloadBankImporterFile } from '../../../core/api/fn/bank-importers/download-bank-importer-file';
+import { deleteBankImporterFile } from '../../../core/api/fn/bank-importers/delete-bank-importer-file';
+import { BankImporterFile } from '../../../core/api/models/bank-importer-file';
 
 @Injectable({
     providedIn: 'root',
@@ -148,6 +152,54 @@ export class BankImporterService {
                 },
                 error: (err) => {
                     this.error.set(err.message || 'Failed to fetch bank importer transactions');
+                    this.loading.set(false);
+                },
+            }),
+        );
+    }
+
+    getFiles(): Observable<BankImporterFile[]> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        return getBankImporterFiles(this.http, this.apiConfig.rootUrl).pipe(
+            map((response) => response.body),
+            tap({
+                next: () => this.loading.set(false),
+                error: (err) => {
+                    this.error.set(err.message || 'Failed to load bank importer files');
+                    this.loading.set(false);
+                },
+            }),
+        );
+    }
+
+    downloadFile(id: string): Observable<Blob> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        return downloadBankImporterFile(this.http, this.apiConfig.rootUrl, { id }).pipe(
+            map((response) => response.body as unknown as Blob),
+            tap({
+                next: () => this.loading.set(false),
+                error: (err) => {
+                    this.error.set(err.message || 'Failed to download bank importer file');
+                    this.loading.set(false);
+                },
+            }),
+        );
+    }
+
+    deleteFile(id: string): Observable<void> {
+        this.loading.set(true);
+        this.error.set(null);
+
+        return deleteBankImporterFile(this.http, this.apiConfig.rootUrl, { id }).pipe(
+            map(() => undefined),
+            tap({
+                next: () => this.loading.set(false),
+                error: (err) => {
+                    this.error.set(err.message || 'Failed to delete bank importer file');
                     this.loading.set(false);
                 },
             }),

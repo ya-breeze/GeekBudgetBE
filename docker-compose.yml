@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Backend - Go API
@@ -23,6 +23,7 @@ services:
       GB_MAXBATCHFILES: ${GB_MAXBATCHFILES:-100}
       GB_MAXBATCHTOTALSIZEMB: ${GB_MAXBATCHTOTALSIZEMB:-1000}
       GB_PREFILL: ${GB_PREFILL:-false}
+      GB_BANKIMPORTERFILESPATH: ${GB_BANKIMPORTERFILESPATH:-/data/bank-importer-files}
     volumes:
       # External volume for database and assets
       - ${GEEKBUDGET_DATA_PATH:-./geekbudget-data}:/data

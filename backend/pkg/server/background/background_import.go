@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
@@ -14,7 +15,7 @@ import (
 
 //nolint:funlen,gocognit,cyclop // TODO refactor
 func StartBankImporters(
-	ctx context.Context, logger *slog.Logger, db database.Storage, forcedImports <-chan common.ForcedImport,
+	ctx context.Context, logger *slog.Logger, db database.Storage, cfg *config.Config, forcedImports <-chan common.ForcedImport,
 ) <-chan struct{} {
 	logger.Info("Starting bank importers...")
 
@@ -49,7 +50,7 @@ func StartBankImporters(
 			// Do the work
 			logger.Info("Importing from bank importers...")
 
-			importer := api.NewBankImportersAPIServiceImpl(logger, db)
+			importer := api.NewBankImportersAPIServiceImpl(logger, db, cfg)
 			pairs, err := db.GetAllBankImporters()
 
 			var nextDelay time.Duration
