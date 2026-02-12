@@ -42,6 +42,8 @@ func newRootCmd(cfgFile *string, logger *slog.Logger) *cobra.Command {
 		commands.CmdRevolut(logger),
 		commands.CmdKB(logger),
 		commands.CmdMatch(logger),
+		commands.CmdMCP(logger),
+		commands.CmdMCPConfig(logger),
 	)
 
 	return rootCmd

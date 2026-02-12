@@ -89,6 +89,10 @@ make generate
 # Generate mocks
 make generate_mocks
 
+# MCP Server (AI Assistant Integration)
+make mcp-config          # Generate .mcp.json for Claude Desktop/Code
+make mcp-server          # Run MCP stdio server for test@test.com
+
 # Docker
 make docker-build
 make docker-up

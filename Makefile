@@ -35,6 +35,24 @@ run-backend:
 run-frontend:
 	@cd ${ROOT_DIR}/frontend && echo 'n' | npm run start
 
+.PHONY: mcp-config
+mcp-config:
+	@echo "🚀 Generating MCP configuration..."
+	@cd ${ROOT_DIR}/backend/cmd && go build -o ../bin/geekbudget
+	@GB_DBPATH=$(ROOT_DIR)geekbudget.db \
+		${ROOT_DIR}/backend/bin/geekbudget mcp-config \
+		--username test@test.com \
+		--output $(ROOT_DIR).mcp.json
+	@echo "✅ MCP configuration written to .mcp.json"
+
+.PHONY: mcp-server
+mcp-server:
+	@echo "🚀 Starting MCP server for test@test.com..."
+	@cd ${ROOT_DIR}/backend/cmd && go build -o ../bin/geekbudget
+	@GB_DBPATH=$(ROOT_DIR)geekbudget.db \
+		${ROOT_DIR}/backend/bin/geekbudget mcp \
+		--username test@test.com
+
 .PHONY: run-app
 run-app:
 	@cd ${ROOT_DIR}/app && npm run dev
