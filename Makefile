@@ -35,6 +35,9 @@ run-backend:
 run-frontend:
 	@cd ${ROOT_DIR}/frontend && echo 'n' | npm run start
 
+# Default MCP output path
+MCP_OUTPUT ?= $(ROOT_DIR).mcp.json
+
 .PHONY: mcp-config
 mcp-config:
 	@echo "🚀 Generating MCP configuration..."
@@ -42,8 +45,8 @@ mcp-config:
 	@GB_DBPATH=$(ROOT_DIR)geekbudget.db \
 		${ROOT_DIR}/backend/bin/geekbudget mcp-config \
 		--username test@test.com \
-		--output $(ROOT_DIR).mcp.json
-	@echo "✅ MCP configuration written to .mcp.json"
+		--output $(MCP_OUTPUT)
+	@echo "✅ MCP configuration written to $(MCP_OUTPUT)"
 
 .PHONY: mcp-server
 mcp-server:

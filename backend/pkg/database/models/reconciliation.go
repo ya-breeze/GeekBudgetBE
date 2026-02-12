@@ -14,13 +14,13 @@ import (
 type Reconciliation struct {
 	gorm.Model
 
-	UserID     string    `gorm:"index"`
+	UserID     string    `gorm:"index;index:idx_reconciliations_lookup,priority:1"`
 	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
-	AccountID  uuid.UUID `gorm:"type:uuid;index"`
-	CurrencyID string    `gorm:"index"`
+	AccountID  uuid.UUID `gorm:"type:uuid;index;index:idx_reconciliations_lookup,priority:2"`
+	CurrencyID string    `gorm:"index;index:idx_reconciliations_lookup,priority:3"`
 
 	ReconciledBalance decimal.Decimal
-	ReconciledAt      time.Time
+	ReconciledAt      time.Time       `gorm:"index:idx_reconciliations_lookup,priority:4"`
 	ExpectedBalance   decimal.Decimal // Balance from bank importer or manually set
 	IsManual          bool            // True for manual reconciliation (no bank importer)
 }

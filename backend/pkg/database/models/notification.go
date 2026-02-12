@@ -24,13 +24,13 @@ const DuplicateReason = "Potential duplicate from different importer"
 type Notification struct {
 	gorm.Model
 
-	Date        time.Time
+	Date        time.Time `gorm:"index:idx_notifications_user_date,priority:2"`
 	Type        NotificationType
 	URL         string
 	Title       string
 	Description string
 
-	UserID string    `gorm:"index"`
+	UserID string    `gorm:"index;index:idx_notifications_user_date,priority:1"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 

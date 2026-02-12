@@ -12,7 +12,7 @@ import (
 type Transaction struct {
 	gorm.Model
 
-	Date           time.Time
+	Date           time.Time `gorm:"index;index:idx_transactions_user_merged_date,priority:3"`
 	Description    string
 	Place          string
 	Tags           []string `gorm:"serializer:json"`
@@ -38,7 +38,7 @@ type Transaction struct {
 	SuspiciousReasons []string `gorm:"serializer:json"`
 
 	// MergedIntoID is set when this transaction was marked as duplicate of another
-	MergedIntoID *uuid.UUID `gorm:"type:uuid;index"`
+	MergedIntoID *uuid.UUID `gorm:"type:uuid;index;index:idx_transactions_user_merged_date,priority:2"`
 	// MergedAt records when this transaction was merged
 	MergedAt *time.Time
 
@@ -48,7 +48,7 @@ type Transaction struct {
 	// DuplicateDismissed is set to true when user marks duplicate detection as false positive
 	DuplicateDismissed bool `gorm:"default:false"`
 
-	UserID string    `gorm:"index"`
+	UserID string    `gorm:"index;index:idx_transactions_user_merged_date,priority:1"`
 	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
