@@ -3,6 +3,7 @@ package database
 import (
 	"log/slog"
 	"testing"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
@@ -51,7 +52,7 @@ func TestReconciliationAudit(t *testing.T) {
 	}
 
 	// 2. Invalidate (Delete) Reconciliation
-	if err := st.InvalidateReconciliation(userID, accountID, currencyID); err != nil {
+	if err := st.InvalidateReconciliation(userID, accountID, currencyID, time.Time{}); err != nil {
 		t.Fatalf("failed to invalidate reconciliation: %v", err)
 	}
 

@@ -139,6 +139,10 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 
 	s.log.Info("Transaction created", "id", t.ID)
 
+	// Invalidate reconciliation if we inserted a transaction in the past
+	// We pass empty oldMovements because it's a new transaction
+	s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date)
+
 	return t.FromDB(), nil
 }
 
@@ -189,6 +193,18 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 
 	// Smart invalidation: only if amounts or currencies changed
 	s.invalidateReconciliationIfAmountsChanged(userID, oldMovements, models.MovementsToAPI(t.Movements), t.Date)
+
+	// Invalidate reconciliation for all affected accounts/currencies
+	for _, m := range oldMovements {
+		if err := s.InvalidateReconciliation(userID, m.AccountId, m.CurrencyId, t.Date); err != nil {
+			s.log.Error("Failed to invalidate reconciliation for old movement", "error", err, "transaction_id", t.ID)
+		}
+	}
+	for _, m := range models.MovementsToAPI(t.Movements) {
+		if err := s.InvalidateReconciliation(userID, m.AccountId, m.CurrencyId, t.Date); err != nil {
+			s.log.Error("Failed to invalidate reconciliation for new movement", "error", err, "transaction_id", t.ID)
+		}
+	}
 
 	return t.FromDB(), nil
 }

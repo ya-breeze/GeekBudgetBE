@@ -40,3 +40,16 @@ Guidelines and facts discovered regarding the reconciliation system.
 - **Subset Match**: When testing the disbalance finder, ensure target deltas are consistent with mock transaction data.
 - **Decimal Comparison**: Always use `.Equal()` (scale-insensitive) for `decimal.Decimal` comparisons in Ginkgo tests.
 - **Go Literals**: Use `decimal.NewFromFloat()` for decimal constants in tests to avoid type mismatch.
+
+## Reconciliation History Preservation
+
+### Invalidation Logic
+- **Constraint**: Changing a transaction (update/delete) or inserting a retrospective transaction must invalidate future reconciliations to maintain data integrity.
+- **Rule**: `InvalidateReconciliation` (in `storage_reconciliation.go`) accepts a `fromDate`. Only reconciliations with `reconciled_at >= fromDate` are deleted.
+- **Trigger**: `InvalidateReconciliation` is called by `invalidateReconciliationIfAmountsChanged`, which is triggered by:
+    - `UpdateTransaction`
+    - `DeleteTransaction`
+    - `CreateTransaction` (if the new transaction is older than the latest reconciliation)
+
+### History Preservation
+- **Behavior**: Historical reconciliations that predate the modified transaction are **preserved**. This ensures that past verified states remain intact even if data is corrected later.

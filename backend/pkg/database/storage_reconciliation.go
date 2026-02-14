@@ -71,12 +71,18 @@ func (s *storage) CreateReconciliation(userID string, rec *goserver.Reconciliati
 	return *models.ReconciliationToAPI(model), nil
 }
 
-func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string) error {
+func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string, fromDate time.Time) error {
+	query := s.db.Where("user_id = ? AND account_id = ? AND currency_id = ?",
+		userID, accountID, currencyID)
+
+	if !fromDate.IsZero() {
+		query = query.Where("reconciled_at >= ?", fromDate)
+	}
+
 	// Fetch reconciliation(s) to be deleted to record them in audit log
 	var recs []models.Reconciliation
-	if err := s.db.Where("user_id = ? AND account_id = ? AND currency_id = ?",
-		userID, accountID, currencyID).Find(&recs).Error; err != nil {
-		return fmt.Errorf("failed to find reconciliation to invalidate: %w", err)
+	if err := query.Find(&recs).Error; err != nil {
+		return fmt.Errorf("failed to find reconciliations to invalidate: %w", err)
 	}
 
 	if len(recs) == 0 {
@@ -90,9 +96,8 @@ func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string)
 			}
 		}
 
-		if err := tx.Where("user_id = ? AND account_id = ? AND currency_id = ?",
-			userID, accountID, currencyID).Delete(&models.Reconciliation{}).Error; err != nil {
-			return fmt.Errorf("failed to invalidate reconciliation: %w", err)
+		if err := tx.Delete(&recs).Error; err != nil {
+			return fmt.Errorf("failed to invalidate reconciliations: %w", err)
 		}
 		return nil
 	})
@@ -288,7 +293,7 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 			s.log.Info("Invalidating reconciliation due to financial change",
 				"accountId", accountId, "currencyId", currencyId, "txDate", txDate, "recAt", lastRec.ReconciledAt)
 
-			if err := s.InvalidateReconciliation(userID, accountId, currencyId); err != nil {
+			if err := s.InvalidateReconciliation(userID, accountId, currencyId, txDate); err != nil {
 				s.log.Error("Failed to invalidate reconciliation", "error", err)
 				continue
 			}

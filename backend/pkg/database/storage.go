@@ -140,7 +140,7 @@ type ReconciliationStorage interface {
 	GetReconciliationsForAccount(userID, accountID string) ([]goserver.Reconciliation, error)
 	GetReconciliationsForAccountAndCurrency(userID, accountID, currencyID string) ([]goserver.Reconciliation, error)
 	CreateReconciliation(userID string, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error)
-	InvalidateReconciliation(userID, accountID, currencyID string) error
+	InvalidateReconciliation(userID, accountID, currencyID string, fromDate time.Time) error
 	GetBulkReconciliationData(userID string) (*BulkReconciliationData, error)
 }
 

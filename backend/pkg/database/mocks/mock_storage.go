@@ -955,17 +955,17 @@ func (mr *MockStorageMockRecorder) HasTransactionsAfterDate(arg0, arg1, arg2 int
 }
 
 // InvalidateReconciliation mocks base method.
-func (m *MockStorage) InvalidateReconciliation(arg0, arg1, arg2 string) error {
+func (m *MockStorage) InvalidateReconciliation(arg0, arg1, arg2 string, arg3 time.Time) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InvalidateReconciliation", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "InvalidateReconciliation", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // InvalidateReconciliation indicates an expected call of InvalidateReconciliation.
-func (mr *MockStorageMockRecorder) InvalidateReconciliation(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) InvalidateReconciliation(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateReconciliation", reflect.TypeOf((*MockStorage)(nil).InvalidateReconciliation), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateReconciliation", reflect.TypeOf((*MockStorage)(nil).InvalidateReconciliation), arg0, arg1, arg2, arg3)
 }
 
 // MergeTransactions mocks base method.
