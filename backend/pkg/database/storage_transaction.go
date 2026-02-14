@@ -146,6 +146,72 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 	return t.FromDB(), nil
 }
 
+// CreateTransactionsBatch atomically creates multiple transactions in a single database transaction.
+// If any transaction fails validation or creation, the entire batch is rolled back and an error is returned.
+// This ensures that bank imports either fully succeed or fully fail, preventing partial imports.
+func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.TransactionNoIdInterface,
+) ([]goserver.Transaction, error) {
+	if len(inputs) == 0 {
+		return []goserver.Transaction{}, nil
+	}
+
+	// Start a database transaction
+	tx := s.db.Begin()
+	if tx.Error != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", tx.Error)
+	}
+
+	// Use defer to rollback if we encounter an error
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+
+	results := make([]goserver.Transaction, 0, len(inputs))
+	transactionModels := make([]*models.Transaction, 0, len(inputs))
+
+	// First validate all transactions before creating any
+	for i, input := range inputs {
+		if err := s.validateTransaction(userID, input); err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("validation failed for transaction %d: %w", i, err)
+		}
+
+		t := models.TransactionToDB(input, userID)
+		t.ID = uuid.New()
+		transactionModels = append(transactionModels, t)
+	}
+
+	// Create all transactions
+	for i, t := range transactionModels {
+		if err := tx.Create(t).Error; err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to create transaction %d: %w", i, err)
+		}
+
+		// Record audit log (errors are logged but don't fail the batch)
+		if err := s.recordAuditLog(tx, userID, "Transaction", t.ID.String(), "CREATED", t); err != nil {
+			s.log.Error("Failed to record audit log", "error", err, "transactionID", t.ID)
+		}
+
+		// Invalidate reconciliation if we inserted a transaction in the past
+		s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date)
+
+		results = append(results, t.FromDB())
+	}
+
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		return nil, fmt.Errorf("failed to commit transaction batch: %w", err)
+	}
+
+	s.log.Info("Transaction batch created", "count", len(results), "userID", userID)
+
+	return results, nil
+}
+
 func (s *storage) UpdateTransaction(userID string, id string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)

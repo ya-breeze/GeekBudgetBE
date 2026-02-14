@@ -61,6 +61,9 @@ type CurrencyStorage interface {
 type TransactionStorage interface {
 	GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error)
 	CreateTransaction(userID string, transaction goserver.TransactionNoIdInterface) (goserver.Transaction, error)
+	// CreateTransactionsBatch atomically creates multiple transactions in a single database transaction.
+	// If any transaction fails to be created, the entire batch is rolled back.
+	CreateTransactionsBatch(userID string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error)
 	UpdateTransaction(
 		userID string, id string, transaction goserver.TransactionNoIdInterface,
 	) (goserver.Transaction, error)

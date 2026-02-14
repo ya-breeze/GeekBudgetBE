@@ -344,10 +344,12 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	// Keep track of visited transactions within this batch to handle self-duplicates
 	visitedExternalIDs := make(map[string]bool)
 
-	// save transactions to the database
-	cnt := 0
-	for _, t := range transactions {
+	// Prepare transactions for batch creation
+	// First pass: validate, deduplicate, and apply matchers
+	transactionsToSave := make([]goserver.TransactionNoId, 0)
+	matcherIDsToConfirm := make([]string, 0)
 
+	for _, t := range transactions {
 		// Imported transactions should have at least one external ID filled by the bank importer.
 		// Revolut importer now initiates 2 IDs (legacy hash + stable hash)
 		if len(t.ExternalIds) == 0 {
@@ -466,27 +468,42 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 				t.MatcherId = matcher.Matcher.Id
 				t.IsAuto = true
 
-				// auto-confirm the matcher
-				if err := s.db.AddMatcherConfirmation(userID, t.MatcherId, true); err != nil {
-					s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", t.MatcherId, "error", err)
-				}
+				// Collect matcher IDs to confirm after successful batch save
+				matcherIDsToConfirm = append(matcherIDsToConfirm, t.MatcherId)
 			}
 		}
 
-		_, err = s.db.CreateTransaction(userID, &t)
-		if err != nil {
-			return nil, fmt.Errorf("can't save transaction: %w", err)
-		}
-		s.logger.Info("Imported transaction saved to DB")
+		// Add to batch for saving
+		transactionsToSave = append(transactionsToSave, t)
 
 		// Mark as visited
 		for _, extID := range t.ExternalIds {
 			visitedExternalIDs[extID] = true
 		}
-
-		cnt++
 	}
-	s.logger.With("count", cnt).Info("All new imported transactions saved to DB")
+
+	// Second pass: Atomically save all transactions in a batch
+	// If any transaction fails, the entire import is rolled back
+	cnt := len(transactionsToSave)
+	if cnt > 0 {
+		transactionInterfaces := make([]goserver.TransactionNoIdInterface, len(transactionsToSave))
+		for i := range transactionsToSave {
+			transactionInterfaces[i] = &transactionsToSave[i]
+		}
+
+		_, err = s.db.CreateTransactionsBatch(userID, transactionInterfaces)
+		if err != nil {
+			return nil, fmt.Errorf("can't save transaction batch (all %d transactions rolled back): %w", cnt, err)
+		}
+		s.logger.With("count", cnt).Info("All imported transactions saved to DB atomically")
+
+		// Now confirm matchers (this is safe to do after batch save)
+		for _, matcherID := range matcherIDsToConfirm {
+			if err := s.db.AddMatcherConfirmation(userID, matcherID, true); err != nil {
+				s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", matcherID, "error", err)
+			}
+		}
+	}
 
 	suspiciousCnt := 0
 	if checkMissing {

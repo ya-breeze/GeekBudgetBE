@@ -83,18 +83,20 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{runtimeMatcher}, nil)
 
-			// Expect auto-confirmation
-			mockDB.EXPECT().AddMatcherConfirmation(userID, matcherID.String(), true).Return(nil)
-
-			// Expect transaction creation with auto-converted fields
-			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).DoAndReturn(func(uid string, t *goserver.TransactionNoId) (goserver.Transaction, error) {
+			// Expect batch transaction creation with auto-converted fields
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+				Expect(transactions).To(HaveLen(1))
+				t := transactions[0].(*goserver.TransactionNoId)
 				Expect(t.Description).To(Equal("Converted Desc"))
 				Expect(t.IsAuto).To(BeTrue())
 				Expect(t.MatcherId).To(Equal(matcherID.String()))
 				// Also check movements accountId override
 				Expect(t.Movements[0].AccountId).To(Equal("acc1"))
-				return goserver.Transaction{Id: uuid.New().String()}, nil
+				return []goserver.Transaction{{Id: uuid.New().String()}}, nil
 			})
+
+			// Expect auto-confirmation (called after batch save)
+			mockDB.EXPECT().AddMatcherConfirmation(userID, matcherID.String(), true).Return(nil)
 
 			// Mock updateLastImportFields
 			mockDB.EXPECT().GetBankImporter(userID, "imp1").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil).AnyTimes()
@@ -133,12 +135,14 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetTransactionsIncludingDeleted(userID, gomock.Any(), gomock.Any()).Return([]goserver.Transaction{}, nil)
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{runtimeMatcher}, nil)
 
-			// Expect normal transaction creation without auto-conversion
-			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).DoAndReturn(func(uid string, t *goserver.TransactionNoId) (goserver.Transaction, error) {
+			// Expect normal batch transaction creation without auto-conversion
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+				Expect(transactions).To(HaveLen(1))
+				t := transactions[0].(*goserver.TransactionNoId)
 				Expect(t.Description).To(Equal("Test Transaction")) // Unchanged
 				Expect(t.IsAuto).To(BeFalse())
 				Expect(t.MatcherId).To(BeEmpty())
-				return goserver.Transaction{Id: uuid.New().String()}, nil
+				return []goserver.Transaction{{Id: uuid.New().String()}}, nil
 			})
 
 			// Mock updateLastImportFields
@@ -184,11 +188,13 @@ var _ = Describe("BankImporters API", func() {
 				{Matcher: &matcher2, DescriptionRegexp: r2},
 			}, nil)
 
-			// Expect NORMAL transaction creation (not auto-converted) because of conflict
-			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).DoAndReturn(func(uid string, t *goserver.TransactionNoId) (goserver.Transaction, error) {
+			// Expect NORMAL batch transaction creation (not auto-converted) because of conflict
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+				Expect(transactions).To(HaveLen(1))
+				t := transactions[0].(*goserver.TransactionNoId)
 				Expect(t.IsAuto).To(BeFalse())
 				Expect(t.MatcherId).To(BeEmpty())
-				return goserver.Transaction{Id: uuid.New().String()}, nil
+				return []goserver.Transaction{{Id: uuid.New().String()}}, nil
 			})
 
 			// Mock updateLastImportFields
@@ -255,20 +261,21 @@ var _ = Describe("BankImporters API", func() {
 
 			importedTransactions := []goserver.TransactionNoId{txNew, txDuplicateDB, txBatch1, txBatch2}
 
-			// Expect CreateTransaction ONLY for txNew and txBatch1
+			// Expect CreateTransactionsBatch ONLY for txNew and txBatch1
 			// DuplicateDB and Batch2 should be skipped
 
-			savedTxs := 0
 			// We can capture the arguments to verify WHICH ones are saved
-			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).DoAndReturn(func(uid string, t *goserver.TransactionNoId) (goserver.Transaction, error) {
-				if t.Description == "Duplicate DB" {
-					Fail("Should not save duplicate from DB")
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+				// Should save exactly 2 transactions (txNew and txBatch1)
+				Expect(transactions).To(HaveLen(2))
+				for _, tx := range transactions {
+					t := tx.(*goserver.TransactionNoId)
+					if t.Description == "Duplicate DB" {
+						Fail("Should not save duplicate from DB")
+					}
 				}
-				// We can't easily distinguish Batch1 and Batch2 by content since they are identical,
-				// but the logic guarantees only one is saved.
-				savedTxs++
-				return goserver.Transaction{Id: uuid.New().String()}, nil
-			}).Times(2) // We expect exactly 2 calls
+				return []goserver.Transaction{{Id: uuid.New().String()}, {Id: uuid.New().String()}}, nil
+			})
 
 			// Mock updateLastImportFields
 			mockDB.EXPECT().GetBankImporter(userID, "imp-dedup").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil).AnyTimes()
@@ -643,7 +650,7 @@ var _ = Describe("BankImporters API", func() {
 					Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: currencyID}},
 				},
 			}
-			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).Return(goserver.Transaction{}, nil)
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).Return([]goserver.Transaction{{}}, nil)
 
 			_, err := sut.saveImportedTransactions(userID, importerID, importedInfo, transactions, true) // checkMissing=true
 			Expect(err).ToNot(HaveOccurred())
@@ -692,7 +699,7 @@ var _ = Describe("BankImporters API", func() {
 					Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(200), CurrencyId: currencyID}},
 				},
 			}
-			mockDB.EXPECT().CreateTransaction(userID, gomock.Any()).Return(goserver.Transaction{}, nil)
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).Return([]goserver.Transaction{{}}, nil)
 
 			_, err := sut.saveImportedTransactions(userID, importerID, importedInfo, transactions, false) // checkMissing=false
 			Expect(err).ToNot(HaveOccurred())

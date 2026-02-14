@@ -289,6 +289,21 @@ func (mr *MockStorageMockRecorder) CreateTransaction(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockStorage)(nil).CreateTransaction), arg0, arg1)
 }
 
+// CreateTransactionsBatch mocks base method.
+func (m *MockStorage) CreateTransactionsBatch(arg0 string, arg1 []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTransactionsBatch", arg0, arg1)
+	ret0, _ := ret[0].([]goserver.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTransactionsBatch indicates an expected call of CreateTransactionsBatch.
+func (mr *MockStorageMockRecorder) CreateTransactionsBatch(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransactionsBatch", reflect.TypeOf((*MockStorage)(nil).CreateTransactionsBatch), arg0, arg1)
+}
+
 // CreateUser mocks base method.
 func (m *MockStorage) CreateUser(arg0, arg1 string) (*models.User, error) {
 	m.ctrl.T.Helper()
