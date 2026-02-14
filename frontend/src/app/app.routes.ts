@@ -40,6 +40,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: 'reconciliation/history/:accountId/:currencyId',
+                loadComponent: () =>
+                    import('./features/reconciliation/pages/reconciliation-history/reconciliation-history.component').then(
+                        (m) => m.ReconciliationHistoryComponent,
+                    ),
+            },
+            {
                 path: 'transactions/:id',
                 loadComponent: () =>
                     import('./features/transactions/transaction-detail/transaction-detail.component').then(

@@ -6,6 +6,7 @@ export type { AccountAggregation } from './models/account-aggregation';
 export type { AccountHistory } from './models/account-history';
 export type { AccountNoId } from './models/account-no-id';
 export type { Aggregation } from './models/aggregation';
+export type { AnalyzeDisbalanceRequest } from './models/analyze-disbalance-request';
 export type { AuthData } from './models/auth-data';
 export type { BankAccountInfo } from './models/bank-account-info';
 export type { BankImporter } from './models/bank-importer';
@@ -18,6 +19,9 @@ export type { ConvertUnprocessedTransaction200Response } from './models/convert-
 export type { Currency } from './models/currency';
 export type { CurrencyAggregation } from './models/currency-aggregation';
 export type { CurrencyNoId } from './models/currency-no-id';
+export type { DisbalanceAnalysis } from './models/disbalance-analysis';
+export type { DisbalanceCandidate } from './models/disbalance-candidate';
+export type { DisbalanceCandidateTransaction } from './models/disbalance-candidate-transaction';
 export type { EnableReconciliationRequest } from './models/enable-reconciliation-request';
 export type { Entity } from './models/entity';
 export type { ImportResult } from './models/import-result';

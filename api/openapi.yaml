@@ -1528,6 +1528,62 @@ paths:
               schema:
                 $ref: "#/components/schemas/Reconciliation"
 
+  /v1/accounts/{id}/reconciliation-history:
+    get:
+      tags:
+        - reconciliation
+      summary: return all reconciliation records for an account+currency pair
+      operationId: getReconciliationHistory
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "currencyId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: reconciliation history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reconciliation"
+
+  /v1/accounts/{id}/analyze-disbalance:
+    post:
+      tags:
+        - reconciliation
+      summary: find transactions that might explain the disbalance
+      operationId: analyzeDisbalance
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeDisbalanceRequest"
+      responses:
+        "200":
+          description: disbalance analysis results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DisbalanceAnalysis"
+
 security:
   - BearerAuth: []
 
@@ -2385,3 +2441,75 @@ components:
       required:
         - currencyId
         - initialBalance
+
+    AnalyzeDisbalanceRequest:
+      type: object
+      properties:
+        currencyId:
+          type: string
+          format: uuid
+        targetDelta:
+          type: number
+          format: double
+      required:
+        - currencyId
+        - targetDelta
+
+    DisbalanceAnalysis:
+      type: object
+      properties:
+        delta:
+          type: number
+          format: double
+        transactionCount:
+          type: integer
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/DisbalanceCandidate"
+      required:
+        - delta
+        - transactionCount
+        - candidates
+
+    DisbalanceCandidate:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DisbalanceCandidateTransaction"
+        sum:
+          type: number
+          format: double
+        difference:
+          type: number
+          format: double
+        type:
+          type: string
+          enum: [exact_single, exact_pair, exact_subset, approximate]
+      required:
+        - transactions
+        - sum
+        - difference
+        - type
+
+    DisbalanceCandidateTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+        description:
+          type: string
+        amount:
+          type: number
+          format: double
+      required:
+        - id
+        - date
+        - description
+        - amount

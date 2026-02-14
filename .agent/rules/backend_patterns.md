@@ -44,7 +44,7 @@ for {
 Use the `updateEntity` helper in `backend/pkg/server/api/helpers.go` to handle the standard update flow (UserID extraction, DB update call, and error mapping). This reduces boilerplate in API handlers.
 
 ### Generic Update Helper (Storage Layer)
-Use the `performUpdate` helper in `backend/pkg/database/storage.go` for standard CRUD updates. It handles the `UUID parsing -> Record fetching -> Model conversion -> Save -> Result conversion` sequence generically.
+Use the `performUpdate` helper in `backend/pkg/database/storage_common.go` for standard CRUD updates. It handles the `UUID parsing -> Record fetching -> Model conversion -> Save -> Result conversion` sequence generically.
 
 ## Testing
 

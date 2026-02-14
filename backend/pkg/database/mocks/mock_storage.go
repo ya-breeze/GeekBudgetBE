@@ -848,6 +848,21 @@ func (mr *MockStorageMockRecorder) GetReconciliationsForAccount(arg0, arg1 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReconciliationsForAccount", reflect.TypeOf((*MockStorage)(nil).GetReconciliationsForAccount), arg0, arg1)
 }
 
+// GetReconciliationsForAccountAndCurrency mocks base method.
+func (m *MockStorage) GetReconciliationsForAccountAndCurrency(arg0, arg1, arg2 string) ([]goserver.Reconciliation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReconciliationsForAccountAndCurrency", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]goserver.Reconciliation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReconciliationsForAccountAndCurrency indicates an expected call of GetReconciliationsForAccountAndCurrency.
+func (mr *MockStorageMockRecorder) GetReconciliationsForAccountAndCurrency(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReconciliationsForAccountAndCurrency", reflect.TypeOf((*MockStorage)(nil).GetReconciliationsForAccountAndCurrency), arg0, arg1, arg2)
+}
+
 // GetTransaction mocks base method.
 func (m *MockStorage) GetTransaction(arg0, arg1 string) (goserver.Transaction, error) {
 	m.ctrl.T.Helper()

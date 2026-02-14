@@ -22,7 +22,7 @@ pkg/
 ├── auth/              - JWT authentication
 ├── bankimporters/     - Bank-specific importers (FIO, KB, Revolut)
 ├── config/            - Viper configuration
-├── database/          - GORM models, migrations, storage interface, mocks
+├── database/          - GORM models, split SQLite storage implementation (storage.go, storage_*.go)
 ├── generated/         - Auto-generated from OpenAPI (DO NOT EDIT)
 ├── server/            - HTTP server, middleware, handlers
 └── utils/             - Utilities

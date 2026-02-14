@@ -27,6 +27,10 @@ type ReconciliationAPIService interface {
 	GetTransactionsSinceReconciliation(ctx context.Context, id string, currencyId string) (ImplResponse, error)
 	// EnableAccountReconciliation - enable manual reconciliation for accounts without bank importer
 	EnableAccountReconciliation(ctx context.Context, id string, enableReconciliationRequest EnableReconciliationRequest) (ImplResponse, error)
+	// GetReconciliationHistory - return all reconciliation records for an account+currency pair
+	GetReconciliationHistory(ctx context.Context, id string, currencyId string) (ImplResponse, error)
+	// AnalyzeDisbalance - find transactions that might explain the disbalance
+	AnalyzeDisbalance(ctx context.Context, id string, analyzeDisbalanceRequest AnalyzeDisbalanceRequest) (ImplResponse, error)
 }
 
 // ReconciliationAPIService is a service that implements the logic for the ReconciliationAPIServicer
@@ -82,4 +86,26 @@ func (s *ReconciliationAPIServiceImpl) EnableAccountReconciliation(ctx context.C
 	// return Response(200, Reconciliation{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("EnableAccountReconciliation method not implemented")
+}
+
+// GetReconciliationHistory - return all reconciliation records for an account+currency pair
+func (s *ReconciliationAPIServiceImpl) GetReconciliationHistory(ctx context.Context, id string, currencyId string) (ImplResponse, error) {
+	// TODO - update GetReconciliationHistory with the required logic for this service method.
+	// Add api_reconciliation_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, []Reconciliation{}) or use other options such as http.Ok ...
+	// return Response(200, []Reconciliation{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("GetReconciliationHistory method not implemented")
+}
+
+// AnalyzeDisbalance - find transactions that might explain the disbalance
+func (s *ReconciliationAPIServiceImpl) AnalyzeDisbalance(ctx context.Context, id string, analyzeDisbalanceRequest AnalyzeDisbalanceRequest) (ImplResponse, error) {
+	// TODO - update AnalyzeDisbalance with the required logic for this service method.
+	// Add api_reconciliation_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, DisbalanceAnalysis{}) or use other options such as http.Ok ...
+	// return Response(200, DisbalanceAnalysis{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("AnalyzeDisbalance method not implemented")
 }

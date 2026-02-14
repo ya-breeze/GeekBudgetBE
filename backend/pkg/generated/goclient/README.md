@@ -125,7 +125,9 @@ Class | Method | HTTP request | Description
 *MergedTransactionsAPI* | [**UnmergeMergedTransaction**](docs/MergedTransactionsAPI.md#unmergemergedtransaction) | **Post** /v1/mergedTransactions/{id}/unmerge | restore a merged transaction
 *NotificationsAPI* | [**DeleteNotification**](docs/NotificationsAPI.md#deletenotification) | **Delete** /v1/notifications/{id} | delete notification
 *NotificationsAPI* | [**GetNotifications**](docs/NotificationsAPI.md#getnotifications) | **Get** /v1/notifications | return all notifications
+*ReconciliationAPI* | [**AnalyzeDisbalance**](docs/ReconciliationAPI.md#analyzedisbalance) | **Post** /v1/accounts/{id}/analyze-disbalance | find transactions that might explain the disbalance
 *ReconciliationAPI* | [**EnableAccountReconciliation**](docs/ReconciliationAPI.md#enableaccountreconciliation) | **Post** /v1/accounts/{id}/enable-reconciliation | enable manual reconciliation for accounts without bank importer
+*ReconciliationAPI* | [**GetReconciliationHistory**](docs/ReconciliationAPI.md#getreconciliationhistory) | **Get** /v1/accounts/{id}/reconciliation-history | return all reconciliation records for an account+currency pair
 *ReconciliationAPI* | [**GetReconciliationStatus**](docs/ReconciliationAPI.md#getreconciliationstatus) | **Get** /v1/reconciliation/status | get reconciliation status for all asset accounts
 *ReconciliationAPI* | [**GetTransactionsSinceReconciliation**](docs/ReconciliationAPI.md#gettransactionssincereconciliation) | **Get** /v1/accounts/{id}/transactions-since-reconciliation | return transactions since last reconciliation
 *ReconciliationAPI* | [**ReconcileAccount**](docs/ReconciliationAPI.md#reconcileaccount) | **Post** /v1/accounts/{id}/reconcile | manually mark an account as reconciled
@@ -149,6 +151,7 @@ Class | Method | HTTP request | Description
  - [AccountAggregation](docs/AccountAggregation.md)
  - [AccountNoID](docs/AccountNoID.md)
  - [Aggregation](docs/Aggregation.md)
+ - [AnalyzeDisbalanceRequest](docs/AnalyzeDisbalanceRequest.md)
  - [AuthData](docs/AuthData.md)
  - [Authorize200Response](docs/Authorize200Response.md)
  - [BankAccountInfo](docs/BankAccountInfo.md)
@@ -168,6 +171,9 @@ Class | Method | HTTP request | Description
  - [Currency](docs/Currency.md)
  - [CurrencyAggregation](docs/CurrencyAggregation.md)
  - [CurrencyNoID](docs/CurrencyNoID.md)
+ - [DisbalanceAnalysis](docs/DisbalanceAnalysis.md)
+ - [DisbalanceCandidate](docs/DisbalanceCandidate.md)
+ - [DisbalanceCandidateTransaction](docs/DisbalanceCandidateTransaction.md)
  - [EnableReconciliationRequest](docs/EnableReconciliationRequest.md)
  - [Entity](docs/Entity.md)
  - [ImportResult](docs/ImportResult.md)

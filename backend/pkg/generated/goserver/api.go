@@ -141,6 +141,8 @@ type ReconciliationAPIRouter interface {
 	ReconcileAccount(http.ResponseWriter, *http.Request)
 	GetTransactionsSinceReconciliation(http.ResponseWriter, *http.Request)
 	EnableAccountReconciliation(http.ResponseWriter, *http.Request)
+	GetReconciliationHistory(http.ResponseWriter, *http.Request)
+	AnalyzeDisbalance(http.ResponseWriter, *http.Request)
 }
 
 // TransactionsAPIRouter defines the required methods for binding the api requests to a responses for the TransactionsAPI
@@ -306,6 +308,8 @@ type ReconciliationAPIServicer interface {
 	ReconcileAccount(context.Context, string, ReconcileAccountRequest) (ImplResponse, error)
 	GetTransactionsSinceReconciliation(context.Context, string, string) (ImplResponse, error)
 	EnableAccountReconciliation(context.Context, string, EnableReconciliationRequest) (ImplResponse, error)
+	GetReconciliationHistory(context.Context, string, string) (ImplResponse, error)
+	AnalyzeDisbalance(context.Context, string, AnalyzeDisbalanceRequest) (ImplResponse, error)
 }
 
 // TransactionsAPIServicer defines the api actions for the TransactionsAPI service

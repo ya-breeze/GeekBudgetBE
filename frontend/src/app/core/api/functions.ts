@@ -127,3 +127,7 @@ export type { GetTransactionsSinceReconciliation$Params } from './fn/reconciliat
 export { getTransactionsSinceReconciliation } from './fn/reconciliation/get-transactions-since-reconciliation';
 export type { EnableAccountReconciliation$Params } from './fn/reconciliation/enable-account-reconciliation';
 export { enableAccountReconciliation } from './fn/reconciliation/enable-account-reconciliation';
+export type { GetReconciliationHistory$Params } from './fn/reconciliation/get-reconciliation-history';
+export { getReconciliationHistory } from './fn/reconciliation/get-reconciliation-history';
+export type { AnalyzeDisbalance$Params } from './fn/reconciliation/analyze-disbalance';
+export { analyzeDisbalance } from './fn/reconciliation/analyze-disbalance';

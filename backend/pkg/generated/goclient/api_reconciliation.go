@@ -23,6 +23,119 @@ import (
 // ReconciliationAPIService ReconciliationAPI service
 type ReconciliationAPIService service
 
+type ApiAnalyzeDisbalanceRequest struct {
+	ctx                      context.Context
+	ApiService               *ReconciliationAPIService
+	id                       string
+	analyzeDisbalanceRequest *AnalyzeDisbalanceRequest
+}
+
+func (r ApiAnalyzeDisbalanceRequest) AnalyzeDisbalanceRequest(analyzeDisbalanceRequest AnalyzeDisbalanceRequest) ApiAnalyzeDisbalanceRequest {
+	r.analyzeDisbalanceRequest = &analyzeDisbalanceRequest
+	return r
+}
+
+func (r ApiAnalyzeDisbalanceRequest) Execute() (*DisbalanceAnalysis, *http.Response, error) {
+	return r.ApiService.AnalyzeDisbalanceExecute(r)
+}
+
+/*
+AnalyzeDisbalance find transactions that might explain the disbalance
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiAnalyzeDisbalanceRequest
+*/
+func (a *ReconciliationAPIService) AnalyzeDisbalance(ctx context.Context, id string) ApiAnalyzeDisbalanceRequest {
+	return ApiAnalyzeDisbalanceRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return DisbalanceAnalysis
+func (a *ReconciliationAPIService) AnalyzeDisbalanceExecute(r ApiAnalyzeDisbalanceRequest) (*DisbalanceAnalysis, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *DisbalanceAnalysis
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ReconciliationAPIService.AnalyzeDisbalance")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/v1/accounts/{id}/analyze-disbalance"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.analyzeDisbalanceRequest == nil {
+		return localVarReturnValue, nil, reportError("analyzeDisbalanceRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.analyzeDisbalanceRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiEnableAccountReconciliationRequest struct {
 	ctx                         context.Context
 	ApiService                  *ReconciliationAPIService
@@ -99,6 +212,118 @@ func (a *ReconciliationAPIService) EnableAccountReconciliationExecute(r ApiEnabl
 	}
 	// body params
 	localVarPostBody = r.enableReconciliationRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiGetReconciliationHistoryRequest struct {
+	ctx        context.Context
+	ApiService *ReconciliationAPIService
+	id         string
+	currencyId *string
+}
+
+func (r ApiGetReconciliationHistoryRequest) CurrencyId(currencyId string) ApiGetReconciliationHistoryRequest {
+	r.currencyId = &currencyId
+	return r
+}
+
+func (r ApiGetReconciliationHistoryRequest) Execute() ([]Reconciliation, *http.Response, error) {
+	return r.ApiService.GetReconciliationHistoryExecute(r)
+}
+
+/*
+GetReconciliationHistory return all reconciliation records for an account+currency pair
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id
+	@return ApiGetReconciliationHistoryRequest
+*/
+func (a *ReconciliationAPIService) GetReconciliationHistory(ctx context.Context, id string) ApiGetReconciliationHistoryRequest {
+	return ApiGetReconciliationHistoryRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return []Reconciliation
+func (a *ReconciliationAPIService) GetReconciliationHistoryExecute(r ApiGetReconciliationHistoryRequest) ([]Reconciliation, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue []Reconciliation
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ReconciliationAPIService.GetReconciliationHistory")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/v1/accounts/{id}/reconciliation-history"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.currencyId == nil {
+		return localVarReturnValue, nil, reportError("currencyId is required and must be specified")
+	}
+
+	parameterAddToHeaderOrQuery(localVarQueryParams, "currencyId", r.currencyId, "")
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

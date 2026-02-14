@@ -11,6 +11,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Router, RouterModule } from '@angular/router';
+import { signal } from '@angular/core';
+import { DisbalanceAnalysis } from '../../core/api/models/disbalance-analysis';
 
 const RECONCILIATION_TOLERANCE = 0.01;
 @Component({
@@ -25,6 +28,7 @@ const RECONCILIATION_TOLERANCE = 0.01;
         MatDialogModule,
         MatSnackBarModule,
         MatProgressSpinnerModule,
+        RouterModule,
     ],
     templateUrl: './reconciliation.component.html',
     styleUrls: ['./reconciliation.component.scss'],
@@ -40,6 +44,7 @@ const RECONCILIATION_TOLERANCE = 0.01;
 export class ReconciliationComponent implements OnInit {
     private reconciliationService = inject(ReconciliationService);
     private snackBar = inject(MatSnackBar);
+    private router = inject(Router);
 
     statuses: ReconciliationStatus[] = [];
     loading = true;
@@ -56,6 +61,9 @@ export class ReconciliationComponent implements OnInit {
     expandedElement: ReconciliationStatus | null = null;
     transactionsSinceRec: Transaction[] = [];
     loadingTransactions = false;
+
+    disbalanceAnalysis = signal<DisbalanceAnalysis | null>(null);
+    analyzingDisbalance = signal(false);
 
     ngOnInit(): void {
         this.loadStatuses();
@@ -114,6 +122,7 @@ export class ReconciliationComponent implements OnInit {
             this.expandedElement = null;
         } else {
             this.expandedElement = status;
+            this.disbalanceAnalysis.set(null); // Reset analysis on expansion
             this.loadTransactionsSince(status);
         }
     }
@@ -141,6 +150,35 @@ export class ReconciliationComponent implements OnInit {
             });
     }
 
+    analyzeDisbalance(status: ReconciliationStatus): void {
+        if (!status.accountId || !status.currencyId || status.delta === undefined) return;
+
+        this.analyzingDisbalance.set(true);
+        this.disbalanceAnalysis.set(null);
+
+        this.reconciliationService
+            .analyzeDisbalance(status.accountId, {
+                currencyId: status.currencyId,
+                targetDelta: status.delta,
+            })
+            .subscribe({
+                next: (result) => {
+                    this.disbalanceAnalysis.set(result);
+                    this.analyzingDisbalance.set(false);
+                },
+                error: (_err: any) => {
+                    this.snackBar.open('Failed to analyze disbalance', 'Close', { duration: 3000 });
+                    this.analyzingDisbalance.set(false);
+                },
+            });
+    }
+
+    isTransactionInCandidates(txId: string): boolean {
+        const analysis = this.disbalanceAnalysis();
+        if (!analysis) return false;
+        return analysis.candidates.some((c) => c.transactions.some((t) => t.id === txId));
+    }
+
     getStatusClass(status: ReconciliationStatus): string {
         if (status.hasUnprocessedTransactions) return 'status-yellow';
         if (Math.abs(status.delta || 0) > RECONCILIATION_TOLERANCE) return 'status-red';
@@ -152,7 +190,7 @@ export class ReconciliationComponent implements OnInit {
 
         if (
             confirm(
-                `Enable manual reconciliation starting with balance ${status.appBalance} ${status.currencySymbol}?`,
+                `Enable manual reconciliation for account "${status.accountName}" starting with balance ${status.appBalance} ${status.currencySymbol}?`,
             )
         ) {
             this.reconciliationService

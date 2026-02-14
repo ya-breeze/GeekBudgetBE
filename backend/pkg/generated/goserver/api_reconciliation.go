@@ -72,6 +72,16 @@ func (c *ReconciliationAPIController) Routes() Routes {
 			"/v1/accounts/{id}/enable-reconciliation",
 			c.EnableAccountReconciliation,
 		},
+		"GetReconciliationHistory": Route{
+			strings.ToUpper("Get"),
+			"/v1/accounts/{id}/reconciliation-history",
+			c.GetReconciliationHistory,
+		},
+		"AnalyzeDisbalance": Route{
+			strings.ToUpper("Post"),
+			"/v1/accounts/{id}/analyze-disbalance",
+			c.AnalyzeDisbalance,
+		},
 	}
 }
 
@@ -176,6 +186,71 @@ func (c *ReconciliationAPIController) EnableAccountReconciliation(w http.Respons
 		return
 	}
 	result, err := c.service.EnableAccountReconciliation(r.Context(), idParam, enableReconciliationRequestParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// GetReconciliationHistory - return all reconciliation records for an account+currency pair
+func (c *ReconciliationAPIController) GetReconciliationHistory(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	query, err := parseQuery(r.URL.RawQuery)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	var currencyIdParam string
+	if query.Has("currencyId") {
+		param := query.Get("currencyId")
+
+		currencyIdParam = param
+	} else {
+		c.errorHandler(w, r, &RequiredError{Field: "currencyId"}, nil)
+		return
+	}
+	result, err := c.service.GetReconciliationHistory(r.Context(), idParam, currencyIdParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// AnalyzeDisbalance - find transactions that might explain the disbalance
+func (c *ReconciliationAPIController) AnalyzeDisbalance(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	idParam := params["id"]
+	if idParam == "" {
+		c.errorHandler(w, r, &RequiredError{"id"}, nil)
+		return
+	}
+	analyzeDisbalanceRequestParam := AnalyzeDisbalanceRequest{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&analyzeDisbalanceRequestParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertAnalyzeDisbalanceRequestRequired(analyzeDisbalanceRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertAnalyzeDisbalanceRequestConstraints(analyzeDisbalanceRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.AnalyzeDisbalance(r.Context(), idParam, analyzeDisbalanceRequestParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

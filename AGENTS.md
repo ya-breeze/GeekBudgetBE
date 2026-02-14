@@ -17,7 +17,11 @@ GeekBudgetBE/
 │   │   ├── auth/          # JWT authentication
 │   │   ├── bankimporters/ # FIO, KB, Revolut converters/fetchers
 │   │   ├── config/        # Viper configuration
-│   │   ├── database/      # GORM models, SQLite storage interface, migrations, mocks
+│   │   ├── database/      # GORM models, split SQLite storage implementation, migrations, mocks
+│   │   │   ├── storage.go           # Composed Storage interface & struct definition
+│   │   │   ├── storage_*.go         # Domain-specific implementations (user, account, etc.)
+│   │   │   ├── storage_common.go    # Shared internal helpers
+│   │   │   └── bulk_types.go        # Shared data structures for bulk operations
 │   │   ├── generated/     # Auto-generated code from OpenAPI (DO NOT EDIT)
 │   │   ├── server/        # HTTP server, middlewares, API handlers, web handlers, background jobs
 │   │   └── utils/         # Utility functions
@@ -114,7 +118,7 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 8. **Financial Accuracy**: Always use `decimal.Decimal` (from `github.com/shopspring/decimal`) for money. In tests, use `.Equal()` instead of `==`. In the frontend, wrap amounts in `Number()` for safety.
 9. **API Strictness**: When updating transactions, ensure the request body does NOT contain an `id` or other `Entity` fields. The backend decodes directly into `TransactionNoId` (or similar interface) and will fail with `json: unknown field "id"` if extra fields are present. Strip these fields in the frontend service or component before sending.
 10. **For Next.js frontend**: API calls should use the axios client in `app/lib/api/client.ts` with JWT interceptor. Use TanStack Query hooks in `app/lib/api/hooks/` for data fetching.
-11. **Refactoring Workflow**: Always ensure existing code is covered by tests *before* refactoring or fixing bugs. If tests are missing, add them first (e.g., `storage_images_test.go`).
+11. **Refactoring Workflow**: Always ensure existing code is covered by tests *before* refactoring or fixing bugs. If tests are missing, add them first (e.g., `storage_images_test.go`). When refactoring `Storage`, split domain logic into separate `storage_DOMAIN.go` files and use Interface Segregation for the main `Storage` interface.
 
 ## Testing
 
@@ -159,7 +163,7 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 - **Service layer:** `ServiceImpl` structs with `logger` and `db` fields, methods take `context.Context` and `userID`.
 - **API handlers:** Extract `userID` from context via `ctx.Value(common.UserIDKey)`, return `goserver.ImplResponse`.
 - **Web handlers:** Use `r.ValidateUserID()` for auth, `utils.CreateTemplateData()` for template data, `tmpl.ExecuteTemplate()` for rendering.
-- **Storage interface:** All DB operations go through the `database.Storage` interface; mock implementation in `database/mocks/` for testing.
+- **Storage interface:** All DB operations go through the `database.Storage` interface. The implementation is split into domain-specific files (`storage_user.go`, `storage_account.go`, etc.) and the main `Storage` interface is a composition of fine-grained interfaces (`UserStorage`, `AccountStorage`, etc.). Mock implementation is in `database/mocks/` for testing.
 - **Bank importers:** Implement the `Importer` interface in `pkg/bankimporters/`.
 
 ## Key Environment Variables

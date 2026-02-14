@@ -1,0 +1,71 @@
+@use '@angular/material' as mat;
+
+.reconciliation-container {
+    padding: 20px;
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+
+        h1 {
+            margin: 0;
+        }
+    }
+}
+
+.loading-shade {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+}
+
+table {
+    width: 100%;
+    background: white;
+}
+
+.delta-zero {
+    color: #4caf50;
+}
+
+.delta-nonzero {
+    color: #f44336;
+    font-weight: 500;
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+
+    mat-icon {
+        margin-right: 8px;
+    }
+
+    &.alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.small {
+    font-size: 0.85em;
+    scale: 0.8;
+}
+
+.no-data {
+    padding: 48px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}

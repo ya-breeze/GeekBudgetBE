@@ -26,6 +26,7 @@ docs/AccountNoID.md
 docs/AccountsAPI.md
 docs/Aggregation.md
 docs/AggregationsAPI.md
+docs/AnalyzeDisbalanceRequest.md
 docs/AuthAPI.md
 docs/AuthData.md
 docs/Authorize200Response.md
@@ -49,6 +50,9 @@ docs/CurrenciesAPI.md
 docs/Currency.md
 docs/CurrencyAggregation.md
 docs/CurrencyNoID.md
+docs/DisbalanceAnalysis.md
+docs/DisbalanceCandidate.md
+docs/DisbalanceCandidateTransaction.md
 docs/EnableReconciliationRequest.md
 docs/Entity.md
 docs/ExportAPI.md
@@ -85,6 +89,7 @@ model_account.go
 model_account_aggregation.go
 model_account_no_id.go
 model_aggregation.go
+model_analyze_disbalance_request.go
 model_auth_data.go
 model_authorize_200_response.go
 model_bank_account_info.go
@@ -104,6 +109,9 @@ model_convert_unprocessed_transaction200_response.go
 model_currency.go
 model_currency_aggregation.go
 model_currency_no_id.go
+model_disbalance_analysis.go
+model_disbalance_candidate.go
+model_disbalance_candidate_transaction.go
 model_enable_reconciliation_request.go
 model_entity.go
 model_import_result.go

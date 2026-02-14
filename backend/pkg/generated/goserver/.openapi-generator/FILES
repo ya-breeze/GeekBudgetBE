@@ -42,6 +42,7 @@ go/model_account.go
 go/model_account_aggregation.go
 go/model_account_no_id.go
 go/model_aggregation.go
+go/model_analyze_disbalance_request.go
 go/model_auth_data.go
 go/model_authorize_200_response.go
 go/model_bank_account_info.go
@@ -61,6 +62,9 @@ go/model_convert_unprocessed_transaction200_response.go
 go/model_currency.go
 go/model_currency_aggregation.go
 go/model_currency_no_id.go
+go/model_disbalance_analysis.go
+go/model_disbalance_candidate.go
+go/model_disbalance_candidate_transaction.go
 go/model_enable_reconciliation_request.go
 go/model_entity.go
 go/model_import_result.go

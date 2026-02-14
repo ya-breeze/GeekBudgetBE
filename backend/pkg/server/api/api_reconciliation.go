@@ -244,3 +244,60 @@ func (s *ReconciliationAPIServiceImpl) EnableAccountReconciliation(
 
 	return goserver.Response(200, rec), nil
 }
+
+// GetReconciliationHistory returns all reconciliation records for an account+currency pair
+func (s *ReconciliationAPIServiceImpl) GetReconciliationHistory(ctx context.Context, id string, currencyId string) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	recs, err := s.db.GetReconciliationsForAccountAndCurrency(userID, id, currencyId)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get reconciliation history")
+		return goserver.Response(500, nil), nil
+	}
+
+	return goserver.Response(200, recs), nil
+}
+
+// AnalyzeDisbalance find transactions that might explain the disbalance
+func (s *ReconciliationAPIServiceImpl) AnalyzeDisbalance(ctx context.Context, id string, body goserver.AnalyzeDisbalanceRequest) (goserver.ImplResponse, error) {
+	userID, ok := ctx.Value(common.UserIDKey).(string)
+	if !ok {
+		return goserver.Response(500, nil), nil
+	}
+
+	// Fetch transactions since last reconciliation
+	lastRec, err := s.db.GetLatestReconciliation(userID, id, body.CurrencyId)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get reconciliation")
+		return goserver.Response(500, nil), nil
+	}
+
+	var dateFrom time.Time
+	if lastRec != nil {
+		dateFrom = lastRec.ReconciledAt
+	}
+
+	allTransactions, err := s.db.GetTransactions(userID, dateFrom, time.Time{}, false)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get transactions")
+		return goserver.Response(500, nil), nil
+	}
+
+	// Filter to only transactions affecting this account+currency
+	var filtered []goserver.Transaction
+	for _, tx := range allTransactions {
+		for _, m := range tx.Movements {
+			if m.AccountId == id && m.CurrencyId == body.CurrencyId {
+				filtered = append(filtered, tx)
+				break
+			}
+		}
+	}
+
+	analysis := common.AnalyzeDisbalance(body.TargetDelta, filtered, id, body.CurrencyId)
+
+	return goserver.Response(200, analysis), nil
+}
