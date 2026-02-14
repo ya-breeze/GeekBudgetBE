@@ -10,7 +10,8 @@ Name | Type | Description | Notes
 **EntityId** | **string** |  | 
 **Action** | **string** |  | 
 **ChangeSource** | **string** |  | 
-**Snapshot** | Pointer to **string** |  | [optional] 
+**Before** | Pointer to **NullableString** |  | [optional] 
+**After** | Pointer to **NullableString** |  | [optional] 
 **CreatedAt** | **time.Time** |  | 
 
 ## Methods
@@ -152,31 +153,76 @@ and a boolean to check if the value has been set.
 SetChangeSource sets ChangeSource field to given value.
 
 
-### GetSnapshot
+### GetBefore
 
-`func (o *AuditLog) GetSnapshot() string`
+`func (o *AuditLog) GetBefore() string`
 
-GetSnapshot returns the Snapshot field if non-nil, zero value otherwise.
+GetBefore returns the Before field if non-nil, zero value otherwise.
 
-### GetSnapshotOk
+### GetBeforeOk
 
-`func (o *AuditLog) GetSnapshotOk() (*string, bool)`
+`func (o *AuditLog) GetBeforeOk() (*string, bool)`
 
-GetSnapshotOk returns a tuple with the Snapshot field if it's non-nil, zero value otherwise
+GetBeforeOk returns a tuple with the Before field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetSnapshot
+### SetBefore
 
-`func (o *AuditLog) SetSnapshot(v string)`
+`func (o *AuditLog) SetBefore(v string)`
 
-SetSnapshot sets Snapshot field to given value.
+SetBefore sets Before field to given value.
 
-### HasSnapshot
+### HasBefore
 
-`func (o *AuditLog) HasSnapshot() bool`
+`func (o *AuditLog) HasBefore() bool`
 
-HasSnapshot returns a boolean if a field has been set.
+HasBefore returns a boolean if a field has been set.
 
+### SetBeforeNil
+
+`func (o *AuditLog) SetBeforeNil(b bool)`
+
+ SetBeforeNil sets the value for Before to be an explicit nil
+
+### UnsetBefore
+`func (o *AuditLog) UnsetBefore()`
+
+UnsetBefore ensures that no value is present for Before, not even an explicit nil
+### GetAfter
+
+`func (o *AuditLog) GetAfter() string`
+
+GetAfter returns the After field if non-nil, zero value otherwise.
+
+### GetAfterOk
+
+`func (o *AuditLog) GetAfterOk() (*string, bool)`
+
+GetAfterOk returns a tuple with the After field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAfter
+
+`func (o *AuditLog) SetAfter(v string)`
+
+SetAfter sets After field to given value.
+
+### HasAfter
+
+`func (o *AuditLog) HasAfter() bool`
+
+HasAfter returns a boolean if a field has been set.
+
+### SetAfterNil
+
+`func (o *AuditLog) SetAfterNil(b bool)`
+
+ SetAfterNil sets the value for After to be an explicit nil
+
+### UnsetAfter
+`func (o *AuditLog) UnsetAfter()`
+
+UnsetAfter ensures that no value is present for After, not even an explicit nil
 ### GetCreatedAt
 
 `func (o *AuditLog) GetCreatedAt() time.Time`

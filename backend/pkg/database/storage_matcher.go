@@ -39,7 +39,7 @@ func (s *storage) CreateMatcher(userID string, matcher goserver.MatcherNoIdInter
 		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Matcher", data.ID.String(), "CREATED", data); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "Matcher", data.ID.String(), "CREATED", nil, data); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -195,7 +195,7 @@ func (s *storage) GetMatcher(userID string, id string) (goserver.Matcher, error)
 func (s *storage) DeleteMatcher(userID string, id string) error {
 	var data models.Matcher
 	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
-		if err := s.recordAuditLog(s.db, userID, "Matcher", id, "DELETED", &data); err != nil {
+		if err := s.recordAuditLog(s.db, userID, "Matcher", id, "DELETED", &data, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 	}

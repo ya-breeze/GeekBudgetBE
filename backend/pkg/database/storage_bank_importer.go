@@ -39,7 +39,7 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "BankImporter", data.ID.String(), "CREATED", data); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "BankImporter", data.ID.String(), "CREATED", nil, data); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -60,7 +60,7 @@ func (s *storage) UpdateBankImporter(userID string, id string, bankImporter gose
 func (s *storage) DeleteBankImporter(userID string, id string) error {
 	var data models.BankImporter
 	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
-		if err := s.recordAuditLog(s.db, userID, "BankImporter", id, "DELETED", &data); err != nil {
+		if err := s.recordAuditLog(s.db, userID, "BankImporter", id, "DELETED", &data, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 	}
@@ -147,7 +147,7 @@ func (s *storage) CreateBankImporterFile(userID string, file *models.BankImporte
 		return goserver.BankImporterFile{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "BankImporterFile", file.ID.String(), "CREATED", file); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "BankImporterFile", file.ID.String(), "CREATED", nil, file); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -157,7 +157,7 @@ func (s *storage) CreateBankImporterFile(userID string, file *models.BankImporte
 func (s *storage) DeleteBankImporterFile(userID string, id string) error {
 	var data models.BankImporterFile
 	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
-		if err := s.recordAuditLog(s.db, userID, "BankImporterFile", id, "DELETED", &data); err != nil {
+		if err := s.recordAuditLog(s.db, userID, "BankImporterFile", id, "DELETED", &data, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 	}

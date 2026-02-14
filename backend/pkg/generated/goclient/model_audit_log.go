@@ -23,14 +23,15 @@ var _ MappedNullable = &AuditLog{}
 
 // AuditLog struct for AuditLog
 type AuditLog struct {
-	Id           string    `json:"id"`
-	UserId       string    `json:"userId"`
-	EntityType   string    `json:"entityType"`
-	EntityId     string    `json:"entityId"`
-	Action       string    `json:"action"`
-	ChangeSource string    `json:"changeSource"`
-	Snapshot     *string   `json:"snapshot,omitempty"`
-	CreatedAt    time.Time `json:"createdAt"`
+	Id           string         `json:"id"`
+	UserId       string         `json:"userId"`
+	EntityType   string         `json:"entityType"`
+	EntityId     string         `json:"entityId"`
+	Action       string         `json:"action"`
+	ChangeSource string         `json:"changeSource"`
+	Before       NullableString `json:"before,omitempty"`
+	After        NullableString `json:"after,omitempty"`
+	CreatedAt    time.Time      `json:"createdAt"`
 }
 
 type _AuditLog AuditLog
@@ -203,36 +204,90 @@ func (o *AuditLog) SetChangeSource(v string) {
 	o.ChangeSource = v
 }
 
-// GetSnapshot returns the Snapshot field value if set, zero value otherwise.
-func (o *AuditLog) GetSnapshot() string {
-	if o == nil || IsNil(o.Snapshot) {
+// GetBefore returns the Before field value if set, zero value otherwise (both if not set or set to explicit null).
+func (o *AuditLog) GetBefore() string {
+	if o == nil || IsNil(o.Before.Get()) {
 		var ret string
 		return ret
 	}
-	return *o.Snapshot
+	return *o.Before.Get()
 }
 
-// GetSnapshotOk returns a tuple with the Snapshot field value if set, nil otherwise
+// GetBeforeOk returns a tuple with the Before field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *AuditLog) GetSnapshotOk() (*string, bool) {
-	if o == nil || IsNil(o.Snapshot) {
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *AuditLog) GetBeforeOk() (*string, bool) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Snapshot, true
+	return o.Before.Get(), o.Before.IsSet()
 }
 
-// HasSnapshot returns a boolean if a field has been set.
-func (o *AuditLog) HasSnapshot() bool {
-	if o != nil && !IsNil(o.Snapshot) {
+// HasBefore returns a boolean if a field has been set.
+func (o *AuditLog) HasBefore() bool {
+	if o != nil && o.Before.IsSet() {
 		return true
 	}
 
 	return false
 }
 
-// SetSnapshot gets a reference to the given string and assigns it to the Snapshot field.
-func (o *AuditLog) SetSnapshot(v string) {
-	o.Snapshot = &v
+// SetBefore gets a reference to the given NullableString and assigns it to the Before field.
+func (o *AuditLog) SetBefore(v string) {
+	o.Before.Set(&v)
+}
+
+// SetBeforeNil sets the value for Before to be an explicit nil
+func (o *AuditLog) SetBeforeNil() {
+	o.Before.Set(nil)
+}
+
+// UnsetBefore ensures that no value is present for Before, not even an explicit nil
+func (o *AuditLog) UnsetBefore() {
+	o.Before.Unset()
+}
+
+// GetAfter returns the After field value if set, zero value otherwise (both if not set or set to explicit null).
+func (o *AuditLog) GetAfter() string {
+	if o == nil || IsNil(o.After.Get()) {
+		var ret string
+		return ret
+	}
+	return *o.After.Get()
+}
+
+// GetAfterOk returns a tuple with the After field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *AuditLog) GetAfterOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return o.After.Get(), o.After.IsSet()
+}
+
+// HasAfter returns a boolean if a field has been set.
+func (o *AuditLog) HasAfter() bool {
+	if o != nil && o.After.IsSet() {
+		return true
+	}
+
+	return false
+}
+
+// SetAfter gets a reference to the given NullableString and assigns it to the After field.
+func (o *AuditLog) SetAfter(v string) {
+	o.After.Set(&v)
+}
+
+// SetAfterNil sets the value for After to be an explicit nil
+func (o *AuditLog) SetAfterNil() {
+	o.After.Set(nil)
+}
+
+// UnsetAfter ensures that no value is present for After, not even an explicit nil
+func (o *AuditLog) UnsetAfter() {
+	o.After.Unset()
 }
 
 // GetCreatedAt returns the CreatedAt field value
@@ -275,8 +330,11 @@ func (o AuditLog) ToMap() (map[string]interface{}, error) {
 	toSerialize["entityId"] = o.EntityId
 	toSerialize["action"] = o.Action
 	toSerialize["changeSource"] = o.ChangeSource
-	if !IsNil(o.Snapshot) {
-		toSerialize["snapshot"] = o.Snapshot
+	if o.Before.IsSet() {
+		toSerialize["before"] = o.Before.Get()
+	}
+	if o.After.IsSet() {
+		toSerialize["after"] = o.After.Get()
 	}
 	toSerialize["createdAt"] = o.CreatedAt
 	return toSerialize, nil

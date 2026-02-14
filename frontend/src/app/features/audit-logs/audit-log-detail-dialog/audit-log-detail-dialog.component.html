@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>Audit Log Details</h2>
+<h2 mat-dialog-title>Audit Log Details (Updated)</h2>
 <mat-dialog-content>
     <div class="summary-section">
         <div class="detail-row">
@@ -29,9 +29,28 @@
 
     <mat-divider></mat-divider>
 
-    <div class="snapshot-section" *ngIf="data.snapshot">
-        <h3>Snapshot</h3>
-        <pre class="json-snapshot">{{ formattedSnapshot }}</pre>
+    <div class="diff-container" *ngIf="diffRows.length > 0">
+        <table class="diff-table">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Before</th>
+                    <th>After</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of diffRows" [ngClass]="row.status">
+                    <td class="key-cell">{{ row.key }}</td>
+                    <td class="value-cell before">{{ row.before }}</td>
+                    <td class="value-cell after">{{ row.after }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div *ngIf="diffRows.length === 0 && (data.before || data.after)" class="no-changes">
+        No changes detected or raw data available.
+        <pre *ngIf="data.before">{{ data.before }}</pre>
+        <pre *ngIf="data.after">{{ data.after }}</pre>
     </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

@@ -38,7 +38,7 @@ func (s *storage) CreateAccount(userID string, account *goserver.AccountNoId) (g
 		return goserver.Account{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Account", acc.ID.String(), "CREATED", &acc); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "Account", acc.ID.String(), "CREATED", nil, &acc); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -62,7 +62,7 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 		return fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Account", id, "DELETED", &acc); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "Account", id, "DELETED", &acc, nil); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 

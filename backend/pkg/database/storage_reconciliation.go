@@ -64,7 +64,7 @@ func (s *storage) CreateReconciliation(userID string, rec *goserver.Reconciliati
 		return goserver.Reconciliation{}, fmt.Errorf("failed to create reconciliation: %w", err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Reconciliation", model.ID.String(), "CREATED", &model); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "Reconciliation", model.ID.String(), "CREATED", nil, &model); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -91,7 +91,7 @@ func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string,
 
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		for _, rec := range recs {
-			if err := s.recordAuditLog(tx, userID, "Reconciliation", rec.ID.String(), "DELETED", &rec); err != nil {
+			if err := s.recordAuditLog(tx, userID, "Reconciliation", rec.ID.String(), "DELETED", &rec, nil); err != nil {
 				s.log.Error("Failed to record audit log", "error", err)
 			}
 		}

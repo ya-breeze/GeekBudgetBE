@@ -3,11 +3,12 @@
 
 export interface AuditLog {
     action: string;
+    after?: string | null;
+    before?: string | null;
     changeSource: string;
     createdAt: string;
     entityId: string;
     entityType: string;
     id: string;
-    snapshot?: string;
     userId: string;
 }

@@ -20,7 +20,7 @@ func (s *storage) CreateCurrency(userID string, currency *goserver.CurrencyNoId)
 		return goserver.Currency{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Currency", cur.ID.String(), "CREATED", &cur); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "Currency", cur.ID.String(), "CREATED", nil, &cur); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -175,7 +175,7 @@ func (s *storage) DeleteCurrency(userID string, id string, replaceWithCurrencyID
 
 		var cur models.Currency
 		if err := tx.Where("id = ? AND user_id = ?", id, userID).First(&cur).Error; err == nil {
-			if err := s.recordAuditLog(tx, userID, "Currency", id, "DELETED", &cur); err != nil {
+			if err := s.recordAuditLog(tx, userID, "Currency", id, "DELETED", &cur, nil); err != nil {
 				s.log.Error("Failed to record audit log", "error", err)
 			}
 		}

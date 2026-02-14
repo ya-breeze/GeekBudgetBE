@@ -69,7 +69,8 @@ func (s *AuditLogsAPIServiceImpl) GetAuditLogs(ctx context.Context, entityType s
 			EntityId:     log.EntityID,
 			Action:       log.Action,
 			ChangeSource: log.ChangeSource,
-			Snapshot:     log.Snapshot,
+			Before:       log.Before,
+			After:        log.After,
 			CreatedAt:    log.CreatedAt,
 		}
 	}

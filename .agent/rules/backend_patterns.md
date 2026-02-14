@@ -44,7 +44,16 @@ for {
 Use the `updateEntity` helper in `backend/pkg/server/api/helpers.go` to handle the standard update flow (UserID extraction, DB update call, and error mapping). This reduces boilerplate in API handlers.
 
 ### Generic Update Helper (Storage Layer)
-Use the `performUpdate` helper in `backend/pkg/database/storage_common.go` for standard CRUD updates. It handles the `UUID parsing -> Record fetching -> Model conversion -> Save -> Result conversion` sequence generically.
+Use the `performUpdate` helper in `backend/pkg/database/storage_common.go` for standard CRUD updates. It handles the `UUID parsing -> Record fetching -> Model conversion -> Save -> Audit Log -> Result conversion` sequence generically.
+
+### Audit Logging
+When performing Create, Update, or Delete operations in the storage layer, you **MUST** record an audit log using `s.recordAuditLog`.
+- **Signature**: `recordAuditLog(tx, userID, entityType, entityID, action, before, after)`
+- **Before/After**:
+  - **Create**: `before` is `nil`, `after` is the new entity.
+  - **Update**: `before` is the entity *before* modification, `after` is the entity *after* modification.
+  - **Delete**: `before` is the entity *before* deletion, `after` is `nil`.
+- **Note**: The `performUpdate` helper automatically handles this for updates. For Create/Delete, you must call `recordAuditLog` manually.
 
 ## Testing
 

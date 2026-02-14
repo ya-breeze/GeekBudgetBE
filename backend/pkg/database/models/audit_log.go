@@ -17,10 +17,15 @@ type AuditLog struct {
 	Action       string    // e.g., "CREATED", "UPDATED", "DELETED", "MERGED"
 	ChangeSource string    // e.g., "user", "system"
 
-	// Snapshot of the entity at the time of the action.
-	// For updates, this is usually the new state.
-	// For deletes, this is the state before deletion.
-	Snapshot string `gorm:"type:text"`
+	// Before state of the entity (JSON).
+	// For creates, this is null/empty.
+	// For updates/deletes, this is the state before the action.
+	Before *string `gorm:"type:text"`
+
+	// After state of the entity (JSON).
+	// For deletes, this is null/empty.
+	// For creates/updates, this is the state after the action.
+	After *string `gorm:"type:text"`
 
 	CreatedAt time.Time
 }

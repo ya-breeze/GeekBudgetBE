@@ -133,7 +133,7 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "CREATED", t); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "CREATED", nil, t); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -192,7 +192,7 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 		}
 
 		// Record audit log (errors are logged but don't fail the batch)
-		if err := s.recordAuditLog(tx, userID, "Transaction", t.ID.String(), "CREATED", t); err != nil {
+		if err := s.recordAuditLog(tx, userID, "Transaction", t.ID.String(), "CREATED", nil, t); err != nil {
 			s.log.Error("Failed to record audit log", "error", err, "transactionID", t.ID)
 		}
 
@@ -228,9 +228,10 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "UPDATED", t); err != nil {
-		s.log.Error("Failed to record audit log", "error", err)
-	}
+	oldT := *t
+	// if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "UPDATED", t); err != nil {
+	// 	s.log.Error("Failed to record audit log", "error", err)
+	// }
 
 	// Get old movements for smart invalidation
 	oldMovements := models.MovementsToAPI(t.Movements)
@@ -243,6 +244,10 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 	t.ID = idUUID
 	if err := s.db.Save(&t).Error; err != nil {
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
+	}
+
+	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "UPDATED", &oldT, t); err != nil {
+		s.log.Error("Failed to record audit log", "error", err)
 	}
 
 	// If dismissed, clear relationships
@@ -288,7 +293,7 @@ func (s *storage) DeleteTransaction(userID string, id string) error {
 		return ErrImportedTransactionCannotBeDeleted
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "DELETED", &t); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "DELETED", &t, nil); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -415,7 +420,7 @@ func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID stri
 			return fmt.Errorf(StorageError, err)
 		}
 
-		if err := s.recordAuditLog(tx, userID, "Transaction", t.ID.String(), "MERGED", &t); err != nil {
+		if err := s.recordAuditLog(tx, userID, "Transaction", t.ID.String(), "MERGED", &t, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 
@@ -606,7 +611,7 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 		}
 
 		// 5. Record history
-		if err := s.recordAuditLog(tx, userID, "Transaction", restoredTransaction.ID.String(), "UNMERGED", &restoredTransaction); err != nil {
+		if err := s.recordAuditLog(tx, userID, "Transaction", restoredTransaction.ID.String(), "UNMERGED", nil, &restoredTransaction); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 

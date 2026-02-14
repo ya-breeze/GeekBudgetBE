@@ -1670,8 +1670,12 @@ components:
           type: string
         changeSource:
           type: string
-        snapshot:
+        before:
           type: string
+          nullable: true
+        after:
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time

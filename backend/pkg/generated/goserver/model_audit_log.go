@@ -28,7 +28,9 @@ type AuditLog struct {
 
 	ChangeSource string `json:"changeSource"`
 
-	Snapshot string `json:"snapshot,omitempty"`
+	Before *string `json:"before,omitempty"`
+
+	After *string `json:"after,omitempty"`
 
 	CreatedAt time.Time `json:"createdAt"`
 }
@@ -40,7 +42,8 @@ type AuditLogInterface interface {
 	GetEntityId() string
 	GetAction() string
 	GetChangeSource() string
-	GetSnapshot() string
+	GetBefore() *string
+	GetAfter() *string
 	GetCreatedAt() time.Time
 }
 
@@ -62,8 +65,11 @@ func (c *AuditLog) GetAction() string {
 func (c *AuditLog) GetChangeSource() string {
 	return c.ChangeSource
 }
-func (c *AuditLog) GetSnapshot() string {
-	return c.Snapshot
+func (c *AuditLog) GetBefore() *string {
+	return c.Before
+}
+func (c *AuditLog) GetAfter() *string {
+	return c.After
 }
 func (c *AuditLog) GetCreatedAt() time.Time {
 	return c.CreatedAt

@@ -33,15 +33,16 @@ func performUpdate[M any, I any, O any](
 		return empty, fmt.Errorf(StorageError, err)
 	}
 
-	// Record audit log BEFORE update (with old state)
-	if err := s.recordAuditLog(s.db, userID, entityType, id, "UPDATED", data); err != nil {
-		s.log.Error("Failed to record audit log", "error", err, "entityType", entityType, "id", id)
-	}
-
+	oldData := data
 	data = toDB(input, userID)
 	setID(data, idUUID)
 	if err := s.db.Save(data).Error; err != nil {
 		return empty, fmt.Errorf(StorageError, err)
+	}
+
+	// Record audit log with before/after comparison
+	if err := s.recordAuditLog(s.db, userID, entityType, id, "UPDATED", oldData, data); err != nil {
+		s.log.Error("Failed to record audit log", "error", err, "entityType", entityType, "id", id)
 	}
 
 	return fromDB(data), nil

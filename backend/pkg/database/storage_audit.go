@@ -11,10 +11,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, entityID string, action string, snapshot interface{}) error {
-	jsonData, err := json.Marshal(snapshot)
-	if err != nil {
-		return fmt.Errorf("failed to marshal entity for audit log: %w", err)
+func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, entityID string, action string, before interface{}, after interface{}) error {
+	var beforeJSON, afterJSON *string
+
+	if before != nil {
+		b, err := json.Marshal(before)
+		if err != nil {
+			return fmt.Errorf("failed to marshal 'before' entity for audit log: %w", err)
+		}
+		s := string(b)
+		beforeJSON = &s
+	}
+
+	if after != nil {
+		b, err := json.Marshal(after)
+		if err != nil {
+			return fmt.Errorf("failed to marshal 'after' entity for audit log: %w", err)
+		}
+		s := string(b)
+		afterJSON = &s
 	}
 
 	changeSource := constants.ChangeSourceSystem
@@ -31,7 +46,8 @@ func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, 
 		EntityID:     entityID,
 		Action:       action,
 		ChangeSource: string(changeSource),
-		Snapshot:     string(jsonData),
+		Before:       beforeJSON,
+		After:        afterJSON,
 		CreatedAt:    time.Now(),
 	}
 

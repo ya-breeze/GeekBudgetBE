@@ -119,8 +119,9 @@ export class AuditLogsComponent implements OnInit, AfterViewInit {
     openDetailDialog(log: AuditLog): void {
         this.dialog.open(AuditLogDetailDialogComponent, {
             data: log,
-            width: '800px',
-            maxWidth: '90vw',
+            width: '95vw',
+            maxWidth: '95vw',
+            height: '90vh',
         });
     }
 }

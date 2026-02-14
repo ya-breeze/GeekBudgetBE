@@ -17,7 +17,7 @@ func (s *storage) CreateBudgetItem(userID string, budgetItem *goserver.BudgetIte
 		return goserver.BudgetItem{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "BudgetItem", data.ID.String(), "CREATED", data); err != nil {
+	if err := s.recordAuditLog(s.db, userID, "BudgetItem", data.ID.String(), "CREATED", nil, data); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -72,7 +72,7 @@ func (s *storage) UpdateBudgetItem(
 func (s *storage) DeleteBudgetItem(userID string, id string) error {
 	var data models.BudgetItem
 	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
-		if err := s.recordAuditLog(s.db, userID, "BudgetItem", id, "DELETED", &data); err != nil {
+		if err := s.recordAuditLog(s.db, userID, "BudgetItem", id, "DELETED", &data, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 	}
