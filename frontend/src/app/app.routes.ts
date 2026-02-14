@@ -152,6 +152,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: 'audit-logs',
+                loadComponent: () =>
+                    import('./features/audit-logs/audit-logs.component').then(
+                        (m) => m.AuditLogsComponent,
+                    ),
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full',

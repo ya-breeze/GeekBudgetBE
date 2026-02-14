@@ -43,6 +43,13 @@ type AggregationsAPIRouter interface {
 	GetIncomes(http.ResponseWriter, *http.Request)
 }
 
+// AuditLogsAPIRouter defines the required methods for binding the api requests to a responses for the AuditLogsAPI
+// The AuditLogsAPIRouter implementation should parse necessary information from the http request,
+// pass the data to a AuditLogsAPIServicer to perform the required actions, then write the service results to the http response.
+type AuditLogsAPIRouter interface {
+	GetAuditLogs(http.ResponseWriter, *http.Request)
+}
+
 // AuthAPIRouter defines the required methods for binding the api requests to a responses for the AuthAPI
 // The AuthAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a AuthAPIServicer to perform the required actions, then write the service results to the http response.
@@ -198,6 +205,14 @@ type AggregationsAPIServicer interface {
 	GetBalances(context.Context, time.Time, time.Time, string, bool) (ImplResponse, error)
 	GetExpenses(context.Context, time.Time, time.Time, string, string, bool) (ImplResponse, error)
 	GetIncomes(context.Context, time.Time, time.Time, string, bool) (ImplResponse, error)
+}
+
+// AuditLogsAPIServicer defines the api actions for the AuditLogsAPI service
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can be ignored with the .openapi-generator-ignore file
+// and updated with the logic required for the API.
+type AuditLogsAPIServicer interface {
+	GetAuditLogs(context.Context, string, string, string, time.Time, time.Time, int32, int32) (ImplResponse, error)
 }
 
 // AuthAPIServicer defines the api actions for the AuthAPI service

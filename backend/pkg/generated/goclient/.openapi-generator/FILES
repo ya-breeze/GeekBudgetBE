@@ -5,6 +5,7 @@ README.md
 api/openapi.yaml
 api_accounts.go
 api_aggregations.go
+api_audit_logs.go
 api_auth.go
 api_bank_importers.go
 api_budget_items.go
@@ -27,6 +28,8 @@ docs/AccountsAPI.md
 docs/Aggregation.md
 docs/AggregationsAPI.md
 docs/AnalyzeDisbalanceRequest.md
+docs/AuditLog.md
+docs/AuditLogsAPI.md
 docs/AuthAPI.md
 docs/AuthData.md
 docs/Authorize200Response.md
@@ -90,6 +93,7 @@ model_account_aggregation.go
 model_account_no_id.go
 model_aggregation.go
 model_analyze_disbalance_request.go
+model_audit_log.go
 model_auth_data.go
 model_authorize_200_response.go
 model_bank_account_info.go
@@ -137,6 +141,7 @@ model_whole_user_data.go
 response.go
 test/api_accounts_test.go
 test/api_aggregations_test.go
+test/api_audit_logs_test.go
 test/api_auth_test.go
 test/api_bank_importers_test.go
 test/api_budget_items_test.go

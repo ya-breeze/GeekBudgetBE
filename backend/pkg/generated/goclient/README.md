@@ -89,6 +89,7 @@ Class | Method | HTTP request | Description
 *AggregationsAPI* | [**GetBalances**](docs/AggregationsAPI.md#getbalances) | **Get** /v1/balances | get balance for filtered transactions
 *AggregationsAPI* | [**GetExpenses**](docs/AggregationsAPI.md#getexpenses) | **Get** /v1/expenses | get expenses for filtered transactions
 *AggregationsAPI* | [**GetIncomes**](docs/AggregationsAPI.md#getincomes) | **Get** /v1/incomes | get incomes for filtered transactions
+*AuditLogsAPI* | [**GetAuditLogs**](docs/AuditLogsAPI.md#getauditlogs) | **Get** /v1/auditLogs | get audit logs
 *AuthAPI* | [**Authorize**](docs/AuthAPI.md#authorize) | **Post** /v1/authorize | validate user/password and return token
 *BankImportersAPI* | [**CreateBankImporter**](docs/BankImportersAPI.md#createbankimporter) | **Post** /v1/bankImporters | create new bank importer
 *BankImportersAPI* | [**DeleteBankImporter**](docs/BankImportersAPI.md#deletebankimporter) | **Delete** /v1/bankImporters/{id} | delete bank importer
@@ -152,6 +153,7 @@ Class | Method | HTTP request | Description
  - [AccountNoID](docs/AccountNoID.md)
  - [Aggregation](docs/Aggregation.md)
  - [AnalyzeDisbalanceRequest](docs/AnalyzeDisbalanceRequest.md)
+ - [AuditLog](docs/AuditLog.md)
  - [AuthData](docs/AuthData.md)
  - [Authorize200Response](docs/Authorize200Response.md)
  - [BankAccountInfo](docs/BankAccountInfo.md)

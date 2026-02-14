@@ -15,6 +15,64 @@ tags:
   - name: merged transactions
     description: Operations for merged (deduplicated) transactions
 paths:
+  /v1/auditLogs:
+    get:
+      tags:
+        - audit logs
+      summary: get audit logs
+      operationId: getAuditLogs
+      parameters:
+        - name: "entityType"
+          in: "query"
+          description: "Filter by entity type"
+          schema:
+            type: "string"
+        - name: "entityId"
+          in: "query"
+          description: "Filter by entity ID"
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "userId"
+          in: "query"
+          description: "Filter by user ID"
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "dateFrom"
+          in: "query"
+          description: "Filter by date from"
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: "dateTo"
+          in: "query"
+          description: "Filter by date to"
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: "limit"
+          in: "query"
+          description: "Limit number of results"
+          schema:
+            type: "integer"
+            default: 100
+        - name: "offset"
+          in: "query"
+          description: "Offset results"
+          schema:
+            type: "integer"
+            default: 0
+      responses:
+        "200":
+          description: audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+
   /v1/authorize:
     post:
       tags:
@@ -1594,6 +1652,37 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+        changeSource:
+          type: string
+        snapshot:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - entityType
+        - entityId
+        - action
+        - changeSource
+        - createdAt
     AuthData:
       type: object
       properties:

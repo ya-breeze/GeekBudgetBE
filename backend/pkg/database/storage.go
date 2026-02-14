@@ -32,6 +32,15 @@ type ImportInfo struct {
 	FetchAll         bool
 }
 
+type AuditLogFilter struct {
+	EntityType *string
+	EntityID   *string
+	DateFrom   *time.Time
+	DateTo     *time.Time
+	Limit      int
+	Offset     int
+}
+
 type UserStorage interface {
 	GetUserID(username string) (string, error)
 	GetUser(userID string) (*models.User, error)
@@ -147,6 +156,10 @@ type ReconciliationStorage interface {
 	GetBulkReconciliationData(userID string) (*BulkReconciliationData, error)
 }
 
+type AuditLogStorage interface {
+	GetAuditLogs(userID string, filter AuditLogFilter) ([]models.AuditLog, error)
+}
+
 type SystemStorage interface {
 	Open() error
 	Close() error
@@ -166,6 +179,7 @@ type Storage interface {
 	ImageStorage
 	NotificationStorage
 	ReconciliationStorage
+	AuditLogStorage
 	SystemStorage
 	WithContext(ctx context.Context) Storage
 }

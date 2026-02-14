@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>Audit Log Details</h2>
+<mat-dialog-content>
+    <div class="summary-section">
+        <div class="detail-row">
+            <span class="label">Time:</span>
+            <span class="value">{{ data.createdAt | appDate: 'medium' }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">Action:</span>
+            <span class="value">{{ data.action }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">Entity Type:</span>
+            <span class="value">{{ data.entityType }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">Entity ID:</span>
+            <span class="value">{{ data.entityId }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">Source:</span>
+            <span class="value">{{ data.changeSource }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="label">User:</span>
+            <span class="value">{{ data.userId }}</span>
+        </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="snapshot-section" *ngIf="data.snapshot">
+        <h3>Snapshot</h3>
+        <pre class="json-snapshot">{{ formattedSnapshot }}</pre>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Close</button>
+</mat-dialog-actions>

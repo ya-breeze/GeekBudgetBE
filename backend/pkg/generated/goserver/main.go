@@ -27,6 +27,7 @@ import (
 type CustomControllers struct {
 	AccountsAPIService                AccountsAPIService
 	AggregationsAPIService            AggregationsAPIService
+	AuditLogsAPIService               AuditLogsAPIService
 	AuthAPIService                    AuthAPIService
 	BankImportersAPIService           BankImportersAPIService
 	BudgetItemsAPIService             BudgetItemsAPIService
@@ -61,6 +62,12 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 		AggregationsAPIService = controllers.AggregationsAPIService
 	}
 	AggregationsAPIController := NewAggregationsAPIController(AggregationsAPIService)
+
+	AuditLogsAPIService := NewAuditLogsAPIService()
+	if controllers.AuditLogsAPIService != nil {
+		AuditLogsAPIService = controllers.AuditLogsAPIService
+	}
+	AuditLogsAPIController := NewAuditLogsAPIController(AuditLogsAPIService)
 
 	AuthAPIService := NewAuthAPIService()
 	if controllers.AuthAPIService != nil {
@@ -140,7 +147,7 @@ func Serve(ctx context.Context, logger *slog.Logger, cfg *config.Config,
 	}
 	UserAPIController := NewUserAPIController(UserAPIService)
 
-	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, MergedTransactionsAPIController, NotificationsAPIController, ReconciliationAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
+	routers := append(extraRouters, AccountsAPIController, AggregationsAPIController, AuditLogsAPIController, AuthAPIController, BankImportersAPIController, BudgetItemsAPIController, CurrenciesAPIController, ExportAPIController, ImportAPIController, MatchersAPIController, MergedTransactionsAPIController, NotificationsAPIController, ReconciliationAPIController, TransactionsAPIController, UnprocessedTransactionsAPIController, UserAPIController)
 	router := NewRouter(logger, routers...)
 
 	router.Use(middlewares...)

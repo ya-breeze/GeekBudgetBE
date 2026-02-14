@@ -7,6 +7,7 @@ export type { AccountHistory } from './models/account-history';
 export type { AccountNoId } from './models/account-no-id';
 export type { Aggregation } from './models/aggregation';
 export type { AnalyzeDisbalanceRequest } from './models/analyze-disbalance-request';
+export type { AuditLog } from './models/audit-log';
 export type { AuthData } from './models/auth-data';
 export type { BankAccountInfo } from './models/bank-account-info';
 export type { BankImporter } from './models/bank-importer';

@@ -66,6 +66,7 @@ export class SidebarComponent {
         { label: 'Bank Importers', icon: 'cloud_upload', route: '/bank-importers' },
 
         { label: 'Matchers', icon: 'rule', route: '/matchers' },
+        { label: 'Audit Logs', icon: 'history', route: '/audit-logs' },
 
         {
             label: 'Notifications',

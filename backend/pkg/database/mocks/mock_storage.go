@@ -549,6 +549,21 @@ func (mr *MockStorageMockRecorder) GetAllUserIDs() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUserIDs", reflect.TypeOf((*MockStorage)(nil).GetAllUserIDs))
 }
 
+// GetAuditLogs mocks base method.
+func (m *MockStorage) GetAuditLogs(arg0 string, arg1 database.AuditLogFilter) ([]models.AuditLog, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAuditLogs", arg0, arg1)
+	ret0, _ := ret[0].([]models.AuditLog)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAuditLogs indicates an expected call of GetAuditLogs.
+func (mr *MockStorageMockRecorder) GetAuditLogs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuditLogs", reflect.TypeOf((*MockStorage)(nil).GetAuditLogs), arg0, arg1)
+}
+
 // GetBankImporter mocks base method.
 func (m *MockStorage) GetBankImporter(arg0, arg1 string) (goserver.BankImporter, error) {
 	m.ctrl.T.Helper()

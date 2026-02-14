@@ -8,6 +8,8 @@ go/api_accounts.go
 go/api_accounts_service.go
 go/api_aggregations.go
 go/api_aggregations_service.go
+go/api_audit_logs.go
+go/api_audit_logs_service.go
 go/api_auth.go
 go/api_auth_service.go
 go/api_bank_importers.go
@@ -43,6 +45,7 @@ go/model_account_aggregation.go
 go/model_account_no_id.go
 go/model_aggregation.go
 go/model_analyze_disbalance_request.go
+go/model_audit_log.go
 go/model_auth_data.go
 go/model_authorize_200_response.go
 go/model_bank_account_info.go
