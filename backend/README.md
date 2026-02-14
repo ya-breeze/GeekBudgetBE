@@ -88,7 +88,7 @@ API handlers extract userID from context and return `goserver.ImplResponse`:
 
 ```go
 func (s *APIServiceImpl) HandleEndpoint(ctx context.Context, request Request) (goserver.ImplResponse, error) {
-    userID, ok := ctx.Value(common.UserIDKey).(string)
+    userID, ok := ctx.Value(constants.UserIDKey).(string)
     if !ok {
         return goserver.Response(500, nil), nil
     }

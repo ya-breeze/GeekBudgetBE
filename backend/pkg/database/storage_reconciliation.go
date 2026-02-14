@@ -63,16 +63,39 @@ func (s *storage) CreateReconciliation(userID string, rec *goserver.Reconciliati
 	if err := s.db.Create(&model).Error; err != nil {
 		return goserver.Reconciliation{}, fmt.Errorf("failed to create reconciliation: %w", err)
 	}
+
+	if err := s.recordAuditLog(s.db, userID, "Reconciliation", model.ID.String(), "CREATED", &model); err != nil {
+		s.log.Error("Failed to record audit log", "error", err)
+	}
+
 	return *models.ReconciliationToAPI(model), nil
 }
 
 func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string) error {
-	err := s.db.Where("user_id = ? AND account_id = ? AND currency_id = ?",
-		userID, accountID, currencyID).Delete(&models.Reconciliation{}).Error
-	if err != nil {
-		return fmt.Errorf("failed to invalidate reconciliation: %w", err)
+	// Fetch reconciliation(s) to be deleted to record them in audit log
+	var recs []models.Reconciliation
+	if err := s.db.Where("user_id = ? AND account_id = ? AND currency_id = ?",
+		userID, accountID, currencyID).Find(&recs).Error; err != nil {
+		return fmt.Errorf("failed to find reconciliation to invalidate: %w", err)
 	}
-	return nil
+
+	if len(recs) == 0 {
+		return nil
+	}
+
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		for _, rec := range recs {
+			if err := s.recordAuditLog(tx, userID, "Reconciliation", rec.ID.String(), "DELETED", &rec); err != nil {
+				s.log.Error("Failed to record audit log", "error", err)
+			}
+		}
+
+		if err := tx.Where("user_id = ? AND account_id = ? AND currency_id = ?",
+			userID, accountID, currencyID).Delete(&models.Reconciliation{}).Error; err != nil {
+			return fmt.Errorf("failed to invalidate reconciliation: %w", err)
+		}
+		return nil
+	})
 }
 
 func (s *storage) GetBulkReconciliationData(userID string) (*BulkReconciliationData, error) {

@@ -17,6 +17,7 @@ GeekBudgetBE/
 │   │   ├── auth/          # JWT authentication
 │   │   ├── bankimporters/ # FIO, KB, Revolut converters/fetchers
 │   │   ├── config/        # Viper configuration
+│   │   ├── constants/     # Shared constants (context keys, tolerances) to prevent cycles
 │   │   ├── database/      # GORM models, split SQLite storage implementation, migrations, mocks
 │   │   │   ├── storage.go           # Composed Storage interface & struct definition
 │   │   │   ├── storage_*.go         # Domain-specific implementations (user, account, etc.)
@@ -161,7 +162,9 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 
 **Quick reference:**
 - **Service layer:** `ServiceImpl` structs with `logger` and `db` fields, methods take `context.Context` and `userID`.
-- **API handlers:** Extract `userID` from context via `ctx.Value(common.UserIDKey)`, return `goserver.ImplResponse`.
+- **API handlers:** Extract `userID` from context via `ctx.Value(constants.UserIDKey)`, return `goserver.ImplResponse`.
+- **Constants:** Shared constants live in `pkg/constants`. Do NOT add shared constants to `pkg/server/common` or `pkg/utils` as this causes import cycles.
+- **Audit Logging:** The storage layer automatically logs changes using `recordAuditLog`. Context propagation is **mandatory**: Always call `st.WithContext(ctx)` when performing write operations to ensure the `UserID` and `ChangeSource` are logged.
 - **Web handlers:** Use `r.ValidateUserID()` for auth, `utils.CreateTemplateData()` for template data, `tmpl.ExecuteTemplate()` for rendering.
 - **Storage interface:** All DB operations go through the `database.Storage` interface. The implementation is split into domain-specific files (`storage_user.go`, `storage_account.go`, etc.) and the main `Storage` interface is a composition of fine-grained interfaces (`UserStorage`, `AccountStorage`, etc.). Mock implementation is in `database/mocks/` for testing.
 - **Bank importers:** Implement the `Importer` interface in `pkg/bankimporters/`.

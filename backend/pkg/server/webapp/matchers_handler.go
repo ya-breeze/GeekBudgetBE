@@ -7,9 +7,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
 )
 
@@ -217,7 +218,7 @@ func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Requ
 	}
 
 	// Create a new context with the userID
-	ctx := context.WithValue(req.Context(), common.UserIDKey, userID)
+	ctx := context.WithValue(req.Context(), constants.UserIDKey, userID)
 
 	// Call the API service directly
 	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)

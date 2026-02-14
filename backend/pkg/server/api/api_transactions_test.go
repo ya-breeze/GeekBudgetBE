@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -12,7 +14,6 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -29,7 +30,7 @@ var _ = Describe("Transactions API", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockStorage = mocks.NewMockStorage(ctrl)
 		sut = api.NewTransactionsAPIService(log, mockStorage)
-		ctx = context.WithValue(context.Background(), common.UserIDKey, "user-1")
+		ctx = context.WithValue(context.Background(), constants.UserIDKey, "user-1")
 	})
 
 	AfterEach(func() {

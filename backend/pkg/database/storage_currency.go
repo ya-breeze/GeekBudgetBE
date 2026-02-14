@@ -20,6 +20,10 @@ func (s *storage) CreateCurrency(userID string, currency *goserver.CurrencyNoId)
 		return goserver.Currency{}, fmt.Errorf(StorageError, err)
 	}
 
+	if err := s.recordAuditLog(s.db, userID, "Currency", cur.ID.String(), "CREATED", &cur); err != nil {
+		s.log.Error("Failed to record audit log", "error", err)
+	}
+
 	return cur.FromDB(), nil
 }
 
@@ -57,7 +61,7 @@ func (s *storage) GetCurrency(userID string, id string) (goserver.Currency, erro
 }
 
 func (s *storage) UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error) {
-	return performUpdate(s, userID, id, currency,
+	return performUpdate[models.Currency, *goserver.CurrencyNoId, goserver.Currency](s, userID, "Currency", id, currency,
 		func(i *goserver.CurrencyNoId, userID string) *models.Currency {
 			return &models.Currency{UserID: userID, CurrencyNoId: *i}
 		},
@@ -166,6 +170,13 @@ func (s *storage) DeleteCurrency(userID string, id string, replaceWithCurrencyID
 			}
 			if count > 0 {
 				return ErrCurrencyInUse
+			}
+		}
+
+		var cur models.Currency
+		if err := tx.Where("id = ? AND user_id = ?", id, userID).First(&cur).Error; err == nil {
+			if err := s.recordAuditLog(tx, userID, "Currency", id, "DELETED", &cur); err != nil {
+				s.log.Error("Failed to record audit log", "error", err)
 			}
 		}
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type NotificationsAPIServiceImpl struct {
@@ -21,7 +21,7 @@ func NewNotificationsAPIServiceImpl(logger *slog.Logger, db database.Storage,
 
 func (s *NotificationsAPIServiceImpl) DeleteNotification(ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("DeleteNotification: UserID missing from context")
 		return goserver.Response(500, nil), nil
@@ -37,7 +37,7 @@ func (s *NotificationsAPIServiceImpl) DeleteNotification(ctx context.Context, id
 }
 
 func (s *NotificationsAPIServiceImpl) GetNotifications(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("GetNotifications: UserID missing from context")
 		return goserver.Response(500, nil), nil

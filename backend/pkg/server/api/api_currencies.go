@@ -5,9 +5,9 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type CurrenciesAPIServicerImpl struct {
@@ -23,7 +23,7 @@ func NewCurrenciesAPIServicer(logger *slog.Logger, db database.Storage) goserver
 }
 
 func (s *CurrenciesAPIServicerImpl) GetCurrencies(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -40,7 +40,7 @@ func (s *CurrenciesAPIServicerImpl) GetCurrencies(ctx context.Context) (goserver
 func (s *CurrenciesAPIServicerImpl) CreateCurrency(
 	ctx context.Context, currencyNoID goserver.CurrencyNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -58,7 +58,7 @@ func (s *CurrenciesAPIServicerImpl) CreateCurrency(
 func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
 	ctx context.Context, currencyID string, currencyNoID goserver.CurrencyNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -76,7 +76,7 @@ func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
 func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
 	ctx context.Context, currencyID string, replaceWithCurrencyID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -103,7 +103,7 @@ func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
 func (s *CurrenciesAPIServicerImpl) GetCurrency(
 	ctx context.Context, currencyID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

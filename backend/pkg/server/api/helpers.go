@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 func mapErrorToResponse(err error) goserver.ImplResponse {
@@ -27,7 +27,7 @@ func updateEntity[I any, O any](
 	updateFunc func(userID string, id string, input I) (O, error),
 ) (O, string, error) {
 	var empty O
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		logger.Error("UserID not found in context")
 		return empty, "", fmt.Errorf("UserID not found in context")

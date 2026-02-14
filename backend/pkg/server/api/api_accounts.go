@@ -9,10 +9,10 @@ import (
 	"os"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type AccountsAPIServicerImpl struct {
@@ -32,7 +32,7 @@ func NewAccountsAPIService(logger *slog.Logger, db database.Storage, cfg *config
 func (s *AccountsAPIServicerImpl) CreateAccount(
 	ctx context.Context, acc goserver.AccountNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -50,7 +50,7 @@ func (s *AccountsAPIServicerImpl) CreateAccount(
 func (s *AccountsAPIServicerImpl) GetAccounts(
 	ctx context.Context,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -68,7 +68,7 @@ func (s *AccountsAPIServicerImpl) GetAccounts(
 func (s *AccountsAPIServicerImpl) UpdateAccount(
 	ctx context.Context, accountID string, acc goserver.AccountNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -86,7 +86,7 @@ func (s *AccountsAPIServicerImpl) UpdateAccount(
 func (s *AccountsAPIServicerImpl) DeleteAccount(
 	ctx context.Context, accountID string, replaceWithAccountId string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -126,7 +126,7 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 func (s *AccountsAPIServicerImpl) GetAccountHistory(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -144,7 +144,7 @@ func (s *AccountsAPIServicerImpl) GetAccountHistory(
 func (s *AccountsAPIServicerImpl) GetAccount(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -162,7 +162,7 @@ func (s *AccountsAPIServicerImpl) GetAccount(
 func (s *AccountsAPIServicerImpl) UploadAccountImage(
 	ctx context.Context, accountID string, file *os.File,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -226,7 +226,7 @@ func (s *AccountsAPIServicerImpl) UploadAccountImage(
 func (s *AccountsAPIServicerImpl) DeleteAccountImage(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil

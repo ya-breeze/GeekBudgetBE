@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
@@ -22,7 +23,7 @@ func NewReconciliationAPIServiceImpl(logger *slog.Logger, db database.Storage) *
 
 // GetReconciliationStatus returns reconciliation status for all asset accounts
 func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -127,7 +128,7 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 	ctx context.Context, id string, body goserver.ReconcileAccountRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -158,7 +159,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 	}
 
 	// Validate that balance matches expected balance
-	if balance.Sub(expectedBalance).Abs().GreaterThan(common.ReconciliationTolerance) {
+	if balance.Sub(expectedBalance).Abs().GreaterThan(constants.ReconciliationTolerance) {
 		return goserver.Response(400, "Cannot reconcile: account balance does not match bank balance"), nil
 	}
 
@@ -182,7 +183,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 func (s *ReconciliationAPIServiceImpl) GetTransactionsSinceReconciliation(
 	ctx context.Context, id string, currencyId string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -224,7 +225,7 @@ func (s *ReconciliationAPIServiceImpl) GetTransactionsSinceReconciliation(
 func (s *ReconciliationAPIServiceImpl) EnableAccountReconciliation(
 	ctx context.Context, id string, body goserver.EnableReconciliationRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -247,7 +248,7 @@ func (s *ReconciliationAPIServiceImpl) EnableAccountReconciliation(
 
 // GetReconciliationHistory returns all reconciliation records for an account+currency pair
 func (s *ReconciliationAPIServiceImpl) GetReconciliationHistory(ctx context.Context, id string, currencyId string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -263,7 +264,7 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationHistory(ctx context.Cont
 
 // AnalyzeDisbalance find transactions that might explain the disbalance
 func (s *ReconciliationAPIServiceImpl) AnalyzeDisbalance(ctx context.Context, id string, body goserver.AnalyzeDisbalanceRequest) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -36,7 +37,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 			continue
 		}
 
-		if appBalance.Sub(b.ClosingBalance).Abs().GreaterThan(ReconciliationTolerance) {
+		if appBalance.Sub(b.ClosingBalance).Abs().GreaterThan(constants.ReconciliationTolerance) {
 			logger.Warn("Balance mismatch detected",
 				"account", acc.Name,
 				"currencyId", b.CurrencyId,

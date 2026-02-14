@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
@@ -26,7 +27,7 @@ func NewBudgetItemsAPIService(logger *slog.Logger, db database.Storage) goserver
 
 // GetBudgetStatus - get budget status with rollover
 func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string, includeHidden bool) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
@@ -201,7 +202,7 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 
 // CreateBudgetItem - create new budgetItem
 func (s *budgetItemsAPIService) CreateBudgetItem(ctx context.Context, budgetItemNoID goserver.BudgetItemNoId) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
@@ -215,7 +216,7 @@ func (s *budgetItemsAPIService) CreateBudgetItem(ctx context.Context, budgetItem
 
 // DeleteBudgetItem - delete budgetItem
 func (s *budgetItemsAPIService) DeleteBudgetItem(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
@@ -232,7 +233,7 @@ func (s *budgetItemsAPIService) DeleteBudgetItem(ctx context.Context, id string)
 
 // GetBudgetItem - get budgetItem
 func (s *budgetItemsAPIService) GetBudgetItem(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
@@ -249,7 +250,7 @@ func (s *budgetItemsAPIService) GetBudgetItem(ctx context.Context, id string) (g
 
 // GetBudgetItems - get all budgetItems
 func (s *budgetItemsAPIService) GetBudgetItems(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}

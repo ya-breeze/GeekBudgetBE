@@ -31,13 +31,13 @@ func TestTransactionHistoryInternal(t *testing.T) {
 		t.Fatalf("failed to create transaction: %v", err)
 	}
 
-	var history []models.TransactionHistory
-	if err := st.db.Where("transaction_id = ?", tr.Id).Find(&history).Error; err != nil {
-		t.Fatalf("failed to query history: %v", err)
+	var history []models.AuditLog
+	if err := st.db.Where("entity_id = ? AND entity_type = ?", tr.Id, "Transaction").Find(&history).Error; err != nil {
+		t.Fatalf("failed to query audit log: %v", err)
 	}
 
 	if len(history) != 1 {
-		t.Errorf("expected 1 history record, got %d", len(history))
+		t.Errorf("expected 1 audit record, got %d", len(history))
 	} else if history[0].Action != "CREATED" {
 		t.Errorf("expected CREATED action, got %s", history[0].Action)
 	}
@@ -52,11 +52,11 @@ func TestTransactionHistoryInternal(t *testing.T) {
 		t.Fatalf("failed to update transaction: %v", err)
 	}
 
-	if err := st.db.Where("transaction_id = ?", tr.Id).Find(&history).Error; err != nil {
-		t.Fatalf("failed to query history: %v", err)
+	if err := st.db.Where("entity_id = ? AND entity_type = ?", tr.Id, "Transaction").Find(&history).Error; err != nil {
+		t.Fatalf("failed to query audit log: %v", err)
 	}
 	if len(history) != 2 {
-		t.Errorf("expected 2 history records, got %d", len(history))
+		t.Errorf("expected 2 audit records, got %d", len(history))
 	} else if history[1].Action != "UPDATED" {
 		t.Errorf("expected UPDATED action, got %s", history[1].Action)
 	}
@@ -67,11 +67,11 @@ func TestTransactionHistoryInternal(t *testing.T) {
 		t.Fatalf("failed to delete transaction: %v", err)
 	}
 
-	if err := st.db.Where("transaction_id = ?", tr.Id).Find(&history).Error; err != nil {
-		t.Fatalf("failed to query history: %v", err)
+	if err := st.db.Where("entity_id = ? AND entity_type = ?", tr.Id, "Transaction").Find(&history).Error; err != nil {
+		t.Fatalf("failed to query audit log: %v", err)
 	}
 	if len(history) != 3 {
-		t.Errorf("expected 3 history records, got %d", len(history))
+		t.Errorf("expected 3 audit records, got %d", len(history))
 	} else if history[2].Action != "DELETED" {
 		t.Errorf("expected DELETED action, got %s", history[2].Action)
 	}

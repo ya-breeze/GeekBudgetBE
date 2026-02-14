@@ -38,6 +38,11 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 	if err := s.db.Create(data).Error; err != nil {
 		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
 	}
+
+	if err := s.recordAuditLog(s.db, userID, "BankImporter", data.ID.String(), "CREATED", data); err != nil {
+		s.log.Error("Failed to record audit log", "error", err)
+	}
+
 	s.log.Info("BankImporter created", "id", data.ID)
 
 	return data.FromDB(), nil
@@ -45,7 +50,7 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 
 func (s *storage) UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
 ) (goserver.BankImporter, error) {
-	return performUpdate[models.BankImporter, goserver.BankImporterNoIdInterface, goserver.BankImporter](s, userID, id, bankImporter,
+	return performUpdate[models.BankImporter, goserver.BankImporterNoIdInterface, goserver.BankImporter](s, userID, "BankImporter", id, bankImporter,
 		models.BankImporterToDB,
 		func(m *models.BankImporter) goserver.BankImporter { return m.FromDB() },
 		func(m *models.BankImporter, id uuid.UUID) { m.ID = id },
@@ -53,6 +58,13 @@ func (s *storage) UpdateBankImporter(userID string, id string, bankImporter gose
 }
 
 func (s *storage) DeleteBankImporter(userID string, id string) error {
+	var data models.BankImporter
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
+		if err := s.recordAuditLog(s.db, userID, "BankImporter", id, "DELETED", &data); err != nil {
+			s.log.Error("Failed to record audit log", "error", err)
+		}
+	}
+
 	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.BankImporter{}).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
 	}
@@ -135,10 +147,21 @@ func (s *storage) CreateBankImporterFile(userID string, file *models.BankImporte
 		return goserver.BankImporterFile{}, fmt.Errorf(StorageError, err)
 	}
 
+	if err := s.recordAuditLog(s.db, userID, "BankImporterFile", file.ID.String(), "CREATED", file); err != nil {
+		s.log.Error("Failed to record audit log", "error", err)
+	}
+
 	return file.FromDB(), nil
 }
 
 func (s *storage) DeleteBankImporterFile(userID string, id string) error {
+	var data models.BankImporterFile
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
+		if err := s.recordAuditLog(s.db, userID, "BankImporterFile", id, "DELETED", &data); err != nil {
+			s.log.Error("Failed to record audit log", "error", err)
+		}
+	}
+
 	if err := s.db.Where("user_id = ? AND id = ?", userID, id).Delete(&models.BankImporterFile{}).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
 	}

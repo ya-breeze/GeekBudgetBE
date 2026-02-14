@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type TransactionsAPIServiceImpl struct {
@@ -28,7 +28,7 @@ func (s *TransactionsAPIServiceImpl) GetTransactions(
 	dateFrom, dateTo time.Time,
 	onlySuspicious bool,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -46,7 +46,7 @@ func (s *TransactionsAPIServiceImpl) GetTransactions(
 func (s *TransactionsAPIServiceImpl) CreateTransaction(
 	ctx context.Context, transactionNoID goserver.TransactionNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -77,7 +77,7 @@ func (s *TransactionsAPIServiceImpl) UpdateTransaction(
 func (s *TransactionsAPIServiceImpl) DeleteTransaction(
 	ctx context.Context, transactionID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -95,7 +95,7 @@ func (s *TransactionsAPIServiceImpl) DeleteTransaction(
 func (s *TransactionsAPIServiceImpl) GetTransaction(
 	ctx context.Context, transactionID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -113,7 +113,7 @@ func (s *TransactionsAPIServiceImpl) GetTransaction(
 func (s *TransactionsAPIServiceImpl) MergeTransactions(
 	ctx context.Context, mergeRequest goserver.MergeTransactionsRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil

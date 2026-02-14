@@ -9,6 +9,7 @@ import (
 	"regexp"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -38,7 +39,7 @@ func NewMatchersAPIServiceImpl(
 
 func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.CheckMatcherRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -104,7 +105,7 @@ func (s *MatchersAPIServiceImpl) CheckRegex(ctx context.Context, r goserver.Chec
 }
 
 func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -120,7 +121,7 @@ func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.Impl
 }
 
 func (s *MatchersAPIServiceImpl) GetMatcher(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -137,7 +138,7 @@ func (s *MatchersAPIServiceImpl) GetMatcher(ctx context.Context, id string) (gos
 
 func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -153,7 +154,7 @@ func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.M
 }
 
 func (s *MatchersAPIServiceImpl) DeleteMatcher(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -194,7 +195,7 @@ func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m
 func (s *MatchersAPIServiceImpl) UploadMatcherImage(
 	ctx context.Context, matcherID string, file *os.File,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil
@@ -256,7 +257,7 @@ func (s *MatchersAPIServiceImpl) UploadMatcherImage(
 func (s *MatchersAPIServiceImpl) DeleteMatcherImage(
 	ctx context.Context, matcherID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		s.logger.Error("UserID not found in context")
 		return goserver.Response(500, nil), nil

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"regexp"
@@ -163,6 +164,7 @@ type Storage interface {
 	NotificationStorage
 	ReconciliationStorage
 	SystemStorage
+	WithContext(ctx context.Context) Storage
 }
 
 type MatcherRuntime struct {
@@ -181,10 +183,20 @@ type storage struct {
 	log *slog.Logger
 	cfg *config.Config
 	db  *gorm.DB
+	ctx context.Context
 }
 
 func NewStorage(logger *slog.Logger, cfg *config.Config) Storage {
-	return &storage{log: logger, db: nil, cfg: cfg}
+	return &storage{log: logger, db: nil, cfg: cfg, ctx: context.Background()}
+}
+
+func (s *storage) WithContext(ctx context.Context) Storage {
+	return &storage{
+		log: s.log,
+		cfg: s.cfg,
+		db:  s.db,
+		ctx: ctx,
+	}
 }
 
 func (s *storage) Open() error {

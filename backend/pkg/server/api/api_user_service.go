@@ -5,9 +5,9 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type UserAPIServiceImpl struct {
@@ -24,7 +24,7 @@ func NewUserAPIService(logger *slog.Logger, db database.Storage) goserver.UserAP
 
 // GetUser - return user object
 func (s *UserAPIServiceImpl) GetUser(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -44,7 +44,7 @@ func (s *UserAPIServiceImpl) GetUser(ctx context.Context) (goserver.ImplResponse
 func (s *UserAPIServiceImpl) UpdateUserFavoriteCurrency(
 	ctx context.Context, body goserver.UserPatchBody,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

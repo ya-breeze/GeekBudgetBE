@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
@@ -23,6 +24,9 @@ func StartBankImporters(
 
 	go func() {
 		defer close(done)
+
+		ctx = context.WithValue(ctx, constants.ChangeSourceKey, constants.ChangeSourceSystem)
+		db := db.WithContext(ctx)
 
 		// Start immediately
 		timer := time.NewTimer(0)

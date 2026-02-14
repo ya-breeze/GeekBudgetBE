@@ -11,6 +11,7 @@ import (
 func performUpdate[M any, I any, O any](
 	s *storage,
 	userID string,
+	entityType string,
 	id string,
 	input I,
 	toDB func(I, string) *M,
@@ -30,6 +31,11 @@ func performUpdate[M any, I any, O any](
 		}
 
 		return empty, fmt.Errorf(StorageError, err)
+	}
+
+	// Record audit log BEFORE update (with old state)
+	if err := s.recordAuditLog(s.db, userID, entityType, id, "UPDATED", data); err != nil {
+		s.log.Error("Failed to record audit log", "error", err, "entityType", entityType, "id", id)
 	}
 
 	data = toDB(input, userID)

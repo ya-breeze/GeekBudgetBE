@@ -27,7 +27,7 @@ func NewAggregationsAPIServiceImpl(logger *slog.Logger, db database.Storage) *Ag
 }
 
 func (s *AggregationsAPIServiceImpl) GetIncomes(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string, includeHidden bool) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -122,7 +122,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
 func (s *AggregationsAPIServiceImpl) GetExpenses(
 	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, granularity string, includeHidden bool,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -184,7 +184,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 func (s *AggregationsAPIServiceImpl) GetBalances(
 	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

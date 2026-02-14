@@ -356,6 +356,10 @@ func (m *MockStorage) GetAllBankImporters() ([]database.ImportInfo, error) {
 	return m.Storage.GetAllBankImporters()
 }
 
+func (m *MockStorage) WithContext(ctx context.Context) database.Storage {
+	return m
+}
+
 func TestStartBankImporters_RunsOnStartup(t *testing.T) {
 	logger := slog.Default()
 	fixture := setupTestFixture(t, logger, "testuser_import")

@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -28,7 +29,8 @@ func StartDuplicateDetection(
 				logger.Info("Stopped duplicate detection task")
 				return
 			default:
-				detectDuplicates(ctx, logger, db)
+				ctx := context.WithValue(ctx, constants.ChangeSourceKey, constants.ChangeSourceSystem)
+				detectDuplicates(ctx, logger, db.WithContext(ctx))
 
 				logger.Info("Delaying duplicate detection for 24 hours...")
 				select {

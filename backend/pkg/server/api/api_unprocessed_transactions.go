@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -328,7 +329,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 	ctx context.Context,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -344,7 +345,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
 	ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -396,7 +397,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	transactionNoID goserver.TransactionNoId,
 	matcherId string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -460,7 +461,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(
 	transactionID string,
 	duplicateTransactionID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

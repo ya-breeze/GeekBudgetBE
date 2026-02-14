@@ -38,11 +38,15 @@ func (s *storage) CreateAccount(userID string, account *goserver.AccountNoId) (g
 		return goserver.Account{}, fmt.Errorf(StorageError, err)
 	}
 
+	if err := s.recordAuditLog(s.db, userID, "Account", acc.ID.String(), "CREATED", &acc); err != nil {
+		s.log.Error("Failed to record audit log", "error", err)
+	}
+
 	return acc.FromDB(), nil
 }
 
 func (s *storage) UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error) {
-	return performUpdate[models.Account, goserver.AccountNoIdInterface, goserver.Account](s, userID, id, account,
+	return performUpdate[models.Account, goserver.AccountNoIdInterface, goserver.Account](s, userID, "Account", id, account,
 		models.AccountToDB,
 		func(m *models.Account) goserver.Account { return m.FromDB() },
 		func(m *models.Account, id uuid.UUID) { m.ID = id },
@@ -50,6 +54,18 @@ func (s *storage) UpdateAccount(userID string, id string, account *goserver.Acco
 }
 
 func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *string) error {
+	var acc models.Account
+	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&acc).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return fmt.Errorf(StorageError, err)
+	}
+
+	if err := s.recordAuditLog(s.db, userID, "Account", id, "DELETED", &acc); err != nil {
+		s.log.Error("Failed to record audit log", "error", err)
+	}
+
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		if replaceWithAccountID != nil && *replaceWithAccountID != "" {
 			newAccountID := *replaceWithAccountID

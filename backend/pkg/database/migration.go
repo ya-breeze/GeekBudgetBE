@@ -16,6 +16,7 @@ func autoMigrateModels(db *gorm.DB) error {
 		&models.Currency{},
 		&models.Transaction{},
 		&models.TransactionHistory{},
+		&models.AuditLog{},
 
 		&models.Matcher{},
 		&models.BankImporter{},

@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -14,7 +16,6 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -105,7 +106,7 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 
 	Describe("ProcessUnprocessedTransactionsAgainstMatcher duplicate transfer detection", func() {
 		It("should skip auto-match when a similar transfer already exists in DB", func() {
-			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
 			existingDate := time.Now().Add(-time.Hour * 24)
 
 			// 1. Existing transfer in DB

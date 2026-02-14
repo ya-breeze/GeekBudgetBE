@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -11,7 +13,6 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -146,7 +147,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 			// We expect NO UpdateTransaction because of conflict
 			// (Mock will fail if unexpected calls occur)
 
-			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
 			ids, err := sut.ProcessUnprocessedTransactionsAgainstMatcher(ctx, userID, matcher1ID, "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(ids).To(BeEmpty())

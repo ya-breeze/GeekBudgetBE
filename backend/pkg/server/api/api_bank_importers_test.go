@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -361,7 +363,7 @@ var _ = Describe("BankImporters API", func() {
 
 	Describe("FetchBankImporter", func() {
 		It("should reset FetchAll and create notification on failure when FetchAll is true", func() {
-			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
 			importerID := "imp-fail-all"
 			bi := goserver.BankImporter{
 				Id:       importerID,
@@ -403,7 +405,7 @@ var _ = Describe("BankImporters API", func() {
 			// Since we can't easily call Fetch with private isInteractive from public API, we call Fetch directly or mock internal logic?
 			// But Fetch is public on struct but not interface? No, Fetch is public helper on implementation.
 
-			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
 			importerID := "imp-fail-stopped"
 			bi := goserver.BankImporter{
 				Id:        importerID,
@@ -445,7 +447,7 @@ var _ = Describe("BankImporters API", func() {
 		})
 
 		It("should skip fetch if IsStopped is true and not interactive", func() {
-			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
 			importerID := "imp-skipped"
 			bi := goserver.BankImporter{
 				Id:        importerID,
@@ -464,7 +466,7 @@ var _ = Describe("BankImporters API", func() {
 		})
 
 		It("should reset IsStopped on successful fetch", func() {
-			ctx := context.WithValue(context.Background(), common.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
 			importerID := "imp-reset"
 			bi := goserver.BankImporter{
 				Id:        importerID,
@@ -718,7 +720,7 @@ var _ = Describe("BankImporters API", func() {
 			// The handler checks common.GetForcedImportChannel(ctx). If it's nil, it skips sending.
 			// Test context setup in BeforeEach doesn't set it, so safe.
 
-			resp, err := sut.UpdateBankImporter(context.WithValue(context.Background(), common.UserIDKey, userID), importerID, input)
+			resp, err := sut.UpdateBankImporter(context.WithValue(context.Background(), constants.UserIDKey, userID), importerID, input)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Code).To(Equal(http.StatusOK))
 			Expect(resp.Body.(goserver.BankImporter).Name).To(Equal(input.Name))

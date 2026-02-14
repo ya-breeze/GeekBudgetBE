@@ -1,10 +1,12 @@
 package common
 
-import "context"
+import (
+	"context"
 
-type ForcedImportKeyType string
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+)
 
-const ForcedImportKey ForcedImportKeyType = "forced_import_channel"
+// Use constants.ForcedImportKey
 
 type ForcedImport struct {
 	UserID         string
@@ -15,6 +17,6 @@ func GetForcedImportChannel(ctx context.Context) chan<- ForcedImport {
 	if ctx == nil {
 		return nil
 	}
-	res, _ := ctx.Value(ForcedImportKey).(chan<- ForcedImport)
+	res, _ := ctx.Value(constants.ForcedImportKey).(chan<- ForcedImport)
 	return res
 }

@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type ExportAPIServiceImpl struct {
@@ -22,7 +22,7 @@ func NewExportAPIServiceImpl(logger *slog.Logger, db database.Storage,
 
 func (s *ExportAPIServiceImpl) Export(ctx context.Context) (goserver.ImplResponse, error) {
 	var err error
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

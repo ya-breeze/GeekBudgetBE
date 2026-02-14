@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -12,13 +14,12 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
 var _ = Describe("Accounts API", func() {
 	log := test.CreateTestLogger()
-	ctx := context.WithValue(context.Background(), common.UserIDKey, "user1")
+	ctx := context.WithValue(context.Background(), constants.UserIDKey, "user1")
 	cfg := &config.Config{}
 
 	var (

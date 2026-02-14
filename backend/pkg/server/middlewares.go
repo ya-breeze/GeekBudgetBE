@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
@@ -41,7 +42,9 @@ func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc 
 			// 1. Try Cookie Authentication
 			userID, err := getUserIDFromCookie(req, store, cfg.CookieName, cfg.Issuer, cfg.JWTSecret)
 			if err == nil {
-				req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
+				ctx := context.WithValue(req.Context(), constants.UserIDKey, userID)
+				ctx = context.WithValue(ctx, constants.ChangeSourceKey, constants.ChangeSourceUser)
+				req = req.WithContext(ctx)
 				next.ServeHTTP(writer, req)
 				return
 			}
@@ -53,7 +56,9 @@ func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc 
 			// 2. Try Bearer Token Authentication
 			userID, err = getUserIDFromToken(req, cfg.Issuer, cfg.JWTSecret)
 			if err == nil {
-				req = req.WithContext(context.WithValue(req.Context(), common.UserIDKey, userID))
+				ctx := context.WithValue(req.Context(), constants.UserIDKey, userID)
+				ctx = context.WithValue(ctx, constants.ChangeSourceKey, constants.ChangeSourceUser)
+				req = req.WithContext(ctx)
 				next.ServeHTTP(writer, req)
 				return
 			}
@@ -105,11 +110,6 @@ func CORSMiddleware() mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 			// Add CORS headers to all responses
-			// Note: For cookie-based auth cross-origin, Access-Control-Allow-Origin cannot be "*"
-			// and Access-Control-Allow-Credentials must be true.
-			// Ideally, we restrict Origin to the frontend domain.
-			// For now, we keep "*" but strictly this breaks withCredentials=true.
-			// Since we act as same-site (mostly), we'll start with this.
 			writer.Header().Set("Access-Control-Allow-Origin", "*")
 			writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 			writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
@@ -130,7 +130,7 @@ func ForcedImportMiddleware(logger *slog.Logger, forcedImports chan<- common.For
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 			// Store forced import in the context
-			ctx := context.WithValue(req.Context(), common.ForcedImportKey, forcedImports)
+			ctx := context.WithValue(req.Context(), constants.ForcedImportKey, forcedImports)
 			req = req.WithContext(ctx)
 
 			next.ServeHTTP(writer, req)

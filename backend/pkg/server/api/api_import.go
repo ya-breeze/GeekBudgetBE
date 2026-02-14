@@ -4,10 +4,11 @@ import (
 	"context"
 	"log/slog"
 
+	// Added
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants" // Added
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 )
 
 type ImportAPIServiceImpl struct {
@@ -23,7 +24,7 @@ func NewImportAPIServiceImpl(logger *slog.Logger, db database.Storage,
 //nolint:cyclop // This function is not complex
 func (s *ImportAPIServiceImpl) CallImport(ctx context.Context, data goserver.WholeUserData,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(common.UserIDKey).(string)
+	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}

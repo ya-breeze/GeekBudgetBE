@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
@@ -11,7 +13,6 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
-	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/test"
 )
 
@@ -30,7 +31,7 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 		st = database.NewStorage(log, cfg)
 		Expect(st.Open()).To(Succeed())
 		sut = api.NewAggregationsAPIServiceImpl(log, st)
-		ctx = context.WithValue(context.Background(), common.UserIDKey, userID)
+		ctx = context.WithValue(context.Background(), constants.UserIDKey, userID)
 
 		// Setup base data
 		_, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "USD"})
