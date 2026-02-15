@@ -157,7 +157,7 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), gomock.Any(), gomock.Any()).Return([]goserver.Transaction{existingTx, unprocessedTx}, nil).AnyTimes()
 
 			// EXPECT: Transaction updated but NOT as auto, and with skip reason
-			mockDB.EXPECT().UpdateTransaction(userID, unprocessedTx.Id, gomock.Any()).DoAndReturn(func(uid, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
+			mockDB.EXPECT().UpdateTransactionInternal(userID, unprocessedTx.Id, gomock.Any()).DoAndReturn(func(uid, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
 				Expect(t.GetIsAuto()).To(BeFalse())
 				Expect(t.GetAutoMatchSkipReason()).To(ContainSubstring("Potential duplicate detected"))
 				Expect(t.GetMovements()[1].AccountId).To(Equal(""), "Movements should NOT be modified by matcher if skip")

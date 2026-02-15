@@ -343,6 +343,59 @@ func TestProcessUnprocessedTransactionsInsufficientConfirmationHistory(t *testin
 	}
 }
 
+//nolint:cyclop,funlen
+func TestProcessUnprocessedTransactionsWithoutBankImporter(t *testing.T) {
+	// Test scenario: User has NO bank importer but has perfect matcher → Transaction should still be auto-converted
+	// This ensures getAllUsers() correctly finds users even without bank importers
+	logger := slog.Default()
+	fixture := setupTestFixture(t, logger, "testuser_no_importer")
+	defer fixture.Storage.Close()
+
+	// Create matchers with specific confirmation histories
+	perfectMatcher := fixture.createMatcher(t,
+		"Auto-converted transaction",
+		[]string{"auto-converted"},
+		[]bool{true, true, true, true, true, true, true, true, true, true}, // 10 perfect confirmations
+	)
+
+	// Create transaction but NO bank importer
+	createdTransaction := fixture.createTransaction(t, "Test transaction for auto-conversion")
+
+	// Verify initial state: transaction is unprocessed with 1 matcher
+	unprocessedBefore := fixture.getUnprocessedTransactions(t)
+	if len(unprocessedBefore) != 1 {
+		t.Fatalf("expected 1 unprocessed transaction before auto-conversion, got %d", len(unprocessedBefore))
+	}
+	if unprocessedBefore[0].Transaction.Id != createdTransaction.Id {
+		t.Fatalf("unexpected transaction ID before auto-conversion")
+	}
+
+	// Run the auto-conversion process
+	background.ProcessUnprocessedTransactionsForAutoConversion(t.Context(), logger, fixture.Storage)
+
+	// Verify transaction was auto-converted
+	unprocessedAfter := fixture.getUnprocessedTransactions(t)
+	if len(unprocessedAfter) != 0 {
+		t.Fatalf("expected 0 unprocessed transactions after auto-conversion, got %d. Did getAllUsers fail to find the user?", len(unprocessedAfter))
+	}
+
+	// Verify transaction properties were updated correctly
+	convertedTransaction, err := fixture.Storage.GetTransaction(fixture.UserID, createdTransaction.Id)
+	if err != nil {
+		t.Fatalf("failed to get converted transaction: %v", err)
+	}
+
+	if convertedTransaction.Description != perfectMatcher.OutputDescription {
+		t.Fatalf("expected description '%s', got '%s'",
+			perfectMatcher.OutputDescription, convertedTransaction.Description)
+	}
+
+	if convertedTransaction.Movements[0].AccountId != perfectMatcher.OutputAccountId {
+		t.Fatalf("expected account ID '%s', got '%s'",
+			perfectMatcher.OutputAccountId, convertedTransaction.Movements[0].AccountId)
+	}
+}
+
 // MockStorage wraps database.Storage to intercept calls for testing
 type MockStorage struct {
 	database.Storage

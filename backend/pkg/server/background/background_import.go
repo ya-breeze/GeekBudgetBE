@@ -256,22 +256,9 @@ func ProcessUnprocessedTransactionsForAutoConversion(
 
 // getAllUsers retrieves all user IDs from the database
 func getAllUsers(db database.Storage) ([]string, error) {
-	// Get all bank importers and extract unique user IDs
-	// This is a simple way to get active users - could be optimized with a dedicated method
-	importers, err := db.GetAllBankImporters()
+	users, err := db.GetAllUserIDs()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get bank importers to extract users: %w", err)
+		return nil, fmt.Errorf("failed to get all user IDs: %w", err)
 	}
-
-	userSet := make(map[string]bool)
-	for _, importer := range importers {
-		userSet[importer.UserID] = true
-	}
-
-	users := make([]string, 0, len(userSet))
-	for userID := range userSet {
-		users = append(users, userID)
-	}
-
 	return users, nil
 }
