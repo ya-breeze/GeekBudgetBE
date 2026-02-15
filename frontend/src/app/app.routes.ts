@@ -1,9 +1,17 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/guards/auth.guard';
 import { noAuthGuard } from './core/auth/guards/no-auth.guard';
+import { homeGuard } from './core/auth/guards/home.guard';
 import { LayoutComponent } from './layout/layout.component';
+import { EmptyComponent } from './core/redirect/empty.component';
 
 export const routes: Routes = [
+    {
+        path: 'landing',
+        canActivate: [noAuthGuard],
+        loadComponent: () =>
+            import('./features/auth/landing/landing.component').then((m) => m.LandingComponent),
+    },
     {
         path: 'auth',
         canActivate: [noAuthGuard],
@@ -19,6 +27,12 @@ export const routes: Routes = [
                 pathMatch: 'full',
             },
         ],
+    },
+    {
+        path: '',
+        pathMatch: 'full',
+        canActivate: [homeGuard],
+        component: EmptyComponent,
     },
     {
         path: '',
@@ -158,15 +172,11 @@ export const routes: Routes = [
                         (m) => m.AuditLogsComponent,
                     ),
             },
-            {
-                path: '',
-                redirectTo: 'dashboard',
-                pathMatch: 'full',
-            },
         ],
     },
     {
         path: '**',
-        redirectTo: 'dashboard',
+        canActivate: [homeGuard],
+        component: EmptyComponent,
     },
 ];

@@ -2,6 +2,9 @@
     <mat-card class="login-card">
         <mat-card-header>
             <mat-card-title>GeekBudget Login</mat-card-title>
+            <mat-card-subtitle>
+                <a routerLink="/landing" class="back-link">← Back to Home</a>
+            </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
             <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">

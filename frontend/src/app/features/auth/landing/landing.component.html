@@ -1,0 +1,137 @@
+<div class="landing-page">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="badge">
+                    <mat-icon>account_balance_wallet</mat-icon>
+                    Personal Finance Management
+                </div>
+                <h1 class="hero-title">
+                    Take Control of Your
+                    <span class="highlight">Finances</span>
+                </h1>
+                <p class="hero-subtitle">
+                    GeekBudget is your comprehensive personal finance manager with automated bank
+                    imports, intelligent transaction matching, and powerful budgeting tools.
+                </p>
+                <div class="hero-actions">
+                    <button
+                        mat-raised-button
+                        color="primary"
+                        routerLink="/auth/login"
+                        class="cta-button"
+                    >
+                        Get Started
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                    <button
+                        mat-stroked-button
+                        (click)="scrollToFeatures()"
+                        class="learn-more-button"
+                    >
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful Features</h2>
+                <p>Everything you need to manage your finances in one place</p>
+            </div>
+            <div class="features-grid">
+                @for (feature of features; track feature.title) {
+                    <mat-card class="feature-card">
+                        <mat-card-header>
+                            <mat-icon class="feature-icon">{{ feature.icon }}</mat-icon>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <h3>{{ feature.title }}</h3>
+                            <p class="feature-description">{{ feature.description }}</p>
+                            <p class="feature-details">{{ feature.details }}</p>
+                        </mat-card-content>
+                    </mat-card>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>Your journey to better financial management in four simple steps</p>
+            </div>
+            <div class="steps-grid">
+                @for (step of steps; track step.number) {
+                    <div class="step-card">
+                        <div class="step-number">{{ step.number }}</div>
+                        <h3>{{ step.title }}</h3>
+                        <p>{{ step.description }}</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Concepts -->
+    <section class="concepts-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Key Concepts</h2>
+                <p>Understanding GeekBudget terminology</p>
+            </div>
+            <div class="concepts-grid">
+                @for (concept of concepts; track concept.title) {
+                    <mat-card class="concept-card">
+                        <mat-card-content>
+                            <div class="concept-header">
+                                <mat-icon class="concept-icon">{{ concept.icon }}</mat-icon>
+                                <h3>{{ concept.title }}</h3>
+                            </div>
+                            <p>{{ concept.description }}</p>
+                        </mat-card-content>
+                    </mat-card>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <mat-card class="cta-card">
+                <mat-card-content>
+                    <h2>Ready to Master Your Finances?</h2>
+                    <p>
+                        Join GeekBudget today and take the first step towards better financial
+                        management. Import your transactions, set your budgets, and gain insights
+                        into your spending.
+                    </p>
+                    <button
+                        mat-raised-button
+                        color="accent"
+                        routerLink="/auth/login"
+                        class="cta-button"
+                    >
+                        Sign In Now
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container">
+            <p>&copy; 2026 GeekBudget. Personal Finance Management Made Simple.</p>
+        </div>
+    </footer>
+</div>

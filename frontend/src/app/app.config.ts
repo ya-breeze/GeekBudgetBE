@@ -28,14 +28,6 @@ export const appConfig: ApplicationConfig = {
         provideCharts(withDefaultRegisterables()),
         provideNativeDateAdapter(),
         {
-            provide: APP_INITIALIZER,
-            useFactory: () => {
-                const authService = inject(AuthService);
-                return () => authService.checkAuth();
-            },
-            multi: true,
-        },
-        {
             provide: ApiConfiguration,
             useFactory: () => {
                 const config = new ApiConfiguration();

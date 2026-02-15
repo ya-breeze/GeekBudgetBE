@@ -23,3 +23,8 @@ trigger: always_on
 - **Backend Tests**: Use `make test` to run all tests. `go test ./...` might miss integration tests if not configured correctly.
 - **Integration Tests**: Located in `backend/test/`. These are critical for verifying complex interactions like auto-matching.
 - **`IsAuto` Updates**: If a test expects `IsAuto` to be updated, it must use `UpdateTransactionInternal`. If it expects it preserved, use `UpdateTransaction`.
+
+## Frontend Testing
+- **Async Guards**: When testing guards that return `Observable`, always use the `(done)` callback or `firstValueFrom` to ensure assertions are executed before the test completes. Return `of(true)` or `of(false)` from mocks.
+- **Router Providers**: Use `provideRouter([])` in `TestBed` when components or guards depend on the Angular `Router`. Spying on `Router.navigate` or `Router.createUrlTree` is cleaner than providing a full mock object.
+- **LocalStorage**: Guards may depend on `localStorage` hints (like `gb_logged_in_hint`). Ensure these are cleared or set to expected values in `beforeEach` to avoid leaky tests.

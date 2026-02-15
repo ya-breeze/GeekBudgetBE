@@ -31,7 +31,8 @@
       "Bash(python3:*)",
       "Bash(go tool:*)",
       "Bash(go test:*)",
-      "Bash(git -C /Users/ek/work/GeekBudgetBE ls-files:*)"
+      "Bash(git -C /Users/ek/work/GeekBudgetBE ls-files:*)",
+      "Bash(npm run lint)"
     ]
   }
 }
