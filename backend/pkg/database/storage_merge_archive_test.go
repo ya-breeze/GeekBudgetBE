@@ -92,7 +92,7 @@ func TestMergeArchive(t *testing.T) {
 		}
 	})
 
-	t.Run("Delete duplicate archives transaction data", func(t *testing.T) {
+	t.Run("Merge archives transaction data", func(t *testing.T) {
 		t1, _ := st.CreateTransaction(userID, &goserver.TransactionNoId{
 			Date:        time.Now(),
 			Description: "Keep",
@@ -105,7 +105,7 @@ func TestMergeArchive(t *testing.T) {
 		})
 
 		if _, err := st.MergeTransactions(userID, t1.Id, t2.Id); err != nil {
-			t.Fatalf("failed to merge duplicate: %v", err)
+			t.Fatalf("failed to merge: %v", err)
 		}
 
 		merged, _ := st.GetMergedTransactions(userID)
@@ -117,7 +117,7 @@ func TestMergeArchive(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Error("deleted duplicate not found in archive")
+			t.Error("merged transaction not found in archive")
 		}
 	})
 

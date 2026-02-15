@@ -126,7 +126,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 	}
 }
 
-func (r *WebAppRouter) unprocessedDeleteHandler(w http.ResponseWriter, req *http.Request) {
+func (r *WebAppRouter) unprocessedMergeHandler(w http.ResponseWriter, req *http.Request) {
 	userID, code, err := r.GetUserIDFromSession(req)
 	if err != nil {
 		r.RespondError(w, http.StatusText(code), code)

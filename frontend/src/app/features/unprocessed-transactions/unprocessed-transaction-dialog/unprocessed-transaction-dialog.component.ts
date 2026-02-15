@@ -49,7 +49,7 @@ export interface AccountGroup {
 
 export type UnprocessedTransactionDialogResult =
     | { action: 'convert'; match: MatcherAndTransaction }
-    | { action: 'delete'; duplicateOf: Transaction }
+    | { action: 'merge'; duplicateOf: Transaction }
     | { action: 'manual'; accountId: string; description?: string }
     | { action: 'skip' };
 
@@ -488,7 +488,7 @@ export class UnprocessedTransactionDialogComponent implements OnInit {
 
     applyDuplicate(duplicate: Transaction): void {
         this.loading.set(true);
-        this.action.emit({ action: 'delete', duplicateOf: duplicate });
+        this.action.emit({ action: 'merge', duplicateOf: duplicate });
     }
 
     processManual(): void {

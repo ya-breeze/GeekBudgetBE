@@ -122,10 +122,10 @@ func (r *WebAppRouter) Routes() goserver.Routes {
 			Pattern:     "/web/unprocessed/convert",
 			HandlerFunc: r.unprocessedConvertHandler,
 		},
-		"UnprocessedDelete": goserver.Route{
+		"UnprocessedMerge": goserver.Route{
 			Method:      "GET",
-			Pattern:     "/web/unprocessed/delete",
-			HandlerFunc: r.unprocessedDeleteHandler,
+			Pattern:     "/web/unprocessed/merge",
+			HandlerFunc: r.unprocessedMergeHandler,
 		},
 		"Accounts": goserver.Route{
 			Method:      "GET",

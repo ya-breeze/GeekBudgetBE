@@ -125,8 +125,8 @@
                                             {{ end }}
                                         </div>
                                         <div class="d-grid gap-2 mb-2">
-                                            <button type="button" class="btn btn-primary btn-sm" onclick="confirmMarkAsDuplicate('{{$.Unprocessed.Transaction.ID}}', '{{.ID}}', '{{ .Description }}', '{{ formatTime .Date "2006-01-02" }}')">
-                                                Mark as duplicate
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="confirmMerge('{{$.Unprocessed.Transaction.ID}}', '{{.ID}}', '{{ .Description }}', '{{ formatTime .Date "2006-01-02" }}')">
+                                                Merge with this
                                             </button>
                                         </div>                                        
                                     </div>
@@ -142,11 +142,11 @@
 </main>
 
 <script>
-function confirmMarkAsDuplicate(transactionId, duplicateOfId, duplicateDescription, duplicateDate) {
-    const message = `Are you sure you want to mark this transaction as a duplicate of:\n\n${duplicateDate} - ${duplicateDescription}?\n\nThis action cannot be undone.`;
-    
+function confirmMerge(transactionId, duplicateOfId, duplicateDescription, duplicateDate) {
+    const message = `Are you sure you want to merge this transaction with:\n\n${duplicateDate} - ${duplicateDescription}?\n\nThis action cannot be undone.`;
+
     if (confirm(message)) {
-        window.location.href = `/web/unprocessed/delete?id=${transactionId}&duplicateOf=${duplicateOfId}`;
+        window.location.href = `/web/unprocessed/merge?id=${transactionId}&duplicateOf=${duplicateOfId}`;
     }
 }
 </script>

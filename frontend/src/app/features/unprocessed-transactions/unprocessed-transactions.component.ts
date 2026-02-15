@@ -167,8 +167,8 @@ export class UnprocessedTransactionsComponent implements OnInit {
 
             if (result.action === 'convert') {
                 this.processMatch(currentTransaction, result.match, dialogRef);
-            } else if (result.action === 'delete') {
-                this.deleteTransaction(currentTransaction, result.duplicateOf.id, dialogRef);
+            } else if (result.action === 'merge') {
+                this.mergeTransaction(currentTransaction, result.duplicateOf.id, dialogRef);
             } else if (result.action === 'manual') {
                 this.processManual(
                     currentTransaction,
@@ -265,9 +265,9 @@ export class UnprocessedTransactionsComponent implements OnInit {
             });
     }
 
-    deleteTransaction(
+    mergeTransaction(
         transaction: UnprocessedTransaction,
-        duplicateOfId?: string,
+        duplicateOfId: string,
         dialogRef?: any,
     ): void {
         const index = this.getSortedData().findIndex(
