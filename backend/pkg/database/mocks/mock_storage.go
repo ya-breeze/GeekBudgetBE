@@ -389,20 +389,6 @@ func (mr *MockStorageMockRecorder) DeleteCurrency(arg0, arg1, arg2 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCurrency", reflect.TypeOf((*MockStorage)(nil).DeleteCurrency), arg0, arg1, arg2)
 }
 
-// DeleteDuplicateTransaction mocks base method.
-func (m *MockStorage) DeleteDuplicateTransaction(arg0, arg1, arg2 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteDuplicateTransaction", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteDuplicateTransaction indicates an expected call of DeleteDuplicateTransaction.
-func (mr *MockStorageMockRecorder) DeleteDuplicateTransaction(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDuplicateTransaction", reflect.TypeOf((*MockStorage)(nil).DeleteDuplicateTransaction), arg0, arg1, arg2)
-}
-
 // DeleteImage mocks base method.
 func (m *MockStorage) DeleteImage(arg0 string) error {
 	m.ctrl.T.Helper()

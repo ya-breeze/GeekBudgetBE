@@ -4,7 +4,6 @@ import { Observable, tap, map } from 'rxjs';
 import { ApiConfiguration } from '../../../core/api/api-configuration';
 import { UnprocessedTransaction } from '../../../core/api/models/unprocessed-transaction';
 import { getUnprocessedTransactions } from '../../../core/api/fn/unprocessed-transactions/get-unprocessed-transactions';
-import { deleteUnprocessedTransaction } from '../../../core/api/fn/unprocessed-transactions/delete-unprocessed-transaction';
 import { convertUnprocessedTransaction } from '../../../core/api/fn/unprocessed-transactions/convert-unprocessed-transaction';
 import { getUnprocessedTransaction } from '../../../core/api/fn/unprocessed-transactions/get-unprocessed-transaction';
 
@@ -81,30 +80,6 @@ export class UnprocessedTransactionService {
                 },
             }),
             map(() => undefined),
-        );
-    }
-
-    delete(id: string, duplicateOf?: string): Observable<void> {
-        this.loading.set(true);
-        this.error.set(null);
-
-        return deleteUnprocessedTransaction(this.http, this.apiConfig.rootUrl, {
-            id,
-            duplicateOf,
-        }).pipe(
-            map(() => undefined),
-            tap({
-                next: () => {
-                    this.unprocessedTransactions.update((transactions) =>
-                        transactions.filter((t) => t.transaction.id !== id),
-                    );
-                    this.loading.set(false);
-                },
-                error: (err) => {
-                    this.error.set(err.message || 'Failed to delete transaction');
-                    this.loading.set(false);
-                },
-            }),
         );
     }
 

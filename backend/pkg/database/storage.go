@@ -83,7 +83,6 @@ type TransactionStorage interface {
 	) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
 	MergeTransactions(userID, keepID, mergeID string) (goserver.Transaction, error)
-	DeleteDuplicateTransaction(userID string, id, duplicateID string) error
 	GetTransaction(userID string, id string) (goserver.Transaction, error)
 	GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
 	GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error)

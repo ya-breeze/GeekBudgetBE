@@ -144,10 +144,9 @@ func (r *WebAppRouter) unprocessedDeleteHandler(w http.ResponseWriter, req *http
 		return
 	}
 
-	s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
-	err = s.Delete(req.Context(), userID, id, duplicateOf)
+	_, err = r.db.MergeTransactions(userID, duplicateOf, id)
 	if err != nil {
-		r.logger.Error("Failed to delete unprocessed", "error", err)
+		r.logger.Error("Failed to merge duplicate", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

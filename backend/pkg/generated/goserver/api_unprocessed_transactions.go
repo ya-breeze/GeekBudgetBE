@@ -67,11 +67,6 @@ func (c *UnprocessedTransactionsAPIController) Routes() Routes {
 			"/v1/unprocessedTransactions/{id}",
 			c.GetUnprocessedTransaction,
 		},
-		"DeleteUnprocessedTransaction": Route{
-			strings.ToUpper("Delete"),
-			"/v1/unprocessedTransactions/{id}",
-			c.DeleteUnprocessedTransaction,
-		},
 	}
 }
 
@@ -141,36 +136,6 @@ func (c *UnprocessedTransactionsAPIController) GetUnprocessedTransaction(w http.
 		return
 	}
 	result, err := c.service.GetUnprocessedTransaction(r.Context(), idParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// DeleteUnprocessedTransaction - delete unprocessed transaction
-func (c *UnprocessedTransactionsAPIController) DeleteUnprocessedTransaction(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	query, err := parseQuery(r.URL.RawQuery)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	idParam := params["id"]
-	if idParam == "" {
-		c.errorHandler(w, r, &RequiredError{"id"}, nil)
-		return
-	}
-	var duplicateOfParam string
-	if query.Has("duplicateOf") {
-		param := query.Get("duplicateOf")
-
-		duplicateOfParam = param
-	} else {
-	}
-	result, err := c.service.DeleteUnprocessedTransaction(r.Context(), idParam, duplicateOfParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

@@ -447,33 +447,6 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	}), nil
 }
 
-func (s *UnprocessedTransactionsAPIServiceImpl) Delete(
-	ctx context.Context,
-	userID string,
-	transactionID string,
-	duplicateTransactionID string,
-) error {
-	return s.db.DeleteDuplicateTransaction(userID, transactionID, duplicateTransactionID)
-}
-
-func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(
-	ctx context.Context,
-	transactionID string,
-	duplicateTransactionID string,
-) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
-	if !ok {
-		return goserver.Response(500, nil), nil
-	}
-
-	err := s.Delete(ctx, userID, transactionID, duplicateTransactionID)
-	if err != nil {
-		return goserver.Response(500, nil), nil
-	}
-
-	return goserver.Response(204, nil), nil
-}
-
 func (s *UnprocessedTransactionsAPIServiceImpl) filterUnprocessedTransactions(
 	transactions []goserver.Transaction, ignoreBeforeMap map[string]time.Time,
 ) []goserver.Transaction {

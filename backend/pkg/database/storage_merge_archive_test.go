@@ -104,8 +104,8 @@ func TestMergeArchive(t *testing.T) {
 			Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: curCZK.Id, AccountId: accA2.Id}},
 		})
 
-		if err := st.DeleteDuplicateTransaction(userID, t2.Id, t1.Id); err != nil {
-			t.Fatalf("failed to delete duplicate: %v", err)
+		if _, err := st.MergeTransactions(userID, t1.Id, t2.Id); err != nil {
+			t.Fatalf("failed to merge duplicate: %v", err)
 		}
 
 		merged, _ := st.GetMergedTransactions(userID)

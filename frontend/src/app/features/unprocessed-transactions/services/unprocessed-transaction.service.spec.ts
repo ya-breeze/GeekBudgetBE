@@ -208,18 +208,4 @@ describe('UnprocessedTransactionService', () => {
             req.flush(unprocessedTransaction.transaction);
         });
     });
-
-    describe('delete', () => {
-        it('should delete unprocessed transaction', (done) => {
-            service.delete('1').subscribe({
-                next: () => {
-                    done();
-                },
-            });
-
-            const req = httpMock.expectOne(`${apiConfig.rootUrl}/v1/unprocessedTransactions/1`);
-            expect(req.request.method).toBe('DELETE');
-            req.flush(null);
-        });
-    });
 });

@@ -11,6 +11,7 @@ import { UnprocessedTransactionService } from './services/unprocessed-transactio
 import { UnprocessedTransaction } from '../../core/api/models/unprocessed-transaction';
 import { LayoutService } from '../../layout/services/layout.service';
 import { CurrencyService } from '../currencies/services/currency.service';
+import { TransactionService } from '../transactions/services/transaction.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -37,6 +38,7 @@ import {
 })
 export class UnprocessedTransactionsComponent implements OnInit {
     private readonly unprocessedTransactionService = inject(UnprocessedTransactionService);
+    private readonly transactionService = inject(TransactionService);
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
     private readonly currencyService = inject(CurrencyService);
@@ -272,23 +274,23 @@ export class UnprocessedTransactionsComponent implements OnInit {
             (t) => t.transaction.id === transaction.transaction.id,
         );
 
-        this.unprocessedTransactionService
-            .delete(transaction.transaction.id!, duplicateOfId)
-            .subscribe({
-                next: () => {
-                    const message = duplicateOfId ? 'Transaction merged' : 'Transaction deleted';
-                    this.snackBar.open(message, 'Close', { duration: 3000 });
-                    if (dialogRef) {
-                        this.handleSuccess(index, dialogRef);
-                    } else {
-                        this.loadUnprocessedTransactions();
-                    }
-                },
-                error: () => {
-                    this.snackBar.open('Failed to delete transaction', 'Close', { duration: 3000 });
-                    if (dialogRef) dialogRef.componentInstance.setLoading(false);
-                },
-            });
+        this.transactionService.merge(duplicateOfId!, transaction.transaction.id!).subscribe({
+            next: () => {
+                this.unprocessedTransactionService.unprocessedTransactions.update((transactions) =>
+                    transactions.filter((t) => t.transaction.id !== transaction.transaction.id),
+                );
+                this.snackBar.open('Transaction merged', 'Close', { duration: 3000 });
+                if (dialogRef) {
+                    this.handleSuccess(index, dialogRef);
+                } else {
+                    this.loadUnprocessedTransactions();
+                }
+            },
+            error: () => {
+                this.snackBar.open('Failed to merge transaction', 'Close', { duration: 3000 });
+                if (dialogRef) dialogRef.componentInstance.setLoading(false);
+            },
+        });
     }
 
     private handleSuccess(index: number, dialogRef: any) {

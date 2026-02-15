@@ -792,29 +792,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnprocessedTransaction"
-    delete:
-      tags:
-        - unprocessed transactions
-      summary: delete unprocessed transaction
-      operationId: deleteUnprocessedTransaction
-      parameters:
-        - name: "id"
-          in: "path"
-          required: true
-          schema:
-            type: "string"
-            format: "uuid"
-            example: "123e4567-e89b-12d3-a456-426614174000"
-        - name: duplicateOf
-          description: "ID of transaction which is duplicate of this one"
-          in: query
-          schema:
-            type: "string"
-            format: "uuid"
-            example: "123e4567-e89b-12d3-a456-426614174000"
-      responses:
-        "200":
-          description: no body
 
   /v1/balances:
     get:

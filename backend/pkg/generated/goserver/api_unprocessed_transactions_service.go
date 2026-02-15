@@ -25,8 +25,6 @@ type UnprocessedTransactionsAPIService interface {
 	ConvertUnprocessedTransaction(ctx context.Context, id string, transactionNoId TransactionNoId, matcherId string) (ImplResponse, error)
 	// GetUnprocessedTransaction - get unprocessed transaction
 	GetUnprocessedTransaction(ctx context.Context, id string) (ImplResponse, error)
-	// DeleteUnprocessedTransaction - delete unprocessed transaction
-	DeleteUnprocessedTransaction(ctx context.Context, id string, duplicateOf string) (ImplResponse, error)
 }
 
 // UnprocessedTransactionsAPIService is a service that implements the logic for the UnprocessedTransactionsAPIServicer
@@ -71,15 +69,4 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(ctx co
 	// return Response(200, UnprocessedTransaction{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("GetUnprocessedTransaction method not implemented")
-}
-
-// DeleteUnprocessedTransaction - delete unprocessed transaction
-func (s *UnprocessedTransactionsAPIServiceImpl) DeleteUnprocessedTransaction(ctx context.Context, id string, duplicateOf string) (ImplResponse, error) {
-	// TODO - update DeleteUnprocessedTransaction with the required logic for this service method.
-	// Add api_unprocessed_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response Response(200, {}) or use other options such as http.Ok ...
-	// return Response(200, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("DeleteUnprocessedTransaction method not implemented")
 }

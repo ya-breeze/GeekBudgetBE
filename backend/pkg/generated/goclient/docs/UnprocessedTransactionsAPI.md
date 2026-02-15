@@ -5,7 +5,6 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**ConvertUnprocessedTransaction**](UnprocessedTransactionsAPI.md#ConvertUnprocessedTransaction) | **Post** /v1/unprocessedTransactions/{id}/convert | convert unprocessed transactions into normal transaction
-[**DeleteUnprocessedTransaction**](UnprocessedTransactionsAPI.md#DeleteUnprocessedTransaction) | **Delete** /v1/unprocessedTransactions/{id} | delete unprocessed transaction
 [**GetUnprocessedTransaction**](UnprocessedTransactionsAPI.md#GetUnprocessedTransaction) | **Get** /v1/unprocessedTransactions/{id} | get unprocessed transaction
 [**GetUnprocessedTransactions**](UnprocessedTransactionsAPI.md#GetUnprocessedTransactions) | **Get** /v1/unprocessedTransactions | get all unprocessed transactions
 
@@ -78,74 +77,6 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: application/json
 - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
-[[Back to Model list]](../README.md#documentation-for-models)
-[[Back to README]](../README.md)
-
-
-## DeleteUnprocessedTransaction
-
-> DeleteUnprocessedTransaction(ctx, id).DuplicateOf(duplicateOf).Execute()
-
-delete unprocessed transaction
-
-### Example
-
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"os"
-	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
-)
-
-func main() {
-	id := "123e4567-e89b-12d3-a456-426614174000" // string | 
-	duplicateOf := "123e4567-e89b-12d3-a456-426614174000" // string | ID of transaction which is duplicate of this one (optional)
-
-	configuration := openapiclient.NewConfiguration()
-	apiClient := openapiclient.NewAPIClient(configuration)
-	r, err := apiClient.UnprocessedTransactionsAPI.DeleteUnprocessedTransaction(context.Background(), id).DuplicateOf(duplicateOf).Execute()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `UnprocessedTransactionsAPI.DeleteUnprocessedTransaction``: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-	}
-}
-```
-
-### Path Parameters
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**id** | **string** |  | 
-
-### Other Parameters
-
-Other parameters are passed through a pointer to a apiDeleteUnprocessedTransactionRequest struct via the builder pattern
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
-
- **duplicateOf** | **string** | ID of transaction which is duplicate of this one | 
-
-### Return type
-
- (empty response body)
-
-### Authorization
-
-[BearerAuth](../README.md#BearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
 [[Back to Model list]](../README.md#documentation-for-models)

@@ -395,6 +395,10 @@ func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Tr
 			return fmt.Errorf("failed to hard-delete merge transaction: %w", err)
 		}
 
+		if err := s.recordAuditLog(tx, userID, "Transaction", mergeT.ID.String(), "MERGED", &mergeT, nil); err != nil {
+			s.log.Error("Failed to record audit log", "error", err)
+		}
+
 		// 5. Clear duplicate relationships for both (they are resolved now)
 		// We use tx so it's atomic within our transaction
 		if err := s.clearDuplicateRelationshipsWithTx(tx, userID, mID.String()); err != nil {
@@ -413,47 +417,6 @@ func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Tr
 	}
 
 	return s.GetTransaction(userID, keepID)
-}
-
-func (s *storage) DeleteDuplicateTransaction(userID string, id, duplicateID string) error {
-	s.log.Info("Deleting duplicate transaction", "id", id, "duplicate_id", duplicateID)
-	return s.db.Transaction(func(tx *gorm.DB) error {
-		var t, duplicate models.Transaction
-		if err := tx.Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
-			s.log.Warn("Failed to find transaction", "id", id, "error", err)
-			return fmt.Errorf(StorageError, err)
-		}
-
-		if err := tx.Where("id = ? AND user_id = ?", duplicateID, userID).First(&duplicate).Error; err != nil {
-			s.log.Warn("Failed to find duplicate transaction", "id", duplicateID, "error", err)
-			return fmt.Errorf(StorageError, err)
-		}
-
-		duplicate.ExternalIDs = append(duplicate.ExternalIDs, t.ExternalIDs...)
-		if err := tx.Save(&duplicate).Error; err != nil {
-			s.log.Warn("Failed to update duplicate transaction", "id", duplicateID, "error", err)
-			return fmt.Errorf(StorageError, err)
-		}
-
-		// Archive and hard-delete the transaction
-		now := time.Now()
-		duplicateIDUUID, _ := uuid.Parse(duplicateID)
-		if err := s.archiveMergedTransaction(tx, userID, &t, duplicateIDUUID, now); err != nil {
-			return err
-		}
-
-		// Hard-delete the transaction (archive is source of truth)
-		if err := tx.Unscoped().Delete(&t).Error; err != nil {
-			s.log.Warn("Failed to hard-delete merged transaction", "id", id, "error", err)
-			return fmt.Errorf(StorageError, err)
-		}
-
-		if err := s.recordAuditLog(tx, userID, "Transaction", t.ID.String(), "MERGED", &t, nil); err != nil {
-			s.log.Error("Failed to record audit log", "error", err)
-		}
-
-		return nil
-	})
 }
 
 func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction, error) {

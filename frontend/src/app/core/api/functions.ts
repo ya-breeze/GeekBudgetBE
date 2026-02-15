@@ -75,8 +75,6 @@ export type { ConvertUnprocessedTransaction$Params } from './fn/unprocessed-tran
 export { convertUnprocessedTransaction } from './fn/unprocessed-transactions/convert-unprocessed-transaction';
 export type { GetUnprocessedTransaction$Params } from './fn/unprocessed-transactions/get-unprocessed-transaction';
 export { getUnprocessedTransaction } from './fn/unprocessed-transactions/get-unprocessed-transaction';
-export type { DeleteUnprocessedTransaction$Params } from './fn/unprocessed-transactions/delete-unprocessed-transaction';
-export { deleteUnprocessedTransaction } from './fn/unprocessed-transactions/delete-unprocessed-transaction';
 export type { GetBalances$Params } from './fn/aggregations/get-balances';
 export { getBalances } from './fn/aggregations/get-balances';
 export type { GetExpenses$Params } from './fn/aggregations/get-expenses';

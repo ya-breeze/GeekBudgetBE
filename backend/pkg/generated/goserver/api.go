@@ -171,7 +171,6 @@ type UnprocessedTransactionsAPIRouter interface {
 	GetUnprocessedTransactions(http.ResponseWriter, *http.Request)
 	ConvertUnprocessedTransaction(http.ResponseWriter, *http.Request)
 	GetUnprocessedTransaction(http.ResponseWriter, *http.Request)
-	DeleteUnprocessedTransaction(http.ResponseWriter, *http.Request)
 }
 
 // UserAPIRouter defines the required methods for binding the api requests to a responses for the UserAPI
@@ -348,7 +347,6 @@ type UnprocessedTransactionsAPIServicer interface {
 	GetUnprocessedTransactions(context.Context) (ImplResponse, error)
 	ConvertUnprocessedTransaction(context.Context, string, TransactionNoId, string) (ImplResponse, error)
 	GetUnprocessedTransaction(context.Context, string) (ImplResponse, error)
-	DeleteUnprocessedTransaction(context.Context, string, string) (ImplResponse, error)
 }
 
 // UserAPIServicer defines the api actions for the UserAPI service
