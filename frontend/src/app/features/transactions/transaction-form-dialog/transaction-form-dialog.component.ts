@@ -118,7 +118,17 @@ export class TransactionFormDialogComponent implements OnInit {
     onSubmit(): void {
         if (this.form.valid) {
             const formValue = this.form.value;
+
+            // Start with base object if editing (excluding id)
+            let baseTransaction = {};
+            if (this.isEditMode && this.data.transaction) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { id, ...rest } = this.data.transaction;
+                baseTransaction = rest;
+            }
+
             const transaction: TransactionNoId = {
+                ...baseTransaction,
                 date: formValue.date.toISOString(),
                 description: formValue.description,
                 movements: formValue.movements,

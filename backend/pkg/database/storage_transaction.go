@@ -212,7 +212,20 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 	return results, nil
 }
 
-func (s *storage) UpdateTransaction(userID string, id string, input goserver.TransactionNoIdInterface,
+func (s *storage) UpdateTransaction(
+	userID string, id string, input goserver.TransactionNoIdInterface,
+) (goserver.Transaction, error) {
+	return s.updateTransaction(userID, id, input, true)
+}
+
+func (s *storage) UpdateTransactionInternal(
+	userID string, id string, input goserver.TransactionNoIdInterface,
+) (goserver.Transaction, error) {
+	return s.updateTransaction(userID, id, input, false)
+}
+
+func (s *storage) updateTransaction(
+	userID string, id string, input goserver.TransactionNoIdInterface, preserveProtected bool,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)
 	if err != nil {
@@ -242,6 +255,21 @@ func (s *storage) UpdateTransaction(userID string, id string, input goserver.Tra
 
 	t = models.TransactionToDB(input, userID)
 	t.ID = idUUID
+
+	// Preserve fields that are not editable via this endpoint or were not provided
+	if preserveProtected {
+		t.ExternalIDs = oldT.ExternalIDs
+		t.UnprocessedSources = oldT.UnprocessedSources
+		t.PartnerInternalID = oldT.PartnerInternalID
+		t.Extra = oldT.Extra
+		t.MatcherID = oldT.MatcherID
+		t.IsAuto = oldT.IsAuto
+		t.SuspiciousReasons = oldT.SuspiciousReasons
+		t.MergedIntoID = oldT.MergedIntoID
+		t.MergedAt = oldT.MergedAt
+		t.AutoMatchSkipReason = oldT.AutoMatchSkipReason
+	}
+
 	if err := s.db.Save(&t).Error; err != nil {
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}

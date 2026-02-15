@@ -76,6 +76,11 @@ type TransactionStorage interface {
 	UpdateTransaction(
 		userID string, id string, transaction goserver.TransactionNoIdInterface,
 	) (goserver.Transaction, error)
+	// UpdateTransactionInternal updates all fields provided in transaction, without preservation logic.
+	// Use only for internal operations like auto-matching or unprocessing.
+	UpdateTransactionInternal(
+		userID string, id string, transaction goserver.TransactionNoIdInterface,
+	) (goserver.Transaction, error)
 	DeleteTransaction(userID string, id string) error
 	MergeTransactions(userID, keepID, mergeID string) (goserver.Transaction, error)
 	DeleteDuplicateTransaction(userID string, id, duplicateID string) error

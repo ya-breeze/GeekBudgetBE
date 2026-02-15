@@ -1173,6 +1173,21 @@ func (mr *MockStorageMockRecorder) UpdateTransaction(arg0, arg1, arg2 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransaction", reflect.TypeOf((*MockStorage)(nil).UpdateTransaction), arg0, arg1, arg2)
 }
 
+// UpdateTransactionInternal mocks base method.
+func (m *MockStorage) UpdateTransactionInternal(arg0, arg1 string, arg2 goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTransactionInternal", arg0, arg1, arg2)
+	ret0, _ := ret[0].(goserver.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTransactionInternal indicates an expected call of UpdateTransactionInternal.
+func (mr *MockStorageMockRecorder) UpdateTransactionInternal(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTransactionInternal", reflect.TypeOf((*MockStorage)(nil).UpdateTransactionInternal), arg0, arg1, arg2)
+}
+
 // WithContext mocks base method.
 func (m *MockStorage) WithContext(arg0 context.Context) database.Storage {
 	m.ctrl.T.Helper()

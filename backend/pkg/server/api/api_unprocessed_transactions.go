@@ -158,7 +158,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 		}
 
 		// Persist
-		_, err = s.db.UpdateTransaction(userID, t.Id, transactionNoId)
+		_, err = s.db.UpdateTransactionInternal(userID, t.Id, transactionNoId)
 		if err != nil {
 			s.logger.With("error", err, "transactionId", t.Id).Error("Failed to auto-process transaction")
 			// We continue processing other transactions even if one fails
@@ -193,7 +193,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) Convert(
 ) (*goserver.Transaction, error) {
 	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", userID)
 
-	transaction, err := s.db.UpdateTransaction(userID, id, transactionNoID)
+	transaction, err := s.db.UpdateTransactionInternal(userID, id, transactionNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to convert unprocessed transaction")
 		return nil, fmt.Errorf("failed to convert unprocessed transaction: %w", err)
