@@ -22,6 +22,7 @@ trigger: always_on
 ## Testing Strategy
 - **Backend Tests**: Use `make test` to run all tests. `go test ./...` might miss integration tests if not configured correctly.
 - **Integration Tests**: Located in `backend/test/`. These are critical for verifying complex interactions like auto-matching.
+- **Go Test Isolation**: For packages split across multiple files (like `pkg/database`), ALWAYS run tests at the package level (e.g., `go test -v ./pkg/database`). Avoid running individual files (e.g., `go test file.go`) as it fails to resolve local symbols and methods defined in other files of the same package.
 - **`IsAuto` Updates**: If a test expects `IsAuto` to be updated, it must use `UpdateTransactionInternal`. If it expects it preserved, use `UpdateTransaction`.
 
 ## Frontend Testing

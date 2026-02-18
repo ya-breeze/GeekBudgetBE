@@ -141,7 +141,7 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 
 	// Invalidate reconciliation if we inserted a transaction in the past
 	// We pass empty oldMovements because it's a new transaction
-	s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date)
+	s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date, false)
 
 	return t.FromDB(), nil
 }
@@ -197,7 +197,7 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 		}
 
 		// Invalidate reconciliation if we inserted a transaction in the past
-		s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date)
+		s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date, false)
 
 		results = append(results, t.FromDB())
 	}
@@ -291,7 +291,7 @@ func (s *storage) updateTransaction(
 	}
 
 	// Smart invalidation: only if amounts or currencies changed
-	s.invalidateReconciliationIfAmountsChanged(userID, oldMovements, models.MovementsToAPI(t.Movements), t.Date)
+	s.invalidateReconciliationIfAmountsChanged(userID, oldMovements, models.MovementsToAPI(t.Movements), t.Date, preserveProtected)
 
 	// Invalidate reconciliation for all affected accounts/currencies
 	for _, m := range oldMovements {
@@ -335,7 +335,7 @@ func (s *storage) DeleteTransaction(userID string, id string) error {
 	}
 
 	// Invalidate reconciliation for deleted movements
-	s.invalidateReconciliationIfAmountsChanged(userID, models.MovementsToAPI(t.Movements), []goserver.Movement{}, t.Date)
+	s.invalidateReconciliationIfAmountsChanged(userID, models.MovementsToAPI(t.Movements), []goserver.Movement{}, t.Date, true)
 
 	return nil
 }

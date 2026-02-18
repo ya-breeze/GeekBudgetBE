@@ -251,6 +251,7 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 	userID string,
 	oldMovements, newMovements []goserver.Movement,
 	txDate time.Time,
+	showNotification bool,
 ) {
 	// Build lookup for old movements
 	oldByKey := make(map[string]goserver.Movement)
@@ -303,13 +304,15 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 				accountName = acc.Name
 			}
 
-			_, _ = s.CreateNotification(userID, &goserver.Notification{
-				Date:  time.Now(),
-				Type:  string(models.NotificationTypeInfo),
-				Title: "Reconciliation Invalidated",
-				Description: fmt.Sprintf("Financial change to transaction before checkpoint invalidated reconciliation for account %q",
-					accountName),
-			})
+			if showNotification {
+				_, _ = s.CreateNotification(userID, &goserver.Notification{
+					Date:  time.Now(),
+					Type:  string(models.NotificationTypeInfo),
+					Title: "Reconciliation Invalidated",
+					Description: fmt.Sprintf("Financial change to transaction before checkpoint invalidated reconciliation for account %q",
+						accountName),
+				})
+			}
 		}
 	}
 }

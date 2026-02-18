@@ -53,3 +53,10 @@ Guidelines and facts discovered regarding the reconciliation system.
 
 ### History Preservation
 - **Behavior**: Historical reconciliations that predate the modified transaction are **preserved**. This ensures that past verified states remain intact even if data is corrected later.
+
+### Notification Policy
+- **Policy**: "Reconciliation Invalidated" notifications are only shown for manual user actions.
+- **Rules**:
+    - **Show** notification: Manual `UpdateTransaction` or `DeleteTransaction` by the user.
+    - **Hide** notification: Background bank imports (`CreateTransaction`/`CreateTransactionsBatch`) and internal conversion tasks (`UpdateTransactionInternal` for auto-matching or unprocessed transaction conversion).
+- **Goal**: Provides situational awareness for data integrity issues while avoiding noise during routine automation.

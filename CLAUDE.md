@@ -54,9 +54,7 @@ GeekBudgetBE/
 - **Formatting:** gofumpt (Go), Prettier + ESLint (frontend)
 - **Linting:** golangci-lint (Go), ESLint with Angular rules (frontend)
 - **Workflows:** See `.agent/workflows/` for specialized task guides (e.g., deduplication)
-- **Investigation:** See `.agent/rules/database-investigation.md` for local DB querying guidelines
-- **Financial Details:** See `.agent/rules/financial-data-handling.md` for Decimal usage rules
-- **Bank Importers:** See `.agent/rules/bank-importers.md` for importer-specific dates and rules
+- **Investigation:** See `.agent/rules/` for details
 
 ## Common Commands
 
@@ -129,6 +127,7 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
 - Use `test@test.com` / `test` credentials for browser testing.
 - If `make run-backend` fails with "address already in use", the backend is already running.
 - If `make run-frontend` fails with "Port 4200 is already in use", the frontend is already running. Use `make run-app` for the Next.js frontend (port 3000).
+- **Go Test Isolation**: For packages split across multiple files (like `pkg/database`), always run tests at the package level (`go test ./pkg/database`) to resolve all local symbols. Avoid running tests by specifying individual filenames as it causes build failures with missing methods/structs.
 
 ## Deduplication & Archiving Flow
  
@@ -166,6 +165,7 @@ sqlite3 geekbudget.db ".header on" ".mode column" "SELECT * FROM transactions LI
    - **Auto-Balance**: When enabling manual reconciliation, the system defaults to using the *current* `AppBalance` as the starting bank balance, avoiding manual input.
    - **Display**: For accounts without bank importers, manual reconciliation records are used to populate "Bank Balance" and "Balance Date" columns in the UI, mimicking a bank feed for consistency.
 8. **Performance & Batching**: Status retrieval is optimized via `GetBulkReconciliationData`. It fetches all accounts, latest reconciliations, and transactions in a single pass to avoid N+1 queries.
+9. **Notification Policy**: "Reconciliation Invalidated" notifications are only shown for manual user actions (edits/deletions). They are suppressed during background imports and internal operations (auto-matching, unprocessed conversion) to avoid UI noise.
 
 ## Code Patterns
 
