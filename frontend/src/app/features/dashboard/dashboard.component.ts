@@ -24,6 +24,9 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { AccountFormDialogComponent } from '../accounts/account-form-dialog/account-form-dialog.component';
 import { AccountDisplayComponent } from '../../shared/components/account-display/account-display.component';
+import { ReconciliationService } from '../reconciliation/services/reconciliation.service';
+import { ReconciliationStatus } from '../../core/api/models/reconciliation-status';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 interface ExpenseTableCell {
     value: number;
@@ -60,6 +63,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatSnackBarModule,
         MatDialogModule,
         MatSlideToggleModule,
+        MatTooltipModule,
         DecimalPipe,
         JsonPipe,
         AccountDisplayComponent,
@@ -77,6 +81,7 @@ export class DashboardComponent implements OnInit {
     private readonly snackBar = inject(MatSnackBar);
     private readonly dialog = inject(MatDialog);
     private readonly router = inject(Router);
+    private readonly reconciliationService = inject(ReconciliationService);
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
     protected readonly loading = signal(true);
@@ -279,10 +284,57 @@ export class DashboardComponent implements OnInit {
     });
 
     protected readonly assetData = signal<Aggregation | null>(null);
+    protected readonly reconciliationStatuses = signal<ReconciliationStatus[]>([]);
+
+    private readonly reconciliationTolerance = 0.01;
+
+    private getReconciliationState(status: ReconciliationStatus | undefined): {
+        state: 'reconciled' | 'warning' | 'unreconciled' | 'none';
+        tooltip: string;
+    } {
+        if (!status || (status.lastReconciledAt == null && status.bankBalance == null)) {
+            return { state: 'none', tooltip: '' };
+        }
+
+        const delta = Math.abs(status.delta ?? 0);
+        const isBalanced = delta <= this.reconciliationTolerance;
+
+        if (status.hasUnprocessedTransactions) {
+            return {
+                state: 'warning',
+                tooltip: 'Has unprocessed transactions — reconciliation blocked',
+            };
+        }
+
+        if (!isBalanced) {
+            const sign = (status.delta ?? 0) > 0 ? '+' : '';
+            return {
+                state: 'unreconciled',
+                tooltip: `Balance mismatch: ${sign}${status.delta?.toFixed(2)} ${status.currencySymbol ?? ''}`,
+            };
+        }
+
+        if (status.hasTransactionsAfterBankBalance) {
+            return {
+                state: 'warning',
+                tooltip: 'Reconciled, but newer transactions exist after the last bank statement',
+            };
+        }
+
+        const reconciledDate = status.lastReconciledAt
+            ? new Date(status.lastReconciledAt).toLocaleDateString()
+            : '';
+        return {
+            state: 'reconciled',
+            tooltip: reconciledDate ? `Reconciled on ${reconciledDate}` : 'Reconciled',
+        };
+    }
 
     protected readonly assetCards = computed(() => {
         const data = this.assetData();
         const accounts = this.accounts();
+        const statuses = this.reconciliationStatuses();
+
         if (!data || !accounts.length) {
             return [];
         }
@@ -293,6 +345,10 @@ export class DashboardComponent implements OnInit {
         if (!assetAccounts.length) {
             return [];
         }
+
+        const statusByAccountId = new Map<string, ReconciliationStatus>(
+            statuses.map((s) => [s.accountId, s]),
+        );
 
         // Map currency ID to symbol/name if needed (or just use code)
         const cards: any[] = [];
@@ -314,6 +370,10 @@ export class DashboardComponent implements OnInit {
                     .currencies()
                     .find((c) => c.id === currencyAgg.currencyId);
 
+                const reconciliationStatus = statusByAccountId.get(account.id!);
+                const { state: reconciliationState, tooltip: reconciliationTooltip } =
+                    this.getReconciliationState(reconciliationStatus);
+
                 cards.push({
                     accountId: account.id,
                     accountName: account.name,
@@ -323,6 +383,8 @@ export class DashboardComponent implements OnInit {
                     trendPercent: Math.abs(trendPercent),
                     trendDirection,
                     accountImage: account.image,
+                    reconciliationState,
+                    reconciliationTooltip,
                 });
             });
         });
@@ -459,11 +521,13 @@ export class DashboardComponent implements OnInit {
                 map((response) => response.body),
             ),
             averages: this.accountService.loadYearlyExpenses(outputCurrencyId ?? undefined), // Load averages
+            reconciliationStatuses: this.reconciliationService.loadStatuses(),
         }).subscribe({
-            next: ({ expenseData, assetData }) => {
+            next: ({ expenseData, assetData, reconciliationStatuses }) => {
                 console.log('Dashboard data loaded:', { expenseData, assetData });
                 this.expenseData.set(expenseData);
                 this.assetData.set(assetData);
+                this.reconciliationStatuses.set(reconciliationStatuses ?? []);
                 this.loading.set(false);
             },
             error: (error) => {

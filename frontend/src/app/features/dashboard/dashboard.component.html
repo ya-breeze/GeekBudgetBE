@@ -17,7 +17,12 @@
         @if (assetCards().length) {
             <div class="assets-section">
                 @for (card of assetCards(); track card.accountId) {
-                    <mat-card class="asset-card">
+                    <mat-card
+                        class="asset-card"
+                        [class.reconciled]="card.reconciliationState === 'reconciled'"
+                        [class.warning]="card.reconciliationState === 'warning'"
+                        [class.unreconciled]="card.reconciliationState === 'unreconciled'"
+                    >
                         <mat-card-header>
                             <mat-card-title>
                                 <button
@@ -51,24 +56,53 @@
                                 <span class="balance">{{ card.balance | number: '1.0-2' }}</span>
                                 <span class="currency">{{ card.currencyName }}</span>
                             </div>
-                            <div
-                                class="trend-container"
-                                [class.positive]="card.trendDirection === 'up'"
-                                [class.negative]="card.trendDirection === 'down'"
-                            >
-                                <mat-icon class="trend-icon">
-                                    @if (card.trendDirection === 'up') {
-                                        north_east
-                                    } @else if (card.trendDirection === 'down') {
-                                        south_east
-                                    } @else {
-                                        remove
-                                    }
-                                </mat-icon>
-                                <span class="trend-value"
-                                    >{{ card.trendPercent | number: '1.1-1' }}%</span
+                            <div class="card-footer">
+                                <div
+                                    class="trend-container"
+                                    [class.positive]="card.trendDirection === 'up'"
+                                    [class.negative]="card.trendDirection === 'down'"
                                 >
-                                <span class="trend-label">vs last month</span>
+                                    <mat-icon class="trend-icon">
+                                        @if (card.trendDirection === 'up') {
+                                            north_east
+                                        } @else if (card.trendDirection === 'down') {
+                                            south_east
+                                        } @else {
+                                            remove
+                                        }
+                                    </mat-icon>
+                                    <span class="trend-value"
+                                        >{{ card.trendPercent | number: '1.1-1' }}%</span
+                                    >
+                                    <span class="trend-label">vs last month</span>
+                                </div>
+                                @if (card.reconciliationState !== 'none') {
+                                    <div
+                                        class="reconciliation-badge"
+                                        [class.reconciled]="card.reconciliationState === 'reconciled'"
+                                        [class.warning]="card.reconciliationState === 'warning'"
+                                        [class.unreconciled]="card.reconciliationState === 'unreconciled'"
+                                        [matTooltip]="card.reconciliationTooltip"
+                                        matTooltipPosition="above"
+                                    >
+                                        <mat-icon class="badge-icon">
+                                            @if (card.reconciliationState === 'reconciled') {
+                                                check_circle
+                                            } @else if (card.reconciliationState === 'warning') {
+                                                warning
+                                            } @else {
+                                                error
+                                            }
+                                        </mat-icon>
+                                        @if (card.reconciliationState === 'reconciled') {
+                                            Reconciled
+                                        } @else if (card.reconciliationState === 'warning') {
+                                            Review
+                                        } @else {
+                                            Mismatch
+                                        }
+                                    </div>
+                                }
                             </div>
                         </mat-card-content>
                     </mat-card>
