@@ -29,3 +29,6 @@ trigger: always_on
 - **Async Guards**: When testing guards that return `Observable`, always use the `(done)` callback or `firstValueFrom` to ensure assertions are executed before the test completes. Return `of(true)` or `of(false)` from mocks.
 - **Router Providers**: Use `provideRouter([])` in `TestBed` when components or guards depend on the Angular `Router`. Spying on `Router.navigate` or `Router.createUrlTree` is cleaner than providing a full mock object.
 - **LocalStorage**: Guards may depend on `localStorage` hints (like `gb_logged_in_hint`). Ensure these are cleared or set to expected values in `beforeEach` to avoid leaky tests.
+
+## Troubleshooting
+- **Backend Port Conflicts**: Default port for the backend is `8080`. If `make dev` or `make run-backend` fails to start (e.g. `bind: address already in use`), check for stale `go` or `main` processes using `lsof -i :8080` (macOS) and kill them (`kill -9 PID`). A blocked backend port will cause frontend API calls (which are proxied to `8080`) to return unexpected `404 Not Found` errors instead of standard connection refusals, because the stale process is unaware of the current route definitions.

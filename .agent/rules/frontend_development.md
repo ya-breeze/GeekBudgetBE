@@ -20,3 +20,9 @@ The frontend uses `ng-openapi-gen` to generate the Angular API client from the O
 When displaying audit logs or history, use the `before` and `after` fields to show a diff.
 - **Null Checks**: Both `before` and `after` can be null (e.g. for creation or deletion).
 - **JSON Parsing**: These fields are stored as JSON strings. You must parse them safely (e.g., using `JSON.parse` inside a try-catch block) before displaying.
+
+## Responsive Layouts & CSS
+When building or modifying UI components, always ensure mobile responsiveness (e.g., testing on viewports like 375x812):
+- **Flexbox Wrapping**: Avoid fixed `flex-direction: row` for interactive elements (like hero buttons). Use `@media (max-width: 768px)` to switch to `flex-direction: column`.
+- **Fluid Widths & Box Sizing**: Ensure cards and containers use `width: 100%` and `box-sizing: border-box`. Avoid fixed widths (e.g., `width: 400px`) that cause horizontal overflow on small screens.
+- **Header/Navigation Overflow**: For top navigation bars, completely hide standard `.nav-links` inside media queries below desktop sizes to prevent them from colliding with menus and notifications.
