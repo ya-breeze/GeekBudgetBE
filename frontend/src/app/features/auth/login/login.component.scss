@@ -10,6 +10,12 @@
     width: 100%;
     max-width: 400px;
     padding: 2rem;
+    box-sizing: border-box;
+
+    @media (max-width: 480px) {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
 }
 
 .full-width {

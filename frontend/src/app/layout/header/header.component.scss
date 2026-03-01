@@ -28,6 +28,10 @@
     align-items: center;
     margin-left: 24px;
     flex: 1;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
 }
 
 .nav-link {

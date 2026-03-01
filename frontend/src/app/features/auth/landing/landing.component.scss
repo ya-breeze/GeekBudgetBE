@@ -82,11 +82,20 @@
     justify-content: center;
     flex-wrap: wrap;
 
+    @media (max-width: 768px) {
+        flex-direction: column;
+        padding: 0 1rem;
+    }
+
     .cta-button,
     .learn-more-button {
         min-width: 150px;
         height: 48px;
         font-size: 1rem;
+
+        @media (max-width: 768px) {
+            width: 100%;
+        }
 
         mat-icon {
             margin-left: 0.5rem;
