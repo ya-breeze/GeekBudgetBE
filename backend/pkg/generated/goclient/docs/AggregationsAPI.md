@@ -83,7 +83,7 @@ Name | Type | Description  | Notes
 
 ## GetExpenses
 
-> Aggregation GetExpenses(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Granularity(granularity).IncludeHidden(includeHidden).Execute()
+> Aggregation GetExpenses(ctx).From(from).To(to).OutputCurrencyId(outputCurrencyId).Granularity(granularity).IncludeHidden(includeHidden).GroupBy(groupBy).Tags(tags).Accounts(accounts).Execute()
 
 get expenses for filtered transactions
 
@@ -106,10 +106,13 @@ func main() {
 	outputCurrencyId := "outputCurrencyId_example" // string | Converts all transactions to this currency (optional)
 	granularity := "granularity_example" // string | Granularity of expenses (month or year) (optional) (default to "month")
 	includeHidden := true // bool | If true, include hidden accounts (optional) (default to false)
+	groupBy := "groupBy_example" // string | Field to group results by (account or tag) (optional) (default to "account")
+	tags := []string{"Lidl"} // []string | Filter by distinct tags (optional)
+	accounts := []string{"Inner_example"} // []string | Filter by specific accounts (optional)
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
-	resp, r, err := apiClient.AggregationsAPI.GetExpenses(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Granularity(granularity).IncludeHidden(includeHidden).Execute()
+	resp, r, err := apiClient.AggregationsAPI.GetExpenses(context.Background()).From(from).To(to).OutputCurrencyId(outputCurrencyId).Granularity(granularity).IncludeHidden(includeHidden).GroupBy(groupBy).Tags(tags).Accounts(accounts).Execute()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `AggregationsAPI.GetExpenses``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -135,6 +138,9 @@ Name | Type | Description  | Notes
  **outputCurrencyId** | **string** | Converts all transactions to this currency | 
  **granularity** | **string** | Granularity of expenses (month or year) | [default to &quot;month&quot;]
  **includeHidden** | **bool** | If true, include hidden accounts | [default to false]
+ **groupBy** | **string** | Field to group results by (account or tag) | [default to &quot;account&quot;]
+ **tags** | **[]string** | Filter by distinct tags | 
+ **accounts** | **[]string** | Filter by specific accounts | 
 
 ### Return type
 

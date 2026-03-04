@@ -133,7 +133,7 @@ describe('AccountService', () => {
 
             const req = httpMock.expectOne((req) => req.url.includes('/v1/expenses'));
             expect(req.request.method).toBe('GET');
-            req.flush(mockAggregation);
+            req.flush(mockAggregation as any);
         });
     });
 

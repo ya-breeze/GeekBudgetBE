@@ -17,6 +17,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
 	"time"
 )
 
@@ -172,6 +173,9 @@ type ApiGetExpensesRequest struct {
 	outputCurrencyId *string
 	granularity      *string
 	includeHidden    *bool
+	groupBy          *string
+	tags             *[]string
+	accounts         *[]string
 }
 
 // Uses transactions from this date
@@ -201,6 +205,24 @@ func (r ApiGetExpensesRequest) Granularity(granularity string) ApiGetExpensesReq
 // If true, include hidden accounts
 func (r ApiGetExpensesRequest) IncludeHidden(includeHidden bool) ApiGetExpensesRequest {
 	r.includeHidden = &includeHidden
+	return r
+}
+
+// Field to group results by (account or tag)
+func (r ApiGetExpensesRequest) GroupBy(groupBy string) ApiGetExpensesRequest {
+	r.groupBy = &groupBy
+	return r
+}
+
+// Filter by distinct tags
+func (r ApiGetExpensesRequest) Tags(tags []string) ApiGetExpensesRequest {
+	r.tags = &tags
+	return r
+}
+
+// Filter by specific accounts
+func (r ApiGetExpensesRequest) Accounts(accounts []string) ApiGetExpensesRequest {
+	r.accounts = &accounts
 	return r
 }
 
@@ -263,6 +285,34 @@ func (a *AggregationsAPIService) GetExpensesExecute(r ApiGetExpensesRequest) (*A
 	} else {
 		var defaultValue bool = false
 		r.includeHidden = &defaultValue
+	}
+	if r.groupBy != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "groupBy", r.groupBy, "")
+	} else {
+		var defaultValue string = "account"
+		r.groupBy = &defaultValue
+	}
+	if r.tags != nil {
+		t := *r.tags
+		if reflect.TypeOf(t).Kind() == reflect.Slice {
+			s := reflect.ValueOf(t)
+			for i := 0; i < s.Len(); i++ {
+				parameterAddToHeaderOrQuery(localVarQueryParams, "tags", s.Index(i).Interface(), "multi")
+			}
+		} else {
+			parameterAddToHeaderOrQuery(localVarQueryParams, "tags", t, "multi")
+		}
+	}
+	if r.accounts != nil {
+		t := *r.accounts
+		if reflect.TypeOf(t).Kind() == reflect.Slice {
+			s := reflect.ValueOf(t)
+			for i := 0; i < s.Len(); i++ {
+				parameterAddToHeaderOrQuery(localVarQueryParams, "accounts", s.Index(i).Interface(), "multi")
+			}
+		} else {
+			parameterAddToHeaderOrQuery(localVarQueryParams, "accounts", t, "multi")
+		}
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

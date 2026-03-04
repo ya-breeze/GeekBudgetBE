@@ -202,7 +202,7 @@ type AccountsAPIServicer interface {
 // and updated with the logic required for the API.
 type AggregationsAPIServicer interface {
 	GetBalances(context.Context, time.Time, time.Time, string, bool) (ImplResponse, error)
-	GetExpenses(context.Context, time.Time, time.Time, string, string, bool) (ImplResponse, error)
+	GetExpenses(context.Context, time.Time, time.Time, string, string, bool, string, []string, []string) (ImplResponse, error)
 	GetIncomes(context.Context, time.Time, time.Time, string, bool) (ImplResponse, error)
 }
 

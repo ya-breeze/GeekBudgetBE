@@ -80,7 +80,7 @@ var _ = Describe("Expenses Aggregation API", func() {
 		mockStorage.EXPECT().GetTransactions("user1", from, to, false).Return(transactions, nil)
 		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{{Id: "USD", Name: "USD"}}, nil)
 
-		resp, err := sut.GetExpenses(ctx, from, to, "", "year", false)
+		resp, err := sut.GetExpenses(ctx, from, to, "", "year", false, "account", nil, nil)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(resp.Code).To(Equal(http.StatusOK))
 

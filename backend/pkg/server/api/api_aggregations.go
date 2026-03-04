@@ -113,6 +113,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
 		func(a goserver.Account) bool {
 			return a.Type == constants.AccountIncome && (includeHidden || !a.HideFromReports)
 		},
+		"account", nil,
 		s.logger)
 
 	s.calculatePostAggregationData(&res, false)
@@ -120,7 +121,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
 }
 
 func (s *AggregationsAPIServiceImpl) GetExpenses(
-	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, granularity string, includeHidden bool,
+	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, granularity string, includeHidden bool, groupBy string, tags []string, accounts []string,
 ) (goserver.ImplResponse, error) {
 	userID, ok := ctx.Value(constants.UserIDKey).(string)
 	if !ok {
@@ -132,7 +133,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 		aggGranularity = utils.GranularityYear
 	}
 
-	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID, aggGranularity, includeHidden)
+	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID, aggGranularity, includeHidden, groupBy, tags, accounts)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -141,7 +142,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, granularity utils.Granularity, includeHidden bool,
+	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, granularity utils.Granularity, includeHidden bool, groupBy string, tagsFilter []string, accountsFilter []string,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
@@ -154,6 +155,16 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts")
 		return nil, nil
+	}
+
+	if len(accountsFilter) > 0 {
+		var filteredAccounts []goserver.Account
+		for _, acc := range accounts {
+			if slices.Contains(accountsFilter, acc.Id) {
+				filteredAccounts = append(filteredAccounts, acc)
+			}
+		}
+		accounts = filteredAccounts
 	}
 
 	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
@@ -175,6 +186,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		func(a goserver.Account) bool {
 			return isExpenseAccount(a) && (includeHidden || !a.HideFromReports)
 		},
+		groupBy, tagsFilter,
 		s.logger)
 
 	s.calculatePostAggregationData(&res, false)
@@ -260,6 +272,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 		outputCurrencyID, currenciesRatesFetcher,
 		currencyMap,
 		filter,
+		"account", nil,
 		s.logger)
 
 	// Calculate initial balances (before dateFrom) to make the graph cumulative
@@ -394,6 +407,7 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 			outputCurrencyID, currenciesRatesFetcher,
 			currencyMap,
 			filter,
+			"account", nil,
 			s.logger)
 
 		// Merge past aggregation results into balances
@@ -480,6 +494,7 @@ func Aggregate(
 	outputCurrencyID string, currenciesRatesFetcher *common.CurrenciesRatesFetcher,
 	currencyMap map[string]string,
 	accountFilter AccountFilter,
+	groupBy string, tagsFilter []string,
 	log *slog.Logger,
 ) goserver.Aggregation {
 	// Ensure dateFrom starts at the beginning of a month/year to avoid interval drift
@@ -508,18 +523,65 @@ func Aggregate(
 		}
 		intervalIdx := -1
 		for i, interval := range res.Intervals {
-			if t.Date.Before(interval) {
-				intervalIdx = i - 1
+			if !t.Date.Before(interval) {
+				intervalIdx = i
+			} else {
 				break
 			}
 		}
-		if intervalIdx < 0 {
-			intervalIdx = len(res.Intervals) - 1
-		}
 
-		movements := getMovements(accounts, t, accountFilter)
-		processMovements(ctx, movements, t.Date, outputCurrencyID, outputCurrencyName,
-			currencyMap, currenciesRatesFetcher, intervalIdx, &res, log)
+		if groupBy == "tag" {
+			// If tagsFilter is provided, skip transactions that don't match any.
+			if len(tagsFilter) > 0 {
+				matchFound := false
+				for _, filterTag := range tagsFilter {
+					if slices.Contains(t.Tags, filterTag) {
+						matchFound = true
+						break
+					}
+				}
+				if !matchFound {
+					continue
+				}
+			}
+
+			// For each tag on the transaction (or a subset if filtering), process movements
+			// Instead of a single movement, we replicate the transaction's movements for EACH tag.
+			// However, to keep sums correct, if a transaction has multiple tags, does it show up fully in BOTH?
+			// Yes, usually tag analysis implies "Total spent on transactions tagged X".
+			// But if no tags on transaction, we skip it (or add to "Untagged").
+			tagsToProcess := t.Tags
+			if len(tagsToProcess) == 0 {
+				tagsToProcess = []string{"Untagged"}
+			}
+
+			// Reduce the tagsToProcess to only those in tagsFilter (if tagsFilter is non-empty)
+			if len(tagsFilter) > 0 {
+				var filteredTags []string
+				for _, tag := range tagsToProcess {
+					if slices.Contains(tagsFilter, tag) {
+						filteredTags = append(filteredTags, tag)
+					}
+				}
+				tagsToProcess = filteredTags
+			}
+
+			movements := getMovements(accounts, t, accountFilter)
+			for _, tag := range tagsToProcess {
+				// We need to modify the accountId of movements to be the tag, so processMovements groups correctly.
+				taggedMovements := make([]goserver.Movement, len(movements))
+				for mIdx, m := range movements {
+					taggedMovements[mIdx] = m
+					taggedMovements[mIdx].AccountId = tag // Co-opting AccountId field
+				}
+				processMovements(ctx, taggedMovements, t.Date, outputCurrencyID, outputCurrencyName,
+					currencyMap, currenciesRatesFetcher, intervalIdx, &res, log)
+			}
+		} else {
+			movements := getMovements(accounts, t, accountFilter)
+			processMovements(ctx, movements, t.Date, outputCurrencyID, outputCurrencyName,
+				currencyMap, currenciesRatesFetcher, intervalIdx, &res, log)
+		}
 	}
 
 	// For Balance reports, we should ensure that if an account is closed, its balance becomes 0 or it's hidden.

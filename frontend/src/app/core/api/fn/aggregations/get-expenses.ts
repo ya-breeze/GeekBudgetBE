@@ -34,6 +34,21 @@ export interface GetExpenses$Params {
      * If true, include hidden accounts
      */
     includeHidden?: boolean;
+
+    /**
+     * Field to group results by (account or tag)
+     */
+    groupBy?: 'account' | 'tag';
+
+    /**
+     * Filter by distinct tags
+     */
+    tags?: Array<string>;
+
+    /**
+     * Filter by accounts
+     */
+    accounts?: Array<string>;
 }
 
 export function getExpenses(
@@ -49,6 +64,9 @@ export function getExpenses(
         rb.query('outputCurrencyId', params.outputCurrencyId, {});
         rb.query('granularity', params.granularity, {});
         rb.query('includeHidden', params.includeHidden, {});
+        rb.query('groupBy', params.groupBy, {});
+        rb.query('tags', params.tags, {});
+        rb.query('accounts', params.accounts, {});
     }
 
     return http

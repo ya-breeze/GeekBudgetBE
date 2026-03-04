@@ -79,9 +79,13 @@
                                 @if (card.reconciliationState !== 'none') {
                                     <div
                                         class="reconciliation-badge"
-                                        [class.reconciled]="card.reconciliationState === 'reconciled'"
+                                        [class.reconciled]="
+                                            card.reconciliationState === 'reconciled'
+                                        "
                                         [class.warning]="card.reconciliationState === 'warning'"
-                                        [class.unreconciled]="card.reconciliationState === 'unreconciled'"
+                                        [class.unreconciled]="
+                                            card.reconciliationState === 'unreconciled'
+                                        "
                                         [matTooltip]="card.reconciliationTooltip"
                                         matTooltipPosition="above"
                                     >

@@ -2,12 +2,14 @@ package api_test
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
@@ -36,6 +38,7 @@ var _ = Describe("Aggregation API", func() {
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
 			"", nil, currencyMap,
 			func(a goserver.Account) bool { return a.Type == "expense" },
+			"account", nil,
 			log)
 		Expect(sut.From.UnixMilli()).To(Equal(time.Date(2024, 9, 1, 0, 0, 0, 0, time.UTC).UnixMilli()))
 		Expect(sut.To.UnixMilli()).To(Equal(time.Date(2024, 11, 1, 0, 0, 0, 0, time.UTC).UnixMilli()))
@@ -65,6 +68,7 @@ var _ = Describe("Aggregation API", func() {
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
 			currencies[1].Id, nil, currencyMap, // outputCurrencyID="1" (EUR), but nil fetcher
 			func(a goserver.Account) bool { return a.Type == "expense" },
+			"account", nil,
 			log)
 
 		// Should still group by original currency (USD = "0") since conversion fails
@@ -76,6 +80,7 @@ var _ = Describe("Aggregation API", func() {
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
 			"", nil, currencyMap, // empty outputCurrencyID
 			func(a goserver.Account) bool { return a.Type == "expense" },
+			"account", nil,
 			log)
 
 		// Should group by original currency
@@ -87,6 +92,7 @@ var _ = Describe("Aggregation API", func() {
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
 			currencies[0].Id, nil, currencyMap, // same currency as transactions (USD), but nil fetcher
 			func(a goserver.Account) bool { return a.Type == "expense" },
+			"account", nil,
 			log)
 
 		// Should group by original currency since fetcher is nil
@@ -128,6 +134,7 @@ var _ = Describe("Aggregation API", func() {
 			currencies[2].Id, // Convert everything to CZK (use ID, not Name)
 			fetcher, currencyMap,
 			func(a goserver.Account) bool { return a.Type == "expense" },
+			"account", nil,
 			log)
 
 		// Should have only one currency (CZK) after conversion
@@ -150,6 +157,7 @@ var _ = Describe("Aggregation API", func() {
 			ctx, accounts, transactions, dateFrom, dateTo, utils.GranularityMonth,
 			"", nil, currencyMap,
 			func(a goserver.Account) bool { return a.Type == "asset" },
+			"account", nil,
 			log)
 
 		Expect(sut.Currencies).To(HaveLen(1))
@@ -198,6 +206,7 @@ var _ = Describe("Aggregation API", func() {
 			ctx, accounts, manyTransactions, dateFrom, dateTo, utils.GranularityMonth,
 			"", nil, currencyMap,
 			func(a goserver.Account) bool { return a.Type == "asset" },
+			"account", nil,
 			log)
 
 		total := decimal.Zero
@@ -214,5 +223,32 @@ var _ = Describe("Aggregation API", func() {
 		if !total.Equal(expected) {
 			log.Info("Compounded error detected", "expected", expected, "actual", total, "diff", total.Sub(expected))
 		}
+	})
+	It("aggregate expenses with multiple tags", func() {
+		// tr1 in PreparedTransactions is:
+		// PrepareTransaction("food 9", time.Date(2024, 9, 18...), 200, USD, acc2, acc0)
+		// acc2 is Food (Expense), acc0 is Cash (Asset)
+		tr1 := transactions[1]
+		tr1.Tags = []string{"Albert", "Billa"}
+
+		sut := api.Aggregate(
+			ctx, accounts, []goserver.Transaction{tr1}, dateFrom, dateTo, utils.GranularityMonth,
+			"", nil, currencyMap,
+			func(a goserver.Account) bool { return a.Type == constants.AccountExpense },
+			"tag", []string{"Albert", "Billa"},
+			log)
+
+		Expect(sut.Currencies).To(HaveLen(1))
+		Expect(sut.Currencies[0].Accounts).To(HaveLen(2))
+
+		// Check Albert
+		albertIdx := slices.IndexFunc(sut.Currencies[0].Accounts, func(a goserver.AccountAggregation) bool { return a.AccountId == "Albert" })
+		Expect(albertIdx).ToNot(Equal(-1))
+		Expect(sut.Currencies[0].Accounts[albertIdx].Amounts[0].Equal(decimal.NewFromFloat(200.0))).To(BeTrue())
+
+		// Check Billa
+		billaIdx := slices.IndexFunc(sut.Currencies[0].Accounts, func(a goserver.AccountAggregation) bool { return a.AccountId == "Billa" })
+		Expect(billaIdx).ToNot(Equal(-1))
+		Expect(sut.Currencies[0].Accounts[billaIdx].Amounts[0].Equal(decimal.NewFromFloat(200.0))).To(BeTrue())
 	})
 })

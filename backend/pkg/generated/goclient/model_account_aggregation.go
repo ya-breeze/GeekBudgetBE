@@ -24,6 +24,7 @@ var _ MappedNullable = &AccountAggregation{}
 
 // AccountAggregation struct for AccountAggregation
 type AccountAggregation struct {
+	// ID of the account, or name of the tag if groupBy=tag
 	AccountId     string            `json:"accountId"`
 	Amounts       []decimal.Decimal `json:"amounts"`
 	Total         *decimal.Decimal  `json:"total,omitempty"`

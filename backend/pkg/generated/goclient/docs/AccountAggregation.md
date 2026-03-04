@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**AccountId** | **string** |  | 
+**AccountId** | **string** | ID of the account, or name of the tag if groupBy&#x3D;tag | 
 **Amounts** | [**[]decimal.Decimal**](decimal.Decimal.md) |  | 
 **Total** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 
 **ChangePercent** | Pointer to [**decimal.Decimal**](decimal.Decimal.md) |  | [optional] 

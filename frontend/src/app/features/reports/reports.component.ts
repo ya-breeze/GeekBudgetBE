@@ -58,6 +58,19 @@ import { LayoutService } from '../../layout/services/layout.service';
 
                     <mat-card>
                         <mat-card-header>
+                            <mat-icon>local_offer</mat-icon>
+                            <mat-card-title>Tag Analytics</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <p>Analyze and compare spending across custom tags over time.</p>
+                        </mat-card-content>
+                        <mat-card-actions>
+                            <a mat-button color="primary" routerLink="tags">View Analytics</a>
+                        </mat-card-actions>
+                    </mat-card>
+
+                    <mat-card>
+                        <mat-card-header>
                             <mat-icon>download</mat-icon>
                             <mat-card-title>Export Data</mat-card-title>
                         </mat-card-header>

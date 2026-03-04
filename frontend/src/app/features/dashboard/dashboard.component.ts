@@ -333,7 +333,7 @@ export class DashboardComponent implements OnInit {
     protected readonly assetCards = computed(() => {
         const data = this.assetData();
         const accounts = this.accounts();
-        const statuses = this.reconciliationStatuses();
+        const statuses = this.reconciliationStatuses() || [];
 
         if (!data || !accounts.length) {
             return [];

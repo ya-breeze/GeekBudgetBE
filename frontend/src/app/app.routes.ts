@@ -149,6 +149,13 @@ export const routes: Routes = [
                                 (m) => m.BalanceReportComponent,
                             ),
                     },
+                    {
+                        path: 'tags',
+                        loadComponent: () =>
+                            import('./features/reports/tag-analytics/tag-analytics.component').then(
+                                (m) => m.TagAnalyticsComponent,
+                            ),
+                    },
                 ],
             },
             {

@@ -1,12 +1,14 @@
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DashboardComponent } from './dashboard.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { ApiConfiguration } from '../../core/api/api-configuration';
 import { AccountService } from '../accounts/services/account.service';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { UserService } from '../../core/services/user.service';
 import { LayoutService } from '../../layout/services/layout.service';
+import { ReconciliationService } from '../reconciliation/services/reconciliation.service';
 import { of } from 'rxjs';
 import { signal } from '@angular/core';
 
@@ -126,6 +128,16 @@ describe('DashboardComponent', () => {
 
         dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
 
+        const reconciliationStatusesSignal = signal([]);
+        const reconciliationServiceSpy = jasmine.createSpyObj(
+            'ReconciliationService',
+            ['loadStatuses'],
+            {
+                statuses: reconciliationStatusesSignal,
+            },
+        );
+        reconciliationServiceSpy.loadStatuses.and.returnValue(of([]));
+
         await TestBed.configureTestingModule({
             imports: [DashboardComponent],
             providers: [
@@ -136,6 +148,7 @@ describe('DashboardComponent', () => {
                 { provide: UserService, useValue: userServiceSpy },
                 { provide: LayoutService, useValue: layoutServiceSpy },
                 { provide: MatDialog, useValue: dialogSpy },
+                { provide: ReconciliationService, useValue: reconciliationServiceSpy },
             ],
         })
             .overrideComponent(DashboardComponent, {

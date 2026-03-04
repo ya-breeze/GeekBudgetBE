@@ -992,6 +992,35 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: groupBy
+          in: query
+          description: "Field to group results by (account or tag)"
+          schema:
+            type: "string"
+            enum:
+              - account
+              - tag
+            default: account
+        - name: tags
+          in: query
+          description: "Filter by distinct tags"
+          style: form
+          explode: true
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              example: "Lidl"
+        - name: accounts
+          in: query
+          description: "Filter by specific accounts"
+          style: form
+          explode: true
+          schema:
+            type: "array"
+            items:
+              type: "string"
+              format: "uuid"
       responses:
         "200":
           description: calculated expenses
@@ -2168,7 +2197,7 @@ components:
       properties:
         accountId:
           type: string
-          format: uuid
+          description: "ID of the account, or name of the tag if groupBy=tag"
           example: "123e4567-e89b-12d3-a456-426614174000"
         amounts:
           type: array

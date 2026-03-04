@@ -191,7 +191,24 @@ func (c *AggregationsAPIController) GetExpenses(w http.ResponseWriter, r *http.R
 		var param bool = false
 		includeHiddenParam = param
 	}
-	result, err := c.service.GetExpenses(r.Context(), fromParam, toParam, outputCurrencyIdParam, granularityParam, includeHiddenParam)
+	var groupByParam string
+	if query.Has("groupBy") {
+		param := query.Get("groupBy")
+
+		groupByParam = param
+	} else {
+		param := "account"
+		groupByParam = param
+	}
+	var tagsParam []string
+	if query.Has("tags") {
+		tagsParam = strings.Split(query.Get("tags"), ",")
+	}
+	var accountsParam []string
+	if query.Has("accounts") {
+		accountsParam = strings.Split(query.Get("accounts"), ",")
+	}
+	result, err := c.service.GetExpenses(r.Context(), fromParam, toParam, outputCurrencyIdParam, granularityParam, includeHiddenParam, groupByParam, tagsParam, accountsParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

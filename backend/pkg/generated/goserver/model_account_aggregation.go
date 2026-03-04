@@ -16,6 +16,8 @@ import (
 )
 
 type AccountAggregation struct {
+
+	// ID of the account, or name of the tag if groupBy=tag
 	AccountId string `json:"accountId"`
 
 	Amounts []decimal.Decimal `json:"amounts"`

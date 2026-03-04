@@ -92,7 +92,7 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 		Expect(st.DeleteTransaction(userID, t2.Id)).To(Succeed())
 
 		// 4. Verify Expenses - should be 100, not 600
-		expResp, err := sut.GetExpenses(ctx, dateFrom, dateTo, usdID, "month", false)
+		expResp, err := sut.GetExpenses(ctx, dateFrom, dateTo, usdID, "month", false, "account", nil, nil)
 		Expect(err).ToNot(HaveOccurred())
 		expAgg := expResp.Body.(*goserver.Aggregation)
 		Expect(expAgg.Currencies[0].Accounts[0].Total.Equal(decimal.NewFromFloat(100.0))).To(BeTrue())

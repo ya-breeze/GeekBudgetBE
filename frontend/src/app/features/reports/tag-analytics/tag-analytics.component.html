@@ -1,0 +1,258 @@
+<div class="tag-analytics-container">
+    <h1>Tag Analytics</h1>
+    <p class="subtitle">Compare spending across multiple distinct tags over time</p>
+
+    <!-- Filter Section -->
+    <mat-card class="filter-card">
+        <mat-card-content>
+            @if (tagsLoading()) {
+                <div class="loading-tags">
+                    <mat-spinner diameter="24"></mat-spinner>
+                    <span>Loading available tags...</span>
+                </div>
+            } @else {
+                <form [formGroup]="filterForm" (ngSubmit)="onFilterSubmit()" class="filter-form">
+                    <div class="date-fields">
+                        <mat-form-field appearance="outline" class="form-field-item">
+                            <mat-label>Start Date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="startPicker"
+                                formControlName="startDate"
+                                required
+                            />
+                            <mat-datepicker-toggle
+                                matSuffix
+                                [for]="startPicker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #startPicker></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-item">
+                            <mat-label>End Date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="endPicker"
+                                formControlName="endDate"
+                                required
+                            />
+                            <mat-datepicker-toggle
+                                matSuffix
+                                [for]="endPicker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #endPicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="tag-selector">
+                        <mat-form-field appearance="outline" class="half-width">
+                            <mat-label>Filter by Accounts (Optional)</mat-label>
+                            <mat-select formControlName="selectedAccounts" multiple>
+                                @for (account of availableAccounts(); track account.id) {
+                                    <mat-option [value]="account.id">{{ account.name }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="half-width">
+                            <mat-label>Select Tags to Compare</mat-label>
+                            <mat-select formControlName="selectedTags" multiple required>
+                                @for (tag of availableTags(); track tag.id) {
+                                    <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+
+                        <button
+                            mat-raised-button
+                            color="primary"
+                            type="submit"
+                            class="submit-button"
+                            [disabled]="!filterForm.valid || loading()"
+                        >
+                            <mat-icon>insights</mat-icon>
+                            Generate Analytics
+                        </button>
+                    </div>
+                </form>
+            }
+        </mat-card-content>
+    </mat-card>
+
+    @if (loading()) {
+        <div class="loading-container">
+            <mat-spinner></mat-spinner>
+        </div>
+    } @else if (currencyReports().length) {
+        @if (hiddenTags().length > 0) {
+            <mat-card class="hidden-tags-card">
+                <mat-card-header>
+                    <mat-card-title>Hidden Tags</mat-card-title>
+                    <mat-card-subtitle
+                        >These tags are currently excluded from all charts and
+                        totals</mat-card-subtitle
+                    >
+                </mat-card-header>
+                <mat-card-content>
+                    <mat-chip-set>
+                        @for (tag of hiddenTags(); track tag) {
+                            <mat-chip (removed)="unhideTag(tag)">
+                                #{{ tag }}
+                                <button matChipRemove>
+                                    <mat-icon>cancel</mat-icon>
+                                </button>
+                            </mat-chip>
+                        }
+                    </mat-chip-set>
+                </mat-card-content>
+            </mat-card>
+        }
+
+        @for (report of currencyReports(); track report.currencyId) {
+            <h2 class="currency-title">
+                Currency: {{ report.currencyName }}
+                <mat-button-toggle
+                    class="currency-toggle"
+                    [checked]="selectedOutputCurrencyId() === report.currencyId"
+                    (click)="onOutputCurrencyToggle(report.currencyId)"
+                >
+                    Use as global currency
+                </mat-button-toggle>
+            </h2>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <mat-card class="chart-card monthly-trend">
+                    <mat-card-header>
+                        <mat-card-title>Monthly Trends by Tag</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="chart-container">
+                            <canvas
+                                baseChart
+                                [data]="report.monthlyChartData"
+                                [options]="monthlyChartOptions"
+                                type="line"
+                            ></canvas>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <mat-card class="chart-card tag-totals">
+                    <mat-card-header>
+                        <mat-card-title>Total Spending Comparisons</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="chart-container">
+                            <canvas
+                                baseChart
+                                [data]="report.tagChartData"
+                                [options]="tagChartOptions"
+                                type="bar"
+                            ></canvas>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <!-- Summary Table Section -->
+            <mat-card class="summary-card">
+                <mat-card-header>
+                    <mat-card-title>Data Summary</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="table-container">
+                        <table mat-table [dataSource]="report.tagSummaries" class="summary-table">
+                            <ng-container matColumnDef="tag">
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef
+                                    class="sortable"
+                                    (click)="onSortChange('tag')"
+                                >
+                                    Tag
+                                    @if (sortColumn() === 'tag') {
+                                        <mat-icon class="sort-icon">{{
+                                            sortDirection() === 'asc'
+                                                ? 'arrow_upward'
+                                                : 'arrow_downward'
+                                        }}</mat-icon>
+                                    }
+                                </th>
+                                <td mat-cell *matCellDef="let summary">
+                                    <span class="tag-chip">#{{ summary.tagName }}</span>
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef class="total-label">
+                                    Total for Selected Tags
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="total">
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef
+                                    class="sortable amount-cell"
+                                    (click)="onSortChange('amount')"
+                                >
+                                    Total Spending
+                                    @if (sortColumn() === 'amount') {
+                                        <mat-icon class="sort-icon">{{
+                                            sortDirection() === 'asc'
+                                                ? 'arrow_upward'
+                                                : 'arrow_downward'
+                                        }}</mat-icon>
+                                    }
+                                </th>
+                                <td mat-cell *matCellDef="let summary" class="amount-cell">
+                                    {{ summary.total | number: '1.2-2' }}
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef class="total-amount">
+                                    {{ report.grandTotal | number: '1.2-2' }}
+                                </td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="actions-header">
+                                    Actions
+                                </th>
+                                <td mat-cell *matCellDef="let summary" class="actions-cell">
+                                    <button
+                                        mat-icon-button
+                                        color="warn"
+                                        (click)="toggleTagVisibility(summary.tagName)"
+                                        matTooltip="Hide this tag"
+                                    >
+                                        <mat-icon>visibility_off</mat-icon>
+                                    </button>
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef></td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="['tag', 'total', 'actions']"></tr>
+                            <tr
+                                mat-row
+                                *matRowDef="let row; columns: ['tag', 'total', 'actions']"
+                            ></tr>
+                            <tr
+                                mat-footer-row
+                                *matFooterRowDef="['tag', 'total', 'actions']"
+                                class="total-row"
+                            ></tr>
+                        </table>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        }
+    } @else {
+        <mat-card class="no-data-card">
+            <mat-card-content>
+                <mat-icon class="empty-icon">insights</mat-icon>
+                <p>
+                    No analytics available. Select tags and a date range up above to compare
+                    spending.
+                </p>
+            </mat-card-content>
+        </mat-card>
+    }
+</div>
