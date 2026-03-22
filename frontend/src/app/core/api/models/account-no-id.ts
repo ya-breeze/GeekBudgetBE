@@ -3,43 +3,43 @@
 
 import { BankAccountInfo } from '../models/bank-account-info';
 export interface AccountNoId {
-  bankInfo?: BankAccountInfo;
+    bankInfo?: BankAccountInfo;
 
-  /**
-   * If set, the account is ignored after this date.
-   */
-  closingDate?: string;
-  description?: string;
+    /**
+     * If set, the account is ignored after this date.
+     */
+    closingDate?: string;
+    description?: string;
 
-  /**
-   * If true, this account should be hidden from reports and budget.
-   */
-  hideFromReports?: boolean;
+    /**
+     * If true, this account should be hidden from reports and budget.
+     */
+    hideFromReports?: boolean;
 
-  /**
-   * If set, unprocessed transactions for this account older than this date will be ignored.
-   */
-  ignoreUnprocessedBefore?: string;
+    /**
+     * If set, unprocessed transactions for this account older than this date will be ignored.
+     */
+    ignoreUnprocessedBefore?: string;
 
-  /**
-   * ID of the account image
-   */
-  image?: string;
-  name: string;
+    /**
+     * ID of the account image
+     */
+    image?: string;
+    name: string;
 
-  /**
-   * If set, the account is ignored before this date.
-   */
-  openingDate?: string;
+    /**
+     * If set, the account is ignored before this date.
+     */
+    openingDate?: string;
 
-  /**
-   * If true, show this account in dashboard summary.
-   */
-  showInDashboardSummary?: boolean;
+    /**
+     * If true, show this account in dashboard summary.
+     */
+    showInDashboardSummary?: boolean;
 
-  /**
-   * If true, this account is shown on the reconciliation page even if it has no bank importer.
-   */
-  showInReconciliation?: boolean;
-  type: 'expense' | 'income' | 'asset';
+    /**
+     * If true, this account is shown on the reconciliation page even if it has no bank importer.
+     */
+    showInReconciliation?: boolean;
+    type: 'expense' | 'income' | 'asset';
 }

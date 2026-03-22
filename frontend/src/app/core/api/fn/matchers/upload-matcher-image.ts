@@ -10,27 +10,32 @@ import { RequestBuilder } from '../../request-builder';
 import { Matcher } from '../../models/matcher';
 
 export interface UploadMatcherImage$Params {
-  id: string;
-      body?: {
-'file'?: Blob;
-}
+    id: string;
+    body?: {
+        file?: Blob;
+    };
 }
 
-export function uploadMatcherImage(http: HttpClient, rootUrl: string, params: UploadMatcherImage$Params, context?: HttpContext): Observable<StrictHttpResponse<Matcher>> {
-  const rb = new RequestBuilder(rootUrl, uploadMatcherImage.PATH, 'post');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.body(params.body, 'multipart/form-data');
-  }
+export function uploadMatcherImage(
+    http: HttpClient,
+    rootUrl: string,
+    params: UploadMatcherImage$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Matcher>> {
+    const rb = new RequestBuilder(rootUrl, uploadMatcherImage.PATH, 'post');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.body(params.body, 'multipart/form-data');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Matcher>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Matcher>;
+            }),
+        );
 }
 
 uploadMatcherImage.PATH = '/v1/matchers/{id}/image';

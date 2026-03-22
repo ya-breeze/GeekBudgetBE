@@ -25,7 +25,11 @@ export class TemplateService {
         this.loading.set(true);
         this.error.set(null);
 
-        return getTemplates(this.http, this.apiConfig.rootUrl, accountId ? { accountId } : undefined).pipe(
+        return getTemplates(
+            this.http,
+            this.apiConfig.rootUrl,
+            accountId ? { accountId } : undefined,
+        ).pipe(
             map((response) => response.body ?? []),
             tap({
                 next: (templates) => {

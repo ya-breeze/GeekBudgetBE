@@ -9,22 +9,26 @@ import { RequestBuilder } from '../../request-builder';
 
 import { User } from '../../models/user';
 
-export interface GetUser$Params {
-}
+export interface GetUser$Params {}
 
-export function getUser(http: HttpClient, rootUrl: string, params?: GetUser$Params, context?: HttpContext): Observable<StrictHttpResponse<User>> {
-  const rb = new RequestBuilder(rootUrl, getUser.PATH, 'get');
-  if (params) {
-  }
+export function getUser(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetUser$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<User>> {
+    const rb = new RequestBuilder(rootUrl, getUser.PATH, 'get');
+    if (params) {
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<User>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<User>;
+            }),
+        );
 }
 
 getUser.PATH = '/v1/user';

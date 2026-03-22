@@ -3,10 +3,9 @@
 
 import { Transaction } from '../models/transaction';
 export interface ConvertUnprocessedTransaction200Response {
-
-  /**
-   * IDs of other unprocessed transactions that were automatically matched because of this conversion (if matcher became perfect)
-   */
-  autoProcessedIds?: Array<string>;
-  transaction: Transaction;
+    /**
+     * IDs of other unprocessed transactions that were automatically matched because of this conversion (if matcher became perfect)
+     */
+    autoProcessedIds?: Array<string>;
+    transaction: Transaction;
 }

@@ -11,23 +11,28 @@ import { Transaction } from '../../models/transaction';
 import { TransactionNoId } from '../../models/transaction-no-id';
 
 export interface CreateTransaction$Params {
-      body: TransactionNoId
+    body: TransactionNoId;
 }
 
-export function createTransaction(http: HttpClient, rootUrl: string, params: CreateTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<Transaction>> {
-  const rb = new RequestBuilder(rootUrl, createTransaction.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function createTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: CreateTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Transaction>> {
+    const rb = new RequestBuilder(rootUrl, createTransaction.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Transaction>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Transaction>;
+            }),
+        );
 }
 
 createTransaction.PATH = '/v1/transactions';

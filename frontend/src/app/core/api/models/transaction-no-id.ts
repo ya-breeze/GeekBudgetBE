@@ -3,72 +3,71 @@
 
 import { Movement } from '../models/movement';
 export interface TransactionNoId {
+    /**
+     * Reason why auto-match was skipped for this transaction
+     */
+    autoMatchSkipReason?: string;
+    date: string;
+    description?: string;
 
-  /**
-   * Reason why auto-match was skipped for this transaction
-   */
-  autoMatchSkipReason?: string;
-  date: string;
-  description?: string;
+    /**
+     * If true, user has dismissed the duplicate detected for this transaction
+     */
+    duplicateDismissed?: boolean;
 
-  /**
-   * If true, user has dismissed the duplicate detected for this transaction
-   */
-  duplicateDismissed?: boolean;
+    /**
+     * List of transaction IDs that are potential duplicates of this one (from separate junction table)
+     */
+    duplicateTransactionIds?: Array<string>;
 
-  /**
-   * List of transaction IDs that are potential duplicates of this one (from separate junction table)
-   */
-  duplicateTransactionIds?: Array<string>;
+    /**
+     * IDs of unprocessed transaction - to match later
+     */
+    externalIds?: Array<string>;
 
-  /**
-   * IDs of unprocessed transaction - to match later
-   */
-  externalIds?: Array<string>;
+    /**
+     * Stores extra data about transaction. For example could hold "variable symbol" to distinguish payment for the same account, but with different meaning
+     */
+    extra?: string;
 
-  /**
-   * Stores extra data about transaction. For example could hold "variable symbol" to distinguish payment for the same account, but with different meaning
-   */
-  extra?: string;
+    /**
+     * If true, this transaction was converted automatically by the matcher
+     */
+    isAuto?: boolean;
 
-  /**
-   * If true, this transaction was converted automatically by the matcher
-   */
-  isAuto?: boolean;
+    /**
+     * ID of the matcher used for this conversion (if any)
+     */
+    matcherId?: string;
 
-  /**
-   * ID of the matcher used for this conversion (if any)
-   */
-  matcherId?: string;
+    /**
+     * When this transaction was merged
+     */
+    mergedAt?: string;
 
-  /**
-   * When this transaction was merged
-   */
-  mergedAt?: string;
+    /**
+     * ID of the transaction this one was merged into (if any)
+     */
+    mergedIntoId?: string;
 
-  /**
-   * ID of the transaction this one was merged into (if any)
-   */
-  mergedIntoId?: string;
+    /**
+     * List of transaction IDs that were merged into this transaction (soft-deleted duplicates pointing here via mergedIntoId)
+     */
+    mergedTransactionIds?: Array<string>;
+    movements: Array<Movement>;
+    partnerAccount?: string;
 
-  /**
-   * List of transaction IDs that were merged into this transaction (soft-deleted duplicates pointing here via mergedIntoId)
-   */
-  mergedTransactionIds?: Array<string>;
-  movements: Array<Movement>;
-  partnerAccount?: string;
+    /**
+     * Internal bank's ID to be able to match later if necessary
+     */
+    partnerInternalId?: string;
+    partnerName?: string;
+    place?: string;
+    suspiciousReasons?: Array<string>;
+    tags?: Array<string>;
 
-  /**
-   * Internal bank's ID to be able to match later if necessary
-   */
-  partnerInternalId?: string;
-  partnerName?: string;
-  place?: string;
-  suspiciousReasons?: Array<string>;
-  tags?: Array<string>;
-
-  /**
-   * Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis
-   */
-  unprocessedSources?: string;
+    /**
+     * Stores FULL unprocessed transactions which was source of this transaction. Could be used later for detailed analysis
+     */
+    unprocessedSources?: string;
 }

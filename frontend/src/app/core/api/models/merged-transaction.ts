@@ -3,11 +3,10 @@
 
 import { Transaction } from '../models/transaction';
 export interface MergedTransaction {
-
-  /**
-   * When this transaction was merged
-   */
-  mergedAt: string;
-  mergedInto: Transaction;
-  transaction: Transaction;
+    /**
+     * When this transaction was merged
+     */
+    mergedAt: string;
+    mergedInto: Transaction;
+    transaction: Transaction;
 }

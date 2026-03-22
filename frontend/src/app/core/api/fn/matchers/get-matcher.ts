@@ -10,27 +10,31 @@ import { RequestBuilder } from '../../request-builder';
 import { Matcher } from '../../models/matcher';
 
 export interface GetMatcher$Params {
-
-/**
- * ID of the matcher
- */
-  id: string;
+    /**
+     * ID of the matcher
+     */
+    id: string;
 }
 
-export function getMatcher(http: HttpClient, rootUrl: string, params: GetMatcher$Params, context?: HttpContext): Observable<StrictHttpResponse<Matcher>> {
-  const rb = new RequestBuilder(rootUrl, getMatcher.PATH, 'get');
-  if (params) {
-    rb.path('id', params.id, {});
-  }
+export function getMatcher(
+    http: HttpClient,
+    rootUrl: string,
+    params: GetMatcher$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Matcher>> {
+    const rb = new RequestBuilder(rootUrl, getMatcher.PATH, 'get');
+    if (params) {
+        rb.path('id', params.id, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Matcher>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Matcher>;
+            }),
+        );
 }
 
 getMatcher.PATH = '/v1/matchers/{id}';

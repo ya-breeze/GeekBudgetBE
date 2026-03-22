@@ -9,22 +9,26 @@ import { RequestBuilder } from '../../request-builder';
 
 import { BankImporter } from '../../models/bank-importer';
 
-export interface GetBankImporters$Params {
-}
+export interface GetBankImporters$Params {}
 
-export function getBankImporters(http: HttpClient, rootUrl: string, params?: GetBankImporters$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<BankImporter>>> {
-  const rb = new RequestBuilder(rootUrl, getBankImporters.PATH, 'get');
-  if (params) {
-  }
+export function getBankImporters(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetBankImporters$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<BankImporter>>> {
+    const rb = new RequestBuilder(rootUrl, getBankImporters.PATH, 'get');
+    if (params) {
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<BankImporter>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<BankImporter>>;
+            }),
+        );
 }
 
 getBankImporters.PATH = '/v1/bankImporters';

@@ -97,11 +97,16 @@ export class TemplateEditDialogComponent implements OnInit {
     }
 
     protected addMovement(movement?: Partial<Movement>): void {
-        this.movements.push(this.fb.group({
-            amount: [movement?.amount != null ? String(movement.amount) : '', Validators.required],
-            currencyId: [movement?.currencyId ?? '', Validators.required],
-            accountId: [movement?.accountId ?? ''],
-        }));
+        this.movements.push(
+            this.fb.group({
+                amount: [
+                    movement?.amount != null ? String(movement.amount) : '',
+                    Validators.required,
+                ],
+                currencyId: [movement?.currencyId ?? '', Validators.required],
+                accountId: [movement?.accountId ?? ''],
+            }),
+        );
     }
 
     protected removeMovement(index: number): void {

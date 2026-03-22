@@ -37,9 +37,7 @@ export class TemplatePickerComponent implements OnInit {
 
     protected readonly filteredTemplates = computed(() => {
         const q = this.searchQuery().toLowerCase();
-        return this.templateService.templates().filter((t) =>
-            t.name.toLowerCase().includes(q),
-        );
+        return this.templateService.templates().filter((t) => t.name.toLowerCase().includes(q));
     });
 
     ngOnInit(): void {

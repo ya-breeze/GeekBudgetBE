@@ -1,6 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
+import {
+    MatDialogRef,
+    MAT_DIALOG_DATA,
+    MatDialogModule,
+    MatDialog,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -61,14 +66,13 @@ export class TransactionFormDialogComponent implements OnInit {
     constructor() {
         const src = this.data.transaction ?? this.data.initialValues;
         this.form = this.fb.group({
-            date: [
-                src?.date ? new Date(src.date) : new Date(),
-                [Validators.required],
-            ],
+            date: [src?.date ? new Date(src.date) : new Date(), [Validators.required]],
             description: [src?.description || '', [Validators.maxLength(500)]],
             movements: this.fb.array([], [Validators.required, Validators.minLength(1)]),
             partnerName: [src?.partnerName || ''],
-            partnerAccount: [(this.data.transaction ?? this.data.initialValues as any)?.partnerAccount || ''],
+            partnerAccount: [
+                (this.data.transaction ?? (this.data.initialValues as any))?.partnerAccount || '',
+            ],
             place: [src?.place || ''],
         });
 
@@ -124,7 +128,10 @@ export class TransactionFormDialogComponent implements OnInit {
     }
 
     protected useTemplate(): void {
-        const dialogRef = this.dialog.open(TemplatePickerDialogComponent, { width: '400px', data: {} });
+        const dialogRef = this.dialog.open(TemplatePickerDialogComponent, {
+            width: '400px',
+            data: {},
+        });
         dialogRef.afterClosed().subscribe((template) => {
             if (template) {
                 const tx = this.templateService.templateToTransactionNoId(template);

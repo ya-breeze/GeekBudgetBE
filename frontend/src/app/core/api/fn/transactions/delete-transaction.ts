@@ -7,25 +7,27 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-
 export interface DeleteTransaction$Params {
-  id: string;
+    id: string;
 }
 
-export function deleteTransaction(http: HttpClient, rootUrl: string, params: DeleteTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
-  const rb = new RequestBuilder(rootUrl, deleteTransaction.PATH, 'delete');
-  if (params) {
-    rb.path('id', params.id, {});
-  }
+export function deleteTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: DeleteTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<void>> {
+    const rb = new RequestBuilder(rootUrl, deleteTransaction.PATH, 'delete');
+    if (params) {
+        rb.path('id', params.id, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
-    })
-  );
+    return http.request(rb.build({ responseType: 'text', accept: '*/*', context })).pipe(
+        filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+        map((r: HttpResponse<any>) => {
+            return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+        }),
+    );
 }
 
 deleteTransaction.PATH = '/v1/transactions/{id}';

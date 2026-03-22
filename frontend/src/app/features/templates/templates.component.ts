@@ -40,7 +40,9 @@ export class TemplatesComponent implements OnInit {
     protected getAccountNames(template: TransactionTemplate): string {
         const accounts = this.accountService.accounts();
         const accountMap = new Map(accounts.map((a) => [a.id, a.name]));
-        const ids = [...new Set((template.movements ?? []).map((m) => m.accountId).filter(Boolean))];
+        const ids = [
+            ...new Set((template.movements ?? []).map((m) => m.accountId).filter(Boolean)),
+        ];
         return ids.map((id) => accountMap.get(id!) ?? id!).join(', ');
     }
 

@@ -10,27 +10,31 @@ import { RequestBuilder } from '../../request-builder';
 import { Account } from '../../models/account';
 
 export interface GetAccount$Params {
-
-/**
- * ID of the account
- */
-  id: string;
+    /**
+     * ID of the account
+     */
+    id: string;
 }
 
-export function getAccount(http: HttpClient, rootUrl: string, params: GetAccount$Params, context?: HttpContext): Observable<StrictHttpResponse<Account>> {
-  const rb = new RequestBuilder(rootUrl, getAccount.PATH, 'get');
-  if (params) {
-    rb.path('id', params.id, {});
-  }
+export function getAccount(
+    http: HttpClient,
+    rootUrl: string,
+    params: GetAccount$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Account>> {
+    const rb = new RequestBuilder(rootUrl, getAccount.PATH, 'get');
+    if (params) {
+        rb.path('id', params.id, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Account>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Account>;
+            }),
+        );
 }
 
 getAccount.PATH = '/v1/accounts/{id}';

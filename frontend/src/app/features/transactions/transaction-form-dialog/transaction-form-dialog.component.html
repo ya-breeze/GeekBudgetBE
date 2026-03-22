@@ -2,7 +2,12 @@
 
 <mat-dialog-content>
     @if (!isEditMode) {
-        <button mat-stroked-button type="button" (click)="useTemplate()" style="margin-bottom: 16px">
+        <button
+            mat-stroked-button
+            type="button"
+            (click)="useTemplate()"
+            style="margin-bottom: 16px"
+        >
             <mat-icon>content_copy</mat-icon> Use template
         </button>
     }

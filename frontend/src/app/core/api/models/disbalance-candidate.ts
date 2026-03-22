@@ -3,8 +3,8 @@
 
 import { DisbalanceCandidateTransaction } from '../models/disbalance-candidate-transaction';
 export interface DisbalanceCandidate {
-  difference: number;
-  sum: number;
-  transactions: Array<DisbalanceCandidateTransaction>;
-  type: 'exact_single' | 'exact_pair' | 'exact_subset' | 'approximate';
+    difference: number;
+    sum: number;
+    transactions: Array<DisbalanceCandidateTransaction>;
+    type: 'exact_single' | 'exact_pair' | 'exact_subset' | 'approximate';
 }

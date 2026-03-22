@@ -10,23 +10,28 @@ import { RequestBuilder } from '../../request-builder';
 import { TransactionTemplate } from '../../models/transaction-template';
 
 export interface GetTemplates$Params {
-  accountId?: string;
+    accountId?: string;
 }
 
-export function getTemplates(http: HttpClient, rootUrl: string, params?: GetTemplates$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<TransactionTemplate>>> {
-  const rb = new RequestBuilder(rootUrl, getTemplates.PATH, 'get');
-  if (params) {
-    rb.query('accountId', params.accountId, {});
-  }
+export function getTemplates(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetTemplates$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<TransactionTemplate>>> {
+    const rb = new RequestBuilder(rootUrl, getTemplates.PATH, 'get');
+    if (params) {
+        rb.query('accountId', params.accountId, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<TransactionTemplate>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<TransactionTemplate>>;
+            }),
+        );
 }
 
 getTemplates.PATH = '/v1/templates';
