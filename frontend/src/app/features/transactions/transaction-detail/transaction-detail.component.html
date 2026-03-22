@@ -116,6 +116,9 @@
 
         <mat-card-actions align="end">
             <button mat-button (click)="goBack()"><mat-icon>arrow_back</mat-icon> Back</button>
+            <button mat-stroked-button *ngIf="!isMerged()" (click)="saveAsTemplate()">
+                <mat-icon>content_copy</mat-icon> Save as template
+            </button>
             <button mat-flat-button color="primary" *ngIf="!isMerged()" (click)="editTransaction()">
                 <mat-icon>edit</mat-icon> Edit
             </button>
