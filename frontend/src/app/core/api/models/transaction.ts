@@ -3,4 +3,6 @@
 
 import { Entity } from '../models/entity';
 import { TransactionNoId } from '../models/transaction-no-id';
-export type Transaction = Entity & TransactionNoId & {};
+export type Transaction = Entity & TransactionNoId & {
+};
+

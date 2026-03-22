@@ -7,32 +7,29 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+
 export interface DownloadBankImporterFile$Params {
-    /**
-     * ID of the bank importer file
-     */
-    id: string;
+
+/**
+ * ID of the bank importer file
+ */
+  id: string;
 }
 
-export function downloadBankImporterFile(
-    http: HttpClient,
-    rootUrl: string,
-    params: DownloadBankImporterFile$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Blob>> {
-    const rb = new RequestBuilder(rootUrl, downloadBankImporterFile.PATH, 'get');
-    if (params) {
-        rb.path('id', params.id, {});
-    }
+export function downloadBankImporterFile(http: HttpClient, rootUrl: string, params: DownloadBankImporterFile$Params, context?: HttpContext): Observable<StrictHttpResponse<Blob>> {
+  const rb = new RequestBuilder(rootUrl, downloadBankImporterFile.PATH, 'get');
+  if (params) {
+    rb.path('id', params.id, {});
+  }
 
-    return http
-        .request(rb.build({ responseType: 'blob', accept: 'application/octet-stream', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Blob>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'blob', accept: 'application/octet-stream', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Blob>;
+    })
+  );
 }
 
 downloadBankImporterFile.PATH = '/v1/bankImporters/files/{id}';

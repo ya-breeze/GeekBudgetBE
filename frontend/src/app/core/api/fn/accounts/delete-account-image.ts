@@ -10,28 +10,23 @@ import { RequestBuilder } from '../../request-builder';
 import { Account } from '../../models/account';
 
 export interface DeleteAccountImage$Params {
-    id: string;
+  id: string;
 }
 
-export function deleteAccountImage(
-    http: HttpClient,
-    rootUrl: string,
-    params: DeleteAccountImage$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Account>> {
-    const rb = new RequestBuilder(rootUrl, deleteAccountImage.PATH, 'delete');
-    if (params) {
-        rb.path('id', params.id, {});
-    }
+export function deleteAccountImage(http: HttpClient, rootUrl: string, params: DeleteAccountImage$Params, context?: HttpContext): Observable<StrictHttpResponse<Account>> {
+  const rb = new RequestBuilder(rootUrl, deleteAccountImage.PATH, 'delete');
+  if (params) {
+    rb.path('id', params.id, {});
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Account>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Account>;
+    })
+  );
 }
 
 deleteAccountImage.PATH = '/v1/accounts/{id}/image';

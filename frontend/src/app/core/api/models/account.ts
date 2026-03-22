@@ -3,4 +3,6 @@
 
 import { AccountNoId } from '../models/account-no-id';
 import { Entity } from '../models/entity';
-export type Account = Entity & AccountNoId & {};
+export type Account = Entity & AccountNoId & {
+};
+

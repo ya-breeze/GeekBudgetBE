@@ -7,30 +7,29 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+
 export interface UnmergeMergedTransaction$Params {
-    /**
-     * ID of the merged transaction to restore
-     */
-    id: string;
+
+/**
+ * ID of the merged transaction to restore
+ */
+  id: string;
 }
 
-export function unmergeMergedTransaction(
-    http: HttpClient,
-    rootUrl: string,
-    params: UnmergeMergedTransaction$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<void>> {
-    const rb = new RequestBuilder(rootUrl, unmergeMergedTransaction.PATH, 'post');
-    if (params) {
-        rb.path('id', params.id, {});
-    }
+export function unmergeMergedTransaction(http: HttpClient, rootUrl: string, params: UnmergeMergedTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+  const rb = new RequestBuilder(rootUrl, unmergeMergedTransaction.PATH, 'post');
+  if (params) {
+    rb.path('id', params.id, {});
+  }
 
-    return http.request(rb.build({ responseType: 'text', accept: '*/*', context })).pipe(
-        filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-        map((r: HttpResponse<any>) => {
-            return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
-        }),
-    );
+  return http.request(
+    rb.build({ responseType: 'text', accept: '*/*', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+    })
+  );
 }
 
 unmergeMergedTransaction.PATH = '/v1/mergedTransactions/{id}/unmerge';

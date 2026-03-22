@@ -3,65 +3,67 @@
 
 import { ImportResult } from '../models/import-result';
 export interface BankImporterNoId {
-    /**
-     * ID of account which is used to for movements from this bank importer
-     */
-    accountId: string;
-    description?: string;
 
-    /**
-     * Stores extra data about bank importer. For example could hold "bank account number" to be able to distinguish between different bank accounts, or it could hold token for bank API
-     */
-    extra?: string;
+  /**
+   * ID of account which is used to for movements from this bank importer
+   */
+  accountId: string;
+  description?: string;
 
-    /**
-     * ID of account which is used for fee movements from this bank importer
-     */
-    feeAccountId?: string;
+  /**
+   * Stores extra data about bank importer. For example could hold "bank account number" to be able to distinguish between different bank accounts, or it could hold token for bank API
+   */
+  extra?: string;
 
-    /**
-     * If true, importer will fetch all transactions from the bank, if false, it will fetch only recent transactions
-     */
-    fetchAll?: boolean;
+  /**
+   * ID of account which is used for fee movements from this bank importer
+   */
+  feeAccountId?: string;
 
-    /**
-     * If true, automatic fetching is stopped for this importer. This is usually set automatically when fetch fails, and reset when user manually triggers fetch or updates the importer.
-     */
-    isStopped?: boolean;
+  /**
+   * If true, importer will fetch all transactions from the bank, if false, it will fetch only recent transactions
+   */
+  fetchAll?: boolean;
 
-    /**
-     * List of last imports. It could be shown to user to explain what was imported recently
-     */
-    lastImports?: Array<ImportResult>;
+  /**
+   * If true, automatic fetching is stopped for this importer. This is usually set automatically when fetch fails, and reset when user manually triggers fetch or updates the importer.
+   */
+  isStopped?: boolean;
 
-    /**
-     * Date of last successful import.
-     */
-    lastSuccessfulImport?: string;
+  /**
+   * List of last imports. It could be shown to user to explain what was imported recently
+   */
+  lastImports?: Array<ImportResult>;
 
-    /**
-     * List of mappings which are used to enrich transactions with additional tags
-     */
-    mappings?: Array<{
-        /**
-         * Field in transaction which should be match this mapping
-         */
-        fieldToMatch?: 'user';
+  /**
+   * Date of last successful import.
+   */
+  lastSuccessfulImport?: string;
 
-        /**
-         * Value which should be in field to match this mapping
-         */
-        valueToMatch?: string;
+  /**
+   * List of mappings which are used to enrich transactions with additional tags
+   */
+  mappings?: Array<{
 
-        /**
-         * Tag which should be set if mapping is matched
-         */
-        tagToSet?: string;
-    }>;
-    name: string;
+/**
+ * Field in transaction which should be match this mapping
+ */
+'fieldToMatch'?: 'user';
 
-    /**
-     * Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
-     */
-    type?: 'fio' | 'kb' | 'revolut';
+/**
+ * Value which should be in field to match this mapping
+ */
+'valueToMatch'?: string;
+
+/**
+ * Tag which should be set if mapping is matched
+ */
+'tagToSet'?: string;
+}>;
+  name: string;
+
+  /**
+   * Type of bank importer. It's used to distinguish between different banks. For example, FIO bank or KB bank.
+   */
+  type?: 'fio' | 'kb' | 'revolut';
 }

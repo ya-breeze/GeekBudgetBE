@@ -10,32 +10,27 @@ import { RequestBuilder } from '../../request-builder';
 import { Account } from '../../models/account';
 
 export interface UploadAccountImage$Params {
-    id: string;
-    body?: {
-        file?: Blob;
-    };
+  id: string;
+      body?: {
+'file'?: Blob;
+}
 }
 
-export function uploadAccountImage(
-    http: HttpClient,
-    rootUrl: string,
-    params: UploadAccountImage$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Account>> {
-    const rb = new RequestBuilder(rootUrl, uploadAccountImage.PATH, 'post');
-    if (params) {
-        rb.path('id', params.id, {});
-        rb.body(params.body, 'multipart/form-data');
-    }
+export function uploadAccountImage(http: HttpClient, rootUrl: string, params: UploadAccountImage$Params, context?: HttpContext): Observable<StrictHttpResponse<Account>> {
+  const rb = new RequestBuilder(rootUrl, uploadAccountImage.PATH, 'post');
+  if (params) {
+    rb.path('id', params.id, {});
+    rb.body(params.body, 'multipart/form-data');
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Account>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Account>;
+    })
+  );
 }
 
 uploadAccountImage.PATH = '/v1/accounts/{id}/image';

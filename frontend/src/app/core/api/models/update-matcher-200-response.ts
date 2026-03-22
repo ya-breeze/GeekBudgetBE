@@ -3,9 +3,10 @@
 
 import { Matcher } from '../models/matcher';
 export interface UpdateMatcher200Response {
-    /**
-     * IDs of unprocessed transactions that were automatically matched because of this matcher update
-     */
-    autoProcessedIds?: Array<string>;
-    matcher: Matcher;
+
+  /**
+   * IDs of unprocessed transactions that were automatically matched because of this matcher update
+   */
+  autoProcessedIds?: Array<string>;
+  matcher: Matcher;
 }

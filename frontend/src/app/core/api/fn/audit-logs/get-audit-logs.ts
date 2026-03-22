@@ -10,67 +10,63 @@ import { RequestBuilder } from '../../request-builder';
 import { AuditLog } from '../../models/audit-log';
 
 export interface GetAuditLogs$Params {
-    /**
-     * Filter by entity type
-     */
-    entityType?: string;
 
-    /**
-     * Filter by entity ID
-     */
-    entityId?: string;
+/**
+ * Filter by entity type
+ */
+  entityType?: string;
 
-    /**
-     * Filter by user ID
-     */
-    userId?: string;
+/**
+ * Filter by entity ID
+ */
+  entityId?: string;
 
-    /**
-     * Filter by date from
-     */
-    dateFrom?: string;
+/**
+ * Filter by user ID
+ */
+  userId?: string;
 
-    /**
-     * Filter by date to
-     */
-    dateTo?: string;
+/**
+ * Filter by date from
+ */
+  dateFrom?: string;
 
-    /**
-     * Limit number of results
-     */
-    limit?: number;
+/**
+ * Filter by date to
+ */
+  dateTo?: string;
 
-    /**
-     * Offset results
-     */
-    offset?: number;
+/**
+ * Limit number of results
+ */
+  limit?: number;
+
+/**
+ * Offset results
+ */
+  offset?: number;
 }
 
-export function getAuditLogs(
-    http: HttpClient,
-    rootUrl: string,
-    params?: GetAuditLogs$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Array<AuditLog>>> {
-    const rb = new RequestBuilder(rootUrl, getAuditLogs.PATH, 'get');
-    if (params) {
-        rb.query('entityType', params.entityType, {});
-        rb.query('entityId', params.entityId, {});
-        rb.query('userId', params.userId, {});
-        rb.query('dateFrom', params.dateFrom, {});
-        rb.query('dateTo', params.dateTo, {});
-        rb.query('limit', params.limit, {});
-        rb.query('offset', params.offset, {});
-    }
+export function getAuditLogs(http: HttpClient, rootUrl: string, params?: GetAuditLogs$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<AuditLog>>> {
+  const rb = new RequestBuilder(rootUrl, getAuditLogs.PATH, 'get');
+  if (params) {
+    rb.query('entityType', params.entityType, {});
+    rb.query('entityId', params.entityId, {});
+    rb.query('userId', params.userId, {});
+    rb.query('dateFrom', params.dateFrom, {});
+    rb.query('dateTo', params.dateTo, {});
+    rb.query('limit', params.limit, {});
+    rb.query('offset', params.offset, {});
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Array<AuditLog>>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Array<AuditLog>>;
+    })
+  );
 }
 
 getAuditLogs.PATH = '/v1/auditLogs';

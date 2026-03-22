@@ -38,6 +38,8 @@ export type { ReconciliationNoId } from './models/reconciliation-no-id';
 export type { ReconciliationStatus } from './models/reconciliation-status';
 export type { Transaction } from './models/transaction';
 export type { TransactionNoId } from './models/transaction-no-id';
+export type { TransactionTemplate } from './models/transaction-template';
+export type { TransactionTemplateNoId } from './models/transaction-template-no-id';
 export type { UnprocessedTransaction } from './models/unprocessed-transaction';
 export type { UpdateMatcher200Response } from './models/update-matcher-200-response';
 export type { User } from './models/user';

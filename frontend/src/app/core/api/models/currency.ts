@@ -3,4 +3,6 @@
 
 import { CurrencyNoId } from '../models/currency-no-id';
 import { Entity } from '../models/entity';
-export type Currency = Entity & CurrencyNoId & {};
+export type Currency = Entity & CurrencyNoId & {
+};
+

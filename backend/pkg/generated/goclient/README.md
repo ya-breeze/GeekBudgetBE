@@ -132,6 +132,10 @@ Class | Method | HTTP request | Description
 *ReconciliationAPI* | [**GetReconciliationStatus**](docs/ReconciliationAPI.md#getreconciliationstatus) | **Get** /v1/reconciliation/status | get reconciliation status for all asset accounts
 *ReconciliationAPI* | [**GetTransactionsSinceReconciliation**](docs/ReconciliationAPI.md#gettransactionssincereconciliation) | **Get** /v1/accounts/{id}/transactions-since-reconciliation | return transactions since last reconciliation
 *ReconciliationAPI* | [**ReconcileAccount**](docs/ReconciliationAPI.md#reconcileaccount) | **Post** /v1/accounts/{id}/reconcile | manually mark an account as reconciled
+*TemplatesAPI* | [**CreateTemplate**](docs/TemplatesAPI.md#createtemplate) | **Post** /v1/templates | create new template
+*TemplatesAPI* | [**DeleteTemplate**](docs/TemplatesAPI.md#deletetemplate) | **Delete** /v1/templates/{id} | delete template
+*TemplatesAPI* | [**GetTemplates**](docs/TemplatesAPI.md#gettemplates) | **Get** /v1/templates | get all templates
+*TemplatesAPI* | [**UpdateTemplate**](docs/TemplatesAPI.md#updatetemplate) | **Put** /v1/templates/{id} | update template
 *TransactionsAPI* | [**CreateTransaction**](docs/TransactionsAPI.md#createtransaction) | **Post** /v1/transactions | create new transaction
 *TransactionsAPI* | [**DeleteTransaction**](docs/TransactionsAPI.md#deletetransaction) | **Delete** /v1/transactions/{id} | delete transaction
 *TransactionsAPI* | [**GetTransaction**](docs/TransactionsAPI.md#gettransaction) | **Get** /v1/transactions/{id} | get transaction
@@ -192,6 +196,8 @@ Class | Method | HTTP request | Description
  - [ReconciliationStatus](docs/ReconciliationStatus.md)
  - [Transaction](docs/Transaction.md)
  - [TransactionNoID](docs/TransactionNoID.md)
+ - [TransactionTemplate](docs/TransactionTemplate.md)
+ - [TransactionTemplateNoId](docs/TransactionTemplateNoId.md)
  - [UnprocessedTransaction](docs/UnprocessedTransaction.md)
  - [UpdateMatcher200Response](docs/UpdateMatcher200Response.md)
  - [User](docs/User.md)

@@ -10,28 +10,23 @@ import { RequestBuilder } from '../../request-builder';
 import { Matcher } from '../../models/matcher';
 
 export interface DeleteMatcherImage$Params {
-    id: string;
+  id: string;
 }
 
-export function deleteMatcherImage(
-    http: HttpClient,
-    rootUrl: string,
-    params: DeleteMatcherImage$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Matcher>> {
-    const rb = new RequestBuilder(rootUrl, deleteMatcherImage.PATH, 'delete');
-    if (params) {
-        rb.path('id', params.id, {});
-    }
+export function deleteMatcherImage(http: HttpClient, rootUrl: string, params: DeleteMatcherImage$Params, context?: HttpContext): Observable<StrictHttpResponse<Matcher>> {
+  const rb = new RequestBuilder(rootUrl, deleteMatcherImage.PATH, 'delete');
+  if (params) {
+    rb.path('id', params.id, {});
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Matcher>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Matcher>;
+    })
+  );
 }
 
 deleteMatcherImage.PATH = '/v1/matchers/{id}/image';

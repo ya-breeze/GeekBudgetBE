@@ -1321,6 +1321,85 @@ paths:
                   reason:
                     type: string
 
+  /v1/templates:
+    get:
+      tags: [templates]
+      summary: get all templates
+      operationId: getTemplates
+      parameters:
+        - name: accountId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionTemplate"
+    post:
+      tags: [templates]
+      summary: create new template
+      operationId: createTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionTemplateNoId"
+      responses:
+        "200":
+          description: created template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionTemplate"
+
+  /v1/templates/{id}:
+    put:
+      tags: [templates]
+      summary: update template
+      operationId: updateTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionTemplateNoId"
+      responses:
+        "200":
+          description: updated template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionTemplate"
+    delete:
+      tags: [templates]
+      summary: delete template
+      operationId: deleteTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: deleted
+
   /v1/import:
     post:
       tags:
@@ -2287,6 +2366,39 @@ components:
           required:
             - confirmationsCount
             - confirmationsTotal
+
+    TransactionTemplateNoId:
+      type: object
+      required:
+        - name
+        - movements
+      properties:
+        name:
+          type: string
+          description: User-given label for the template
+        description:
+          type: string
+        place:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        partnerName:
+          type: string
+        extra:
+          type: string
+        movements:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Movement"
+
+    TransactionTemplate:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Entity"
+        - $ref: "#/components/schemas/TransactionTemplateNoId"
 
     WholeUserData:
       type: object

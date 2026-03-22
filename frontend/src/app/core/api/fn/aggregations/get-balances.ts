@@ -10,49 +10,45 @@ import { RequestBuilder } from '../../request-builder';
 import { Aggregation } from '../../models/aggregation';
 
 export interface GetBalances$Params {
-    /**
-     * Uses transactions from this date
-     */
-    from?: string;
 
-    /**
-     * Uses transactions to this date
-     */
-    to?: string;
+/**
+ * Uses transactions from this date
+ */
+  from?: string;
 
-    /**
-     * Converts all transactions to this currency
-     */
-    outputCurrencyId?: string;
+/**
+ * Uses transactions to this date
+ */
+  to?: string;
 
-    /**
-     * If true, include hidden accounts
-     */
-    includeHidden?: boolean;
+/**
+ * Converts all transactions to this currency
+ */
+  outputCurrencyId?: string;
+
+/**
+ * If true, include hidden accounts
+ */
+  includeHidden?: boolean;
 }
 
-export function getBalances(
-    http: HttpClient,
-    rootUrl: string,
-    params?: GetBalances$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Aggregation>> {
-    const rb = new RequestBuilder(rootUrl, getBalances.PATH, 'get');
-    if (params) {
-        rb.query('from', params.from, {});
-        rb.query('to', params.to, {});
-        rb.query('outputCurrencyId', params.outputCurrencyId, {});
-        rb.query('includeHidden', params.includeHidden, {});
-    }
+export function getBalances(http: HttpClient, rootUrl: string, params?: GetBalances$Params, context?: HttpContext): Observable<StrictHttpResponse<Aggregation>> {
+  const rb = new RequestBuilder(rootUrl, getBalances.PATH, 'get');
+  if (params) {
+    rb.query('from', params.from, {});
+    rb.query('to', params.to, {});
+    rb.query('outputCurrencyId', params.outputCurrencyId, {});
+    rb.query('includeHidden', params.includeHidden, {});
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Aggregation>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Aggregation>;
+    })
+  );
 }
 
 getBalances.PATH = '/v1/balances';

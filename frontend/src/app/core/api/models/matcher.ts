@@ -3,15 +3,17 @@
 
 import { Entity } from '../models/entity';
 import { MatcherNoId } from '../models/matcher-no-id';
-export type Matcher = Entity &
-    MatcherNoId & {
-        /**
-         * Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct.
-         */
-        confirmationsCount: number;
+export type Matcher = Entity & MatcherNoId & {
 
-        /**
-         * Total length of the confirmation history array. This is the total number of times this matcher has been evaluated.
-         */
-        confirmationsTotal: number;
-    } & {};
+/**
+ * Number of successful confirmations (true values) in the confirmation history. This shows how many times the matcher was confirmed as correct.
+ */
+'confirmationsCount': number;
+
+/**
+ * Total length of the confirmation history array. This is the total number of times this matcher has been evaluated.
+ */
+'confirmationsTotal': number;
+} & {
+};
+

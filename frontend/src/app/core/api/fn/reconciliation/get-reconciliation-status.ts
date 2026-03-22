@@ -9,26 +9,22 @@ import { RequestBuilder } from '../../request-builder';
 
 import { ReconciliationStatus } from '../../models/reconciliation-status';
 
-export interface GetReconciliationStatus$Params {}
+export interface GetReconciliationStatus$Params {
+}
 
-export function getReconciliationStatus(
-    http: HttpClient,
-    rootUrl: string,
-    params?: GetReconciliationStatus$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Array<ReconciliationStatus>>> {
-    const rb = new RequestBuilder(rootUrl, getReconciliationStatus.PATH, 'get');
-    if (params) {
-    }
+export function getReconciliationStatus(http: HttpClient, rootUrl: string, params?: GetReconciliationStatus$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<ReconciliationStatus>>> {
+  const rb = new RequestBuilder(rootUrl, getReconciliationStatus.PATH, 'get');
+  if (params) {
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Array<ReconciliationStatus>>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Array<ReconciliationStatus>>;
+    })
+  );
 }
 
 getReconciliationStatus.PATH = '/v1/reconciliation/status';
