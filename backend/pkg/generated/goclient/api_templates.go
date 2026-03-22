@@ -146,7 +146,7 @@ func (r ApiDeleteTemplateRequest) Execute() (*http.Response, error) {
 DeleteTemplate delete template
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id
+	@param id ID of the template
 	@return ApiDeleteTemplateRequest
 */
 func (a *TemplatesAPIService) DeleteTemplate(ctx context.Context, id string) ApiDeleteTemplateRequest {
@@ -349,7 +349,7 @@ func (r ApiUpdateTemplateRequest) Execute() (*TransactionTemplate, *http.Respons
 UpdateTemplate update template
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param id
+	@param id ID of the template
 	@return ApiUpdateTemplateRequest
 */
 func (a *TemplatesAPIService) UpdateTemplate(ctx context.Context, id string) ApiUpdateTemplateRequest {

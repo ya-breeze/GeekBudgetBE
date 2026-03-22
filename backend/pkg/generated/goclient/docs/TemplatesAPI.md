@@ -94,7 +94,7 @@ import (
 )
 
 func main() {
-	id := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | 
+	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the template
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -112,7 +112,7 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**id** | **string** |  | 
+**id** | **string** | ID of the template | 
 
 ### Other Parameters
 
@@ -224,7 +224,7 @@ import (
 )
 
 func main() {
-	id := "38400000-8cf0-11bd-b23e-10b96e4ef00d" // string | 
+	id := "123e4567-e89b-12d3-a456-426614174000" // string | ID of the template
 	transactionTemplateNoId := *openapiclient.NewTransactionTemplateNoId("Name_example", []openapiclient.Movement{*openapiclient.NewMovement("TODO", "CurrencyId_example")}) // TransactionTemplateNoId | 
 
 	configuration := openapiclient.NewConfiguration()
@@ -245,7 +245,7 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**id** | **string** |  | 
+**id** | **string** | ID of the template | 
 
 ### Other Parameters
 

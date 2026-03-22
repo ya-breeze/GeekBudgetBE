@@ -1323,7 +1323,8 @@ paths:
 
   /v1/templates:
     get:
-      tags: [templates]
+      tags:
+        - templates
       summary: get all templates
       operationId: getTemplates
       parameters:
@@ -1343,7 +1344,8 @@ paths:
                 items:
                   $ref: "#/components/schemas/TransactionTemplate"
     post:
-      tags: [templates]
+      tags:
+        - templates
       summary: create new template
       operationId: createTemplate
       requestBody:
@@ -1362,16 +1364,19 @@ paths:
 
   /v1/templates/{id}:
     put:
-      tags: [templates]
+      tags:
+        - templates
       summary: update template
       operationId: updateTemplate
       parameters:
-        - name: id
-          in: path
+        - name: "id"
+          in: "path"
+          description: "ID of the template"
           required: true
           schema:
-            type: string
-            format: uuid
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
       requestBody:
         required: true
         content:
@@ -1386,16 +1391,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/TransactionTemplate"
     delete:
-      tags: [templates]
+      tags:
+        - templates
       summary: delete template
       operationId: deleteTemplate
       parameters:
-        - name: id
-          in: path
+        - name: "id"
+          in: "path"
+          description: "ID of the template"
           required: true
           schema:
-            type: string
-            format: uuid
+            type: "string"
+            format: "uuid"
+            example: "123e4567-e89b-12d3-a456-426614174000"
       responses:
         "204":
           description: deleted
