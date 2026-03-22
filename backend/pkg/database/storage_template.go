@@ -79,5 +79,9 @@ func (s *storage) DeleteTemplate(userID string, id string) error {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
-	return s.db.Delete(&tpl).Error
+	if err := s.db.Delete(&tpl).Error; err != nil {
+		return fmt.Errorf(StorageError, err)
+	}
+
+	return nil
 }
