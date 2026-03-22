@@ -87,23 +87,33 @@ describe('ReconciliationComponent', () => {
 
     describe('getStatusClass', () => {
         it('returns status-yellow when hasUnprocessedTransactions', () => {
-            expect(component.getStatusClass({ ...baseStatus, hasUnprocessedTransactions: true }))
-                .toBe('status-yellow');
+            expect(
+                component.getStatusClass({ ...baseStatus, hasUnprocessedTransactions: true }),
+            ).toBe('status-yellow');
         });
 
-        it('returns status-green for no-importer account even with large delta', () => {
-            expect(component.getStatusClass({ ...baseStatus, hasBankImporter: false, delta: 100 }))
-                .toBe('status-green');
+        it('returns status-yellow for no-importer account with large delta', () => {
+            expect(
+                component.getStatusClass({ ...baseStatus, hasBankImporter: false, delta: 100 }),
+            ).toBe('status-yellow');
+        });
+
+        it('returns status-green for no-importer account within tolerance', () => {
+            expect(
+                component.getStatusClass({ ...baseStatus, hasBankImporter: false, delta: 0.005 }),
+            ).toBe('status-green');
         });
 
         it('returns status-red for importer account with large delta', () => {
-            expect(component.getStatusClass({ ...baseStatus, hasBankImporter: true, delta: 100 }))
-                .toBe('status-red');
+            expect(
+                component.getStatusClass({ ...baseStatus, hasBankImporter: true, delta: 100 }),
+            ).toBe('status-red');
         });
 
         it('returns status-green for importer account within tolerance', () => {
-            expect(component.getStatusClass({ ...baseStatus, hasBankImporter: true, delta: 0.005 }))
-                .toBe('status-green');
+            expect(
+                component.getStatusClass({ ...baseStatus, hasBankImporter: true, delta: 0.005 }),
+            ).toBe('status-green');
         });
     });
 
@@ -117,7 +127,9 @@ describe('ReconciliationComponent', () => {
 
         it('opens confirmation dialog when no-importer and large delta', () => {
             const afterClosedSubject = new Subject<boolean>();
-            const mockDialogRef = { afterClosed: () => afterClosedSubject.asObservable() } as MatDialogRef<any>;
+            const mockDialogRef = {
+                afterClosed: () => afterClosedSubject.asObservable(),
+            } as MatDialogRef<any>;
             mockDialog.open.and.returnValue(mockDialogRef);
 
             const s = { ...baseStatus, hasBankImporter: false, delta: 100 };
@@ -129,7 +141,9 @@ describe('ReconciliationComponent', () => {
 
         it('does not call API when user cancels confirmation dialog', () => {
             const afterClosedSubject = new Subject<boolean>();
-            const mockDialogRef = { afterClosed: () => afterClosedSubject.asObservable() } as MatDialogRef<any>;
+            const mockDialogRef = {
+                afterClosed: () => afterClosedSubject.asObservable(),
+            } as MatDialogRef<any>;
             mockDialog.open.and.returnValue(mockDialogRef);
 
             const s = { ...baseStatus, hasBankImporter: false, delta: 100 };
@@ -141,7 +155,9 @@ describe('ReconciliationComponent', () => {
 
         it('calls API when user confirms dialog', () => {
             const afterClosedSubject = new Subject<boolean>();
-            const mockDialogRef = { afterClosed: () => afterClosedSubject.asObservable() } as MatDialogRef<any>;
+            const mockDialogRef = {
+                afterClosed: () => afterClosedSubject.asObservable(),
+            } as MatDialogRef<any>;
             mockDialog.open.and.returnValue(mockDialogRef);
             mockReconciliationService.reconcile.and.returnValue(of(mockReconciliation));
             mockReconciliationService.loadStatuses.and.returnValue(of([]));
@@ -169,7 +185,12 @@ describe('ReconciliationComponent', () => {
 
         it('disables reconcile button when hasUnprocessedTransactions regardless of importer status', () => {
             // Verify via getReconcileTooltip (template uses [disabled] which we test via tooltip)
-            const s = { ...baseStatus, hasBankImporter: false, hasUnprocessedTransactions: true, delta: 100 };
+            const s = {
+                ...baseStatus,
+                hasBankImporter: false,
+                hasUnprocessedTransactions: true,
+                delta: 100,
+            };
             expect(component.getReconcileTooltip(s)).toContain('unprocessed');
         });
     });

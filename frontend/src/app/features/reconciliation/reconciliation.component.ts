@@ -9,7 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import {
+    ConfirmationDialogComponent,
+    ConfirmationDialogData,
+} from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Router, RouterModule } from '@angular/router';
@@ -105,8 +108,7 @@ export class ReconciliationComponent implements OnInit {
         if (!status.accountId || !status.currencyId) return;
 
         const needsConfirmation =
-            !status.hasBankImporter &&
-            Math.abs(status.delta ?? 0) > RECONCILIATION_TOLERANCE;
+            !status.hasBankImporter && Math.abs(status.delta ?? 0) > RECONCILIATION_TOLERANCE;
 
         if (needsConfirmation) {
             const delta = Math.abs(status.delta ?? 0).toFixed(2);
@@ -211,9 +213,9 @@ export class ReconciliationComponent implements OnInit {
 
     getStatusClass(status: ReconciliationStatus): string {
         if (status.hasUnprocessedTransactions) return 'status-yellow';
-        // No-importer accounts are always in a valid state (large delta is expected and confirmable)
-        if (!status.hasBankImporter) return 'status-green';
-        if (Math.abs(status.delta || 0) > RECONCILIATION_TOLERANCE) return 'status-red';
+        if (Math.abs(status.delta || 0) > RECONCILIATION_TOLERANCE) {
+            return status.hasBankImporter ? 'status-red' : 'status-yellow';
+        }
         return 'status-green';
     }
 
