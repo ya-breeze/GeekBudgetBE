@@ -1,6 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import {
+    MatDialogRef,
+    MAT_DIALOG_DATA,
+    MatDialogModule,
+    MatDialog,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,10 +21,13 @@ import { AccountService } from '../../accounts/services/account.service';
 
 import { CurrencyService } from '../../currencies/services/currency.service';
 import { AccountSelectComponent } from '../../../shared/components/account-select/account-select.component';
+import { TemplatePickerDialogComponent } from '../../templates/template-picker/template-picker-dialog.component';
+import { TemplateService } from '../../templates/services/template.service';
 
 export interface TransactionFormDialogData {
     mode: 'create' | 'edit';
     transaction?: Transaction;
+    initialValues?: TransactionNoId;
 }
 
 @Component({
@@ -46,6 +54,8 @@ export class TransactionFormDialogComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
+    private readonly dialog = inject(MatDialog);
+    private readonly templateService = inject(TemplateService);
 
     protected readonly form: FormGroup;
     protected readonly isEditMode = this.data.mode === 'edit';
@@ -54,20 +64,21 @@ export class TransactionFormDialogComponent implements OnInit {
     protected readonly tags = signal<string[]>([]);
 
     constructor() {
+        const src = this.data.transaction ?? this.data.initialValues;
         this.form = this.fb.group({
-            date: [
-                this.data.transaction?.date ? new Date(this.data.transaction.date) : new Date(),
-                [Validators.required],
-            ],
-            description: [this.data.transaction?.description || '', [Validators.maxLength(500)]],
+            date: [src?.date ? new Date(src.date) : new Date(), [Validators.required]],
+            description: [src?.description || '', [Validators.maxLength(500)]],
             movements: this.fb.array([], [Validators.required, Validators.minLength(1)]),
-            partnerName: [this.data.transaction?.partnerName || ''],
-            partnerAccount: [this.data.transaction?.partnerAccount || ''],
-            place: [this.data.transaction?.place || ''],
+            partnerName: [src?.partnerName || ''],
+            partnerAccount: [
+                (this.data.transaction ?? (this.data.initialValues as any))?.partnerAccount || '',
+            ],
+            place: [src?.place || ''],
         });
 
-        if (this.data.transaction?.tags) {
-            this.tags.set([...this.data.transaction.tags]);
+        const tags = this.data.transaction?.tags ?? this.data.initialValues?.tags;
+        if (tags) {
+            this.tags.set([...tags]);
         }
     }
 
@@ -75,8 +86,9 @@ export class TransactionFormDialogComponent implements OnInit {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
 
-        if (this.data.transaction?.movements) {
-            this.data.transaction.movements.forEach((movement) => {
+        const movements = this.data.transaction?.movements ?? this.data.initialValues?.movements;
+        if (movements?.length) {
+            movements.forEach((movement) => {
                 this.addMovement(movement);
             });
         } else {
@@ -113,6 +125,26 @@ export class TransactionFormDialogComponent implements OnInit {
 
     removeTag(tag: string): void {
         this.tags.update((tags) => tags.filter((t) => t !== tag));
+    }
+
+    protected useTemplate(): void {
+        const dialogRef = this.dialog.open(TemplatePickerDialogComponent, {
+            width: '400px',
+            data: {},
+        });
+        dialogRef.afterClosed().subscribe((template) => {
+            if (template) {
+                const tx = this.templateService.templateToTransactionNoId(template);
+                this.form.patchValue({
+                    description: tx.description,
+                    place: tx.place,
+                    partnerName: tx.partnerName,
+                });
+                this.movements.clear();
+                (tx.movements ?? []).forEach((m) => this.addMovement(m));
+                this.tags.set(tx.tags ?? []);
+            }
+        });
     }
 
     onSubmit(): void {

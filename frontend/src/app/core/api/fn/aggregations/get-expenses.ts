@@ -46,7 +46,7 @@ export interface GetExpenses$Params {
     tags?: Array<string>;
 
     /**
-     * Filter by accounts
+     * Filter by specific accounts
      */
     accounts?: Array<string>;
 }
@@ -65,8 +65,8 @@ export function getExpenses(
         rb.query('granularity', params.granularity, {});
         rb.query('includeHidden', params.includeHidden, {});
         rb.query('groupBy', params.groupBy, {});
-        rb.query('tags', params.tags, {});
-        rb.query('accounts', params.accounts, {});
+        rb.query('tags', params.tags, { style: 'form', explode: true });
+        rb.query('accounts', params.accounts, { style: 'form', explode: true });
     }
 
     return http

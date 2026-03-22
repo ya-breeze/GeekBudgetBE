@@ -274,6 +274,21 @@ func (mr *MockStorageMockRecorder) CreateReconciliation(arg0, arg1 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateReconciliation", reflect.TypeOf((*MockStorage)(nil).CreateReconciliation), arg0, arg1)
 }
 
+// CreateTemplate mocks base method.
+func (m *MockStorage) CreateTemplate(arg0 string, arg1 *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTemplate", arg0, arg1)
+	ret0, _ := ret[0].(goserver.TransactionTemplate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTemplate indicates an expected call of CreateTemplate.
+func (mr *MockStorageMockRecorder) CreateTemplate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTemplate", reflect.TypeOf((*MockStorage)(nil).CreateTemplate), arg0, arg1)
+}
+
 // CreateTransaction mocks base method.
 func (m *MockStorage) CreateTransaction(arg0 string, arg1 goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
 	m.ctrl.T.Helper()
@@ -429,6 +444,20 @@ func (m *MockStorage) DeleteNotification(arg0, arg1 string) error {
 func (mr *MockStorageMockRecorder) DeleteNotification(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNotification", reflect.TypeOf((*MockStorage)(nil).DeleteNotification), arg0, arg1)
+}
+
+// DeleteTemplate mocks base method.
+func (m *MockStorage) DeleteTemplate(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTemplate", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTemplate indicates an expected call of DeleteTemplate.
+func (mr *MockStorageMockRecorder) DeleteTemplate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTemplate", reflect.TypeOf((*MockStorage)(nil).DeleteTemplate), arg0, arg1)
 }
 
 // DeleteTransaction mocks base method.
@@ -880,6 +909,21 @@ func (mr *MockStorageMockRecorder) GetReconciliationsForAccountAndCurrency(arg0,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReconciliationsForAccountAndCurrency", reflect.TypeOf((*MockStorage)(nil).GetReconciliationsForAccountAndCurrency), arg0, arg1, arg2)
 }
 
+// GetTemplates mocks base method.
+func (m *MockStorage) GetTemplates(arg0 string, arg1 *string) ([]goserver.TransactionTemplate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTemplates", arg0, arg1)
+	ret0, _ := ret[0].([]goserver.TransactionTemplate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTemplates indicates an expected call of GetTemplates.
+func (mr *MockStorageMockRecorder) GetTemplates(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplates", reflect.TypeOf((*MockStorage)(nil).GetTemplates), arg0, arg1)
+}
+
 // GetTransaction mocks base method.
 func (m *MockStorage) GetTransaction(arg0, arg1 string) (goserver.Transaction, error) {
 	m.ctrl.T.Helper()
@@ -1142,6 +1186,21 @@ func (m *MockStorage) UpdateMatcher(arg0, arg1 string, arg2 goserver.MatcherNoId
 func (mr *MockStorageMockRecorder) UpdateMatcher(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMatcher", reflect.TypeOf((*MockStorage)(nil).UpdateMatcher), arg0, arg1, arg2)
+}
+
+// UpdateTemplate mocks base method.
+func (m *MockStorage) UpdateTemplate(arg0, arg1 string, arg2 *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTemplate", arg0, arg1, arg2)
+	ret0, _ := ret[0].(goserver.TransactionTemplate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTemplate indicates an expected call of UpdateTemplate.
+func (mr *MockStorageMockRecorder) UpdateTemplate(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTemplate", reflect.TypeOf((*MockStorage)(nil).UpdateTemplate), arg0, arg1, arg2)
 }
 
 // UpdateTransaction mocks base method.

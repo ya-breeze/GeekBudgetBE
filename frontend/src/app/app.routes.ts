@@ -124,6 +124,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: 'templates',
+                loadComponent: () =>
+                    import('./features/templates/templates.component').then(
+                        (m) => m.TemplatesComponent,
+                    ),
+            },
+            {
                 path: 'budget',
                 loadComponent: () =>
                     import('./features/budget-items/budget-items.component').then(
