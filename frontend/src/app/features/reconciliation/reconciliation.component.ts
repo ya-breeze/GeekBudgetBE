@@ -7,8 +7,12 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {
+    ConfirmationDialogComponent,
+    ConfirmationDialogData,
+} from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Router, RouterModule } from '@angular/router';
@@ -45,6 +49,7 @@ export class ReconciliationComponent implements OnInit {
     private reconciliationService = inject(ReconciliationService);
     private snackBar = inject(MatSnackBar);
     private router = inject(Router);
+    private dialog = inject(MatDialog);
 
     statuses: ReconciliationStatus[] = [];
     loading = true;
@@ -91,6 +96,9 @@ export class ReconciliationComponent implements OnInit {
         }
         const delta = Math.abs(element.delta || 0);
         if (delta > RECONCILIATION_TOLERANCE) {
+            if (!element.hasBankImporter) {
+                return `Balance differs by ${delta.toFixed(2)} from last reconciliation — click to confirm`;
+            }
             return `Delta is too large to reconcile (${delta.toFixed(2)})`;
         }
         return 'Mark as Reconciled';
@@ -99,10 +107,34 @@ export class ReconciliationComponent implements OnInit {
     reconcile(status: ReconciliationStatus): void {
         if (!status.accountId || !status.currencyId) return;
 
+        const needsConfirmation =
+            !status.hasBankImporter && Math.abs(status.delta ?? 0) > RECONCILIATION_TOLERANCE;
+
+        if (needsConfirmation) {
+            const delta = Math.abs(status.delta ?? 0).toFixed(2);
+            const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+                data: {
+                    title: 'Confirm Balance',
+                    message: `The current balance differs from the last reconciled balance by ${delta}. This exceeds the normal tolerance. Are you sure the current balance is correct?`,
+                    confirmText: 'Confirm',
+                    cancelText: 'Cancel',
+                } as ConfirmationDialogData,
+            });
+            dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+                if (confirmed) {
+                    this.doReconcile(status);
+                }
+            });
+        } else {
+            this.doReconcile(status);
+        }
+    }
+
+    private doReconcile(status: ReconciliationStatus): void {
         this.reconciliationService
-            .reconcile(status.accountId, {
-                currencyId: status.currencyId,
-                balance: 0, // Use account balance
+            .reconcile(status.accountId!, {
+                currencyId: status.currencyId!,
+                balance: 0,
             })
             .subscribe({
                 next: () => {
@@ -181,7 +213,9 @@ export class ReconciliationComponent implements OnInit {
 
     getStatusClass(status: ReconciliationStatus): string {
         if (status.hasUnprocessedTransactions) return 'status-yellow';
-        if (Math.abs(status.delta || 0) > RECONCILIATION_TOLERANCE) return 'status-red';
+        if (Math.abs(status.delta || 0) > RECONCILIATION_TOLERANCE) {
+            return status.hasBankImporter ? 'status-red' : 'status-yellow';
+        }
         return 'status-green';
     }
 

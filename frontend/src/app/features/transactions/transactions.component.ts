@@ -19,6 +19,9 @@ import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { TransactionService } from './services/transaction.service';
 import { Transaction } from '../../core/api/models/transaction';
 import { TransactionFormDialogComponent } from './transaction-form-dialog/transaction-form-dialog.component';
+import { TransactionNoId } from '../../core/api/models/transaction-no-id';
+import { TemplatePickerDialogComponent } from '../templates/template-picker/template-picker-dialog.component';
+import { TemplateService } from '../templates/services/template.service';
 import { AccountService } from '../accounts/services/account.service';
 import { Account } from '../../core/api/models/account';
 import { CurrencyService } from '../currencies/services/currency.service';
@@ -67,6 +70,7 @@ export class TransactionsComponent implements OnInit {
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
     private readonly matcherService = inject(MatcherService);
+    private readonly templateService = inject(TemplateService);
     private readonly dialog = inject(MatDialog);
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
@@ -395,13 +399,13 @@ export class TransactionsComponent implements OnInit {
         this.loadData();
     }
 
-    openCreateDialog(): void {
+    openCreateDialog(initialValues?: TransactionNoId): void {
         const dialogRef = this.dialog.open(TransactionFormDialogComponent, {
             width: '90vw',
             maxWidth: '1200px',
             height: 'auto',
             maxHeight: '90vh',
-            data: { mode: 'create' },
+            data: { mode: 'create', initialValues },
         });
 
         dialogRef.afterClosed().subscribe((result) => {
@@ -419,6 +423,21 @@ export class TransactionsComponent implements OnInit {
                         });
                     },
                 });
+            }
+        });
+    }
+
+    protected newFromTemplate(): void {
+        const accountIds = this.selectedAccountIds();
+        const accountId = accountIds.length === 1 ? accountIds[0] : undefined;
+        const dialogRef = this.dialog.open(TemplatePickerDialogComponent, {
+            width: '400px',
+            data: { accountId },
+        });
+        dialogRef.afterClosed().subscribe((template) => {
+            if (template) {
+                const txNoId = this.templateService.templateToTransactionNoId(template);
+                this.openCreateDialog(txNoId);
             }
         });
     }

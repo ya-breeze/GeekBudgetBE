@@ -126,6 +126,13 @@ type MatcherStorage interface {
 	DeleteMatcher(userID string, id string) error
 }
 
+type TemplateStorage interface {
+	CreateTemplate(userID string, t *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error)
+	GetTemplates(userID string, accountID *string) ([]goserver.TransactionTemplate, error)
+	UpdateTemplate(userID string, id string, t *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error)
+	DeleteTemplate(userID string, id string) error
+}
+
 type RateStorage interface {
 	SaveCNBRates(rates map[string]decimal.Decimal, day time.Time) error
 	GetCNBRates(day time.Time) (map[string]decimal.Decimal, error)
@@ -178,6 +185,7 @@ type Storage interface {
 	TransactionStorage
 	BankImporterStorage
 	MatcherStorage
+	TemplateStorage
 	RateStorage
 	BudgetItemStorage
 	ImageStorage

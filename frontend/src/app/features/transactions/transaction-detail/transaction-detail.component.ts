@@ -9,7 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TransactionService } from '../services/transaction.service';
 import { MergedTransactionService } from '../../merged-transactions/services/merged-transaction.service';
@@ -26,6 +26,11 @@ import {
     TransactionFormDialogData,
 } from '../transaction-form-dialog/transaction-form-dialog.component';
 import { TransactionNoId } from '../../../core/api/models/transaction-no-id';
+import {
+    TemplateEditDialogComponent,
+    TemplateEditDialogData,
+    TemplateInitialValues,
+} from '../../templates/template-edit-dialog/template-edit-dialog.component';
 
 @Component({
     selector: 'app-transaction-detail',
@@ -41,6 +46,7 @@ import { TransactionNoId } from '../../../core/api/models/transaction-no-id';
         MatProgressSpinnerModule,
         MatDividerModule,
         MatTooltipModule,
+        MatDialogModule,
         ImageUrlPipe,
         AccountDisplayComponent,
     ],
@@ -182,6 +188,27 @@ export class TransactionDetailComponent implements OnInit {
                 });
             }
         });
+    }
+
+    protected saveAsTemplate(): void {
+        const tx = this.displayedTransaction();
+        if (!tx) return;
+        this.dialog.open<TemplateEditDialogComponent, TemplateEditDialogData>(
+            TemplateEditDialogComponent,
+            {
+                width: '640px',
+                data: {
+                    initialValues: {
+                        name: tx.description || '',
+                        description: tx.description,
+                        place: tx.place,
+                        partnerName: tx.partnerName,
+                        movements: tx.movements,
+                    } as TemplateInitialValues,
+                },
+                disableClose: true,
+            },
+        );
     }
 
     viewMergedTransaction(id: string): void {

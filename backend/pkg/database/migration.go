@@ -29,6 +29,7 @@ func autoMigrateModels(db *gorm.DB) error {
 		&models.TransactionDuplicate{},
 
 		&models.MergedTransaction{},
+		&models.TransactionTemplate{},
 	); err != nil {
 		return err
 	}

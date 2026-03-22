@@ -1,6 +1,16 @@
 <h2 mat-dialog-title>{{ isEditMode ? 'Edit Transaction' : 'Create Transaction' }}</h2>
 
 <mat-dialog-content>
+    @if (!isEditMode) {
+        <button
+            mat-stroked-button
+            type="button"
+            (click)="useTemplate()"
+            style="margin-bottom: 16px"
+        >
+            <mat-icon>content_copy</mat-icon> Use template
+        </button>
+    }
     <form [formGroup]="form" class="transaction-form">
         <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">

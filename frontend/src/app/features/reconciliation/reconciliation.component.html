@@ -67,7 +67,8 @@
             <td mat-cell *matCellDef="let element">
                 <span
                     [class.text-danger]="
-                        (element.delta || 0) > 0.01 || (element.delta || 0) < -0.01
+                        element.hasBankImporter &&
+                        ((element.delta || 0) > 0.01 || (element.delta || 0) < -0.01)
                     "
                     [class.text-success]="
                         (element.delta || 0) <= 0.01 && (element.delta || 0) >= -0.01
@@ -123,9 +124,9 @@
                         color="primary"
                         *ngIf="element.hasBankImporter || element.isManualReconciliationEnabled"
                         [disabled]="
-                            (element.delta || 0) > 0.01 ||
-                            (element.delta || 0) < -0.01 ||
-                            element.hasUnprocessedTransactions
+                            element.hasUnprocessedTransactions ||
+                            (element.hasBankImporter &&
+                                ((element.delta || 0) > 0.01 || (element.delta || 0) < -0.01))
                         "
                         (click)="reconcile(element)"
                     >

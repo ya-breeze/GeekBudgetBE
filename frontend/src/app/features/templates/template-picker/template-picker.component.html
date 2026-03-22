@@ -1,0 +1,29 @@
+<div class="template-picker">
+    <mat-form-field appearance="outline" class="search-field" style="width: 100%">
+        <mat-label>Search templates</mat-label>
+        <input
+            matInput
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Type to filter..."
+        />
+        <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    @if (loading()) {
+        <mat-spinner diameter="32" />
+    } @else if (filteredTemplates().length === 0) {
+        <p style="color: var(--mat-sys-on-surface-variant); padding: 8px 0">No templates found.</p>
+    } @else {
+        <mat-selection-list [multiple]="false">
+            @for (template of filteredTemplates(); track template.id) {
+                <mat-list-option (click)="select(template)">
+                    <span matListItemTitle>{{ template.name }}</span>
+                    @if (template.description) {
+                        <span matListItemLine>{{ template.description }}</span>
+                    }
+                </mat-list-option>
+            }
+        </mat-selection-list>
+    }
+</div>

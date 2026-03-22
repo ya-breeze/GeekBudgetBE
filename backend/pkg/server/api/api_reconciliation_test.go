@@ -197,4 +197,116 @@ var _ = Describe("Reconciliation API", func() {
 			Expect(sMan.IsManualReconciliationEnabled).To(BeTrue())
 		})
 	})
+
+	Describe("ReconcileAccount", func() {
+		var importerAccount goserver.Account
+		var importerEntry goserver.BankImporter
+
+		BeforeEach(func() {
+			importerAccount = goserver.Account{
+				Id:   "acc_importer",
+				Name: "Bank",
+				Type: "asset",
+				BankInfo: goserver.BankAccountInfo{
+					Balances: []goserver.BankAccountInfoBalancesInner{
+						{CurrencyId: "USD", ClosingBalance: decimal.NewFromInt(1000)},
+					},
+				},
+			}
+			importerEntry = goserver.BankImporter{AccountId: "acc_importer"}
+		})
+
+		It("reconciles no-importer account with large delta — returns 200 with IsManual=true and delta=0 in history", func() {
+			mockStorage.EXPECT().GetBankImporters("user1").Return([]goserver.BankImporter{}, nil)
+			mockStorage.EXPECT().GetAccountBalance("user1", "acc_noimporter", "USD").
+				Return(decimal.NewFromInt(500), nil)
+
+			mockStorage.EXPECT().CreateReconciliation("user1", gomock.Any()).
+				DoAndReturn(func(_ string, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error) {
+					Expect(rec.ReconciledBalance).To(Equal(decimal.NewFromInt(500)))
+					Expect(rec.ExpectedBalance).To(Equal(decimal.NewFromInt(500))) // delta=0 in history
+					Expect(rec.IsManual).To(BeTrue())
+					return goserver.Reconciliation{}, nil
+				})
+
+			resp, err := sut.ReconcileAccount(ctx, "acc_noimporter", goserver.ReconcileAccountRequest{
+				CurrencyId: "USD",
+				Balance:    decimal.NewFromInt(0), // frontend always sends 0 — "use app balance"
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusOK))
+		})
+
+		It("reconciles no-importer account with balance=0 in request — IsManual=true even if fetched balance is zero", func() {
+			mockStorage.EXPECT().GetBankImporters("user1").Return([]goserver.BankImporter{}, nil)
+			mockStorage.EXPECT().GetAccountBalance("user1", "acc_noimporter", "USD").
+				Return(decimal.NewFromInt(0), nil) // zero balance
+
+			mockStorage.EXPECT().CreateReconciliation("user1", gomock.Any()).
+				DoAndReturn(func(_ string, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error) {
+					Expect(rec.IsManual).To(BeTrue()) // must be true even when balance is zero
+					Expect(rec.ReconciledBalance.IsZero()).To(BeTrue())
+					Expect(rec.ExpectedBalance.IsZero()).To(BeTrue())
+					return goserver.Reconciliation{}, nil
+				})
+
+			resp, err := sut.ReconcileAccount(ctx, "acc_noimporter", goserver.ReconcileAccountRequest{
+				CurrencyId: "USD",
+				Balance:    decimal.NewFromInt(0),
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusOK))
+		})
+
+		It("reconciles no-importer account within tolerance — returns 200 (happy path unchanged)", func() {
+			mockStorage.EXPECT().GetBankImporters("user1").Return([]goserver.BankImporter{}, nil)
+
+			mockStorage.EXPECT().CreateReconciliation("user1", gomock.Any()).
+				DoAndReturn(func(_ string, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error) {
+					Expect(rec.IsManual).To(BeTrue())
+					Expect(rec.ReconciledBalance).To(Equal(decimal.NewFromFloat(500.005)))
+					Expect(rec.ExpectedBalance).To(Equal(decimal.NewFromFloat(500.005))) // no-importer: expectedBalance == balance
+					return goserver.Reconciliation{}, nil
+				})
+
+			resp, err := sut.ReconcileAccount(ctx, "acc_noimporter", goserver.ReconcileAccountRequest{
+				CurrencyId: "USD",
+				Balance:    decimal.NewFromFloat(500.005), // within tolerance (0.01)
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusOK))
+		})
+
+		It("blocks importer account with large delta — returns 400 (existing behavior preserved)", func() {
+			mockStorage.EXPECT().GetBankImporters("user1").Return([]goserver.BankImporter{importerEntry}, nil)
+			mockStorage.EXPECT().GetAccount("user1", "acc_importer").Return(importerAccount, nil)
+			// Bank balance is 1000, request balance is 500 → delta = 500 → 400
+			resp, err := sut.ReconcileAccount(ctx, "acc_importer", goserver.ReconcileAccountRequest{
+				CurrencyId: "USD",
+				Balance:    decimal.NewFromInt(500),
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusBadRequest))
+		})
+
+		It("blocks account with importer record but no BankInfo.Balances (never run) — treated as has-importer, returns 400", func() {
+			accountNoBankInfo := goserver.Account{
+				Id:   "acc_importer",
+				Name: "Bank",
+				Type: "asset",
+				BankInfo: goserver.BankAccountInfo{
+					Balances: []goserver.BankAccountInfoBalancesInner{}, // no balance data from importer
+				},
+			}
+			mockStorage.EXPECT().GetBankImporters("user1").Return([]goserver.BankImporter{importerEntry}, nil)
+			mockStorage.EXPECT().GetAccount("user1", "acc_importer").Return(accountNoBankInfo, nil)
+			// expectedBalance = 0 (no balance entries), balance = 500 → delta = 500 → 400
+			resp, err := sut.ReconcileAccount(ctx, "acc_importer", goserver.ReconcileAccountRequest{
+				CurrencyId: "USD",
+				Balance:    decimal.NewFromInt(500),
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusBadRequest))
+		})
+	})
 })

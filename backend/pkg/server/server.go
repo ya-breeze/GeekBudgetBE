@@ -100,6 +100,7 @@ func createControllers(logger *slog.Logger, cfg *config.Config, db database.Stor
 		BudgetItemsAPIService:             api.NewBudgetItemsAPIService(logger, db),
 		MergedTransactionsAPIService:      api.NewMergedTransactionsAPIService(logger, db),
 		ReconciliationAPIService:          api.NewReconciliationAPIServiceImpl(logger, db),
+		TemplatesAPIService:               api.NewTemplatesAPIServiceImpl(logger, db),
 	}
 }
 

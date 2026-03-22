@@ -16,6 +16,7 @@ api_matchers.go
 api_merged_transactions.go
 api_notifications.go
 api_reconciliation.go
+api_templates.go
 api_transactions.go
 api_unprocessed_transactions.go
 api_user.go
@@ -77,8 +78,11 @@ docs/Reconciliation.md
 docs/ReconciliationAPI.md
 docs/ReconciliationNoId.md
 docs/ReconciliationStatus.md
+docs/TemplatesAPI.md
 docs/Transaction.md
 docs/TransactionNoID.md
+docs/TransactionTemplate.md
+docs/TransactionTemplateNoId.md
 docs/TransactionsAPI.md
 docs/UnprocessedTransaction.md
 docs/UnprocessedTransactionsAPI.md
@@ -133,6 +137,8 @@ model_reconciliation_no_id.go
 model_reconciliation_status.go
 model_transaction.go
 model_transaction_no_id.go
+model_transaction_template.go
+model_transaction_template_no_id.go
 model_unprocessed_transaction.go
 model_update_matcher200_response.go
 model_user.go
@@ -152,6 +158,7 @@ test/api_matchers_test.go
 test/api_merged_transactions_test.go
 test/api_notifications_test.go
 test/api_reconciliation_test.go
+test/api_templates_test.go
 test/api_transactions_test.go
 test/api_unprocessed_transactions_test.go
 test/api_user_test.go
