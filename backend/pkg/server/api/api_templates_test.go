@@ -81,6 +81,17 @@ var _ = Describe("TemplatesAPI", func() {
 		})
 	})
 
+	Describe("UpdateTemplate", func() {
+		It("returns 500 when userID is missing from context", func() {
+			resp, err := handler.UpdateTemplate(context.Background(), "some-id", goserver.TransactionTemplateNoId{
+				Name:      "Rent",
+				Movements: []goserver.Movement{{CurrencyId: "c1", AccountId: "a1"}},
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Code).To(Equal(http.StatusInternalServerError))
+		})
+	})
+
 	Describe("DeleteTemplate", func() {
 		It("returns 204 on success", func() {
 			mockDB.EXPECT().DeleteTemplate("user1", "tpl-1").Return(nil)
