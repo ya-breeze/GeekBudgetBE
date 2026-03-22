@@ -1,14 +1,14 @@
 package models
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
+	"gorm.io/gorm"
 )
 
 type TransactionTemplate struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
+	gorm.Model
+
 	Name        string
 	Description string
 	Place       string
@@ -16,9 +16,9 @@ type TransactionTemplate struct {
 	PartnerName string
 	Extra       string
 	Movements   []goserver.Movement `gorm:"serializer:json"`
-	UserID      string              `gorm:"index"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+
+	UserID string    `gorm:"index"`
+	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (t *TransactionTemplate) FromDB() goserver.TransactionTemplate {
@@ -34,25 +34,25 @@ func (t *TransactionTemplate) FromDB() goserver.TransactionTemplate {
 	}
 }
 
-func TemplateToDB(t *goserver.TransactionTemplateNoId, userID string) *TransactionTemplate {
-	tags := t.Tags
+func TemplateToDB(t goserver.TransactionTemplateNoIdInterface, userID string) *TransactionTemplate {
+	tags := t.GetTags()
 	if tags == nil {
 		tags = make([]string, 0)
 	}
 
-	movements := t.Movements
+	movements := t.GetMovements()
 	if movements == nil {
 		movements = make([]goserver.Movement, 0)
 	}
 
 	return &TransactionTemplate{
 		UserID:      userID,
-		Name:        t.Name,
-		Description: t.Description,
-		Place:       t.Place,
+		Name:        t.GetName(),
+		Description: t.GetDescription(),
+		Place:       t.GetPlace(),
 		Tags:        tags,
-		PartnerName: t.PartnerName,
-		Extra:       t.Extra,
+		PartnerName: t.GetPartnerName(),
+		Extra:       t.GetExtra(),
 		Movements:   movements,
 	}
 }
