@@ -55,6 +55,11 @@ func NewTransactionsAPIController(s TransactionsAPIServicer, opts ...Transaction
 // Routes returns all the api routes for the TransactionsAPIController
 func (c *TransactionsAPIController) Routes() Routes {
 	return Routes{
+		"ParseTransaction": Route{
+			strings.ToUpper("Post"),
+			"/v1/transactions/parse",
+			c.ParseTransaction,
+		},
 		"GetTransactions": Route{
 			strings.ToUpper("Get"),
 			"/v1/transactions",
@@ -86,6 +91,33 @@ func (c *TransactionsAPIController) Routes() Routes {
 			c.MergeTransactions,
 		},
 	}
+}
+
+// ParseTransaction - parse natural-language text into a transaction
+func (c *TransactionsAPIController) ParseTransaction(w http.ResponseWriter, r *http.Request) {
+	transactionParseRequestParam := TransactionParseRequest{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&transactionParseRequestParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	if err := AssertTransactionParseRequestRequired(transactionParseRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	if err := AssertTransactionParseRequestConstraints(transactionParseRequestParam); err != nil {
+		c.errorHandler(w, r, err, nil)
+		return
+	}
+	result, err := c.service.ParseTransaction(r.Context(), transactionParseRequestParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
 // GetTransactions - get all transactions which matches given filters

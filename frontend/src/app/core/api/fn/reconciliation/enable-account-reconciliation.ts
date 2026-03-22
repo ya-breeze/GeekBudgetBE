@@ -11,30 +11,25 @@ import { EnableReconciliationRequest } from '../../models/enable-reconciliation-
 import { Reconciliation } from '../../models/reconciliation';
 
 export interface EnableAccountReconciliation$Params {
-    id: string;
-    body: EnableReconciliationRequest;
+  id: string;
+      body: EnableReconciliationRequest
 }
 
-export function enableAccountReconciliation(
-    http: HttpClient,
-    rootUrl: string,
-    params: EnableAccountReconciliation$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Reconciliation>> {
-    const rb = new RequestBuilder(rootUrl, enableAccountReconciliation.PATH, 'post');
-    if (params) {
-        rb.path('id', params.id, {});
-        rb.body(params.body, 'application/json');
-    }
+export function enableAccountReconciliation(http: HttpClient, rootUrl: string, params: EnableAccountReconciliation$Params, context?: HttpContext): Observable<StrictHttpResponse<Reconciliation>> {
+  const rb = new RequestBuilder(rootUrl, enableAccountReconciliation.PATH, 'post');
+  if (params) {
+    rb.path('id', params.id, {});
+    rb.body(params.body, 'application/json');
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Reconciliation>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Reconciliation>;
+    })
+  );
 }
 
 enableAccountReconciliation.PATH = '/v1/accounts/{id}/enable-reconciliation';

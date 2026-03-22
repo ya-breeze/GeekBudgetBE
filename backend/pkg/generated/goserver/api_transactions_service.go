@@ -22,6 +22,8 @@ import (
 
 // TransactionsAPIService is an interface that defines the logic for the TransactionsAPIServicer
 type TransactionsAPIService interface {
+	// ParseTransaction - parse natural-language text into a transaction
+	ParseTransaction(ctx context.Context, transactionParseRequest TransactionParseRequest) (ImplResponse, error)
 	// GetTransactions - get all transactions which matches given filters
 	GetTransactions(ctx context.Context, description string, amountFrom decimal.Decimal, amountTo decimal.Decimal, dateFrom time.Time, dateTo time.Time, onlySuspicious bool) (ImplResponse, error)
 	// CreateTransaction - create new transaction
@@ -45,6 +47,17 @@ type TransactionsAPIServiceImpl struct {
 // NewTransactionsAPIService creates a default api service
 func NewTransactionsAPIService() TransactionsAPIService {
 	return &TransactionsAPIServiceImpl{}
+}
+
+// ParseTransaction - parse natural-language text into a transaction
+func (s *TransactionsAPIServiceImpl) ParseTransaction(ctx context.Context, transactionParseRequest TransactionParseRequest) (ImplResponse, error) {
+	// TODO - update ParseTransaction with the required logic for this service method.
+	// Add api_transactions_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	// TODO: Uncomment the next line to return response Response(200, TransactionParseResponse{}) or use other options such as http.Ok ...
+	// return Response(200, TransactionParseResponse{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("ParseTransaction method not implemented")
 }
 
 // GetTransactions - get all transactions which matches given filters

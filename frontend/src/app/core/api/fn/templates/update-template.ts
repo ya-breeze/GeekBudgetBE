@@ -11,30 +11,29 @@ import { TransactionTemplate } from '../../models/transaction-template';
 import { TransactionTemplateNoId } from '../../models/transaction-template-no-id';
 
 export interface UpdateTemplate$Params {
-    id: string;
-    body: TransactionTemplateNoId;
+
+/**
+ * ID of the template
+ */
+  id: string;
+      body: TransactionTemplateNoId
 }
 
-export function updateTemplate(
-    http: HttpClient,
-    rootUrl: string,
-    params: UpdateTemplate$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<TransactionTemplate>> {
-    const rb = new RequestBuilder(rootUrl, updateTemplate.PATH, 'put');
-    if (params) {
-        rb.path('id', params.id, {});
-        rb.body(params.body, 'application/json');
-    }
+export function updateTemplate(http: HttpClient, rootUrl: string, params: UpdateTemplate$Params, context?: HttpContext): Observable<StrictHttpResponse<TransactionTemplate>> {
+  const rb = new RequestBuilder(rootUrl, updateTemplate.PATH, 'put');
+  if (params) {
+    rb.path('id', params.id, {});
+    rb.body(params.body, 'application/json');
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<TransactionTemplate>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<TransactionTemplate>;
+    })
+  );
 }
 
 updateTemplate.PATH = '/v1/templates/{id}';

@@ -51,6 +51,8 @@ export type { DownloadBankImporterFile$Params } from './fn/bank-importers/downlo
 export { downloadBankImporterFile } from './fn/bank-importers/download-bank-importer-file';
 export type { DeleteBankImporterFile$Params } from './fn/bank-importers/delete-bank-importer-file';
 export { deleteBankImporterFile } from './fn/bank-importers/delete-bank-importer-file';
+export type { ParseTransaction$Params } from './fn/transactions/parse-transaction';
+export { parseTransaction } from './fn/transactions/parse-transaction';
 export type { GetTransactions$Params } from './fn/transactions/get-transactions';
 export { getTransactions } from './fn/transactions/get-transactions';
 export type { CreateTransaction$Params } from './fn/transactions/create-transaction';

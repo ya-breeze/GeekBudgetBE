@@ -10,73 +10,69 @@ import { RequestBuilder } from '../../request-builder';
 import { Aggregation } from '../../models/aggregation';
 
 export interface GetExpenses$Params {
-    /**
-     * Uses transactions from this date
-     */
-    from?: string;
 
-    /**
-     * Uses transactions to this date
-     */
-    to?: string;
+/**
+ * Uses transactions from this date
+ */
+  from?: string;
 
-    /**
-     * Converts all transactions to this currency
-     */
-    outputCurrencyId?: string;
+/**
+ * Uses transactions to this date
+ */
+  to?: string;
 
-    /**
-     * Granularity of expenses (month or year)
-     */
-    granularity?: 'month' | 'year';
+/**
+ * Converts all transactions to this currency
+ */
+  outputCurrencyId?: string;
 
-    /**
-     * If true, include hidden accounts
-     */
-    includeHidden?: boolean;
+/**
+ * Granularity of expenses (month or year)
+ */
+  granularity?: 'month' | 'year';
 
-    /**
-     * Field to group results by (account or tag)
-     */
-    groupBy?: 'account' | 'tag';
+/**
+ * If true, include hidden accounts
+ */
+  includeHidden?: boolean;
 
-    /**
-     * Filter by distinct tags
-     */
-    tags?: Array<string>;
+/**
+ * Field to group results by (account or tag)
+ */
+  groupBy?: 'account' | 'tag';
 
-    /**
-     * Filter by specific accounts
-     */
-    accounts?: Array<string>;
+/**
+ * Filter by distinct tags
+ */
+  tags?: Array<string>;
+
+/**
+ * Filter by specific accounts
+ */
+  accounts?: Array<string>;
 }
 
-export function getExpenses(
-    http: HttpClient,
-    rootUrl: string,
-    params?: GetExpenses$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<Aggregation>> {
-    const rb = new RequestBuilder(rootUrl, getExpenses.PATH, 'get');
-    if (params) {
-        rb.query('from', params.from, {});
-        rb.query('to', params.to, {});
-        rb.query('outputCurrencyId', params.outputCurrencyId, {});
-        rb.query('granularity', params.granularity, {});
-        rb.query('includeHidden', params.includeHidden, {});
-        rb.query('groupBy', params.groupBy, {});
-        rb.query('tags', params.tags, { style: 'form', explode: true });
-        rb.query('accounts', params.accounts, { style: 'form', explode: true });
-    }
+export function getExpenses(http: HttpClient, rootUrl: string, params?: GetExpenses$Params, context?: HttpContext): Observable<StrictHttpResponse<Aggregation>> {
+  const rb = new RequestBuilder(rootUrl, getExpenses.PATH, 'get');
+  if (params) {
+    rb.query('from', params.from, {});
+    rb.query('to', params.to, {});
+    rb.query('outputCurrencyId', params.outputCurrencyId, {});
+    rb.query('granularity', params.granularity, {});
+    rb.query('includeHidden', params.includeHidden, {});
+    rb.query('groupBy', params.groupBy, {});
+    rb.query('tags', params.tags, {"style":"form","explode":true});
+    rb.query('accounts', params.accounts, {"style":"form","explode":true});
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<Aggregation>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<Aggregation>;
+    })
+  );
 }
 
 getExpenses.PATH = '/v1/expenses';

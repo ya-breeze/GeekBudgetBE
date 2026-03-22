@@ -87,6 +87,8 @@ go/model_reconciliation_no_id.go
 go/model_reconciliation_status.go
 go/model_transaction.go
 go/model_transaction_no_id.go
+go/model_transaction_parse_request.go
+go/model_transaction_parse_response.go
 go/model_transaction_template.go
 go/model_transaction_template_no_id.go
 go/model_unprocessed_transaction.go

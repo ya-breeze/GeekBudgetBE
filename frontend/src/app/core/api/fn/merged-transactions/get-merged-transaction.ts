@@ -10,31 +10,27 @@ import { RequestBuilder } from '../../request-builder';
 import { MergedTransaction } from '../../models/merged-transaction';
 
 export interface GetMergedTransaction$Params {
-    /**
-     * Original ID of the transaction that was merged
-     */
-    id: string;
+
+/**
+ * Original ID of the transaction that was merged
+ */
+  id: string;
 }
 
-export function getMergedTransaction(
-    http: HttpClient,
-    rootUrl: string,
-    params: GetMergedTransaction$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<MergedTransaction>> {
-    const rb = new RequestBuilder(rootUrl, getMergedTransaction.PATH, 'get');
-    if (params) {
-        rb.path('id', params.id, {});
-    }
+export function getMergedTransaction(http: HttpClient, rootUrl: string, params: GetMergedTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<MergedTransaction>> {
+  const rb = new RequestBuilder(rootUrl, getMergedTransaction.PATH, 'get');
+  if (params) {
+    rb.path('id', params.id, {});
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<MergedTransaction>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<MergedTransaction>;
+    })
+  );
 }
 
 getMergedTransaction.PATH = '/v1/mergedTransactions/{id}';

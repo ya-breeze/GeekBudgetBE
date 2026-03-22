@@ -608,6 +608,26 @@ paths:
         "200":
           description: no body
 
+  /v1/transactions/parse:
+    post:
+      tags:
+        - transactions
+      summary: parse natural-language text into a transaction
+      operationId: parseTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionParseRequest"
+      responses:
+        "200":
+          description: parsed transaction with warnings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionParseResponse"
+
   /v1/transactions:
     get:
       tags:
@@ -2732,3 +2752,27 @@ components:
         - date
         - description
         - amount
+
+    TransactionParseRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: "Natural-language transaction description"
+          example: "2026/03/22 100 CZK from FIO savings to Others"
+
+    TransactionParseResponse:
+      type: object
+      required:
+        - transaction
+        - warnings
+      properties:
+        transaction:
+          $ref: "#/components/schemas/TransactionNoID"
+        warnings:
+          type: array
+          items:
+            type: string
+          description: "Human-readable warnings for fields that could not be parsed or were ambiguously matched"

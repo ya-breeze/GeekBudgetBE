@@ -11,28 +11,23 @@ import { TransactionTemplate } from '../../models/transaction-template';
 import { TransactionTemplateNoId } from '../../models/transaction-template-no-id';
 
 export interface CreateTemplate$Params {
-    body: TransactionTemplateNoId;
+      body: TransactionTemplateNoId
 }
 
-export function createTemplate(
-    http: HttpClient,
-    rootUrl: string,
-    params: CreateTemplate$Params,
-    context?: HttpContext,
-): Observable<StrictHttpResponse<TransactionTemplate>> {
-    const rb = new RequestBuilder(rootUrl, createTemplate.PATH, 'post');
-    if (params) {
-        rb.body(params.body, 'application/json');
-    }
+export function createTemplate(http: HttpClient, rootUrl: string, params: CreateTemplate$Params, context?: HttpContext): Observable<StrictHttpResponse<TransactionTemplate>> {
+  const rb = new RequestBuilder(rootUrl, createTemplate.PATH, 'post');
+  if (params) {
+    rb.body(params.body, 'application/json');
+  }
 
-    return http
-        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
-        .pipe(
-            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-            map((r: HttpResponse<any>) => {
-                return r as StrictHttpResponse<TransactionTemplate>;
-            }),
-        );
+  return http.request(
+    rb.build({ responseType: 'json', accept: 'application/json', context })
+  ).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<TransactionTemplate>;
+    })
+  );
 }
 
 createTemplate.PATH = '/v1/templates';

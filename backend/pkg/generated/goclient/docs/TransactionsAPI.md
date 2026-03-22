@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**GetTransaction**](TransactionsAPI.md#GetTransaction) | **Get** /v1/transactions/{id} | get transaction
 [**GetTransactions**](TransactionsAPI.md#GetTransactions) | **Get** /v1/transactions | get all transactions which matches given filters
 [**MergeTransactions**](TransactionsAPI.md#MergeTransactions) | **Post** /v1/transactions/merge | merge two transactions
+[**ParseTransaction**](TransactionsAPI.md#ParseTransaction) | **Post** /v1/transactions/parse | parse natural-language text into a transaction
 [**UpdateTransaction**](TransactionsAPI.md#UpdateTransaction) | **Put** /v1/transactions/{id} | update transaction
 
 
@@ -336,6 +337,70 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**Transaction**](Transaction.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## ParseTransaction
+
+> TransactionParseResponse ParseTransaction(ctx).TransactionParseRequest(transactionParseRequest).Execute()
+
+parse natural-language text into a transaction
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	transactionParseRequest := *openapiclient.NewTransactionParseRequest("2026/03/22 100 CZK from FIO savings to Others") // TransactionParseRequest | 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.TransactionsAPI.ParseTransaction(context.Background()).TransactionParseRequest(transactionParseRequest).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `TransactionsAPI.ParseTransaction``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `ParseTransaction`: TransactionParseResponse
+	fmt.Fprintf(os.Stdout, "Response from `TransactionsAPI.ParseTransaction`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiParseTransactionRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **transactionParseRequest** | [**TransactionParseRequest**](TransactionParseRequest.md) |  | 
+
+### Return type
+
+[**TransactionParseResponse**](TransactionParseResponse.md)
 
 ### Authorization
 

@@ -81,6 +81,8 @@ docs/ReconciliationStatus.md
 docs/TemplatesAPI.md
 docs/Transaction.md
 docs/TransactionNoID.md
+docs/TransactionParseRequest.md
+docs/TransactionParseResponse.md
 docs/TransactionTemplate.md
 docs/TransactionTemplateNoId.md
 docs/TransactionsAPI.md
@@ -137,6 +139,8 @@ model_reconciliation_no_id.go
 model_reconciliation_status.go
 model_transaction.go
 model_transaction_no_id.go
+model_transaction_parse_request.go
+model_transaction_parse_response.go
 model_transaction_template.go
 model_transaction_template_no_id.go
 model_unprocessed_transaction.go

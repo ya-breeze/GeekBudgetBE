@@ -166,6 +166,7 @@ type TemplatesAPIRouter interface {
 // The TransactionsAPIRouter implementation should parse necessary information from the http request,
 // pass the data to a TransactionsAPIServicer to perform the required actions, then write the service results to the http response.
 type TransactionsAPIRouter interface {
+	ParseTransaction(http.ResponseWriter, *http.Request)
 	GetTransactions(http.ResponseWriter, *http.Request)
 	CreateTransaction(http.ResponseWriter, *http.Request)
 	GetTransaction(http.ResponseWriter, *http.Request)
@@ -352,6 +353,7 @@ type TemplatesAPIServicer interface {
 // while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type TransactionsAPIServicer interface {
+	ParseTransaction(context.Context, TransactionParseRequest) (ImplResponse, error)
 	GetTransactions(context.Context, string, decimal.Decimal, decimal.Decimal, time.Time, time.Time, bool) (ImplResponse, error)
 	CreateTransaction(context.Context, TransactionNoId) (ImplResponse, error)
 	GetTransaction(context.Context, string) (ImplResponse, error)

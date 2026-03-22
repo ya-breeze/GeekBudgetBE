@@ -3,4 +3,6 @@
 
 import { BudgetItemNoId } from '../models/budget-item-no-id';
 import { Entity } from '../models/entity';
-export type BudgetItem = Entity & BudgetItemNoId & {};
+export type BudgetItem = Entity & BudgetItemNoId & {
+};
+

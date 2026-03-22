@@ -141,6 +141,7 @@ Class | Method | HTTP request | Description
 *TransactionsAPI* | [**GetTransaction**](docs/TransactionsAPI.md#gettransaction) | **Get** /v1/transactions/{id} | get transaction
 *TransactionsAPI* | [**GetTransactions**](docs/TransactionsAPI.md#gettransactions) | **Get** /v1/transactions | get all transactions which matches given filters
 *TransactionsAPI* | [**MergeTransactions**](docs/TransactionsAPI.md#mergetransactions) | **Post** /v1/transactions/merge | merge two transactions
+*TransactionsAPI* | [**ParseTransaction**](docs/TransactionsAPI.md#parsetransaction) | **Post** /v1/transactions/parse | parse natural-language text into a transaction
 *TransactionsAPI* | [**UpdateTransaction**](docs/TransactionsAPI.md#updatetransaction) | **Put** /v1/transactions/{id} | update transaction
 *UnprocessedTransactionsAPI* | [**ConvertUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#convertunprocessedtransaction) | **Post** /v1/unprocessedTransactions/{id}/convert | convert unprocessed transactions into normal transaction
 *UnprocessedTransactionsAPI* | [**GetUnprocessedTransaction**](docs/UnprocessedTransactionsAPI.md#getunprocessedtransaction) | **Get** /v1/unprocessedTransactions/{id} | get unprocessed transaction
@@ -196,6 +197,8 @@ Class | Method | HTTP request | Description
  - [ReconciliationStatus](docs/ReconciliationStatus.md)
  - [Transaction](docs/Transaction.md)
  - [TransactionNoID](docs/TransactionNoID.md)
+ - [TransactionParseRequest](docs/TransactionParseRequest.md)
+ - [TransactionParseResponse](docs/TransactionParseResponse.md)
  - [TransactionTemplate](docs/TransactionTemplate.md)
  - [TransactionTemplateNoId](docs/TransactionTemplateNoId.md)
  - [UnprocessedTransaction](docs/UnprocessedTransaction.md)
