@@ -26,7 +26,7 @@ import { AccountService } from '../accounts/services/account.service';
 import { Account } from '../../core/api/models/account';
 import { CurrencyService } from '../currencies/services/currency.service';
 import { Currency } from '../../core/api/models/currency';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, finalize } from 'rxjs';
 import { TransactionUtils } from './utils/transaction.utils';
 import { LayoutService } from '../../layout/services/layout.service';
 import { MatcherService } from '../matchers/services/matcher.service';
@@ -118,6 +118,11 @@ export class TransactionsComponent implements OnInit {
         this.matchers().forEach((matcher) => map.set(matcher.id!, matcher));
         return map;
     });
+
+    // Quick-entry state
+    protected readonly quickEntryActive = signal(false);
+    protected readonly quickEntryText = signal('');
+    protected readonly quickEntryParsing = signal(false);
 
     // Month navigation state
     protected readonly currentMonth = signal(new Date().getMonth());
@@ -399,13 +404,47 @@ export class TransactionsComponent implements OnInit {
         this.loadData();
     }
 
-    openCreateDialog(initialValues?: TransactionNoId): void {
+    protected activateQuickEntry(): void {
+        this.quickEntryText.set('');
+        this.quickEntryActive.set(true);
+    }
+
+    protected cancelQuickEntry(): void {
+        this.quickEntryActive.set(false);
+        this.quickEntryText.set('');
+    }
+
+    protected submitQuickEntry(): void {
+        const text = this.quickEntryText().trim();
+        if (!text) {
+            this.cancelQuickEntry();
+            return;
+        }
+        this.quickEntryParsing.set(true);
+        this.transactionService
+            .parse(text)
+            .pipe(finalize(() => this.quickEntryParsing.set(false)))
+            .subscribe({
+                next: (result) => {
+                    this.quickEntryActive.set(false);
+                    this.quickEntryText.set('');
+                    this.openCreateDialog(result.transaction, result.warnings ?? []);
+                },
+                error: () => {
+                    this.snackBar.open('Failed to parse transaction text', 'Close', {
+                        duration: 3000,
+                    });
+                },
+            });
+    }
+
+    openCreateDialog(initialValues?: TransactionNoId, parseWarnings: string[] = []): void {
         const dialogRef = this.dialog.open(TransactionFormDialogComponent, {
             width: '90vw',
             maxWidth: '1200px',
             height: 'auto',
             maxHeight: '90vh',
-            data: { mode: 'create', initialValues },
+            data: { mode: 'create', initialValues, parseWarnings },
         });
 
         dialogRef.afterClosed().subscribe((result) => {

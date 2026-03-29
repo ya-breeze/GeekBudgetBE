@@ -26,10 +26,34 @@
             <mat-icon>content_copy</mat-icon>
             New from template
         </button>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
-            <mat-icon>add</mat-icon>
-            Add Transaction
-        </button>
+        @if (quickEntryActive()) {
+            <div class="quick-entry-container">
+                <mat-icon class="quick-entry-icon">edit</mat-icon>
+                <input
+                    class="quick-entry-input"
+                    #quickEntryInput
+                    type="text"
+                    placeholder="e.g. 100 CZK from FIO Savings to Others"
+                    [value]="quickEntryText()"
+                    (input)="quickEntryText.set(quickEntryInput.value)"
+                    (keydown.enter)="submitQuickEntry()"
+                    (keydown.escape)="cancelQuickEntry()"
+                    autofocus
+                />
+                @if (quickEntryParsing()) {
+                    <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                    <button mat-icon-button (click)="cancelQuickEntry()" matTooltip="Cancel (Esc)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                }
+            </div>
+        } @else {
+            <button mat-raised-button color="primary" (click)="activateQuickEntry()">
+                <mat-icon>add</mat-icon>
+                Add Transaction
+            </button>
+        }
     </div>
 
     <!-- Filter Section -->

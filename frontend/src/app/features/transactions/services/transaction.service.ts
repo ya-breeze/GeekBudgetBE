@@ -14,6 +14,8 @@ import { updateTransaction } from '../../../core/api/fn/transactions/update-tran
 import { deleteTransaction } from '../../../core/api/fn/transactions/delete-transaction';
 
 import { mergeTransactions } from '../../../core/api/fn/transactions/merge-transactions';
+import { parseTransaction } from '../../../core/api/fn/transactions/parse-transaction';
+import { TransactionParseResponse } from '../../../core/api/models/transaction-parse-response';
 
 @Injectable({
     providedIn: 'root',
@@ -109,6 +111,12 @@ export class TransactionService {
                     this.loading.set(false);
                 },
             }),
+        );
+    }
+
+    parse(text: string): Observable<TransactionParseResponse> {
+        return parseTransaction(this.http, this.apiConfig.rootUrl, { body: { text } }).pipe(
+            map((response) => response.body),
         );
     }
 

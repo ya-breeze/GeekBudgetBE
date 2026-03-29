@@ -28,6 +28,7 @@ export interface TransactionFormDialogData {
     mode: 'create' | 'edit';
     transaction?: Transaction;
     initialValues?: TransactionNoId;
+    parseWarnings?: string[];
 }
 
 @Component({
@@ -59,6 +60,7 @@ export class TransactionFormDialogComponent implements OnInit {
 
     protected readonly form: FormGroup;
     protected readonly isEditMode = this.data.mode === 'edit';
+    protected readonly parseWarnings = this.data.parseWarnings ?? [];
     protected readonly accounts = this.accountService.accounts;
     protected readonly currencies = this.currencyService.currencies;
     protected readonly tags = signal<string[]>([]);

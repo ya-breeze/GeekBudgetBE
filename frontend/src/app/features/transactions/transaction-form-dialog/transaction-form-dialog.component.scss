@@ -5,6 +5,31 @@
     }
 }
 
+.parse-warnings {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fff8e1;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    color: #5d4037;
+
+    mat-icon {
+        color: #f57c00;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 16px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+}
+
 .transaction-form {
     display: flex;
     flex-direction: column;
