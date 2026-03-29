@@ -133,10 +133,26 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 		return goserver.Response(500, nil), nil
 	}
 
-	// Get current account balance if not provided
+	// Detect whether this account has a bank importer configured.
+	// Use GetBankImporters (same as GetReconciliationStatus) rather than inspecting
+	// BankInfo.Balances — an importer that has never run would have no Balances entries
+	// but is still a configured importer and should enforce the tolerance check.
+	importers, err := s.db.GetBankImporters(userID)
+	if err != nil {
+		s.logger.With("error", err).Error("Failed to get bank importers")
+		return goserver.Response(500, nil), nil
+	}
+	hasImporter := false
+	for _, imp := range importers {
+		if imp.AccountId == id {
+			hasImporter = true
+			break
+		}
+	}
+
+	// Resolve balance: if frontend sends 0, use the current computed account balance.
 	balance := body.Balance
 	if balance.IsZero() {
-		var err error
 		balance, err = s.db.GetAccountBalance(userID, id, body.CurrencyId)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to get account balance")
@@ -144,32 +160,38 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 		}
 	}
 
-	// Get bank balance for expected balance
-	acc, err := s.db.GetAccount(userID, id)
-	if err != nil {
-		return goserver.Response(404, nil), nil
-	}
-
 	var expectedBalance decimal.Decimal
-	for _, b := range acc.BankInfo.Balances {
-		if b.CurrencyId == body.CurrencyId {
-			expectedBalance = b.ClosingBalance
-			break
+	isManual := true
+
+	if hasImporter {
+		// Importer path: derive expected balance from last import data and enforce tolerance.
+		acc, accErr := s.db.GetAccount(userID, id)
+		if accErr != nil {
+			return goserver.Response(404, nil), nil
 		}
+		for _, b := range acc.BankInfo.Balances {
+			if b.CurrencyId == body.CurrencyId {
+				expectedBalance = b.ClosingBalance
+				break
+			}
+		}
+		if balance.Sub(expectedBalance).Abs().GreaterThan(constants.ReconciliationTolerance) {
+			return goserver.Response(400, "Cannot reconcile: account balance does not match bank balance"), nil
+		}
+		isManual = body.Balance.IsPositive()
+	} else {
+		// No-importer path: the user is confirming the app balance is correct.
+		// Set expectedBalance = balance so the history record shows delta = 0.
+		// IsManual is always true for no-importer accounts.
+		expectedBalance = balance
 	}
 
-	// Validate that balance matches expected balance
-	if balance.Sub(expectedBalance).Abs().GreaterThan(constants.ReconciliationTolerance) {
-		return goserver.Response(400, "Cannot reconcile: account balance does not match bank balance"), nil
-	}
-
-	// Create new reconciliation record
 	rec, err := s.db.CreateReconciliation(userID, &goserver.ReconciliationNoId{
 		AccountId:         id,
 		CurrencyId:        body.CurrencyId,
 		ReconciledBalance: balance,
 		ExpectedBalance:   expectedBalance,
-		IsManual:          body.Balance.IsPositive(), // Manual if balance explicitly provided
+		IsManual:          isManual,
 	})
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create reconciliation")

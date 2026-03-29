@@ -30,6 +30,8 @@ go/api_notifications.go
 go/api_notifications_service.go
 go/api_reconciliation.go
 go/api_reconciliation_service.go
+go/api_templates.go
+go/api_templates_service.go
 go/api_transactions.go
 go/api_transactions_service.go
 go/api_unprocessed_transactions.go
@@ -85,6 +87,8 @@ go/model_reconciliation_no_id.go
 go/model_reconciliation_status.go
 go/model_transaction.go
 go/model_transaction_no_id.go
+go/model_transaction_template.go
+go/model_transaction_template_no_id.go
 go/model_unprocessed_transaction.go
 go/model_update_matcher200_response.go
 go/model_user.go

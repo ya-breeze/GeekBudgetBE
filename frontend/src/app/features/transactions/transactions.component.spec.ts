@@ -15,6 +15,8 @@ import { provideRouter } from '@angular/router';
 
 import { MatcherService } from '../matchers/services/matcher.service';
 import { Matcher } from '../../core/api/models/matcher';
+import { TemplateService } from '../templates/services/template.service';
+import { TransactionTemplate } from '../../core/api/models/transaction-template';
 
 describe('TransactionsComponent', () => {
     let component: TransactionsComponent;
@@ -23,6 +25,7 @@ describe('TransactionsComponent', () => {
     let mockAccountService: jasmine.SpyObj<AccountService>;
     let mockCurrencyService: jasmine.SpyObj<CurrencyService>;
     let mockMatcherService: jasmine.SpyObj<MatcherService>;
+    let mockTemplateService: jasmine.SpyObj<TemplateService>;
     let mockDialog: jasmine.SpyObj<MatDialog>;
     let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
 
@@ -103,6 +106,16 @@ describe('TransactionsComponent', () => {
             matchers: signal<Matcher[]>([]),
         });
 
+        mockTemplateService = jasmine.createSpyObj(
+            'TemplateService',
+            ['loadTemplates', 'create', 'update', 'delete', 'templateToTransactionNoId'],
+            {
+                templates: signal<TransactionTemplate[]>([]),
+                loading: signal(false),
+                error: signal<string | null>(null),
+            },
+        );
+
         mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
         mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
@@ -118,6 +131,7 @@ describe('TransactionsComponent', () => {
                 { provide: AccountService, useValue: mockAccountService },
                 { provide: CurrencyService, useValue: mockCurrencyService },
                 { provide: MatcherService, useValue: mockMatcherService },
+                { provide: TemplateService, useValue: mockTemplateService },
                 { provide: MatDialog, useValue: mockDialog },
                 { provide: MatSnackBar, useValue: mockSnackBar },
                 provideRouter([]),
