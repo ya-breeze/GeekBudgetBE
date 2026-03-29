@@ -339,8 +339,8 @@ var _ = Describe("BankImporters API", func() {
 				},
 			}
 
-			// Expect UpdateTransaction for txMissing with Suspicious=true
-			mockDB.EXPECT().UpdateTransaction(userID, txMissing.Id, gomock.Any()).DoAndReturn(func(uid, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
+			// Expect UpdateTransactionInternal for txMissing with Suspicious=true (internal system operation, no user notifications)
+			mockDB.EXPECT().UpdateTransactionInternal(userID, txMissing.Id, gomock.Any()).DoAndReturn(func(uid, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
 				Expect(t.GetSuspiciousReasons()).To(Equal([]string{"Not present in importer transactions"}))
 				return goserver.Transaction{}, nil
 			})

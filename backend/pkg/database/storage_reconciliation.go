@@ -270,8 +270,8 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 		key := newM.AccountId + "|" + newM.CurrencyId
 		oldM, exists := oldByKey[key]
 
-		// New movement or amount changed
-		if !exists || oldM.Amount != newM.Amount {
+		// New movement or amount changed (use .Equal() for decimal comparison, not != which compares pointer addresses)
+		if !exists || !oldM.Amount.Equal(newM.Amount) {
 			affectedAccounts[newM.AccountId] = newM.CurrencyId
 		}
 		delete(oldByKey, key)

@@ -49,10 +49,11 @@ var _ = Describe("Background Duplicate Detection", func() {
 			}
 
 			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
+			mockDB.EXPECT().AddDuplicateRelationship(userID, t1.Id, t2.Id).Return(nil)
 
-			// Expect both to be marked suspicious
-			mockDB.EXPECT().UpdateTransaction(userID, t1.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
-			mockDB.EXPECT().UpdateTransaction(userID, t2.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
+			// Expect both to be marked suspicious via internal method (system operation, no user notifications)
+			mockDB.EXPECT().UpdateTransactionInternal(userID, t1.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
+			mockDB.EXPECT().UpdateTransactionInternal(userID, t2.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
 
 			// Expect notification
 			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
@@ -122,7 +123,9 @@ var _ = Describe("Background Duplicate Detection", func() {
 			}
 
 			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
-			// No UpdateTransaction or CreateNotification expected
+			// AddDuplicateRelationship still called even when already marked (idempotent link)
+			mockDB.EXPECT().AddDuplicateRelationship(userID, t1.Id, t2.Id).Return(nil)
+			// No UpdateTransactionInternal or CreateNotification expected (both already marked)
 
 			processUserDuplicates(ctx, logger, mockDB, userID)
 		})

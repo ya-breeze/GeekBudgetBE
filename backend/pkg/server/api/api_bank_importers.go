@@ -561,7 +561,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 				dbtNoIdFull := models.TransactionWithoutID(&dbt)
 				dbtNoIdFull.SuspiciousReasons = []string{"Not present in importer transactions"}
 
-				_, err := s.db.UpdateTransaction(userID, dbt.Id, dbtNoIdFull)
+				_, err := s.db.UpdateTransactionInternal(userID, dbt.Id, dbtNoIdFull)
 				if err != nil {
 					// Ignore if not found (deleted)
 					s.logger.With("error", err, "transactionID", dbt.Id).Warn("Failed to mark transaction as suspicious (might be deleted)")

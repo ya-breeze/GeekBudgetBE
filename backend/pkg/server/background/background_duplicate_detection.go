@@ -22,6 +22,14 @@ func StartDuplicateDetection(
 	done := make(chan struct{})
 
 	go func() {
+		// Wait a bit before first run to avoid spamming notifications on every server restart
+		select {
+		case <-time.After(5 * time.Minute):
+		case <-ctx.Done():
+			close(done)
+			return
+		}
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -156,7 +164,7 @@ func markAsSuspicious(logger *slog.Logger, db database.Storage, userID string, t
 	t.SuspiciousReasons = append(t.SuspiciousReasons, models.DuplicateReason)
 	tNoId := models.TransactionWithoutID(t)
 
-	_, err := db.UpdateTransaction(userID, t.Id, tNoId)
+	_, err := db.UpdateTransactionInternal(userID, t.Id, tNoId)
 	if err != nil {
 		logger.With("error", err, "transactionID", t.Id).Error("Failed to update transaction with suspicious reason")
 		return false
