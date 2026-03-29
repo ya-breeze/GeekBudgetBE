@@ -11,23 +11,28 @@ import { Account } from '../../models/account';
 import { AccountNoId } from '../../models/account-no-id';
 
 export interface CreateAccount$Params {
-      body: AccountNoId
+    body: AccountNoId;
 }
 
-export function createAccount(http: HttpClient, rootUrl: string, params: CreateAccount$Params, context?: HttpContext): Observable<StrictHttpResponse<Account>> {
-  const rb = new RequestBuilder(rootUrl, createAccount.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function createAccount(
+    http: HttpClient,
+    rootUrl: string,
+    params: CreateAccount$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Account>> {
+    const rb = new RequestBuilder(rootUrl, createAccount.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Account>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Account>;
+            }),
+        );
 }
 
 createAccount.PATH = '/v1/accounts';

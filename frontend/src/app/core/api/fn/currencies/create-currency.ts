@@ -11,23 +11,28 @@ import { Currency } from '../../models/currency';
 import { CurrencyNoId } from '../../models/currency-no-id';
 
 export interface CreateCurrency$Params {
-      body: CurrencyNoId
+    body: CurrencyNoId;
 }
 
-export function createCurrency(http: HttpClient, rootUrl: string, params: CreateCurrency$Params, context?: HttpContext): Observable<StrictHttpResponse<Currency>> {
-  const rb = new RequestBuilder(rootUrl, createCurrency.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function createCurrency(
+    http: HttpClient,
+    rootUrl: string,
+    params: CreateCurrency$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Currency>> {
+    const rb = new RequestBuilder(rootUrl, createCurrency.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Currency>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Currency>;
+            }),
+        );
 }
 
 createCurrency.PATH = '/v1/currencies';

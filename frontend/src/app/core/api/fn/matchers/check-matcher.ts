@@ -11,32 +11,39 @@ import { MatcherNoId } from '../../models/matcher-no-id';
 import { TransactionNoId } from '../../models/transaction-no-id';
 
 export interface CheckMatcher$Params {
-      body: {
-'matcher': MatcherNoId;
-'transaction': TransactionNoId;
-}
+    body: {
+        matcher: MatcherNoId;
+        transaction: TransactionNoId;
+    };
 }
 
-export function checkMatcher(http: HttpClient, rootUrl: string, params: CheckMatcher$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-'result'?: boolean;
-'reason'?: string;
-}>> {
-  const rb = new RequestBuilder(rootUrl, checkMatcher.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function checkMatcher(
+    http: HttpClient,
+    rootUrl: string,
+    params: CheckMatcher$Params,
+    context?: HttpContext,
+): Observable<
+    StrictHttpResponse<{
+        result?: boolean;
+        reason?: string;
+    }>
+> {
+    const rb = new RequestBuilder(rootUrl, checkMatcher.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<{
-      'result'?: boolean;
-      'reason'?: string;
-      }>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<{
+                    result?: boolean;
+                    reason?: string;
+                }>;
+            }),
+        );
 }
 
 checkMatcher.PATH = '/v1/matchers/check';

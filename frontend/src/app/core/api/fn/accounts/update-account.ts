@@ -11,29 +11,33 @@ import { Account } from '../../models/account';
 import { AccountNoId } from '../../models/account-no-id';
 
 export interface UpdateAccount$Params {
-
-/**
- * ID of the account
- */
-  id: string;
-      body: AccountNoId
+    /**
+     * ID of the account
+     */
+    id: string;
+    body: AccountNoId;
 }
 
-export function updateAccount(http: HttpClient, rootUrl: string, params: UpdateAccount$Params, context?: HttpContext): Observable<StrictHttpResponse<Account>> {
-  const rb = new RequestBuilder(rootUrl, updateAccount.PATH, 'put');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
-  }
+export function updateAccount(
+    http: HttpClient,
+    rootUrl: string,
+    params: UpdateAccount$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Account>> {
+    const rb = new RequestBuilder(rootUrl, updateAccount.PATH, 'put');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Account>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Account>;
+            }),
+        );
 }
 
 updateAccount.PATH = '/v1/accounts/{id}';

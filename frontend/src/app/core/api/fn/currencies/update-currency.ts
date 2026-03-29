@@ -11,29 +11,33 @@ import { Currency } from '../../models/currency';
 import { CurrencyNoId } from '../../models/currency-no-id';
 
 export interface UpdateCurrency$Params {
-
-/**
- * ID of the currency
- */
-  id: string;
-      body: CurrencyNoId
+    /**
+     * ID of the currency
+     */
+    id: string;
+    body: CurrencyNoId;
 }
 
-export function updateCurrency(http: HttpClient, rootUrl: string, params: UpdateCurrency$Params, context?: HttpContext): Observable<StrictHttpResponse<Currency>> {
-  const rb = new RequestBuilder(rootUrl, updateCurrency.PATH, 'put');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
-  }
+export function updateCurrency(
+    http: HttpClient,
+    rootUrl: string,
+    params: UpdateCurrency$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Currency>> {
+    const rb = new RequestBuilder(rootUrl, updateCurrency.PATH, 'put');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Currency>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Currency>;
+            }),
+        );
 }
 
 updateCurrency.PATH = '/v1/currencies/{id}';

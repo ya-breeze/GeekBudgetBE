@@ -11,25 +11,30 @@ import { AnalyzeDisbalanceRequest } from '../../models/analyze-disbalance-reques
 import { DisbalanceAnalysis } from '../../models/disbalance-analysis';
 
 export interface AnalyzeDisbalance$Params {
-  id: string;
-      body: AnalyzeDisbalanceRequest
+    id: string;
+    body: AnalyzeDisbalanceRequest;
 }
 
-export function analyzeDisbalance(http: HttpClient, rootUrl: string, params: AnalyzeDisbalance$Params, context?: HttpContext): Observable<StrictHttpResponse<DisbalanceAnalysis>> {
-  const rb = new RequestBuilder(rootUrl, analyzeDisbalance.PATH, 'post');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.body(params.body, 'application/json');
-  }
+export function analyzeDisbalance(
+    http: HttpClient,
+    rootUrl: string,
+    params: AnalyzeDisbalance$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<DisbalanceAnalysis>> {
+    const rb = new RequestBuilder(rootUrl, analyzeDisbalance.PATH, 'post');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<DisbalanceAnalysis>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<DisbalanceAnalysis>;
+            }),
+        );
 }
 
 analyzeDisbalance.PATH = '/v1/accounts/{id}/analyze-disbalance';

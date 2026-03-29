@@ -3,9 +3,7 @@
 
 import { Entity } from '../models/entity';
 export type BankImporterFile = Entity & {
-'bankImporterId': string;
-'filename': string;
-'uploadDate': string;
-} & {
-};
-
+    bankImporterId: string;
+    filename: string;
+    uploadDate: string;
+} & {};

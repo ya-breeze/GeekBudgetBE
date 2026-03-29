@@ -7,36 +7,42 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-
 export interface CheckRegex$Params {
-      body: {
-'regex': string;
-'testString': string;
-}
+    body: {
+        regex: string;
+        testString: string;
+    };
 }
 
-export function checkRegex(http: HttpClient, rootUrl: string, params: CheckRegex$Params, context?: HttpContext): Observable<StrictHttpResponse<{
-'isValid': boolean;
-'isMatch': boolean;
-'error'?: string;
-}>> {
-  const rb = new RequestBuilder(rootUrl, checkRegex.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function checkRegex(
+    http: HttpClient,
+    rootUrl: string,
+    params: CheckRegex$Params,
+    context?: HttpContext,
+): Observable<
+    StrictHttpResponse<{
+        isValid: boolean;
+        isMatch: boolean;
+        error?: string;
+    }>
+> {
+    const rb = new RequestBuilder(rootUrl, checkRegex.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<{
-      'isValid': boolean;
-      'isMatch': boolean;
-      'error'?: string;
-      }>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<{
+                    isValid: boolean;
+                    isMatch: boolean;
+                    error?: string;
+                }>;
+            }),
+        );
 }
 
 checkRegex.PATH = '/v1/matchers/check-regex';

@@ -3,10 +3,10 @@
 
 import { TransactionNoId } from '../models/transaction-no-id';
 export interface TransactionParseResponse {
-  transaction: TransactionNoId;
+    transaction: TransactionNoId;
 
-  /**
-   * Human-readable warnings for fields that could not be parsed or were ambiguously matched
-   */
-  warnings: Array<string>;
+    /**
+     * Human-readable warnings for fields that could not be parsed or were ambiguously matched
+     */
+    warnings: Array<string>;
 }

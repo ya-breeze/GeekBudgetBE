@@ -10,25 +10,30 @@ import { RequestBuilder } from '../../request-builder';
 import { Reconciliation } from '../../models/reconciliation';
 
 export interface GetReconciliationHistory$Params {
-  id: string;
-  currencyId: string;
+    id: string;
+    currencyId: string;
 }
 
-export function getReconciliationHistory(http: HttpClient, rootUrl: string, params: GetReconciliationHistory$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Reconciliation>>> {
-  const rb = new RequestBuilder(rootUrl, getReconciliationHistory.PATH, 'get');
-  if (params) {
-    rb.path('id', params.id, {});
-    rb.query('currencyId', params.currencyId, {});
-  }
+export function getReconciliationHistory(
+    http: HttpClient,
+    rootUrl: string,
+    params: GetReconciliationHistory$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<Reconciliation>>> {
+    const rb = new RequestBuilder(rootUrl, getReconciliationHistory.PATH, 'get');
+    if (params) {
+        rb.path('id', params.id, {});
+        rb.query('currencyId', params.currencyId, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<Reconciliation>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<Reconciliation>>;
+            }),
+        );
 }
 
 getReconciliationHistory.PATH = '/v1/accounts/{id}/reconciliation-history';

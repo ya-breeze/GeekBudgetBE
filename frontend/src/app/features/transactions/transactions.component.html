@@ -38,7 +38,7 @@
                     (input)="quickEntryText.set(quickEntryInput.value)"
                     (keydown.enter)="submitQuickEntry()"
                     (keydown.escape)="cancelQuickEntry()"
-                    autofocus
+                   
                 />
                 @if (quickEntryParsing()) {
                     <mat-spinner diameter="20"></mat-spinner>

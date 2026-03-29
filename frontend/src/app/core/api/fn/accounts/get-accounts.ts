@@ -9,22 +9,26 @@ import { RequestBuilder } from '../../request-builder';
 
 import { Account } from '../../models/account';
 
-export interface GetAccounts$Params {
-}
+export interface GetAccounts$Params {}
 
-export function getAccounts(http: HttpClient, rootUrl: string, params?: GetAccounts$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Account>>> {
-  const rb = new RequestBuilder(rootUrl, getAccounts.PATH, 'get');
-  if (params) {
-  }
+export function getAccounts(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetAccounts$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<Account>>> {
+    const rb = new RequestBuilder(rootUrl, getAccounts.PATH, 'get');
+    if (params) {
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<Account>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<Account>>;
+            }),
+        );
 }
 
 getAccounts.PATH = '/v1/accounts';

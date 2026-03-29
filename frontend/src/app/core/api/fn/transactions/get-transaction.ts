@@ -10,23 +10,28 @@ import { RequestBuilder } from '../../request-builder';
 import { Transaction } from '../../models/transaction';
 
 export interface GetTransaction$Params {
-  id: string;
+    id: string;
 }
 
-export function getTransaction(http: HttpClient, rootUrl: string, params: GetTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<Transaction>> {
-  const rb = new RequestBuilder(rootUrl, getTransaction.PATH, 'get');
-  if (params) {
-    rb.path('id', params.id, {});
-  }
+export function getTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: GetTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Transaction>> {
+    const rb = new RequestBuilder(rootUrl, getTransaction.PATH, 'get');
+    if (params) {
+        rb.path('id', params.id, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Transaction>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Transaction>;
+            }),
+        );
 }
 
 getTransaction.PATH = '/v1/transactions/{id}';

@@ -3,15 +3,15 @@
 
 import { Movement } from '../models/movement';
 export interface TransactionTemplateNoId {
-  description?: string;
-  extra?: string;
-  movements: Array<Movement>;
+    description?: string;
+    extra?: string;
+    movements: Array<Movement>;
 
-  /**
-   * User-given label for the template
-   */
-  name: string;
-  partnerName?: string;
-  place?: string;
-  tags?: Array<string>;
+    /**
+     * User-given label for the template
+     */
+    name: string;
+    partnerName?: string;
+    place?: string;
+    tags?: Array<string>;
 }

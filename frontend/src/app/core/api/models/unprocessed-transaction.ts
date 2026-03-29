@@ -4,7 +4,7 @@
 import { MatcherAndTransaction } from '../models/matcher-and-transaction';
 import { Transaction } from '../models/transaction';
 export interface UnprocessedTransaction {
-  duplicates: Array<Transaction>;
-  matched: Array<MatcherAndTransaction>;
-  transaction: Transaction;
+    duplicates: Array<Transaction>;
+    matched: Array<MatcherAndTransaction>;
+    transaction: Transaction;
 }

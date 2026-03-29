@@ -11,23 +11,28 @@ import { TransactionParseRequest } from '../../models/transaction-parse-request'
 import { TransactionParseResponse } from '../../models/transaction-parse-response';
 
 export interface ParseTransaction$Params {
-      body: TransactionParseRequest
+    body: TransactionParseRequest;
 }
 
-export function parseTransaction(http: HttpClient, rootUrl: string, params: ParseTransaction$Params, context?: HttpContext): Observable<StrictHttpResponse<TransactionParseResponse>> {
-  const rb = new RequestBuilder(rootUrl, parseTransaction.PATH, 'post');
-  if (params) {
-    rb.body(params.body, 'application/json');
-  }
+export function parseTransaction(
+    http: HttpClient,
+    rootUrl: string,
+    params: ParseTransaction$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<TransactionParseResponse>> {
+    const rb = new RequestBuilder(rootUrl, parseTransaction.PATH, 'post');
+    if (params) {
+        rb.body(params.body, 'application/json');
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<TransactionParseResponse>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<TransactionParseResponse>;
+            }),
+        );
 }
 
 parseTransaction.PATH = '/v1/transactions/parse';

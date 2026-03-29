@@ -3,7 +3,7 @@
 
 import { DisbalanceCandidate } from '../models/disbalance-candidate';
 export interface DisbalanceAnalysis {
-  candidates: Array<DisbalanceCandidate>;
-  delta: number;
-  transactionCount: number;
+    candidates: Array<DisbalanceCandidate>;
+    delta: number;
+    transactionCount: number;
 }

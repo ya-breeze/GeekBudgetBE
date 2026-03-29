@@ -9,22 +9,26 @@ import { RequestBuilder } from '../../request-builder';
 
 import { Currency } from '../../models/currency';
 
-export interface GetCurrencies$Params {
-}
+export interface GetCurrencies$Params {}
 
-export function getCurrencies(http: HttpClient, rootUrl: string, params?: GetCurrencies$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Currency>>> {
-  const rb = new RequestBuilder(rootUrl, getCurrencies.PATH, 'get');
-  if (params) {
-  }
+export function getCurrencies(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetCurrencies$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Array<Currency>>> {
+    const rb = new RequestBuilder(rootUrl, getCurrencies.PATH, 'get');
+    if (params) {
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Array<Currency>>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Array<Currency>>;
+            }),
+        );
 }
 
 getCurrencies.PATH = '/v1/currencies';

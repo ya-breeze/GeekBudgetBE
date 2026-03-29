@@ -3,12 +3,11 @@
 
 import { Entity } from '../models/entity';
 export type User = Entity & {
-'email': string;
-'startDate': string;
+    email: string;
+    startDate: string;
 
-/**
- * ID of the user's favorite currency. By default this currency will be used to convert other currencies.
- */
-'favoriteCurrencyId'?: string;
+    /**
+     * ID of the user's favorite currency. By default this currency will be used to convert other currencies.
+     */
+    favoriteCurrencyId?: string;
 };
-

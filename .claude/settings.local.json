@@ -32,7 +32,27 @@
       "Bash(go tool:*)",
       "Bash(go test:*)",
       "Bash(git -C /Users/ek/work/GeekBudgetBE ls-files:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "mcp__auggie__codebase-retrieval",
+      "Bash(find /Users/ek/work/GeekBudgetBE/app/app -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
+      "Bash(ls -la \"/Users/ek/work/GeekBudgetBE/app/app/app/app/\\(app\\)/\")",
+      "Bash(ls -la \"/Users/ek/work/GeekBudgetBE/app/app/app/app/\\(app\\)/transactions/\")",
+      "Bash(grep -E \"\\\\.\\(go\\)$\")",
+      "Bash(/Users/ek/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/scripts/start-server.sh --project-dir /Users/ek/work/GeekBudgetBE)",
+      "Bash(/Users/ek/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh --project-dir /Users/ek/work/GeekBudgetBE)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run:*)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)"
     ]
   }
 }

@@ -10,45 +10,49 @@ import { RequestBuilder } from '../../request-builder';
 import { Aggregation } from '../../models/aggregation';
 
 export interface GetIncomes$Params {
+    /**
+     * Uses transactions from this date
+     */
+    from?: string;
 
-/**
- * Uses transactions from this date
- */
-  from?: string;
+    /**
+     * Uses transactions to this date
+     */
+    to?: string;
 
-/**
- * Uses transactions to this date
- */
-  to?: string;
+    /**
+     * Converts all transactions to this currency
+     */
+    outputCurrencyId?: string;
 
-/**
- * Converts all transactions to this currency
- */
-  outputCurrencyId?: string;
-
-/**
- * If true, include hidden accounts
- */
-  includeHidden?: boolean;
+    /**
+     * If true, include hidden accounts
+     */
+    includeHidden?: boolean;
 }
 
-export function getIncomes(http: HttpClient, rootUrl: string, params?: GetIncomes$Params, context?: HttpContext): Observable<StrictHttpResponse<Aggregation>> {
-  const rb = new RequestBuilder(rootUrl, getIncomes.PATH, 'get');
-  if (params) {
-    rb.query('from', params.from, {});
-    rb.query('to', params.to, {});
-    rb.query('outputCurrencyId', params.outputCurrencyId, {});
-    rb.query('includeHidden', params.includeHidden, {});
-  }
+export function getIncomes(
+    http: HttpClient,
+    rootUrl: string,
+    params?: GetIncomes$Params,
+    context?: HttpContext,
+): Observable<StrictHttpResponse<Aggregation>> {
+    const rb = new RequestBuilder(rootUrl, getIncomes.PATH, 'get');
+    if (params) {
+        rb.query('from', params.from, {});
+        rb.query('to', params.to, {});
+        rb.query('outputCurrencyId', params.outputCurrencyId, {});
+        rb.query('includeHidden', params.includeHidden, {});
+    }
 
-  return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
-  ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<Aggregation>;
-    })
-  );
+    return http
+        .request(rb.build({ responseType: 'json', accept: 'application/json', context }))
+        .pipe(
+            filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+            map((r: HttpResponse<any>) => {
+                return r as StrictHttpResponse<Aggregation>;
+            }),
+        );
 }
 
 getIncomes.PATH = '/v1/incomes';
