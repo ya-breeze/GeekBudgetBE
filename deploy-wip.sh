@@ -66,9 +66,34 @@ RESULT=$(curl -sk -X POST \
   --data-binary @/tmp/geekbudget-nginx-context.tar.gz)
 echo "$RESULT" | grep -E "Successfully|error" | tail -2
 
-# Deploy stack using docker-compose.wip.yml
+# Merge docker-compose.yml with docker-compose.wip.yml overrides
+echo "==> Merging compose files..."
+COMPOSE=$(python3 - <<'PYEOF'
+import yaml, copy
+
+def deep_merge(base, override):
+    result = copy.deepcopy(base)
+    for key, val in override.items():
+        if val is None:
+            result.pop(key, None)
+        elif key in result and isinstance(result[key], dict) and isinstance(val, dict):
+            result[key] = deep_merge(result[key], val)
+        else:
+            result[key] = copy.deepcopy(val)
+    return result
+
+with open('docker-compose.yml') as f:
+    base = yaml.safe_load(f)
+with open('docker-compose.wip.yml') as f:
+    override = yaml.safe_load(f)
+
+merged = deep_merge(base, override)
+print(yaml.dump(merged, default_flow_style=False))
+PYEOF
+)
+
+# Deploy stack using merged compose
 echo "==> Deploying stack to Portainer..."
-COMPOSE=$(cat "$REPO_DIR/docker-compose.wip.yml")
 HTTP_STATUS=$(curl -sk -X PUT \
   "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=3" \
   -H "Authorization: Bearer $TOKEN" \
