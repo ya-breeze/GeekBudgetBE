@@ -37,6 +37,11 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 			continue
 		}
 
+		currencyName := b.CurrencyId
+		if cur, err := db.GetCurrency(userID, b.CurrencyId); err == nil {
+			currencyName = cur.Name
+		}
+
 		if appBalance.Sub(b.ClosingBalance).Abs().GreaterThan(constants.ReconciliationTolerance) {
 			logger.Warn("Balance mismatch detected",
 				"account", acc.Name,
@@ -49,7 +54,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 				Type:  string(models.NotificationTypeBalanceDoesntMatch),
 				Title: "Balance Mismatch Detected",
 				Description: fmt.Sprintf("Account %q has a balance mismatch. Account balance: %s, Bank balance: %s (Currency: %s). Please check your transactions.",
-					acc.Name, appBalance.StringFixed(2), b.ClosingBalance.StringFixed(2), b.CurrencyId),
+					acc.Name, appBalance.StringFixed(2), b.ClosingBalance.StringFixed(2), currencyName),
 			})
 			if err != nil {
 				logger.With("error", err).Error("Failed to create balance mismatch notification")
