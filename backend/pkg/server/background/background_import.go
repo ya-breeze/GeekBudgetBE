@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
@@ -148,6 +150,14 @@ func processUnprocessedTransactionForAutoConversion(
 	unprocessedService *api.UnprocessedTransactionsAPIServiceImpl,
 	userID string, unprocessed goserver.UnprocessedTransaction,
 ) {
+	// Do not auto-convert transactions flagged as potential duplicates — the user
+	// must resolve the duplicate first before the transaction can be processed.
+	if slices.Contains(unprocessed.Transaction.SuspiciousReasons, models.DuplicateReason) {
+		logger.Info("Skipping auto-conversion for potential duplicate transaction",
+			"transactionID", unprocessed.Transaction.Id, "userID", userID)
+		return
+	}
+
 	if len(unprocessed.Matched) == 0 {
 		logger.Info("No matched matchers for transaction",
 			"transactionID", unprocessed.Transaction.Id, "userID", userID)
