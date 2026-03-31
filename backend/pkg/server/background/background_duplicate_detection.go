@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -104,7 +105,7 @@ func processUserDuplicates(ctx context.Context, logger *slog.Logger, db database
 			if common.IsDuplicate(t1.Date, t1.Movements, t2.Date, t2.Movements) {
 				// Check if they came from different sources (different external IDs)
 				// If they have same external IDs, they were already handled by bank importer deduplication
-				if hasDifferentSources(t1, t2) {
+				if hasDifferentSources(t1, t2) && hasOppositeDirections(t1.Movements, t2.Movements) {
 					// Link them together
 					if err := db.AddDuplicateRelationship(userID, t1.Id, t2.Id); err != nil {
 						logger.With("error", err, "t1", t1.Id, "t2", t2.Id).Error("Failed to add duplicate relationship")
@@ -138,6 +139,27 @@ func processUserDuplicates(ctx context.Context, logger *slog.Logger, db database
 			logger.With("error", err, "userID", userID).Error("Failed to create notification for duplicates")
 		}
 	}
+}
+
+// hasOppositeDirections returns true if one transaction is net-incoming and the other is
+// net-outgoing. Inter-account transfer duplicates always appear with opposite signs (one account
+// loses money, the other gains it). Two independent purchases of the same amount on consecutive
+// days will both be negative, so this check eliminates those false positives.
+func hasOppositeDirections(m1, m2 []goserver.Movement) bool {
+	net := func(movements []goserver.Movement) int {
+		total := decimal.Zero
+		for _, m := range movements {
+			total = total.Add(m.Amount)
+		}
+		if total.IsPositive() {
+			return 1
+		} else if total.IsNegative() {
+			return -1
+		}
+		return 0
+	}
+	s1, s2 := net(m1), net(m2)
+	return s1 != 0 && s2 != 0 && s1 != s2
 }
 
 func hasDifferentSources(t1, t2 goserver.Transaction) bool {
