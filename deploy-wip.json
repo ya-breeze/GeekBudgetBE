@@ -1,0 +1,30 @@
+{
+    "stack_id": 23,
+    "images": [
+        {
+            "tag": "geekbudget-wip-backend:latest",
+            "context": ".",
+            "dockerfile": "backend/Dockerfile"
+        },
+        {
+            "tag": "geekbudget-wip-frontend:latest",
+            "context": ".",
+            "dockerfile": "frontend/Dockerfile"
+        },
+        {
+            "tag": "geekbudget-wip-nginx:latest",
+            "context": "nginx/"
+        }
+    ],
+    "compose_base": "docker-compose.yml",
+    "compose_override": "docker-compose.wip.yml",
+    "exclude": [
+        ".git",
+        "frontend/node_modules",
+        "frontend/dist",
+        "app/node_modules",
+        "app/.next",
+        "backend/bin",
+        "tmp"
+    ]
+}

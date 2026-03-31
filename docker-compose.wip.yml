@@ -1,0 +1,16 @@
+version: "3.8"
+
+# WIP override file - replaces build contexts with prebuilt local images.
+# Merged with docker-compose.yml by deploy-wip.sh at deploy time.
+# Build images first with deploy-wip.sh, then Portainer deploys from these tags.
+
+services:
+  backend:
+    build: ~
+    image: geekbudget-wip-backend:latest
+  frontend:
+    build: ~
+    image: geekbudget-wip-frontend:latest
+  nginx:
+    build: ~
+    image: geekbudget-wip-nginx:latest
