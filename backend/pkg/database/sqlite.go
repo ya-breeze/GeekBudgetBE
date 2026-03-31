@@ -54,7 +54,21 @@ func (l *SlogGormLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 }
 
 func openSqlite(l *slog.Logger, dbPath string, verbose bool) (*gorm.DB, error) {
-	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 		Logger: (&SlogGormLogger{logger: l, verbose: verbose}).LogMode(logger.Warn),
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Enable WAL mode so reads don't block writes, and set a busy timeout
+	// to avoid immediate "database is locked" errors during concurrent access.
+	if err := db.Exec("PRAGMA journal_mode=WAL").Error; err != nil {
+		l.Warn("failed to enable WAL mode", "error", err)
+	}
+	if err := db.Exec("PRAGMA busy_timeout=5000").Error; err != nil {
+		l.Warn("failed to set busy_timeout", "error", err)
+	}
+
+	return db, nil
 }

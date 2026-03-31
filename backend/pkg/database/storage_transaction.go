@@ -184,27 +184,68 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 		transactionModels = append(transactionModels, t)
 	}
 
-	// Create all transactions
-	for i, t := range transactionModels {
-		if err := tx.Create(t).Error; err != nil {
-			tx.Rollback()
-			return nil, fmt.Errorf("failed to create transaction %d: %w", i, err)
+	// Bulk-insert all transactions in one statement instead of N individual INSERTs.
+	const batchSize = 100
+	if err := tx.CreateInBatches(transactionModels, batchSize).Error; err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("failed to create transactions batch: %w", err)
+	}
+
+	// Build audit log entries and insert them in a single batch.
+	auditLogs := make([]models.AuditLog, 0, len(transactionModels))
+	for _, t := range transactionModels {
+		entry, err := s.buildAuditLog(userID, "Transaction", t.ID.String(), "CREATED", nil, t)
+		if err != nil {
+			s.log.Error("Failed to build audit log entry", "error", err, "transactionID", t.ID)
+			continue
 		}
-
-		// Record audit log (errors are logged but don't fail the batch)
-		if err := s.recordAuditLog(tx, userID, "Transaction", t.ID.String(), "CREATED", nil, t); err != nil {
-			s.log.Error("Failed to record audit log", "error", err, "transactionID", t.ID)
+		auditLogs = append(auditLogs, entry)
+	}
+	if len(auditLogs) > 0 {
+		if err := tx.CreateInBatches(auditLogs, batchSize).Error; err != nil {
+			s.log.Error("Failed to batch-insert audit logs", "error", err)
 		}
+	}
 
-		// Invalidate reconciliation if we inserted a transaction in the past
-		s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date, false)
-
-		results = append(results, t.FromDB())
+	// Collect reconciliation invalidations: for each unique (accountId, currencyId)
+	// track the earliest transaction date that touches it.  We process these
+	// AFTER the commit so the reconciliation queries run outside the write lock.
+	type reconKey struct{ accountID, currencyID string }
+	reconMinDates := make(map[reconKey]time.Time)
+	for _, t := range transactionModels {
+		for _, m := range t.Movements {
+			if m.AccountId == "" {
+				continue // unprocessed movements don't affect reconciliation
+			}
+			key := reconKey{m.AccountId, m.CurrencyId}
+			if existing, ok := reconMinDates[key]; !ok || t.Date.Before(existing) {
+				reconMinDates[key] = t.Date
+			}
+		}
 	}
 
 	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
 		return nil, fmt.Errorf("failed to commit transaction batch: %w", err)
+	}
+
+	// Post-commit: one GetLatestReconciliation + optional InvalidateReconciliation
+	// per unique (account, currency) pair instead of one per transaction.
+	for key, minDate := range reconMinDates {
+		lastRec, err := s.GetLatestReconciliation(userID, key.accountID, key.currencyID)
+		if err != nil || lastRec == nil {
+			continue
+		}
+		if minDate.Before(lastRec.ReconciledAt) {
+			if err := s.InvalidateReconciliation(userID, key.accountID, key.currencyID, minDate); err != nil {
+				s.log.Error("Failed to invalidate reconciliation", "error", err,
+					"accountID", key.accountID, "currencyID", key.currencyID)
+			}
+		}
+	}
+
+	for _, t := range transactionModels {
+		results = append(results, t.FromDB())
 	}
 
 	s.log.Info("Transaction batch created", "count", len(results), "userID", userID)
