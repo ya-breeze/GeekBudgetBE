@@ -70,6 +70,7 @@ var _ = Describe("BalanceChecker", func() {
 
 			// App balance is 1400, Bank says 1500 -> Mismatch
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(1400.0), nil)
+			mockDB.EXPECT().GetCurrency(userID, "CZK").Return(goserver.Currency{Id: "CZK", Name: "CZK"}, nil)
 
 			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Type).To(Equal(string(models.NotificationTypeBalanceDoesntMatch)))
@@ -100,6 +101,7 @@ var _ = Describe("BalanceChecker", func() {
 			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(1000.0), nil)
+			mockDB.EXPECT().GetCurrency(userID, "CZK").Return(goserver.Currency{Id: "CZK", Name: "CZK"}, nil)
 
 			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
 
@@ -124,8 +126,10 @@ var _ = Describe("BalanceChecker", func() {
 			mockDB.EXPECT().CountUnprocessedTransactionsForAccount(userID, accID, gomock.Any()).Return(0, nil)
 
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(100.0), nil)
+			mockDB.EXPECT().GetCurrency(userID, "CZK").Return(goserver.Currency{Id: "CZK", Name: "CZK"}, nil)
 			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "USD").Return(decimal.NewFromFloat(250.0), nil) // USD mismatch!
+			mockDB.EXPECT().GetCurrency(userID, "USD").Return(goserver.Currency{Id: "USD", Name: "USD"}, nil)
 
 			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Description).To(ContainSubstring("Currency: USD"))
@@ -162,6 +166,7 @@ var _ = Describe("BalanceChecker", func() {
 
 			// Difference is exactly 0.01 in human terms, should be tolerated
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(100.01), nil)
+			mockDB.EXPECT().GetCurrency(userID, "CZK").Return(goserver.Currency{Id: "CZK", Name: "CZK"}, nil)
 			mockDB.EXPECT().CreateReconciliation(userID, gomock.Any()).Return(goserver.Reconciliation{}, nil)
 
 			err := CheckBalanceForAccount(ctx, logger, mockDB, userID, accID)
