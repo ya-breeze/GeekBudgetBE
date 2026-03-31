@@ -11,25 +11,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, entityID string, action string, before interface{}, after interface{}) error {
+func (s *storage) buildAuditLog(userID string, entityType string, entityID string, action string, before interface{}, after interface{}) (models.AuditLog, error) {
 	var beforeJSON, afterJSON *string
 
 	if before != nil {
 		b, err := json.Marshal(before)
 		if err != nil {
-			return fmt.Errorf("failed to marshal 'before' entity for audit log: %w", err)
+			return models.AuditLog{}, fmt.Errorf("failed to marshal 'before' entity for audit log: %w", err)
 		}
-		s := string(b)
-		beforeJSON = &s
+		str := string(b)
+		beforeJSON = &str
 	}
 
 	if after != nil {
 		b, err := json.Marshal(after)
 		if err != nil {
-			return fmt.Errorf("failed to marshal 'after' entity for audit log: %w", err)
+			return models.AuditLog{}, fmt.Errorf("failed to marshal 'after' entity for audit log: %w", err)
 		}
-		s := string(b)
-		afterJSON = &s
+		str := string(b)
+		afterJSON = &str
 	}
 
 	changeSource := constants.ChangeSourceSystem
@@ -39,7 +39,7 @@ func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, 
 		}
 	}
 
-	auditLog := models.AuditLog{
+	return models.AuditLog{
 		ID:           uuid.New(),
 		UserID:       userID,
 		EntityType:   entityType,
@@ -49,8 +49,14 @@ func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, 
 		Before:       beforeJSON,
 		After:        afterJSON,
 		CreatedAt:    time.Now(),
-	}
+	}, nil
+}
 
+func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, entityID string, action string, before interface{}, after interface{}) error {
+	auditLog, err := s.buildAuditLog(userID, entityType, entityID, action, before, after)
+	if err != nil {
+		return err
+	}
 	return tx.Create(&auditLog).Error
 }
 
