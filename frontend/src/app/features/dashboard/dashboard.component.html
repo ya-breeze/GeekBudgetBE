@@ -248,10 +248,33 @@
         }
 
         @if (!assetCards().length && !currencyTables().length) {
-            <div class="error-container">
-                <p>No expense data available. Please check the console for errors.</p>
-                <p>Loading: {{ loading() }}</p>
-                <p>Expense Data: {{ expenseData() | json }}</p>
+            <div class="welcome-container">
+                <mat-icon class="welcome-icon">savings</mat-icon>
+                <h2>Welcome to GeekBudget!</h2>
+                <p class="welcome-subtitle">Your personal finance tracker is ready. Here's how to get started:</p>
+                <div class="welcome-steps">
+                    <div class="welcome-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Add currencies</strong>
+                            <span>Go to <a routerLink="/currencies">Currencies</a> and add the currencies you use (e.g. USD, EUR).</span>
+                        </div>
+                    </div>
+                    <div class="welcome-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Create accounts</strong>
+                            <span>Go to <a routerLink="/accounts">Accounts</a> and add your bank accounts (type: Asset) and spending categories (type: Expense).</span>
+                        </div>
+                    </div>
+                    <div class="welcome-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Add transactions</strong>
+                            <span>Go to <a routerLink="/transactions">Transactions</a> to manually add transactions or import them from your bank.</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         }
     }

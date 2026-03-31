@@ -9,6 +9,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DecimalPipe, JsonPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { map, forkJoin, fromEvent } from 'rxjs';
 import { ApiConfiguration } from '../../core/api/api-configuration';
 import { getExpenses } from '../../core/api/fn/aggregations/get-expenses';
@@ -66,6 +67,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatTooltipModule,
         DecimalPipe,
         JsonPipe,
+        RouterLink,
         AccountDisplayComponent,
     ],
     templateUrl: './dashboard.component.html',
