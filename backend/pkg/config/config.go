@@ -22,6 +22,9 @@ type Config struct {
 	CookieSecure                  bool   `mapstructure:"cookiesecure" default:"true"`
 	MatcherConfirmationHistoryMax int    `mapstructure:"matcherconfirmationhistorymax" default:"10"`
 	BankImporterFilesPath         string `mapstructure:"bankimporterfilespath" default:"bank-importer-files"`
+	BackupPath                    string `mapstructure:"backup_path"           default:""`
+	BackupInterval                string `mapstructure:"backup_interval"       default:"24h"`
+	BackupMaxCount                int    `mapstructure:"backup_max_count"      default:"10"`
 }
 
 func InitiateConfig(cfgFile string) (*Config, error) {

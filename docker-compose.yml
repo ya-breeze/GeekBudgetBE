@@ -23,6 +23,9 @@ services:
       GB_MAXBATCHTOTALSIZEMB: ${GB_MAXBATCHTOTALSIZEMB:-1000}
       GB_PREFILL: ${GB_PREFILL:-false}
       GB_BANKIMPORTERFILESPATH: ${GB_BANKIMPORTERFILESPATH:-/data/bank-importer-files}
+      GB_BACKUP_PATH: ${GB_BACKUP_PATH:-}
+      GB_BACKUP_INTERVAL: ${GB_BACKUP_INTERVAL:-24h}
+      GB_BACKUP_MAX_COUNT: ${GB_BACKUP_MAX_COUNT:-10}
     volumes:
       # External volume for database and assets
       - ${GEEKBUDGET_DATA_PATH:-./geekbudget-data}:/data
