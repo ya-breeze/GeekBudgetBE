@@ -19,10 +19,41 @@
                 <div class="totals-container">
                     @for (total of assetTotals(); track total.currencyId) {
                         <div class="total-item">
-                            <span class="total-label">Total {{ total.currencyName }}:</span>
-                            <span class="total-value"
-                                >{{ total.totalBalance | number: '1.0-2' }}</span
-                            >
+                            <div class="total-content">
+                                <span class="total-label">Total {{ total.currencyName }}:</span>
+                                <div class="total-value-row">
+                                    <span class="total-value">{{
+                                        total.totalBalance | number: '1.0-2'
+                                    }}</span>
+                                    <div
+                                        class="trend-badge"
+                                        [class.positive]="total.trendDirection === 'up'"
+                                        [class.negative]="total.trendDirection === 'down'"
+                                    >
+                                        <mat-icon class="trend-icon">
+                                            @if (total.trendDirection === 'up') {
+                                                north_east
+                                            } @else if (total.trendDirection === 'down') {
+                                                south_east
+                                            } @else {
+                                                remove
+                                            }
+                                        </mat-icon>
+                                        <span class="trend-value"
+                                            >{{ total.trendPercent | number: '1.0-1' }}%</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sparkline-container">
+                                <canvas
+                                    baseChart
+                                    [data]="getSparklineData(total.history)"
+                                    [options]="sparklineOptions"
+                                    [type]="'line'"
+                                >
+                                </canvas>
+                            </div>
                         </div>
                     }
                 </div>

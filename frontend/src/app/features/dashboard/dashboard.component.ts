@@ -29,6 +29,8 @@ import { ReconciliationService } from '../reconciliation/services/reconciliation
 import { ReconciliationStatus } from '../../core/api/models/reconciliation-status';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AssetCard, AssetTotal } from './models/dashboard.models';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
 
 interface ExpenseTableCell {
     value: number;
@@ -70,6 +72,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         JsonPipe,
         RouterLink,
         AccountDisplayComponent,
+        BaseChartDirective,
     ],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.scss',
@@ -94,6 +97,36 @@ export class DashboardComponent implements OnInit {
     protected readonly isSmallScreen = signal(false);
     protected readonly includeHidden = signal(false);
     private readonly windowWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+    protected readonly sparklineOptions: ChartOptions<'line'> = {
+        responsive: true,
+        maintainAspectRatio: false,
+        elements: {
+            point: { radius: 0 },
+            line: { tension: 0.3, borderWidth: 2 },
+        },
+        scales: {
+            x: { display: false },
+            y: { display: false },
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+        },
+    };
+
+    protected getSparklineData(history: number[]): ChartConfiguration<'line'>['data'] {
+        return {
+            labels: history.map((_, i) => i.toString()),
+            datasets: [
+                {
+                    data: history,
+                    borderColor: '#1967d2',
+                    fill: false,
+                },
+            ],
+        };
+    }
 
     constructor() {
         // Use effect to react to sidenav state changes

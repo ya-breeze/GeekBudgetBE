@@ -122,20 +122,71 @@
 
     .total-item {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        background: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        min-width: 240px;
 
-        .total-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #5f6368;
-            font-weight: 500;
-            letter-spacing: 0.5px;
+        .total-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+
+            .total-label {
+                font-size: 11px;
+                text-transform: uppercase;
+                color: #5f6368;
+                font-weight: 500;
+                letter-spacing: 0.5px;
+            }
+
+            .total-value-row {
+                display: flex;
+                align-items: baseline;
+                gap: 8px;
+
+                .total-value {
+                    font-size: 20px;
+                    font-weight: 500;
+                    color: #1967d2;
+                }
+            }
         }
 
-        .total-value {
-            font-size: 20px;
+        .sparkline-container {
+            width: 80px;
+            height: 40px;
+        }
+
+        .trend-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 12px;
             font-weight: 500;
-            color: #1967d2;
+            padding: 2px 6px;
+            border-radius: 12px;
+            background: #f1f3f4;
+            color: #5f6368;
+
+            &.positive {
+                color: #188038;
+                background: #e6f4ea;
+            }
+
+            &.negative {
+                color: #d93025;
+                background: #fce8e6;
+            }
+
+            .trend-icon {
+                font-size: 14px;
+                width: 14px;
+                height: 14px;
+            }
         }
     }
 
