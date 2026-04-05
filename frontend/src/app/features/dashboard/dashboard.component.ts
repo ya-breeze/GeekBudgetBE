@@ -287,6 +287,33 @@ export class DashboardComponent implements OnInit {
 
     protected readonly assetData = signal<Aggregation | null>(null);
     protected readonly reconciliationStatuses = signal<ReconciliationStatus[]>([]);
+    protected readonly showAssetDetails = signal(false);
+
+    protected readonly assetTotals = computed(() => {
+        const cards = this.assetCards();
+        if (!cards.length) return [];
+
+        const totalsMap = new Map<string, { currencyName: string; total: number }>();
+
+        cards.forEach((card) => {
+            const existing = totalsMap.get(card.currencyId) || {
+                currencyName: card.currencyName,
+                total: 0,
+            };
+            existing.total += card.balance;
+            totalsMap.set(card.currencyId, existing);
+        });
+
+        return Array.from(totalsMap.entries()).map(([currencyId, data]) => ({
+            currencyId,
+            currencyName: data.currencyName,
+            totalBalance: data.total,
+        }));
+    });
+
+    protected toggleAssetDetails(): void {
+        this.showAssetDetails.update((v) => !v);
+    }
 
     private readonly reconciliationTolerance = 0.01;
 
