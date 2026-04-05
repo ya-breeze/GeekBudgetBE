@@ -368,8 +368,9 @@ export class DashboardComponent implements OnInit {
             return [];
         }
 
+        const includeHidden = this.includeHidden();
         const assetAccounts = accounts.filter(
-            (acc) => acc.type === 'asset' && acc.showInDashboardSummary !== false,
+            (acc) => acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
         );
         if (!assetAccounts.length) {
             return [];
