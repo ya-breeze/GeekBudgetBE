@@ -28,6 +28,7 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
 import { ReconciliationService } from '../reconciliation/services/reconciliation.service';
 import { ReconciliationStatus } from '../../core/api/models/reconciliation-status';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AssetCard, AssetTotal } from './models/dashboard.models';
 
 interface ExpenseTableCell {
     value: number;
@@ -289,7 +290,7 @@ export class DashboardComponent implements OnInit {
     protected readonly reconciliationStatuses = signal<ReconciliationStatus[]>([]);
     protected readonly showAssetDetails = signal(false);
 
-    protected readonly assetTotals = computed(() => {
+    protected readonly assetTotals = computed<AssetTotal[]>(() => {
         const cards = this.assetCards();
         if (!cards.length) return [];
 
@@ -308,6 +309,9 @@ export class DashboardComponent implements OnInit {
             currencyId,
             currencyName: data.currencyName,
             totalBalance: data.total,
+            trendPercent: 0,
+            trendDirection: 'neutral',
+            history: [],
         }));
     });
 
@@ -381,7 +385,7 @@ export class DashboardComponent implements OnInit {
         );
 
         // Map currency ID to symbol/name if needed (or just use code)
-        const cards: any[] = [];
+        const cards: AssetCard[] = [];
 
         // Group data by currency, but we need to extract account data
         data.currencies.forEach((currencyAgg) => {
