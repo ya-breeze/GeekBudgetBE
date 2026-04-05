@@ -291,28 +291,63 @@ export class DashboardComponent implements OnInit {
     protected readonly showAssetDetails = signal(false);
 
     protected readonly assetTotals = computed<AssetTotal[]>(() => {
-        const cards = this.assetCards();
-        if (!cards.length) return [];
+        const data = this.assetData();
+        const accounts = this.accounts();
+        const includeHidden = this.includeHidden();
 
-        const totalsMap = new Map<string, { currencyName: string; total: number }>();
+        if (!data || !accounts.length) return [];
 
-        cards.forEach((card) => {
-            const existing = totalsMap.get(card.currencyId) || {
-                currencyName: card.currencyName,
-                total: 0,
-            };
-            existing.total += card.balance;
-            totalsMap.set(card.currencyId, existing);
-        });
+        const assetAccounts = accounts.filter(
+            (acc) => acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
+        );
+        const assetAccountIds = new Set(assetAccounts.map((a) => a.id));
 
-        return Array.from(totalsMap.entries()).map(([currencyId, data]) => ({
-            currencyId,
-            currencyName: data.currencyName,
-            totalBalance: data.total,
-            trendPercent: 0,
-            trendDirection: 'neutral',
-            history: [],
-        }));
+        return data.currencies
+            .map((currencyAgg) => {
+                let totalBalance = 0;
+                let prevTotalBalance = 0;
+                let history: number[] = new Array(data.intervals.length).fill(0);
+
+                currencyAgg.accounts.forEach((accAgg) => {
+                    if (!assetAccountIds.has(accAgg.accountId)) return;
+
+                    const bal = accAgg.total || 0;
+                    totalBalance += bal;
+
+                    // Calculate previous balance for trend
+                    const changePercent = accAgg.changePercent || 0;
+                    const prevBal = bal / (1 + changePercent / 100);
+                    prevTotalBalance += prevBal;
+
+                    // Build history
+                    accAgg.amounts.forEach((amt, idx) => {
+                        history[idx] += amt;
+                    });
+                });
+
+                let trendPercent = 0;
+                let trendDirection: 'up' | 'down' | 'neutral' = 'neutral';
+
+                if (prevTotalBalance > 0) {
+                    trendPercent = ((totalBalance - prevTotalBalance) / prevTotalBalance) * 100;
+                    if (trendPercent > 0.01) trendDirection = 'up';
+                    else if (trendPercent < -0.01) trendDirection = 'down';
+                }
+
+                const currency = this.currencyService
+                    .currencies()
+                    .find((c) => c.id === currencyAgg.currencyId);
+
+                return {
+                    currencyId: currencyAgg.currencyId,
+                    currencyName: currency?.name || currencyAgg.currencyId,
+                    totalBalance,
+                    trendPercent: Math.abs(trendPercent),
+                    trendDirection,
+                    history,
+                };
+            })
+            .filter((t) => t.totalBalance !== 0 || t.history.some((v) => v !== 0));
     });
 
     protected toggleAssetDetails(): void {
