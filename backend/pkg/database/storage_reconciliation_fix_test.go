@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -21,7 +22,7 @@ func TestReconciliationHistoryPreservation(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-fix-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	accountID := "acc-fix-1" // Placeholder, will be updated
 	currencyID := "CZK"
 

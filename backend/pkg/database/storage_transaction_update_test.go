@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -19,7 +20,7 @@ func TestUpdateTransactionPreservesFields(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-update-test"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	// Create a transaction with rich data
 	originalDate := time.Now().Add(-24 * time.Hour)
@@ -95,7 +96,7 @@ func TestUpdateTransactionInternalUpdatesFields(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-internal-update-test"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	// Create a transaction with IsAuto=false
 	originalDate := time.Now().Add(-24 * time.Hour)

@@ -14,7 +14,7 @@ import (
 type Reconciliation struct {
 	gorm.Model
 
-	UserID     string    `gorm:"index;index:idx_reconciliations_lookup,priority:1"`
+	FamilyID   uuid.UUID `gorm:"type:uuid;index;not null;index:idx_reconciliations_lookup,priority:1"`
 	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
 	AccountID  uuid.UUID `gorm:"type:uuid;index;index:idx_reconciliations_lookup,priority:2"`
 	CurrencyID string    `gorm:"index;index:idx_reconciliations_lookup,priority:3"`
@@ -39,10 +39,10 @@ func ReconciliationToAPI(m *Reconciliation) *goserver.Reconciliation {
 }
 
 // ReconciliationFromAPI converts API component to database model
-func ReconciliationFromAPI(userID string, rec *goserver.ReconciliationNoId) *Reconciliation {
+func ReconciliationFromAPI(familyID uuid.UUID, rec *goserver.ReconciliationNoId) *Reconciliation {
 	accountId, _ := uuid.Parse(rec.AccountId)
 	return &Reconciliation{
-		UserID:            userID,
+		FamilyID:          familyID,
 		AccountID:         accountId,
 		CurrencyID:        rec.CurrencyId,
 		ReconciledBalance: rec.ReconciledBalance,

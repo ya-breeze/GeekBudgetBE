@@ -12,9 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) GetLatestReconciliation(userID, accountID, currencyID string) (*goserver.Reconciliation, error) {
+func (s *storage) GetLatestReconciliation(familyID uuid.UUID, accountID, currencyID string) (*goserver.Reconciliation, error) {
 	var rec models.Reconciliation
-	result := s.db.Where("user_id = ? AND account_id = ? AND currency_id = ?", userID, accountID, currencyID).
+	result := s.db.Where("family_id = ? AND account_id = ? AND currency_id = ?", familyID, accountID, currencyID).
 		Order("reconciled_at DESC").First(&rec)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -25,9 +25,9 @@ func (s *storage) GetLatestReconciliation(userID, accountID, currencyID string) 
 	return models.ReconciliationToAPI(&rec), nil
 }
 
-func (s *storage) GetReconciliationsForAccount(userID, accountID string) ([]goserver.Reconciliation, error) {
+func (s *storage) GetReconciliationsForAccount(familyID uuid.UUID, accountID string) ([]goserver.Reconciliation, error) {
 	var recs []models.Reconciliation
-	err := s.db.Where("user_id = ? AND account_id = ?", userID, accountID).
+	err := s.db.Where("family_id = ? AND account_id = ?", familyID, accountID).
 		Order("reconciled_at DESC").Find(&recs).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get reconciliations for account: %w", err)
@@ -40,9 +40,9 @@ func (s *storage) GetReconciliationsForAccount(userID, accountID string) ([]gose
 	return result, nil
 }
 
-func (s *storage) GetReconciliationsForAccountAndCurrency(userID, accountID, currencyID string) ([]goserver.Reconciliation, error) {
+func (s *storage) GetReconciliationsForAccountAndCurrency(familyID uuid.UUID, accountID, currencyID string) ([]goserver.Reconciliation, error) {
 	var recs []models.Reconciliation
-	err := s.db.Where("user_id = ? AND account_id = ? AND currency_id = ?", userID, accountID, currencyID).
+	err := s.db.Where("family_id = ? AND account_id = ? AND currency_id = ?", familyID, accountID, currencyID).
 		Order("reconciled_at DESC").Find(&recs).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get reconciliations for account and currency: %w", err)
@@ -55,8 +55,8 @@ func (s *storage) GetReconciliationsForAccountAndCurrency(userID, accountID, cur
 	return result, nil
 }
 
-func (s *storage) CreateReconciliation(userID string, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error) {
-	model := models.ReconciliationFromAPI(userID, rec)
+func (s *storage) CreateReconciliation(familyID uuid.UUID, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error) {
+	model := models.ReconciliationFromAPI(familyID, rec)
 	model.ID = uuid.New()
 	model.ReconciledAt = time.Now()
 
@@ -64,16 +64,16 @@ func (s *storage) CreateReconciliation(userID string, rec *goserver.Reconciliati
 		return goserver.Reconciliation{}, fmt.Errorf("failed to create reconciliation: %w", err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Reconciliation", model.ID.String(), "CREATED", nil, &model); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "Reconciliation", model.ID.String(), "CREATED", nil, &model); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
 	return *models.ReconciliationToAPI(model), nil
 }
 
-func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string, fromDate time.Time) error {
-	query := s.db.Where("user_id = ? AND account_id = ? AND currency_id = ?",
-		userID, accountID, currencyID)
+func (s *storage) InvalidateReconciliation(familyID uuid.UUID, accountID, currencyID string, fromDate time.Time) error {
+	query := s.db.Where("family_id = ? AND account_id = ? AND currency_id = ?",
+		familyID, accountID, currencyID)
 
 	if !fromDate.IsZero() {
 		query = query.Where("reconciled_at >= ?", fromDate)
@@ -91,7 +91,7 @@ func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string,
 
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		for _, rec := range recs {
-			if err := s.recordAuditLog(tx, userID, "Reconciliation", rec.ID.String(), "DELETED", &rec, nil); err != nil {
+			if err := s.recordAuditLog(tx, familyID, "Reconciliation", rec.ID.String(), "DELETED", &rec, nil); err != nil {
 				s.log.Error("Failed to record audit log", "error", err)
 			}
 		}
@@ -103,7 +103,7 @@ func (s *storage) InvalidateReconciliation(userID, accountID, currencyID string,
 	})
 }
 
-func (s *storage) GetBulkReconciliationData(userID string) (*BulkReconciliationData, error) {
+func (s *storage) GetBulkReconciliationData(familyID uuid.UUID) (*BulkReconciliationData, error) {
 	data := &BulkReconciliationData{
 		Balances:              make(map[string]map[string]decimal.Decimal),
 		LatestReconciliations: make(map[string]map[string]*goserver.Reconciliation),
@@ -112,7 +112,7 @@ func (s *storage) GetBulkReconciliationData(userID string) (*BulkReconciliationD
 	}
 
 	// 1. Get Accounts for opening balances and ignore dates
-	accounts, err := s.GetAccounts(userID)
+	accounts, err := s.GetAccounts(familyID)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (s *storage) GetBulkReconciliationData(userID string) (*BulkReconciliationD
 
 	// 2. Get latest reconciliations
 	var recs []models.Reconciliation
-	err = s.db.Where("user_id = ?", userID).Order("reconciled_at DESC").Find(&recs).Error
+	err = s.db.Where("family_id = ?", familyID).Order("reconciled_at DESC").Find(&recs).Error
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func (s *storage) GetBulkReconciliationData(userID string) (*BulkReconciliationD
 
 	// 3. Get all transactions (merged_into_id IS NULL)
 	var transactions []models.Transaction
-	err = s.db.Where("user_id = ? AND merged_into_id IS NULL", userID).Find(&transactions).Error
+	err = s.db.Where("family_id = ? AND merged_into_id IS NULL", familyID).Find(&transactions).Error
 	if err != nil {
 		return nil, err
 	}
@@ -195,12 +195,10 @@ func (s *storage) GetBulkReconciliationData(userID string) (*BulkReconciliationD
 	return data, nil
 }
 
-func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID string, ignoreUnprocessedBefore time.Time) (int, error) {
+func (s *storage) CountUnprocessedTransactionsForAccount(familyID uuid.UUID, accountID string, ignoreUnprocessedBefore time.Time) (int, error) {
 	var count int
-	// An unprocessed transaction is one that has at least one movement with an empty AccountId.
-	// We also filter by accountID being present in at least one movement.
 	var transactions []models.Transaction
-	query := s.db.Where("user_id = ? AND movements LIKE ? AND merged_into_id IS NULL", userID, "%"+accountID+"%")
+	query := s.db.Where("family_id = ? AND movements LIKE ? AND merged_into_id IS NULL", familyID, "%"+accountID+"%")
 	if !ignoreUnprocessedBefore.IsZero() {
 		query = query.Where("date >= ?", ignoreUnprocessedBefore)
 	}
@@ -216,8 +214,6 @@ func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID strin
 		hasEmpty := false
 		hasAccount := false
 		for _, m := range t.Movements {
-			// If a movement has 0 amount, it doesn't represent a financial impact
-			// and shouldn't block reconciliation even if its AccountId is empty.
 			if m.Amount.IsZero() {
 				continue
 			}
@@ -236,10 +232,10 @@ func (s *storage) CountUnprocessedTransactionsForAccount(userID, accountID strin
 	return count, nil
 }
 
-func (s *storage) HasTransactionsAfterDate(userID, accountID string, date time.Time) (bool, error) {
+func (s *storage) HasTransactionsAfterDate(familyID uuid.UUID, accountID string, date time.Time) (bool, error) {
 	var count int64
 	err := s.db.Model(&models.Transaction{}).
-		Where("user_id = ? AND movements LIKE ? AND date > ? AND merged_into_id IS NULL", userID, "%"+accountID+"%", date).
+		Where("family_id = ? AND movements LIKE ? AND date > ? AND merged_into_id IS NULL", familyID, "%"+accountID+"%", date).
 		Count(&count).Error
 	if err != nil {
 		return false, fmt.Errorf(StorageError, err)
@@ -248,7 +244,7 @@ func (s *storage) HasTransactionsAfterDate(userID, accountID string, date time.T
 }
 
 func (s *storage) invalidateReconciliationIfAmountsChanged(
-	userID string,
+	familyID uuid.UUID,
 	oldMovements, newMovements []goserver.Movement,
 	txDate time.Time,
 	showNotification bool,
@@ -270,7 +266,6 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 		key := newM.AccountId + "|" + newM.CurrencyId
 		oldM, exists := oldByKey[key]
 
-		// New movement or amount changed (use .Equal() for decimal comparison, not != which compares pointer addresses)
 		if !exists || !oldM.Amount.Equal(newM.Amount) {
 			affectedAccounts[newM.AccountId] = newM.CurrencyId
 		}
@@ -286,7 +281,7 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 
 	// Only invalidate if there were actual financial changes
 	for accountId, currencyId := range affectedAccounts {
-		lastRec, err := s.GetLatestReconciliation(userID, accountId, currencyId)
+		lastRec, err := s.GetLatestReconciliation(familyID, accountId, currencyId)
 		if err != nil || lastRec == nil {
 			continue
 		}
@@ -294,18 +289,18 @@ func (s *storage) invalidateReconciliationIfAmountsChanged(
 			s.log.Info("Invalidating reconciliation due to financial change",
 				"accountId", accountId, "currencyId", currencyId, "txDate", txDate, "recAt", lastRec.ReconciledAt)
 
-			if err := s.InvalidateReconciliation(userID, accountId, currencyId, txDate); err != nil {
+			if err := s.InvalidateReconciliation(familyID, accountId, currencyId, txDate); err != nil {
 				s.log.Error("Failed to invalidate reconciliation", "error", err)
 				continue
 			}
 
 			accountName := accountId
-			if acc, err := s.GetAccount(userID, accountId); err == nil {
+			if acc, err := s.GetAccount(familyID, accountId); err == nil {
 				accountName = acc.Name
 			}
 
 			if showNotification {
-				_, _ = s.CreateNotification(userID, &goserver.Notification{
+				_, _ = s.CreateNotification(familyID, &goserver.Notification{
 					Date:  time.Now(),
 					Type:  string(models.NotificationTypeInfo),
 					Title: "Reconciliation Invalidated",

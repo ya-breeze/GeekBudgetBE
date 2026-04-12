@@ -20,10 +20,11 @@ func TestNotificationToDB(t *testing.T) {
 			Description: "Test Description",
 		}
 
-		mn, err := NotificationToDB(gn, "user1")
+		familyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+		mn, err := NotificationToDB(gn, familyID)
 		assert.NoError(t, err)
 		assert.Equal(t, id, mn.ID)
-		assert.Equal(t, "user1", mn.UserID)
+		assert.Equal(t, familyID, mn.FamilyID)
 		assert.Equal(t, NotificationTypeInfo, mn.Type)
 	})
 
@@ -36,7 +37,7 @@ func TestNotificationToDB(t *testing.T) {
 			Description: "Description",
 		}
 
-		mn, err := NotificationToDB(gn, "user1")
+		mn, err := NotificationToDB(gn, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 		assert.NoError(t, err)
 		assert.Equal(t, uuid.Nil, mn.ID)
 		assert.Equal(t, NotificationTypeError, mn.Type)
@@ -47,7 +48,7 @@ func TestNotificationToDB(t *testing.T) {
 			Id: "invalid-uuid",
 		}
 
-		_, err := NotificationToDB(gn, "user1")
+		_, err := NotificationToDB(gn, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 		assert.Error(t, err)
 	})
 }
@@ -56,7 +57,7 @@ func TestNotification_FromDB(t *testing.T) {
 	id := uuid.New()
 	mn := &Notification{
 		ID:          id,
-		UserID:      "user1",
+		FamilyID:    uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 		Date:        time.Now(),
 		Type:        NotificationTypeError,
 		Title:       "Title",

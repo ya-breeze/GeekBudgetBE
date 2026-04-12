@@ -23,9 +23,9 @@ func NewAuditLogsAPIService(logger *slog.Logger, db database.Storage) goserver.A
 }
 
 func (s *AuditLogsAPIServiceImpl) GetAuditLogs(ctx context.Context, entityType string, entityId string, userId string, dateFrom time.Time, dateTo time.Time, limit int32, offset int32) (goserver.ImplResponse, error) {
-	requestUserID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -54,7 +54,7 @@ func (s *AuditLogsAPIServiceImpl) GetAuditLogs(ctx context.Context, entityType s
 		filter.DateTo = &dateTo
 	}
 
-	logs, err := s.db.GetAuditLogs(requestUserID, filter)
+	logs, err := s.db.GetAuditLogs(familyID, filter)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get audit logs")
 		return goserver.Response(500, nil), nil
@@ -64,7 +64,7 @@ func (s *AuditLogsAPIServiceImpl) GetAuditLogs(ctx context.Context, entityType s
 	for i, log := range logs {
 		apiLogs[i] = goserver.AuditLog{
 			Id:           log.ID.String(),
-			UserId:       log.UserID,
+			UserId:       log.FamilyID.String(),
 			EntityType:   log.EntityType,
 			EntityId:     log.EntityID,
 			Action:       log.Action,

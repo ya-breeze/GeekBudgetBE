@@ -233,7 +233,7 @@ func TestMatcher_FromDBAndToDB_ConfirmationHistoryRoundTrip(t *testing.T) {
 
 	// Create NoId model and convert back
 	noID := models.MatcherWithoutID(&apiModel)
-	db2 := models.MatcherToDB(noID, "user-1")
+	db2 := models.MatcherToDB(noID, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 
 	// Compare histories
 	if len(db2.ConfirmationHistory) != len(dbMatcher.ConfirmationHistory) {

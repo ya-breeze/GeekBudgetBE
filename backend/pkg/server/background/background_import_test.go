@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -19,7 +20,7 @@ import (
 type TestFixture struct {
 	Storage             database.Storage
 	Logger              *slog.Logger
-	UserID              string
+	UserID              uuid.UUID
 	Currency            goserver.Currency
 	Account             goserver.Account
 	UnprocessedService  *api.UnprocessedTransactionsAPIServiceImpl
@@ -44,16 +45,20 @@ func setupTestFixture(t *testing.T, logger *slog.Logger, username string) *TestF
 	t.Helper()
 	storage := mustOpenTestStorage(t, logger)
 
-	// Create a user
-	createdUser, err := storage.CreateUser(username, "password123")
+	// Create a family and user
+	createdFamily, err := storage.CreateFamily("TestFamily")
+	if err != nil {
+		t.Fatalf("failed to create family: %v", err)
+	}
+	familyID := createdFamily.ID
+	_, err = storage.CreateUser(username, "password123", familyID)
 	if err != nil {
 		t.Fatalf("failed to create user: %v", err)
 	}
-	userID := createdUser.ID.String()
 
 	// Create a currency
 	currency := &goserver.CurrencyNoId{Name: "USD"}
-	createdCurrency, err := storage.CreateCurrency(userID, currency)
+	createdCurrency, err := storage.CreateCurrency(familyID, currency)
 	if err != nil {
 		t.Fatalf("failed to create currency: %v", err)
 	}
@@ -63,7 +68,7 @@ func setupTestFixture(t *testing.T, logger *slog.Logger, username string) *TestF
 		Name:        "Test Account",
 		Description: "Test account",
 	}
-	createdAccount, err := storage.CreateAccount(userID, account)
+	createdAccount, err := storage.CreateAccount(familyID, account)
 	if err != nil {
 		t.Fatalf("failed to create account: %v", err)
 	}
@@ -74,7 +79,7 @@ func setupTestFixture(t *testing.T, logger *slog.Logger, username string) *TestF
 	return &TestFixture{
 		Storage:            storage,
 		Logger:             logger,
-		UserID:             userID,
+		UserID:             familyID,
 		Currency:           createdCurrency,
 		Account:            createdAccount,
 		UnprocessedService: unprocessedService,

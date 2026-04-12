@@ -11,8 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) GetAccounts(userID string) ([]goserver.Account, error) {
-	result, err := s.db.Model(&models.Account{}).Where("user_id = ?", userID).Order("type, name").Rows()
+func (s *storage) GetAccounts(familyID uuid.UUID) ([]goserver.Account, error) {
+	result, err := s.db.Model(&models.Account{}).Where("family_id = ?", familyID).Order("type, name").Rows()
 	if err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
@@ -31,38 +31,38 @@ func (s *storage) GetAccounts(userID string) ([]goserver.Account, error) {
 	return accounts, nil
 }
 
-func (s *storage) CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error) {
-	acc := models.AccountToDB(account, userID)
+func (s *storage) CreateAccount(familyID uuid.UUID, account *goserver.AccountNoId) (goserver.Account, error) {
+	acc := models.AccountToDB(account, familyID)
 	acc.ID = uuid.New()
 	if err := s.db.Create(&acc).Error; err != nil {
 		return goserver.Account{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Account", acc.ID.String(), "CREATED", nil, &acc); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "Account", acc.ID.String(), "CREATED", nil, &acc); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
 	return acc.FromDB(), nil
 }
 
-func (s *storage) UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error) {
-	return performUpdate[models.Account, goserver.AccountNoIdInterface, goserver.Account](s, userID, "Account", id, account,
+func (s *storage) UpdateAccount(familyID uuid.UUID, id string, account *goserver.AccountNoId) (goserver.Account, error) {
+	return performUpdate[models.Account, goserver.AccountNoIdInterface, goserver.Account](s, familyID, "Account", id, account,
 		models.AccountToDB,
 		func(m *models.Account) goserver.Account { return m.FromDB() },
 		func(m *models.Account, id uuid.UUID) { m.ID = id },
 	)
 }
 
-func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *string) error {
+func (s *storage) DeleteAccount(familyID uuid.UUID, id string, replaceWithAccountID *string) error {
 	var acc models.Account
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&acc).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&acc).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrNotFound
 		}
 		return fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Account", id, "DELETED", &acc, nil); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "Account", id, "DELETED", &acc, nil); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -71,19 +71,19 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			newAccountID := *replaceWithAccountID
 
 			// 1. Reassign BankImporters
-			if err := tx.Model(&models.BankImporter{}).Where("account_id = ? AND user_id = ?", id, userID).
+			if err := tx.Model(&models.BankImporter{}).Where("account_id = ? AND family_id = ?", id, familyID).
 				Update("account_id", newAccountID).Error; err != nil {
 				return fmt.Errorf("failed to reassign bank importers: %w", err)
 			}
 
 			// 2. Reassign Matchers
-			if err := tx.Model(&models.Matcher{}).Where("output_account_id = ? AND user_id = ?", id, userID).
+			if err := tx.Model(&models.Matcher{}).Where("output_account_id = ? AND family_id = ?", id, familyID).
 				Update("output_account_id", newAccountID).Error; err != nil {
 				return fmt.Errorf("failed to reassign matchers: %w", err)
 			}
 
 			// 3. Reassign BudgetItems
-			if err := tx.Model(&models.BudgetItem{}).Where("account_id = ? AND user_id = ?", id, userID).
+			if err := tx.Model(&models.BudgetItem{}).Where("account_id = ? AND family_id = ?", id, familyID).
 				Update("account_id", newAccountID).Error; err != nil {
 				return fmt.Errorf("failed to reassign budget items: %w", err)
 			}
@@ -95,7 +95,7 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			// Optimization: Use SQLite's JSON functions for accurate querying.
 			var transactions []models.Transaction
 			if err := tx.Joins("CROSS JOIN json_each(transactions.movements)").
-				Where("transactions.user_id = ? AND json_extract(json_each.value, '$.accountId') = ?", userID, id).
+				Where("transactions.family_id = ? AND json_extract(json_each.value, '$.accountId') = ?", familyID, id).
 				Group("transactions.id").
 				Find(&transactions).Error; err != nil {
 				return fmt.Errorf("failed to find transactions for reassignment: %w", err)
@@ -125,7 +125,7 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			var count int64
 
 			// Check BankImporters
-			if err := tx.Model(&models.BankImporter{}).Where("account_id = ? AND user_id = ?", id, userID).Count(&count).Error; err != nil {
+			if err := tx.Model(&models.BankImporter{}).Where("account_id = ? AND family_id = ?", id, familyID).Count(&count).Error; err != nil {
 				return fmt.Errorf("failed to check bank importers: %w", err)
 			}
 			if count > 0 {
@@ -133,7 +133,7 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			}
 
 			// Check Matchers
-			if err := tx.Model(&models.Matcher{}).Where("output_account_id = ? AND user_id = ?", id, userID).Count(&count).Error; err != nil {
+			if err := tx.Model(&models.Matcher{}).Where("output_account_id = ? AND family_id = ?", id, familyID).Count(&count).Error; err != nil {
 				return fmt.Errorf("failed to check matchers: %w", err)
 			}
 			if count > 0 {
@@ -141,7 +141,7 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			}
 
 			// Check BudgetItems
-			if err := tx.Model(&models.BudgetItem{}).Where("account_id = ? AND user_id = ?", id, userID).Count(&count).Error; err != nil {
+			if err := tx.Model(&models.BudgetItem{}).Where("account_id = ? AND family_id = ?", id, familyID).Count(&count).Error; err != nil {
 				return fmt.Errorf("failed to check budget items: %w", err)
 			}
 			if count > 0 {
@@ -152,7 +152,7 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			// Using SQLite's JSON functions for accurate checking
 			if err := tx.Table("transactions").
 				Joins("CROSS JOIN json_each(transactions.movements)").
-				Where("transactions.user_id = ? AND json_extract(json_each.value, '$.accountId') = ?", userID, id).
+				Where("transactions.family_id = ? AND json_extract(json_each.value, '$.accountId') = ?", familyID, id).
 				Count(&count).Error; err != nil {
 				return fmt.Errorf("failed to check transactions: %w", err)
 			}
@@ -161,15 +161,15 @@ func (s *storage) DeleteAccount(userID string, id string, replaceWithAccountID *
 			}
 		}
 
-		if err := tx.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Account{}).Error; err != nil {
+		if err := tx.Where("id = ? AND family_id = ?", id, familyID).Delete(&models.Account{}).Error; err != nil {
 			return fmt.Errorf(StorageError, err)
 		}
 		return nil
 	})
 }
 
-func (s *storage) GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error) {
-	// result, err := s.db.Model(&models.Transaction{}).Where("user_id = ? AND account_id = ?", userID, accountID).Rows()
+func (s *storage) GetAccountHistory(familyID uuid.UUID, accountID string) ([]goserver.Transaction, error) {
+	// result, err := s.db.Model(&models.Transaction{}).Where("family_id = ? AND account_id = ?", familyID, accountID).Rows()
 	// if err != nil {
 	// 	return nil, fmt.Errorf(StorageError, err)
 	// }
@@ -188,9 +188,9 @@ func (s *storage) GetAccountHistory(userID string, accountID string) ([]goserver
 	return transactions, nil
 }
 
-func (s *storage) GetAccount(userID string, id string) (goserver.Account, error) {
+func (s *storage) GetAccount(familyID uuid.UUID, id string) (goserver.Account, error) {
 	var acc models.Account
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&acc).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&acc).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return goserver.Account{}, ErrNotFound
 		}
@@ -201,8 +201,8 @@ func (s *storage) GetAccount(userID string, id string) (goserver.Account, error)
 	return acc.FromDB(), nil
 }
 
-func (s *storage) GetAccountBalance(userID, accountID, currencyID string) (decimal.Decimal, error) {
-	acc, err := s.GetAccount(userID, accountID)
+func (s *storage) GetAccountBalance(familyID uuid.UUID, accountID, currencyID string) (decimal.Decimal, error) {
+	acc, err := s.GetAccount(familyID, accountID)
 	if err != nil {
 		return decimal.Zero, err
 	}
@@ -221,7 +221,7 @@ func (s *storage) GetAccountBalance(userID, accountID, currencyID string) (decim
 	// For simplicity and to avoid complex SQLite JSON path expressions that might vary,
 	// we fetch transactions and sum in Go, but filter at DB level if possible.
 	var transactions []models.Transaction
-	err = s.db.Where("user_id = ? AND movements LIKE ? AND merged_into_id IS NULL", userID, "%"+accountID+"%").Find(&transactions).Error
+	err = s.db.Where("family_id = ? AND movements LIKE ? AND merged_into_id IS NULL", familyID, "%"+accountID+"%").Find(&transactions).Error
 	if err != nil {
 		return decimal.Zero, fmt.Errorf(StorageError, err)
 	}

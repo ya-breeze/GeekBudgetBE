@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
@@ -25,7 +26,7 @@ var _ = Describe("BalanceChecker", func() {
 		mockCtrl *gomock.Controller
 		mockDB   *mocks.MockStorage
 		logger   = test.CreateTestLogger()
-		userID   = "test-user"
+		userID   = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		accID    = "test-acc"
 		ctx      = context.Background()
 	)
@@ -72,7 +73,7 @@ var _ = Describe("BalanceChecker", func() {
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "CZK").Return(decimal.NewFromFloat(1400.0), nil)
 			mockDB.EXPECT().GetCurrency(userID, "CZK").Return(goserver.Currency{Id: "CZK", Name: "CZK"}, nil)
 
-			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Type).To(Equal(string(models.NotificationTypeBalanceDoesntMatch)))
 				Expect(n.Title).To(Equal("Balance Mismatch Detected"))
 				Expect(n.Description).To(ContainSubstring("Account balance: 1400.00"))
@@ -131,7 +132,7 @@ var _ = Describe("BalanceChecker", func() {
 			mockDB.EXPECT().GetAccountBalance(userID, accID, "USD").Return(decimal.NewFromFloat(250.0), nil) // USD mismatch!
 			mockDB.EXPECT().GetCurrency(userID, "USD").Return(goserver.Currency{Id: "USD", Name: "USD"}, nil)
 
-			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Description).To(ContainSubstring("Currency: USD"))
 				return goserver.Notification{}, nil
 			})

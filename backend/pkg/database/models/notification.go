@@ -24,14 +24,14 @@ const DuplicateReason = "Potential duplicate from different importer"
 type Notification struct {
 	gorm.Model
 
-	Date        time.Time `gorm:"index:idx_notifications_user_date,priority:2"`
+	Date        time.Time `gorm:"index:idx_notifications_family_date,priority:2"`
 	Type        NotificationType
 	URL         string
 	Title       string
 	Description string
 
-	UserID string    `gorm:"index;index:idx_notifications_user_date,priority:1"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FamilyID uuid.UUID `gorm:"type:uuid;index;not null;index:idx_notifications_family_date,priority:1"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (t *Notification) FromDB() goserver.Notification {
@@ -45,7 +45,7 @@ func (t *Notification) FromDB() goserver.Notification {
 	}
 }
 
-func NotificationToDB(m *goserver.Notification, userID string) (*Notification, error) {
+func NotificationToDB(m *goserver.Notification, familyID uuid.UUID) (*Notification, error) {
 	var id uuid.UUID
 	var err error
 	if m.Id != "" {
@@ -56,8 +56,8 @@ func NotificationToDB(m *goserver.Notification, userID string) (*Notification, e
 	}
 
 	return &Notification{
-		ID:     id,
-		UserID: userID,
+		ID:       id,
+		FamilyID: familyID,
 
 		Date:        m.Date,
 		Type:        NotificationType(m.Type),

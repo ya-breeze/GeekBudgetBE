@@ -4,10 +4,13 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
+
+var testFamilyID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 func TestAddMatcherConfirmation(t *testing.T) {
 	logger := slog.Default()
@@ -22,22 +25,22 @@ func TestAddMatcherConfirmation(t *testing.T) {
 	noid := &goserver.MatcherNoId{
 		ConfirmationHistory: []bool{},
 	}
-	created, err := st.CreateMatcher("user-1", noid)
+	created, err := st.CreateMatcher(testFamilyID, noid)
 	if err != nil {
 		t.Fatalf("failed to create matcher: %v", err)
 	}
 
 	// helper to add confirmation and fail on error
-	add := func(user, id string, confirmed bool) {
-		if e := st.AddMatcherConfirmation(user, id, confirmed); e != nil {
+	add := func(id string, confirmed bool) {
+		if e := st.AddMatcherConfirmation(testFamilyID, id, confirmed); e != nil {
 			t.Fatalf("AddMatcherConfirmation failed: %v", e)
 		}
 	}
 
 	// add confirmations
-	add("user-1", created.Id, true)
+	add(created.Id, true)
 
-	loadedG, err := st.GetMatcher("user-1", created.Id)
+	loadedG, err := st.GetMatcher(testFamilyID, created.Id)
 	if err != nil {
 		t.Fatalf("failed to load matcher: %v", err)
 	}
@@ -46,11 +49,11 @@ func TestAddMatcherConfirmation(t *testing.T) {
 	}
 
 	// add more to exceed max
-	add("user-1", created.Id, false)
-	add("user-1", created.Id, true)
-	add("user-1", created.Id, false)
+	add(created.Id, false)
+	add(created.Id, true)
+	add(created.Id, false)
 
-	loadedG2, err := st.GetMatcher("user-1", created.Id)
+	loadedG2, err := st.GetMatcher(testFamilyID, created.Id)
 	if err != nil {
 		t.Fatalf("failed to load matcher: %v", err)
 	}

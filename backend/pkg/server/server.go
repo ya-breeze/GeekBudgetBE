@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -11,18 +10,21 @@ import (
 	"runtime/debug"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
-	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/background"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/webapp"
 	"github.com/ya-breeze/geekbudgetbe/pkg/version"
+	kinauth "github.com/ya-breeze/kin-core/auth"
+	"github.com/ya-breeze/kin-core/authdb"
+	"gorm.io/gorm"
 )
 
 func Server(logger *slog.Logger, cfg *config.Config) error {
@@ -128,75 +130,105 @@ func Serve(
 		cfg.JWTSecret = auth.GenerateRandomString(32)
 	}
 
-	if cfg.SessionSecret == "" {
-		logger.Warn("Session secret is not set. Creating random secret...")
-		cfg.SessionSecret = auth.GenerateRandomString(64)
-	}
-
 	logger.Info("Starting GeekBudget server...")
 
-	if cfg.Users != "" {
-		logger.Info("Creating users...")
-		users := strings.Split(cfg.Users, ",")
-		for _, user := range users {
-			tokens := strings.Split(user, ":")
-			if len(tokens) != 2 {
-				return nil, nil, fmt.Errorf("invalid user format: %s", user)
-			}
+	gormDB := storage.GetDB()
 
-			if err := upsertUser(storage, tokens[0], tokens[1], logger); err != nil {
-				return nil, nil, fmt.Errorf("failed to update user %q: %w", tokens[0], err)
+	// Seed users from GB_SEED_USERS (format: "Family:Username:Password,...")
+	if cfg.SeedUsers != "" {
+		logger.Info("Seeding users...")
+		for _, entry := range strings.Split(cfg.SeedUsers, ",") {
+			entry = strings.TrimSpace(entry)
+			if entry == "" {
+				continue
+			}
+			if err := upsertSeedUser(storage, entry, logger); err != nil {
+				return nil, nil, fmt.Errorf("failed to seed user %q: %w", entry, err)
 			}
 		}
 	} else {
-		logger.Info("No users defined in configuration")
+		logger.Info("No seed users defined in configuration")
 	}
 
+	// Start token cleanup goroutine
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				authdb.CleanupExpiredBlacklist(gormDB)
+				authdb.CleanupExpiredRefreshTokens(gormDB)
+			}
+		}
+	}()
+
 	controllers := createControllers(logger, cfg, storage)
-	extraRouters := []goserver.Router{webapp.NewWebAppRouter(version.Commit, logger, cfg, storage)}
-	extraRouters = append(extraRouters, api.NewCustomAuthAPIController(controllers.AuthAPIService, logger, cfg))
+	extraRouters := []goserver.Router{webapp.NewWebAppRouter(version.Commit, logger, cfg, storage, gormDB)}
+	extraRouters = append(extraRouters, api.NewCustomAuthAPIController(controllers.AuthAPIService, logger, cfg, storage, gormDB))
 	extraRouters = append(extraRouters, api.NewStatusAPIController())
 
 	return goserver.Serve(ctx, logger, cfg,
 		controllers,
 		extraRouters,
-		createMiddlewares(logger, cfg, forcedImports)...)
+		createMiddlewares(logger, cfg, gormDB, forcedImports)...)
 }
 
-func upsertUser(storage database.Storage, username, hashedPassword string, logger *slog.Logger) error {
-	userID, err := storage.GetUserID(username)
-	if err != nil && !errors.Is(err, database.ErrNotFound) {
-		return fmt.Errorf("failed to reading user from DB: %w", err)
+// upsertSeedUser creates or updates a user from a "Family:Username:Password" entry.
+func upsertSeedUser(storage database.Storage, entry string, logger *slog.Logger) error {
+	tokens := strings.Split(entry, ":")
+	if len(tokens) != 3 {
+		return fmt.Errorf("invalid seed user format %q, expected Family:Username:Password", entry)
 	}
-	var user *models.User
-	if !errors.Is(err, database.ErrNotFound) {
-		logger.Info(fmt.Sprintf("Updating password for user %q", username))
+	familyName, username, password := tokens[0], tokens[1], tokens[2]
 
-		user, err = storage.GetUser(userID)
+	// Ensure family exists
+	family, err := storage.GetFamilyByName(familyName)
+	if err != nil {
+		family, err = storage.CreateFamily(familyName)
 		if err != nil {
-			return fmt.Errorf("failed to get user: %w", err)
+			return fmt.Errorf("failed to create family %q: %w", familyName, err)
 		}
-		user.HashedPassword = hashedPassword
-		if err = storage.PutUser(user); err != nil {
-			return fmt.Errorf("failed to update user: %w", err)
+		logger.Info("Created family", "name", familyName, "id", family.ID)
+	}
+
+	// Upsert user
+	existing, err := storage.GetUserByUsername(username)
+	if err != nil {
+		// User doesn't exist — create
+		hash, hashErr := kinauth.HashPassword(password)
+		if hashErr != nil {
+			return fmt.Errorf("failed to hash password for %q: %w", username, hashErr)
 		}
+		user, createErr := storage.CreateUser(username, hash, family.ID)
+		if createErr != nil {
+			return fmt.Errorf("failed to create user %q: %w", username, createErr)
+		}
+		logger.Info("Created seed user", "username", username, "id", user.ID)
 	} else {
-		logger.Info(fmt.Sprintf("Creating user %q", username))
-		user, err = storage.CreateUser(username, hashedPassword)
-		if err != nil {
-			return fmt.Errorf("failed to create user: %w", err)
+		// User exists — update password
+		hash, hashErr := kinauth.HashPassword(password)
+		if hashErr != nil {
+			return fmt.Errorf("failed to hash password for %q: %w", username, hashErr)
 		}
+		existing.PasswordHash = hash
+		if putErr := storage.PutUser(existing); putErr != nil {
+			return fmt.Errorf("failed to update user %q: %w", username, putErr)
+		}
+		logger.Info("Updated seed user password", "username", username)
 	}
 
 	return nil
 }
 
 func createMiddlewares(
-	logger *slog.Logger, cfg *config.Config, forcedImports chan<- common.ForcedImport,
+	logger *slog.Logger, cfg *config.Config, gormDB *gorm.DB, forcedImports chan<- common.ForcedImport,
 ) []mux.MiddlewareFunc {
 	return []mux.MiddlewareFunc{
 		CORSMiddleware(),
-		AuthMiddleware(logger, cfg),
+		AuthMiddleware(logger, cfg, gormDB),
 		ForcedImportMiddleware(logger, forcedImports),
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 type MergedTransaction struct {
 	ID                    uuid.UUID `gorm:"type:uuid;primaryKey"`
-	UserID                string    `gorm:"index"`
+	FamilyID              uuid.UUID `gorm:"type:uuid;index;not null"`
 	KeptTransactionID     uuid.UUID `gorm:"type:uuid;index"`
 	OriginalTransactionID uuid.UUID `gorm:"type:uuid;index"`
 

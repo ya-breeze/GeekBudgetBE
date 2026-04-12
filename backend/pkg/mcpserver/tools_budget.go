@@ -17,7 +17,7 @@ func (s *MCPServer) registerBudgetTools(server *mcp.Server) {
 }
 
 func (s *MCPServer) listBudgetItems(ctx context.Context, req *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, any, error) {
-	budgetItems, err := s.storage.GetBudgetItems(s.userID)
+	budgetItems, err := s.storage.GetBudgetItems(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get budget items", "error", err)
 		return errorResult(err)

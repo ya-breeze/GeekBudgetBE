@@ -3,12 +3,10 @@ package test_test
 
 import (
 	"context"
-	"encoding/base64"
 	"net"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
@@ -36,17 +34,14 @@ var _ = Describe("User API", func() {
 		forcedImportChan := make(chan common.ForcedImport)
 
 		ctx, cancel = context.WithCancel(context.Background())
-		hashed, err := auth.HashPassword([]byte(Pass1))
-		if err != nil {
-			panic("Error hashing password")
-		}
 
 		cfg = &config.Config{
 			Port:  0,
-			Users: User1 + ":" + base64.StdEncoding.EncodeToString(hashed),
+			SeedUsers: "TestFamily:" + User1 + ":" + Pass1,
 		}
 
 		storage = database.NewStorage(logger, cfg)
+		var err error
 		if err = storage.Open(); err != nil {
 			panic(err)
 		}

@@ -59,7 +59,7 @@ func (s *MCPServer) listTransactions(ctx context.Context, req *mcp.CallToolReque
 		return errorResult(err)
 	}
 
-	transactions, err := s.storage.GetTransactions(s.userID, dateFrom, dateTo, args.OnlySuspicious)
+	transactions, err := s.storage.GetTransactions(s.familyID, dateFrom, dateTo, args.OnlySuspicious)
 	if err != nil {
 		s.logger.Error("Failed to get transactions", "error", err)
 		return errorResult(err)
@@ -73,7 +73,7 @@ type getTransactionArgs struct {
 }
 
 func (s *MCPServer) getTransaction(ctx context.Context, req *mcp.CallToolRequest, args getTransactionArgs) (*mcp.CallToolResult, any, error) {
-	transaction, err := s.storage.GetTransaction(s.userID, args.ID)
+	transaction, err := s.storage.GetTransaction(s.familyID, args.ID)
 	if err != nil {
 		s.logger.Error("Failed to get transaction", "error", err, "id", args.ID)
 		return errorResult(err)
@@ -98,7 +98,7 @@ func (s *MCPServer) searchTransactions(ctx context.Context, req *mcp.CallToolReq
 		return errorResult(err)
 	}
 
-	transactions, err := s.storage.GetTransactions(s.userID, dateFrom, dateTo, false)
+	transactions, err := s.storage.GetTransactions(s.familyID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.Error("Failed to get transactions for search", "error", err)
 		return errorResult(err)
@@ -138,7 +138,7 @@ type getDuplicateTransactionsArgs struct {
 }
 
 func (s *MCPServer) getDuplicateTransactions(ctx context.Context, req *mcp.CallToolRequest, args getDuplicateTransactionsArgs) (*mcp.CallToolResult, any, error) {
-	duplicateIDs, err := s.storage.GetDuplicateTransactionIDs(s.userID, args.TransactionID)
+	duplicateIDs, err := s.storage.GetDuplicateTransactionIDs(s.familyID, args.TransactionID)
 	if err != nil {
 		s.logger.Error("Failed to get duplicate transaction IDs", "error", err, "transactionId", args.TransactionID)
 		return errorResult(err)
@@ -146,7 +146,7 @@ func (s *MCPServer) getDuplicateTransactions(ctx context.Context, req *mcp.CallT
 
 	var duplicates []goserver.Transaction
 	for _, id := range duplicateIDs {
-		txn, err := s.storage.GetTransaction(s.userID, id)
+		txn, err := s.storage.GetTransaction(s.familyID, id)
 		if err != nil {
 			s.logger.Warn("Failed to get duplicate transaction", "error", err, "id", id)
 			continue

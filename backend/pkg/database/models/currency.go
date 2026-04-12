@@ -11,8 +11,8 @@ type Currency struct {
 
 	goserver.CurrencyNoId
 
-	UserID string    `gorm:"index"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FamilyID uuid.UUID `gorm:"type:uuid;index;not null"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (a *Currency) FromDB() goserver.Currency {

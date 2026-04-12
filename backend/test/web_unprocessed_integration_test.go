@@ -3,7 +3,6 @@ package test_test
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net"
@@ -15,7 +14,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
-	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goclient"
@@ -39,21 +37,17 @@ var _ = Describe("Web unprocessed convert integration", func() {
 		forcedImportChan := make(chan common.ForcedImport)
 
 		ctx, cancel = context.WithCancel(context.Background())
-		hashed, err := auth.HashPassword([]byte(Pass1))
-		if err != nil {
-			panic("Error hashing password")
-		}
 
 		cfg = &config.Config{
 			Port:                          0,
-			Users:                         User1 + ":" + base64.StdEncoding.EncodeToString(hashed),
-			CookieName:                    "geekbudgetcookie",
+			SeedUsers: "TestFamily:" + User1 + ":" + Pass1,
 			MatcherConfirmationHistoryMax: 10,
 		}
 
 		storage = database.NewStorage(logger, cfg)
 		Expect(storage.Open()).To(Succeed())
 
+		var err error
 		addr, finishCham, err = server.Serve(ctx, logger, storage, cfg, forcedImportChan)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -150,17 +144,11 @@ var _ = Describe("Web unprocessed convert integration", func() {
 		convertResp.Body.Close()
 
 		// load matcher and verify confirmation history updated (last entry true)
-		userInfo, _, err := client.UserAPI.GetUser(ctx).Execute()
+		dbUser, err := storage.GetUserByUsername(User1)
 		Expect(err).ToNot(HaveOccurred())
-		userID := userInfo.Id
+		familyID := dbUser.FamilyID
 
-		// Sometimes the API does not return user id in the payload for tests; fall back to storage lookup
-		if userID == "" {
-			userID, err = storage.GetUserID(User1)
-			Expect(err).ToNot(HaveOccurred())
-		}
-
-		loaded, err := storage.GetMatcher(userID, createdMatcher.Id)
+		loaded, err := storage.GetMatcher(familyID, createdMatcher.Id)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(loaded.ConfirmationHistory).ToNot(BeEmpty())
 		Expect(loaded.ConfirmationHistory[len(loaded.ConfirmationHistory)-1]).To(BeTrue())

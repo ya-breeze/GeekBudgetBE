@@ -12,8 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error) {
-	req := s.db.Model(&models.Transaction{}).Where("user_id = ? AND merged_into_id IS NULL", userID)
+func (s *storage) GetTransactions(familyID uuid.UUID, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error) {
+	req := s.db.Model(&models.Transaction{}).Where("family_id = ? AND merged_into_id IS NULL", familyID)
 	if onlySuspicious {
 		// Filter transactions where suspicious_reasons is not null and not an empty JSON array
 		req = req.Where("suspicious_reasons IS NOT NULL AND suspicious_reasons != '[]' AND suspicious_reasons != ''")
@@ -51,7 +51,7 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onl
 		}
 
 		var relationships []models.TransactionDuplicate
-		if err := s.db.Where("user_id = ? AND transaction_id1 IN ?", userID, ids).Find(&relationships).Error; err == nil {
+		if err := s.db.Where("family_id = ? AND transaction_id1 IN ?", familyID, ids).Find(&relationships).Error; err == nil {
 			relMap := make(map[string][]string)
 			for _, r := range relationships {
 				t1 := r.TransactionID1.String()
@@ -73,7 +73,7 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onl
 		}
 		if err := s.db.Model(&models.MergedTransaction{}).
 			Select("kept_transaction_id, original_transaction_id").
-			Where("user_id = ? AND kept_transaction_id IN ?", userID, ids).
+			Where("family_id = ? AND kept_transaction_id IN ?", familyID, ids).
 			Find(&mergedRecords).Error; err == nil {
 
 			mergedMap := make(map[string][]string)
@@ -92,8 +92,8 @@ func (s *storage) GetTransactions(userID string, dateFrom, dateTo time.Time, onl
 	return transactions, nil
 }
 
-func (s *storage) GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error) {
-	req := s.db.Model(&models.Transaction{}).Unscoped().Where("user_id = ?", userID)
+func (s *storage) GetTransactionsIncludingDeleted(familyID uuid.UUID, dateFrom, dateTo time.Time) ([]goserver.Transaction, error) {
+	req := s.db.Model(&models.Transaction{}).Unscoped().Where("family_id = ?", familyID)
 	if !dateFrom.IsZero() {
 		req = req.Where("date >= ?", dateFrom)
 	}
@@ -121,19 +121,19 @@ func (s *storage) GetTransactionsIncludingDeleted(userID string, dateFrom, dateT
 	return transactions, nil
 }
 
-func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoIdInterface,
+func (s *storage) CreateTransaction(familyID uuid.UUID, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
-	if err := s.validateTransaction(userID, input); err != nil {
+	if err := s.validateTransaction(familyID, input); err != nil {
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	t := models.TransactionToDB(input, userID)
+	t := models.TransactionToDB(input, familyID)
 	t.ID = uuid.New()
 	if err := s.db.Create(t).Error; err != nil {
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "CREATED", nil, t); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "Transaction", t.ID.String(), "CREATED", nil, t); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -141,7 +141,7 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 
 	// Invalidate reconciliation if we inserted a transaction in the past
 	// We pass empty oldMovements because it's a new transaction
-	s.invalidateReconciliationIfAmountsChanged(userID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date, false)
+	s.invalidateReconciliationIfAmountsChanged(familyID, []goserver.Movement{}, models.MovementsToAPI(t.Movements), t.Date, false)
 
 	return t.FromDB(), nil
 }
@@ -149,7 +149,7 @@ func (s *storage) CreateTransaction(userID string, input goserver.TransactionNoI
 // CreateTransactionsBatch atomically creates multiple transactions in a single database transaction.
 // If any transaction fails validation or creation, the entire batch is rolled back and an error is returned.
 // This ensures that bank imports either fully succeed or fully fail, preventing partial imports.
-func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.TransactionNoIdInterface,
+func (s *storage) CreateTransactionsBatch(familyID uuid.UUID, inputs []goserver.TransactionNoIdInterface,
 ) ([]goserver.Transaction, error) {
 	if len(inputs) == 0 {
 		return []goserver.Transaction{}, nil
@@ -174,12 +174,12 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 
 	// First validate all transactions before creating any
 	for i, input := range inputs {
-		if err := s.validateTransaction(userID, input); err != nil {
+		if err := s.validateTransaction(familyID, input); err != nil {
 			tx.Rollback()
 			return nil, fmt.Errorf("validation failed for transaction %d: %w", i, err)
 		}
 
-		t := models.TransactionToDB(input, userID)
+		t := models.TransactionToDB(input, familyID)
 		t.ID = uuid.New()
 		transactionModels = append(transactionModels, t)
 	}
@@ -194,7 +194,7 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 	// Build audit log entries and insert them in a single batch.
 	auditLogs := make([]models.AuditLog, 0, len(transactionModels))
 	for _, t := range transactionModels {
-		entry, err := s.buildAuditLog(userID, "Transaction", t.ID.String(), "CREATED", nil, t)
+		entry, err := s.buildAuditLog(familyID, "Transaction", t.ID.String(), "CREATED", nil, t)
 		if err != nil {
 			s.log.Error("Failed to build audit log entry", "error", err, "transactionID", t.ID)
 			continue
@@ -232,12 +232,12 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 	// Post-commit: one GetLatestReconciliation + optional InvalidateReconciliation
 	// per unique (account, currency) pair instead of one per transaction.
 	for key, minDate := range reconMinDates {
-		lastRec, err := s.GetLatestReconciliation(userID, key.accountID, key.currencyID)
+		lastRec, err := s.GetLatestReconciliation(familyID, key.accountID, key.currencyID)
 		if err != nil || lastRec == nil {
 			continue
 		}
 		if minDate.Before(lastRec.ReconciledAt) {
-			if err := s.InvalidateReconciliation(userID, key.accountID, key.currencyID, minDate); err != nil {
+			if err := s.InvalidateReconciliation(familyID, key.accountID, key.currencyID, minDate); err != nil {
 				s.log.Error("Failed to invalidate reconciliation", "error", err,
 					"accountID", key.accountID, "currencyID", key.currencyID)
 			}
@@ -248,25 +248,25 @@ func (s *storage) CreateTransactionsBatch(userID string, inputs []goserver.Trans
 		results = append(results, t.FromDB())
 	}
 
-	s.log.Info("Transaction batch created", "count", len(results), "userID", userID)
+	s.log.Info("Transaction batch created", "count", len(results), "familyID", familyID)
 
 	return results, nil
 }
 
 func (s *storage) UpdateTransaction(
-	userID string, id string, input goserver.TransactionNoIdInterface,
+	familyID uuid.UUID, id string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
-	return s.updateTransaction(userID, id, input, true)
+	return s.updateTransaction(familyID, id, input, true)
 }
 
 func (s *storage) UpdateTransactionInternal(
-	userID string, id string, input goserver.TransactionNoIdInterface,
+	familyID uuid.UUID, id string, input goserver.TransactionNoIdInterface,
 ) (goserver.Transaction, error) {
-	return s.updateTransaction(userID, id, input, false)
+	return s.updateTransaction(familyID, id, input, false)
 }
 
 func (s *storage) updateTransaction(
-	userID string, id string, input goserver.TransactionNoIdInterface, preserveProtected bool,
+	familyID uuid.UUID, id string, input goserver.TransactionNoIdInterface, preserveProtected bool,
 ) (goserver.Transaction, error) {
 	idUUID, err := uuid.Parse(id)
 	if err != nil {
@@ -274,7 +274,7 @@ func (s *storage) updateTransaction(
 	}
 
 	var t *models.Transaction
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&t).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return goserver.Transaction{}, ErrNotFound
 		}
@@ -283,18 +283,18 @@ func (s *storage) updateTransaction(
 	}
 
 	oldT := *t
-	// if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "UPDATED", t); err != nil {
+	// if err := s.recordAuditLog(s.db, familyID, "Transaction", t.ID.String(), "UPDATED", t); err != nil {
 	// 	s.log.Error("Failed to record audit log", "error", err)
 	// }
 
 	// Get old movements for smart invalidation
 	oldMovements := models.MovementsToAPI(t.Movements)
 
-	if err := s.validateTransaction(userID, input); err != nil {
+	if err := s.validateTransaction(familyID, input); err != nil {
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	t = models.TransactionToDB(input, userID)
+	t = models.TransactionToDB(input, familyID)
 	t.ID = idUUID
 
 	// Preserve fields that are not editable via this endpoint or were not provided
@@ -315,33 +315,33 @@ func (s *storage) updateTransaction(
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "UPDATED", &oldT, t); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "Transaction", t.ID.String(), "UPDATED", &oldT, t); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
 	// If dismissed, clear relationships
 	if t.DuplicateDismissed {
-		if err := s.ClearDuplicateRelationships(userID, id); err != nil {
+		if err := s.ClearDuplicateRelationships(familyID, id); err != nil {
 			s.log.Error("Failed to clear duplicate relationships on dismissal", "error", err, "id", id)
 		}
 	} else {
 		// Revalidate duplicate links in case date/amount changed
-		if err := s.RevalidateDuplicateRelationships(userID, id); err != nil {
+		if err := s.RevalidateDuplicateRelationships(familyID, id); err != nil {
 			s.log.Error("Failed to revalidate duplicate relationships", "error", err, "id", id)
 		}
 	}
 
 	// Smart invalidation: only if amounts or currencies changed
-	s.invalidateReconciliationIfAmountsChanged(userID, oldMovements, models.MovementsToAPI(t.Movements), t.Date, preserveProtected)
+	s.invalidateReconciliationIfAmountsChanged(familyID, oldMovements, models.MovementsToAPI(t.Movements), t.Date, preserveProtected)
 
 	// Invalidate reconciliation for all affected accounts/currencies
 	for _, m := range oldMovements {
-		if err := s.InvalidateReconciliation(userID, m.AccountId, m.CurrencyId, t.Date); err != nil {
+		if err := s.InvalidateReconciliation(familyID, m.AccountId, m.CurrencyId, t.Date); err != nil {
 			s.log.Error("Failed to invalidate reconciliation for old movement", "error", err, "transaction_id", t.ID)
 		}
 	}
 	for _, m := range models.MovementsToAPI(t.Movements) {
-		if err := s.InvalidateReconciliation(userID, m.AccountId, m.CurrencyId, t.Date); err != nil {
+		if err := s.InvalidateReconciliation(familyID, m.AccountId, m.CurrencyId, t.Date); err != nil {
 			s.log.Error("Failed to invalidate reconciliation for new movement", "error", err, "transaction_id", t.ID)
 		}
 	}
@@ -349,9 +349,9 @@ func (s *storage) updateTransaction(
 	return t.FromDB(), nil
 }
 
-func (s *storage) DeleteTransaction(userID string, id string) error {
+func (s *storage) DeleteTransaction(familyID uuid.UUID, id string) error {
 	var t models.Transaction
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&t).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&t).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrNotFound
 		}
@@ -362,7 +362,7 @@ func (s *storage) DeleteTransaction(userID string, id string) error {
 		return ErrImportedTransactionCannotBeDeleted
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Transaction", t.ID.String(), "DELETED", &t, nil); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "Transaction", t.ID.String(), "DELETED", &t, nil); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -371,17 +371,17 @@ func (s *storage) DeleteTransaction(userID string, id string) error {
 	}
 
 	// Clear duplicate relationships if any
-	if err := s.ClearDuplicateRelationships(userID, id); err != nil {
+	if err := s.ClearDuplicateRelationships(familyID, id); err != nil {
 		s.log.Error("Failed to clear duplicate relationships on deletion", "error", err, "id", id)
 	}
 
 	// Invalidate reconciliation for deleted movements
-	s.invalidateReconciliationIfAmountsChanged(userID, models.MovementsToAPI(t.Movements), []goserver.Movement{}, t.Date, true)
+	s.invalidateReconciliationIfAmountsChanged(familyID, models.MovementsToAPI(t.Movements), []goserver.Movement{}, t.Date, true)
 
 	return nil
 }
 
-func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Transaction, error) {
+func (s *storage) MergeTransactions(familyID uuid.UUID, keepID, mergeID string) (goserver.Transaction, error) {
 	kID, err := uuid.Parse(keepID)
 	if err != nil {
 		return goserver.Transaction{}, fmt.Errorf("invalid keep ID: %w", err)
@@ -394,10 +394,10 @@ func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Tr
 	var keepT models.Transaction
 	err = s.db.Transaction(func(tx *gorm.DB) error {
 		var mergeT models.Transaction
-		if err := tx.Where("user_id = ? AND id = ?", userID, kID).First(&keepT).Error; err != nil {
+		if err := tx.Where("family_id = ? AND id = ?", familyID, kID).First(&keepT).Error; err != nil {
 			return fmt.Errorf("failed to find keep transaction: %w", err)
 		}
-		if err := tx.Where("user_id = ? AND id = ?", userID, mID).First(&mergeT).Error; err != nil {
+		if err := tx.Where("family_id = ? AND id = ?", familyID, mID).First(&mergeT).Error; err != nil {
 			return fmt.Errorf("failed to find merge transaction: %w", err)
 		}
 
@@ -427,7 +427,7 @@ func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Tr
 		// 4. Archive and hard-delete mergeT (archive is now source of truth)
 		now := time.Now()
 
-		if err := s.archiveMergedTransaction(tx, userID, &mergeT, kID, now); err != nil {
+		if err := s.archiveMergedTransaction(tx, familyID, &mergeT, kID, now); err != nil {
 			return err
 		}
 
@@ -436,18 +436,18 @@ func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Tr
 			return fmt.Errorf("failed to hard-delete merge transaction: %w", err)
 		}
 
-		if err := s.recordAuditLog(tx, userID, "Transaction", mergeT.ID.String(), "MERGED", &mergeT, nil); err != nil {
+		if err := s.recordAuditLog(tx, familyID, "Transaction", mergeT.ID.String(), "MERGED", &mergeT, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 
 		// 5. Clear duplicate relationships for both (they are resolved now)
 		// We use tx so it's atomic within our transaction
-		if err := s.clearDuplicateRelationshipsWithTx(tx, userID, mID.String()); err != nil {
+		if err := s.clearDuplicateRelationshipsWithTx(tx, familyID, mID.String()); err != nil {
 			return fmt.Errorf("failed to clear relationships for merged transaction: %w", err)
 		}
 
 		// Clear specific relationship between keepT and mergeT (the one where keepT was the primary)
-		if err := s.clearDuplicateRelationshipsWithTx(tx, userID, kID.String()); err != nil {
+		if err := s.clearDuplicateRelationshipsWithTx(tx, familyID, kID.String()); err != nil {
 			return fmt.Errorf("failed to clear relationships for keep transaction: %w", err)
 		}
 
@@ -457,12 +457,12 @@ func (s *storage) MergeTransactions(userID, keepID, mergeID string) (goserver.Tr
 		return goserver.Transaction{}, fmt.Errorf(StorageError, err)
 	}
 
-	return s.GetTransaction(userID, keepID)
+	return s.GetTransaction(familyID, keepID)
 }
 
-func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction, error) {
+func (s *storage) GetTransaction(familyID uuid.UUID, id string) (goserver.Transaction, error) {
 	var transaction models.Transaction
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&transaction).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&transaction).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return goserver.Transaction{}, ErrNotFound
 		}
@@ -471,7 +471,7 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	}
 
 	apiTransaction := transaction.FromDB()
-	duplicateIds, err := s.GetDuplicateTransactionIDs(userID, id)
+	duplicateIds, err := s.GetDuplicateTransactionIDs(familyID, id)
 	if err == nil {
 		apiTransaction.DuplicateTransactionIds = duplicateIds
 	}
@@ -479,7 +479,7 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	// Populate MergedTransactionIds for single transaction from archive
 	var mergedIds []string
 	if err := s.db.Model(&models.MergedTransaction{}).
-		Where("user_id = ? AND kept_transaction_id = ?", userID, id).
+		Where("family_id = ? AND kept_transaction_id = ?", familyID, id).
 		Pluck("original_transaction_id", &mergedIds).Error; err == nil {
 		apiTransaction.MergedTransactionIds = mergedIds
 	}
@@ -487,16 +487,16 @@ func (s *storage) GetTransaction(userID string, id string) (goserver.Transaction
 	return apiTransaction, nil
 }
 
-func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error) {
+func (s *storage) GetMergedTransactions(familyID uuid.UUID) ([]goserver.MergedTransaction, error) {
 	var mergedModels []models.MergedTransaction
-	if err := s.db.Where("user_id = ?", userID).Order("merged_at DESC").Find(&mergedModels).Error; err != nil {
+	if err := s.db.Where("family_id = ?", familyID).Order("merged_at DESC").Find(&mergedModels).Error; err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
 
 	result := make([]goserver.MergedTransaction, 0, len(mergedModels))
 	for _, m := range mergedModels {
 		var kept models.Transaction
-		if err := s.db.Where("id = ? AND user_id = ?", m.KeptTransactionID, userID).First(&kept).Error; err != nil {
+		if err := s.db.Where("id = ? AND family_id = ?", m.KeptTransactionID, familyID).First(&kept).Error; err != nil {
 			s.log.Warn("Failed to find kept transaction for merged transaction", "merged_id", m.OriginalTransactionID, "kept_id", m.KeptTransactionID)
 			continue
 		}
@@ -504,7 +504,7 @@ func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransac
 		// Create a temporary transaction structure to use FromDB
 		tr := models.Transaction{
 			ID:                 m.OriginalTransactionID,
-			UserID:             m.UserID,
+			FamilyID:           m.FamilyID,
 			Date:               m.Date,
 			Description:        m.Description,
 			Place:              m.Place,
@@ -531,10 +531,10 @@ func (s *storage) GetMergedTransactions(userID string) ([]goserver.MergedTransac
 	return result, nil
 }
 
-func (s *storage) GetMergedTransaction(userID, originalTransactionID string) (goserver.MergedTransaction, error) {
+func (s *storage) GetMergedTransaction(familyID uuid.UUID, originalTransactionID string) (goserver.MergedTransaction, error) {
 	// 1. Find the archived transaction
 	var archived models.MergedTransaction
-	if err := s.db.Where("user_id = ? AND original_transaction_id = ?", userID, originalTransactionID).First(&archived).Error; err != nil {
+	if err := s.db.Where("family_id = ? AND original_transaction_id = ?", familyID, originalTransactionID).First(&archived).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return goserver.MergedTransaction{}, ErrNotFound
 		}
@@ -543,7 +543,7 @@ func (s *storage) GetMergedTransaction(userID, originalTransactionID string) (go
 
 	// 2. Find the kept transaction (mergedInto)
 	var kept models.Transaction
-	if err := s.db.Where("id = ? AND user_id = ?", archived.KeptTransactionID, userID).First(&kept).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", archived.KeptTransactionID, familyID).First(&kept).Error; err != nil {
 		s.log.Warn("Failed to find kept transaction for merged transaction", "merged_id", archived.OriginalTransactionID, "kept_id", archived.KeptTransactionID)
 		// We still return the merged transaction, just without the full kept transaction details if not found
 	}
@@ -552,7 +552,7 @@ func (s *storage) GetMergedTransaction(userID, originalTransactionID string) (go
 	// Create a temporary transaction structure to use FromDB for the archived transaction
 	tr := models.Transaction{
 		ID:                 archived.OriginalTransactionID,
-		UserID:             archived.UserID,
+		FamilyID:           archived.FamilyID,
 		Date:               archived.Date,
 		Description:        archived.Description,
 		Place:              archived.Place,
@@ -576,11 +576,11 @@ func (s *storage) GetMergedTransaction(userID, originalTransactionID string) (go
 	}, nil
 }
 
-func (s *storage) UnmergeTransaction(userID, id string) error {
+func (s *storage) UnmergeTransaction(familyID uuid.UUID, id string) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		// 1. Find the archived transaction
 		var archived models.MergedTransaction
-		if err := tx.Where("user_id = ? AND original_transaction_id = ?", userID, id).First(&archived).Error; err != nil {
+		if err := tx.Where("family_id = ? AND original_transaction_id = ?", familyID, id).First(&archived).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return fmt.Errorf("transaction %s is not merged or archive not found", id)
 			}
@@ -591,7 +591,7 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 
 		// 2. Remove external IDs from kept transaction
 		var kept models.Transaction
-		if err := tx.Where("id = ? AND user_id = ?", keptID, userID).First(&kept).Error; err == nil {
+		if err := tx.Where("id = ? AND family_id = ?", keptID, familyID).First(&kept).Error; err == nil {
 			newExternalIDs := make([]string, 0)
 			for _, extID := range kept.ExternalIDs {
 				found := false
@@ -614,7 +614,7 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 		// 3. Recreate the transaction from archive data (don't rely on soft-deleted record)
 		restoredTransaction := models.Transaction{
 			ID:                 archived.OriginalTransactionID,
-			UserID:             archived.UserID,
+			FamilyID:           archived.FamilyID,
 			Date:               archived.Date,
 			Description:        archived.Description,
 			Place:              archived.Place,
@@ -643,7 +643,7 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 		}
 
 		// 5. Record history
-		if err := s.recordAuditLog(tx, userID, "Transaction", restoredTransaction.ID.String(), "UNMERGED", nil, &restoredTransaction); err != nil {
+		if err := s.recordAuditLog(tx, familyID, "Transaction", restoredTransaction.ID.String(), "UNMERGED", nil, &restoredTransaction); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 
@@ -651,9 +651,9 @@ func (s *storage) UnmergeTransaction(userID, id string) error {
 	})
 }
 
-func (s *storage) GetDuplicateTransactionIDs(userID, transactionID string) ([]string, error) {
+func (s *storage) GetDuplicateTransactionIDs(familyID uuid.UUID, transactionID string) ([]string, error) {
 	var duplicates []models.TransactionDuplicate
-	err := s.db.Where("user_id = ? AND transaction_id1 = ?", userID, transactionID).Find(&duplicates).Error
+	err := s.db.Where("family_id = ? AND transaction_id1 = ?", familyID, transactionID).Find(&duplicates).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get duplicate relationships: %w", err)
 	}
@@ -665,7 +665,7 @@ func (s *storage) GetDuplicateTransactionIDs(userID, transactionID string) ([]st
 	return ids, nil
 }
 
-func (s *storage) AddDuplicateRelationship(userID, transactionID1, transactionID2 string) error {
+func (s *storage) AddDuplicateRelationship(familyID uuid.UUID, transactionID1, transactionID2 string) error {
 	id1, err := uuid.Parse(transactionID1)
 	if err != nil {
 		return fmt.Errorf("invalid transaction ID 1: %w", err)
@@ -678,11 +678,11 @@ func (s *storage) AddDuplicateRelationship(userID, transactionID1, transactionID
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		// Add T1 -> T2
 		var d1 models.TransactionDuplicate
-		err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id1, id2).First(&d1).Error
+		err := tx.Where("family_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", familyID, id1, id2).First(&d1).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				d1 = models.TransactionDuplicate{
-					UserID:         userID,
+					FamilyID:       familyID,
 					TransactionID1: id1,
 					TransactionID2: id2,
 				}
@@ -696,11 +696,11 @@ func (s *storage) AddDuplicateRelationship(userID, transactionID1, transactionID
 
 		// Add T2 -> T1
 		var d2 models.TransactionDuplicate
-		err = tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id2, id1).First(&d2).Error
+		err = tx.Where("family_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", familyID, id2, id1).First(&d2).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				d2 = models.TransactionDuplicate{
-					UserID:         userID,
+					FamilyID:       familyID,
 					TransactionID1: id2,
 					TransactionID2: id1,
 				}
@@ -716,7 +716,7 @@ func (s *storage) AddDuplicateRelationship(userID, transactionID1, transactionID
 	})
 }
 
-func (s *storage) RemoveDuplicateRelationship(userID, transactionID1, transactionID2 string) error {
+func (s *storage) RemoveDuplicateRelationship(familyID uuid.UUID, transactionID1, transactionID2 string) error {
 	id1, err := uuid.Parse(transactionID1)
 	if err != nil {
 		return fmt.Errorf("invalid transaction ID 1: %w", err)
@@ -727,23 +727,23 @@ func (s *storage) RemoveDuplicateRelationship(userID, transactionID1, transactio
 	}
 
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id1, id2).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+		if err := tx.Where("family_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", familyID, id1, id2).Delete(&models.TransactionDuplicate{}).Error; err != nil {
 			return fmt.Errorf("failed to delete link T1->T2: %w", err)
 		}
-		if err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id2, id1).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+		if err := tx.Where("family_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", familyID, id2, id1).Delete(&models.TransactionDuplicate{}).Error; err != nil {
 			return fmt.Errorf("failed to delete link T2->T1: %w", err)
 		}
 		return nil
 	})
 }
 
-func (s *storage) ClearDuplicateRelationships(userID, transactionID string) error {
+func (s *storage) ClearDuplicateRelationships(familyID uuid.UUID, transactionID string) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		return s.clearDuplicateRelationshipsWithTx(tx, userID, transactionID)
+		return s.clearDuplicateRelationshipsWithTx(tx, familyID, transactionID)
 	})
 }
 
-func (s *storage) clearDuplicateRelationshipsWithTx(tx *gorm.DB, userID, transactionID string) error {
+func (s *storage) clearDuplicateRelationshipsWithTx(tx *gorm.DB, familyID uuid.UUID, transactionID string) error {
 	id, err := uuid.Parse(transactionID)
 	if err != nil {
 		return fmt.Errorf("invalid transaction ID: %w", err)
@@ -751,18 +751,18 @@ func (s *storage) clearDuplicateRelationshipsWithTx(tx *gorm.DB, userID, transac
 
 	// 1. Find all duplicates linked to this transaction to update them later
 	var duplicates []models.TransactionDuplicate
-	if err := tx.Where("user_id = ? AND transaction_id1 = ?", userID, id).Find(&duplicates).Error; err != nil {
+	if err := tx.Where("family_id = ? AND transaction_id1 = ?", familyID, id).Find(&duplicates).Error; err != nil {
 		return fmt.Errorf("failed to find duplicate links: %w", err)
 	}
 
 	// 2. Delete bidirectional links
 	for _, d := range duplicates {
-		if err := tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, d.TransactionID2, id).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+		if err := tx.Where("family_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", familyID, d.TransactionID2, id).Delete(&models.TransactionDuplicate{}).Error; err != nil {
 			return fmt.Errorf("failed to delete inverse link: %w", err)
 		}
 	}
 
-	if err := tx.Where("user_id = ? AND transaction_id1 = ?", userID, id).Delete(&models.TransactionDuplicate{}).Error; err != nil {
+	if err := tx.Where("family_id = ? AND transaction_id1 = ?", familyID, id).Delete(&models.TransactionDuplicate{}).Error; err != nil {
 		return fmt.Errorf("failed to delete primary links: %w", err)
 	}
 
@@ -774,7 +774,7 @@ func (s *storage) clearDuplicateRelationshipsWithTx(tx *gorm.DB, userID, transac
 	}
 
 	for _, affectedID := range affectedIDs {
-		if err := s.syncDuplicateSuspiciousReason(tx, userID, affectedID); err != nil {
+		if err := s.syncDuplicateSuspiciousReason(tx, familyID, affectedID); err != nil {
 			s.log.Error("Failed to sync suspicious reason", "error", err, "id", affectedID)
 		}
 	}
@@ -782,10 +782,10 @@ func (s *storage) clearDuplicateRelationshipsWithTx(tx *gorm.DB, userID, transac
 	return nil
 }
 
-func (s *storage) syncDuplicateSuspiciousReason(tx *gorm.DB, userID string, transactionID uuid.UUID) error {
+func (s *storage) syncDuplicateSuspiciousReason(tx *gorm.DB, familyID uuid.UUID, transactionID uuid.UUID) error {
 	// Check if any duplicate links remain for this transaction
 	var count int64
-	if err := tx.Model(&models.TransactionDuplicate{}).Where("user_id = ? AND transaction_id1 = ?", userID, transactionID).Count(&count).Error; err != nil {
+	if err := tx.Model(&models.TransactionDuplicate{}).Where("family_id = ? AND transaction_id1 = ?", familyID, transactionID).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -795,7 +795,7 @@ func (s *storage) syncDuplicateSuspiciousReason(tx *gorm.DB, userID string, tran
 
 	// No more duplicates, remove the reason if present
 	var t models.Transaction
-	if err := tx.Where("user_id = ? AND id = ?", userID, transactionID).First(&t).Error; err != nil {
+	if err := tx.Where("family_id = ? AND id = ?", familyID, transactionID).First(&t).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil // Transaction might have been deleted (e.g. in Merge)
 		}
@@ -824,7 +824,7 @@ func (s *storage) syncDuplicateSuspiciousReason(tx *gorm.DB, userID string, tran
 // RevalidateDuplicateRelationships re-checks all duplicate links for a transaction.
 // If a linked transaction no longer passes IsDuplicate, the link is removed and
 // suspicious reasons are synchronized for both transactions.
-func (s *storage) RevalidateDuplicateRelationships(userID, transactionID string) error {
+func (s *storage) RevalidateDuplicateRelationships(familyID uuid.UUID, transactionID string) error {
 	id, err := uuid.Parse(transactionID)
 	if err != nil {
 		return fmt.Errorf("invalid transaction ID: %w", err)
@@ -833,7 +833,7 @@ func (s *storage) RevalidateDuplicateRelationships(userID, transactionID string)
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		// 1. Get the transaction
 		var t models.Transaction
-		if err := tx.Where("user_id = ? AND id = ?", userID, id).First(&t).Error; err != nil {
+		if err := tx.Where("family_id = ? AND id = ?", familyID, id).First(&t).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil // Transaction doesn't exist, nothing to revalidate
 			}
@@ -842,25 +842,25 @@ func (s *storage) RevalidateDuplicateRelationships(userID, transactionID string)
 
 		// 2. Get all linked duplicates
 		var duplicates []models.TransactionDuplicate
-		if err := tx.Where("user_id = ? AND transaction_id1 = ?", userID, id).Find(&duplicates).Error; err != nil {
+		if err := tx.Where("family_id = ? AND transaction_id1 = ?", familyID, id).Find(&duplicates).Error; err != nil {
 			return err
 		}
 
 		// 3. For each link, re-check IsDuplicate
 		for _, d := range duplicates {
 			var linkedT models.Transaction
-			if err := tx.Where("user_id = ? AND id = ?", userID, d.TransactionID2).First(&linkedT).Error; err != nil {
+			if err := tx.Where("family_id = ? AND id = ?", familyID, d.TransactionID2).First(&linkedT).Error; err != nil {
 				// Linked transaction doesn't exist, clean up the link
-				s.removeDuplicateLinkWithTx(tx, userID, id, d.TransactionID2)
+				s.removeDuplicateLinkWithTx(tx, familyID, id, d.TransactionID2)
 				continue
 			}
 
 			if !utils.IsDuplicate(t.Date, t.Movements, linkedT.Date, linkedT.Movements) {
 				// No longer duplicates, remove bidirectional link
-				s.removeDuplicateLinkWithTx(tx, userID, id, d.TransactionID2)
+				s.removeDuplicateLinkWithTx(tx, familyID, id, d.TransactionID2)
 				// Sync suspicious reasons for both
-				s.syncDuplicateSuspiciousReason(tx, userID, id)
-				s.syncDuplicateSuspiciousReason(tx, userID, d.TransactionID2)
+				s.syncDuplicateSuspiciousReason(tx, familyID, id)
+				s.syncDuplicateSuspiciousReason(tx, familyID, d.TransactionID2)
 			}
 		}
 
@@ -868,17 +868,17 @@ func (s *storage) RevalidateDuplicateRelationships(userID, transactionID string)
 	})
 }
 
-func (s *storage) removeDuplicateLinkWithTx(tx *gorm.DB, userID string, id1, id2 uuid.UUID) {
-	tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id1, id2).Delete(&models.TransactionDuplicate{})
-	tx.Where("user_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", userID, id2, id1).Delete(&models.TransactionDuplicate{})
+func (s *storage) removeDuplicateLinkWithTx(tx *gorm.DB, familyID uuid.UUID, id1, id2 uuid.UUID) {
+	tx.Where("family_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", familyID, id1, id2).Delete(&models.TransactionDuplicate{})
+	tx.Where("family_id = ? AND transaction_id1 = ? AND transaction_id2 = ?", familyID, id2, id1).Delete(&models.TransactionDuplicate{})
 }
 
-func (s *storage) archiveMergedTransaction(tx *gorm.DB, userID string,
+func (s *storage) archiveMergedTransaction(tx *gorm.DB, familyID uuid.UUID,
 	merged *models.Transaction, keptID uuid.UUID, mergedAt time.Time,
 ) error {
 	archive := models.MergedTransaction{
 		ID:                    uuid.New(),
-		UserID:                userID,
+		FamilyID:              familyID,
 		KeptTransactionID:     keptID,
 		OriginalTransactionID: merged.ID,
 		Date:                  merged.Date,
@@ -905,7 +905,7 @@ func (s *storage) archiveMergedTransaction(tx *gorm.DB, userID string,
 	return nil
 }
 
-func (s *storage) validateTransaction(userID string, transaction goserver.TransactionNoIdInterface) error {
+func (s *storage) validateTransaction(familyID uuid.UUID, transaction goserver.TransactionNoIdInterface) error {
 	for _, m := range transaction.GetMovements() {
 		// 1. Validate Amount (decimal.Decimal doesn't have NaN/Inf, but we can check if it's uninitialized if needed)
 		// No specific check for decimal.Decimal yet, as it's inherently more stable than float64
@@ -913,7 +913,7 @@ func (s *storage) validateTransaction(userID string, transaction goserver.Transa
 		// 2. Validate AccountId
 		if m.AccountId != "" {
 			var count int64
-			if err := s.db.Model(&models.Account{}).Where("user_id = ? AND id = ?", userID, m.AccountId).Count(&count).Error; err != nil {
+			if err := s.db.Model(&models.Account{}).Where("family_id = ? AND id = ?", familyID, m.AccountId).Count(&count).Error; err != nil {
 				return err
 			}
 			if count == 0 {
@@ -924,7 +924,7 @@ func (s *storage) validateTransaction(userID string, transaction goserver.Transa
 		// 3. Validate CurrencyId
 		if m.CurrencyId != "" {
 			var count int64
-			if err := s.db.Model(&models.Currency{}).Where("user_id = ? AND id = ?", userID, m.CurrencyId).Count(&count).Error; err != nil {
+			if err := s.db.Model(&models.Currency{}).Where("family_id = ? AND id = ?", familyID, m.CurrencyId).Count(&count).Error; err != nil {
 				return err
 			}
 			if count == 0 {

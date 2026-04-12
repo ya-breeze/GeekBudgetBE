@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
+	"gorm.io/gorm"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -21,11 +21,11 @@ import (
 )
 
 type WebAppRouter struct {
-	commit  string
-	logger  *slog.Logger
-	cfg     *config.Config
-	db      database.Storage
-	cookies *sessions.CookieStore
+	commit string
+	logger *slog.Logger
+	cfg    *config.Config
+	db     database.Storage
+	gormDB *gorm.DB
 }
 
 // RespondError logs the error and sends an error response
@@ -35,14 +35,14 @@ func (r *WebAppRouter) RespondError(w http.ResponseWriter, msg string, code int)
 }
 
 func NewWebAppRouter(
-	commit string, logger *slog.Logger, cfg *config.Config, db database.Storage,
+	commit string, logger *slog.Logger, cfg *config.Config, db database.Storage, gormDB *gorm.DB,
 ) *WebAppRouter {
 	return &WebAppRouter{
-		commit:  commit,
-		logger:  logger,
-		cfg:     cfg,
-		db:      db,
-		cookies: sessions.NewCookieStore([]byte(cfg.SessionSecret)),
+		commit: commit,
+		logger: logger,
+		cfg:    cfg,
+		db:     db,
+		gormDB: gormDB,
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -26,7 +27,7 @@ var (
 )
 
 type ImportInfo struct {
-	UserID           string
+	FamilyID         uuid.UUID
 	BankImporterID   string
 	BankImporterType string
 	FetchAll         bool
@@ -42,95 +43,97 @@ type AuditLogFilter struct {
 }
 
 type UserStorage interface {
-	GetUserID(username string) (string, error)
-	GetUser(userID string) (*models.User, error)
-	CreateUser(username, password string) (*models.User, error)
+	GetUserByUsername(username string) (*models.User, error)
+	GetUser(userID uuid.UUID) (*models.User, error)
+	CreateUser(username, passwordHash string, familyID uuid.UUID) (*models.User, error)
 	PutUser(user *models.User) error
-	GetAllUserIDs() ([]string, error)
+	GetFamilyByName(name string) (*models.Family, error)
+	CreateFamily(name string) (*models.Family, error)
+	GetAllFamilyIDs() ([]uuid.UUID, error)
 }
 
 type AccountStorage interface {
-	CreateAccount(userID string, account *goserver.AccountNoId) (goserver.Account, error)
-	GetAccounts(userID string) ([]goserver.Account, error)
-	GetAccount(userID string, id string) (goserver.Account, error)
-	UpdateAccount(userID string, id string, account *goserver.AccountNoId) (goserver.Account, error)
-	DeleteAccount(userID string, id string, replaceWithAccountID *string) error
-	GetAccountHistory(userID string, accountID string) ([]goserver.Transaction, error)
-	GetAccountBalance(userID, accountID, currencyID string) (decimal.Decimal, error)
+	CreateAccount(familyID uuid.UUID, account *goserver.AccountNoId) (goserver.Account, error)
+	GetAccounts(familyID uuid.UUID) ([]goserver.Account, error)
+	GetAccount(familyID uuid.UUID, id string) (goserver.Account, error)
+	UpdateAccount(familyID uuid.UUID, id string, account *goserver.AccountNoId) (goserver.Account, error)
+	DeleteAccount(familyID uuid.UUID, id string, replaceWithAccountID *string) error
+	GetAccountHistory(familyID uuid.UUID, accountID string) ([]goserver.Transaction, error)
+	GetAccountBalance(familyID uuid.UUID, accountID, currencyID string) (decimal.Decimal, error)
 }
 
 type CurrencyStorage interface {
-	CreateCurrency(userID string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
-	GetCurrencies(userID string) ([]goserver.Currency, error)
-	GetCurrency(userID string, id string) (goserver.Currency, error)
-	UpdateCurrency(userID string, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
-	DeleteCurrency(userID string, id string, replaceWithCurrencyID *string) error
+	CreateCurrency(familyID uuid.UUID, currency *goserver.CurrencyNoId) (goserver.Currency, error)
+	GetCurrencies(familyID uuid.UUID) ([]goserver.Currency, error)
+	GetCurrency(familyID uuid.UUID, id string) (goserver.Currency, error)
+	UpdateCurrency(familyID uuid.UUID, id string, currency *goserver.CurrencyNoId) (goserver.Currency, error)
+	DeleteCurrency(familyID uuid.UUID, id string, replaceWithCurrencyID *string) error
 }
 
 type TransactionStorage interface {
-	GetTransactions(userID string, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error)
-	CreateTransaction(userID string, transaction goserver.TransactionNoIdInterface) (goserver.Transaction, error)
+	GetTransactions(familyID uuid.UUID, dateFrom, dateTo time.Time, onlySuspicious bool) ([]goserver.Transaction, error)
+	CreateTransaction(familyID uuid.UUID, transaction goserver.TransactionNoIdInterface) (goserver.Transaction, error)
 	// CreateTransactionsBatch atomically creates multiple transactions in a single database transaction.
 	// If any transaction fails to be created, the entire batch is rolled back.
-	CreateTransactionsBatch(userID string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error)
+	CreateTransactionsBatch(familyID uuid.UUID, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error)
 	UpdateTransaction(
-		userID string, id string, transaction goserver.TransactionNoIdInterface,
+		familyID uuid.UUID, id string, transaction goserver.TransactionNoIdInterface,
 	) (goserver.Transaction, error)
 	// UpdateTransactionInternal updates all fields provided in transaction, without preservation logic.
 	// Use only for internal operations like auto-matching or unprocessing.
 	UpdateTransactionInternal(
-		userID string, id string, transaction goserver.TransactionNoIdInterface,
+		familyID uuid.UUID, id string, transaction goserver.TransactionNoIdInterface,
 	) (goserver.Transaction, error)
-	DeleteTransaction(userID string, id string) error
-	MergeTransactions(userID, keepID, mergeID string) (goserver.Transaction, error)
-	GetTransaction(userID string, id string) (goserver.Transaction, error)
-	GetTransactionsIncludingDeleted(userID string, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
-	GetMergedTransactions(userID string) ([]goserver.MergedTransaction, error)
-	GetMergedTransaction(userID, originalTransactionID string) (goserver.MergedTransaction, error)
-	UnmergeTransaction(userID, id string) error
-	GetDuplicateTransactionIDs(userID, transactionID string) ([]string, error)
-	AddDuplicateRelationship(userID, transactionID1, transactionID2 string) error
-	RemoveDuplicateRelationship(userID, transactionID1, transactionID2 string) error
-	ClearDuplicateRelationships(userID, transactionID string) error
-	CountUnprocessedTransactionsForAccount(userID, accountID string, ignoreUnprocessedBefore time.Time) (int, error)
-	HasTransactionsAfterDate(userID, accountID string, date time.Time) (bool, error)
+	DeleteTransaction(familyID uuid.UUID, id string) error
+	MergeTransactions(familyID uuid.UUID, keepID, mergeID string) (goserver.Transaction, error)
+	GetTransaction(familyID uuid.UUID, id string) (goserver.Transaction, error)
+	GetTransactionsIncludingDeleted(familyID uuid.UUID, dateFrom, dateTo time.Time) ([]goserver.Transaction, error)
+	GetMergedTransactions(familyID uuid.UUID) ([]goserver.MergedTransaction, error)
+	GetMergedTransaction(familyID uuid.UUID, originalTransactionID string) (goserver.MergedTransaction, error)
+	UnmergeTransaction(familyID uuid.UUID, id string) error
+	GetDuplicateTransactionIDs(familyID uuid.UUID, transactionID string) ([]string, error)
+	AddDuplicateRelationship(familyID uuid.UUID, transactionID1, transactionID2 string) error
+	RemoveDuplicateRelationship(familyID uuid.UUID, transactionID1, transactionID2 string) error
+	ClearDuplicateRelationships(familyID uuid.UUID, transactionID string) error
+	CountUnprocessedTransactionsForAccount(familyID uuid.UUID, accountID string, ignoreUnprocessedBefore time.Time) (int, error)
+	HasTransactionsAfterDate(familyID uuid.UUID, accountID string, date time.Time) (bool, error)
 }
 
 type BankImporterStorage interface {
-	GetBankImporters(userID string) ([]goserver.BankImporter, error)
-	CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
+	GetBankImporters(familyID uuid.UUID) ([]goserver.BankImporter, error)
+	CreateBankImporter(familyID uuid.UUID, bankImporter *goserver.BankImporterNoId) (goserver.BankImporter, error)
 	UpdateBankImporter(
-		userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
+		familyID uuid.UUID, id string, bankImporter goserver.BankImporterNoIdInterface,
 	) (goserver.BankImporter, error)
-	DeleteBankImporter(userID string, id string) error
-	GetBankImporter(userID string, id string) (goserver.BankImporter, error)
+	DeleteBankImporter(familyID uuid.UUID, id string) error
+	GetBankImporter(familyID uuid.UUID, id string) (goserver.BankImporter, error)
 	GetAllBankImporters() ([]ImportInfo, error)
-	GetBankImporterFiles(userID string) ([]goserver.BankImporterFile, error)
-	GetBankImporterFile(userID string, id string) (models.BankImporterFile, error)
-	CreateBankImporterFile(userID string, file *models.BankImporterFile) (goserver.BankImporterFile, error)
-	DeleteBankImporterFile(userID string, id string) error
+	GetBankImporterFiles(familyID uuid.UUID) ([]goserver.BankImporterFile, error)
+	GetBankImporterFile(familyID uuid.UUID, id string) (models.BankImporterFile, error)
+	CreateBankImporterFile(familyID uuid.UUID, file *models.BankImporterFile) (goserver.BankImporterFile, error)
+	DeleteBankImporterFile(familyID uuid.UUID, id string) error
 }
 
 type MatcherStorage interface {
-	GetMatchers(userID string) ([]goserver.Matcher, error)
-	GetMatcher(userID string, id string) (goserver.Matcher, error)
+	GetMatchers(familyID uuid.UUID) ([]goserver.Matcher, error)
+	GetMatcher(familyID uuid.UUID, id string) (goserver.Matcher, error)
 	// Add a single confirmation (true = confirmed, false = rejected) to a matcher
 	// This operation is performed atomically and enforces the configured
 	// confirmation history maximum length.
-	AddMatcherConfirmation(userID string, id string, confirmed bool) error
-	GetMatchersRuntime(userID string) ([]MatcherRuntime, error)
-	GetMatcherRuntime(userID, id string) (MatcherRuntime, error)
+	AddMatcherConfirmation(familyID uuid.UUID, id string, confirmed bool) error
+	GetMatchersRuntime(familyID uuid.UUID) ([]MatcherRuntime, error)
+	GetMatcherRuntime(familyID uuid.UUID, id string) (MatcherRuntime, error)
 	CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) (MatcherRuntime, error)
-	CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
-	UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
-	DeleteMatcher(userID string, id string) error
+	CreateMatcher(familyID uuid.UUID, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
+	UpdateMatcher(familyID uuid.UUID, id string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error)
+	DeleteMatcher(familyID uuid.UUID, id string) error
 }
 
 type TemplateStorage interface {
-	CreateTemplate(userID string, t *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error)
-	GetTemplates(userID string, accountID *string) ([]goserver.TransactionTemplate, error)
-	UpdateTemplate(userID string, id string, t *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error)
-	DeleteTemplate(userID string, id string) error
+	CreateTemplate(familyID uuid.UUID, t *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error)
+	GetTemplates(familyID uuid.UUID, accountID *string) ([]goserver.TransactionTemplate, error)
+	UpdateTemplate(familyID uuid.UUID, id string, t *goserver.TransactionTemplateNoId) (goserver.TransactionTemplate, error)
+	DeleteTemplate(familyID uuid.UUID, id string) error
 }
 
 type RateStorage interface {
@@ -139,11 +142,11 @@ type RateStorage interface {
 }
 
 type BudgetItemStorage interface {
-	CreateBudgetItem(userID string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
-	GetBudgetItems(userID string) ([]goserver.BudgetItem, error)
-	GetBudgetItem(userID string, id string) (goserver.BudgetItem, error)
-	UpdateBudgetItem(userID string, id string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
-	DeleteBudgetItem(userID string, id string) error
+	CreateBudgetItem(familyID uuid.UUID, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
+	GetBudgetItems(familyID uuid.UUID) ([]goserver.BudgetItem, error)
+	GetBudgetItem(familyID uuid.UUID, id string) (goserver.BudgetItem, error)
+	UpdateBudgetItem(familyID uuid.UUID, id string, budgetItem *goserver.BudgetItemNoId) (goserver.BudgetItem, error)
+	DeleteBudgetItem(familyID uuid.UUID, id string) error
 }
 
 type ImageStorage interface {
@@ -153,28 +156,29 @@ type ImageStorage interface {
 }
 
 type NotificationStorage interface {
-	CreateNotification(userID string, notification *goserver.Notification) (goserver.Notification, error)
-	GetNotifications(userID string) ([]goserver.Notification, error)
-	DeleteNotification(userID string, id string) error
+	CreateNotification(familyID uuid.UUID, notification *goserver.Notification) (goserver.Notification, error)
+	GetNotifications(familyID uuid.UUID) ([]goserver.Notification, error)
+	DeleteNotification(familyID uuid.UUID, id string) error
 }
 
 type ReconciliationStorage interface {
-	GetLatestReconciliation(userID, accountID, currencyID string) (*goserver.Reconciliation, error)
-	GetReconciliationsForAccount(userID, accountID string) ([]goserver.Reconciliation, error)
-	GetReconciliationsForAccountAndCurrency(userID, accountID, currencyID string) ([]goserver.Reconciliation, error)
-	CreateReconciliation(userID string, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error)
-	InvalidateReconciliation(userID, accountID, currencyID string, fromDate time.Time) error
-	GetBulkReconciliationData(userID string) (*BulkReconciliationData, error)
+	GetLatestReconciliation(familyID uuid.UUID, accountID, currencyID string) (*goserver.Reconciliation, error)
+	GetReconciliationsForAccount(familyID uuid.UUID, accountID string) ([]goserver.Reconciliation, error)
+	GetReconciliationsForAccountAndCurrency(familyID uuid.UUID, accountID, currencyID string) ([]goserver.Reconciliation, error)
+	CreateReconciliation(familyID uuid.UUID, rec *goserver.ReconciliationNoId) (goserver.Reconciliation, error)
+	InvalidateReconciliation(familyID uuid.UUID, accountID, currencyID string, fromDate time.Time) error
+	GetBulkReconciliationData(familyID uuid.UUID) (*BulkReconciliationData, error)
 }
 
 type AuditLogStorage interface {
-	GetAuditLogs(userID string, filter AuditLogFilter) ([]models.AuditLog, error)
+	GetAuditLogs(familyID uuid.UUID, filter AuditLogFilter) ([]models.AuditLog, error)
 }
 
 type SystemStorage interface {
 	Open() error
 	Close() error
 	Backup(destination string) error
+	GetDB() *gorm.DB
 }
 
 //nolint:interfacebloat
@@ -228,6 +232,10 @@ func (s *storage) WithContext(ctx context.Context) Storage {
 	}
 }
 
+func (s *storage) GetDB() *gorm.DB {
+	return s.db
+}
+
 func (s *storage) Open() error {
 	s.log.Info("Opening database", "path", s.cfg.DBPath)
 	var err error
@@ -235,6 +243,10 @@ func (s *storage) Open() error {
 	if err != nil {
 		s.log.Error("failed to connect database", "error", err)
 		panic("failed to connect database")
+	}
+	if err := runMigrationIfNeeded(s.log, s.db); err != nil {
+		s.log.Error("failed to run kin-core migration", "error", err)
+		panic("failed to run kin-core migration")
 	}
 	if err := autoMigrateModels(s.db); err != nil {
 		s.log.Error("failed to migrate database", "error", err)

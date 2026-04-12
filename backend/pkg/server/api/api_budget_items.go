@@ -27,20 +27,20 @@ func NewBudgetItemsAPIService(logger *slog.Logger, db database.Storage) goserver
 
 // GetBudgetStatus - get budget status with rollover
 func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.Time, to time.Time, outputCurrencyId string, includeHidden bool) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
 
 	// Fetch all budget items
-	budgetItems, err := s.db.GetBudgetItems(userID)
+	budgetItems, err := s.db.GetBudgetItems(familyID)
 	if err != nil {
 		s.logger.Error("Failed to fetch budget items", "error", err)
 		return goserver.Response(http.StatusInternalServerError, nil), err
 	}
 
 	// Fetch all accounts to determine their primary currency
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.Error("Failed to fetch accounts", "error", err)
 		return goserver.Response(http.StatusInternalServerError, nil), err
@@ -58,7 +58,7 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	}
 
 	// Helpers for currency conversion
-	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+	currencyMap := buildCurrencyMap(s.logger, s.db, familyID)
 	outputCurrencyName := ""
 	if outputCurrencyId != "" {
 		outputCurrencyName = currencyMap[outputCurrencyId]
@@ -81,7 +81,7 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 	// Align minDate to start of month
 	minDate = time.Date(minDate.Year(), minDate.Month(), 1, 0, 0, 0, 0, minDate.Location())
 
-	transactions, err := s.db.GetTransactions(userID, minDate, to, false)
+	transactions, err := s.db.GetTransactions(familyID, minDate, to, false)
 	if err != nil {
 		s.logger.Error("Failed to fetch transactions", "error", err)
 		return goserver.Response(http.StatusInternalServerError, nil), err
@@ -202,11 +202,11 @@ func (s *budgetItemsAPIService) GetBudgetStatus(ctx context.Context, from time.T
 
 // CreateBudgetItem - create new budgetItem
 func (s *budgetItemsAPIService) CreateBudgetItem(ctx context.Context, budgetItemNoID goserver.BudgetItemNoId) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
-	budgetItem, err := s.db.CreateBudgetItem(userID, &budgetItemNoID)
+	budgetItem, err := s.db.CreateBudgetItem(familyID, &budgetItemNoID)
 	if err != nil {
 		s.logger.Error("Failed to create budget item", "error", err)
 		return goserver.Response(http.StatusInternalServerError, nil), err
@@ -216,11 +216,11 @@ func (s *budgetItemsAPIService) CreateBudgetItem(ctx context.Context, budgetItem
 
 // DeleteBudgetItem - delete budgetItem
 func (s *budgetItemsAPIService) DeleteBudgetItem(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
-	err := s.db.DeleteBudgetItem(userID, id)
+	err := s.db.DeleteBudgetItem(familyID, id)
 	if err != nil {
 		if err == database.ErrNotFound {
 			return goserver.Response(http.StatusNotFound, nil), nil
@@ -233,11 +233,11 @@ func (s *budgetItemsAPIService) DeleteBudgetItem(ctx context.Context, id string)
 
 // GetBudgetItem - get budgetItem
 func (s *budgetItemsAPIService) GetBudgetItem(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
-	budgetItem, err := s.db.GetBudgetItem(userID, id)
+	budgetItem, err := s.db.GetBudgetItem(familyID, id)
 	if err != nil {
 		if err == database.ErrNotFound {
 			return goserver.Response(http.StatusNotFound, nil), nil
@@ -250,11 +250,11 @@ func (s *budgetItemsAPIService) GetBudgetItem(ctx context.Context, id string) (g
 
 // GetBudgetItems - get all budgetItems
 func (s *budgetItemsAPIService) GetBudgetItems(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
-	budgetItems, err := s.db.GetBudgetItems(userID)
+	budgetItems, err := s.db.GetBudgetItems(familyID)
 	if err != nil {
 		s.logger.Error("Failed to get budget items", "error", err)
 		return goserver.Response(http.StatusInternalServerError, nil), err

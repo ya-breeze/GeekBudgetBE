@@ -17,7 +17,7 @@ func (s *MCPServer) registerNotificationTools(server *mcp.Server) {
 }
 
 func (s *MCPServer) listNotifications(ctx context.Context, req *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, any, error) {
-	notifications, err := s.storage.GetNotifications(s.userID)
+	notifications, err := s.storage.GetNotifications(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get notifications", "error", err)
 		return errorResult(err)

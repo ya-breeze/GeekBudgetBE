@@ -3,13 +3,14 @@ package common
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 )
 
 // Use constants.ForcedImportKey
 
 type ForcedImport struct {
-	UserID         string
+	FamilyID       uuid.UUID
 	BankImporterID string
 }
 

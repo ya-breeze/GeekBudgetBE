@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -19,8 +20,8 @@ func TestTemplateStorage(t *testing.T) {
 
 var _ = Describe("TemplateStorage", func() {
 	var db database.Storage
-	const userID = "user1"
-	const otherUserID = "user2"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	otherUserID := uuid.MustParse("00000000-0000-0000-0000-000000000002")
 
 	movement := goserver.Movement{
 		Amount:     decimal.NewFromInt(100),

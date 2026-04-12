@@ -19,14 +19,14 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 	}
 	data := utils.CreateTemplateData(req, "bank_importers")
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
-	bankimporters, err := r.db.GetBankImporters(userID)
+	bankimporters, err := r.db.GetBankImporters(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get bank importers", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -39,7 +39,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 			if bankImporter.Id == req.URL.Query().Get("id") {
 				r.logger.Info("Set 'FetchAll' to true", "id", bankImporter.Id)
 				bankImporter.FetchAll = true
-				if _, err = r.db.UpdateBankImporter(userID, bankImporter.Id, &bankImporter); err != nil {
+				if _, err = r.db.UpdateBankImporter(familyID, bankImporter.Id, &bankImporter); err != nil {
 					r.logger.Error("Failed to update bank importer", "error", err)
 					r.RespondError(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -50,7 +50,7 @@ func (r *WebAppRouter) bankImportersHandler(w http.ResponseWriter, req *http.Req
 				background := common.GetForcedImportChannel(req.Context())
 				if background != nil {
 					background <- common.ForcedImport{
-						UserID:         userID,
+						FamilyID:       familyID,
 						BankImporterID: bankImporter.Id,
 					}
 				}
@@ -74,12 +74,12 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 	}
 	data := utils.CreateTemplateData(req, "bank_importers")
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
 	if err = req.ParseMultipartForm(10 << 20); err != nil {
 		r.logger.Error("Failed to parse form", "error", err)
@@ -110,7 +110,7 @@ func (r *WebAppRouter) bankImporterUploadHandler(w http.ResponseWriter, req *htt
 
 	parser := api.NewBankImportersAPIServiceImpl(r.logger, r.db, r.cfg)
 	containsAllTransactions := req.URL.Query().Get("containsAllTransactions") == "true"
-	lastImport, err := parser.Upload(userID, bankImporterID, format, fileData, containsAllTransactions)
+	lastImport, err := parser.Upload(familyID, bankImporterID, format, fileData, containsAllTransactions)
 	if err != nil {
 		r.logger.Error("Failed to upload bank importer", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)

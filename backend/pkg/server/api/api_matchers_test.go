@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
 	"github.com/golang/mock/gomock"
@@ -19,7 +20,7 @@ import (
 
 var _ = Describe("Matchers API", func() {
 	log := test.CreateTestLogger()
-	ctx := context.WithValue(context.Background(), constants.UserIDKey, "user1")
+	ctx := context.WithValue(context.Background(), constants.FamilyIDKey, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	cfg := &config.Config{}
 
 	var (
@@ -43,7 +44,7 @@ var _ = Describe("Matchers API", func() {
 		It("returns 204 when deleting a matcher successfully", func() {
 			matcherID := "matcher-1"
 
-			mockStorage.EXPECT().DeleteMatcher("user1", matcherID).Return(nil)
+			mockStorage.EXPECT().DeleteMatcher(uuid.MustParse("00000000-0000-0000-0000-000000000001"), matcherID).Return(nil)
 
 			resp, err := sut.DeleteMatcher(ctx, matcherID)
 			Expect(err).ToNot(HaveOccurred())
@@ -53,7 +54,7 @@ var _ = Describe("Matchers API", func() {
 		It("returns 500 when storage fails", func() {
 			matcherID := "matcher-failed"
 
-			mockStorage.EXPECT().DeleteMatcher("user1", matcherID).Return(errors.New("db error"))
+			mockStorage.EXPECT().DeleteMatcher(uuid.MustParse("00000000-0000-0000-0000-000000000001"), matcherID).Return(errors.New("db error"))
 
 			resp, err := sut.DeleteMatcher(ctx, matcherID)
 			Expect(err).ToNot(HaveOccurred())
@@ -70,7 +71,7 @@ var _ = Describe("Matchers API", func() {
 	Describe("UpdateMatcher", func() {
 		It("updates a matcher successfully", func() {
 			matcherID := "matcher-update"
-			userID := "user1"
+			userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 			input := goserver.MatcherNoId{
 				DescriptionRegExp: "^Test$",
 				OutputDescription: "Matched",

@@ -22,8 +22,8 @@ type Account struct {
 
 	BankInfo goserver.BankAccountInfo `gorm:"serializer:json"`
 
-	UserID string    `gorm:"index"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FamilyID uuid.UUID `gorm:"type:uuid;index;not null"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 
 	IgnoreUnprocessedBefore *time.Time `gorm:"type:datetime"`
 	OpeningDate             *time.Time `gorm:"type:datetime"`
@@ -55,9 +55,9 @@ func (a *Account) FromDB() goserver.Account {
 	return res
 }
 
-func AccountToDB(m goserver.AccountNoIdInterface, userID string) *Account {
+func AccountToDB(m goserver.AccountNoIdInterface, familyID uuid.UUID) *Account {
 	res := &Account{
-		UserID:                 userID,
+		FamilyID:               familyID,
 		Name:                   m.GetName(),
 		Description:            m.GetDescription(),
 		Type:                   m.GetType(),

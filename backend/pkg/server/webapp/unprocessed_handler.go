@@ -16,14 +16,14 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 	}
 	data := utils.CreateTemplateData(req, "unprocessed")
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
-	accounts, err := r.db.GetAccounts(userID)
+	accounts, err := r.db.GetAccounts(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -31,7 +31,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 	}
 	data["Accounts"] = accounts
 
-	currencies, err := r.db.GetCurrencies(userID)
+	currencies, err := r.db.GetCurrencies(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -43,7 +43,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 		r.logger.Info("Skipping unprocessed transactions to specified ID", "id", id)
 	}
 	s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
-	unprocessed, cnt, err := s.PrepareUnprocessedTransactions(req.Context(), userID, true, id)
+	unprocessed, cnt, err := s.PrepareUnprocessedTransactions(req.Context(), familyID, true, id)
 	if err != nil {
 		r.logger.Error("Failed to get unprocessed", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -70,7 +70,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 			// Fetch matcher to obtain confirmation history (reverted to DB fetch)
 			confirmationsOK := 0
 			confirmationsTotal := 0
-			if matcher, err := r.db.GetMatcher(userID, m.MatcherId); err == nil {
+			if matcher, err := r.db.GetMatcher(familyID, m.MatcherId); err == nil {
 				// Use the new fields on the Matcher object or calculate from history
 				// faster to just use the fields if they are populated, or recalculate
 				// The retrieved matcher is models.Matcher
@@ -127,7 +127,7 @@ func (r *WebAppRouter) unprocessedHandler(w http.ResponseWriter, req *http.Reque
 }
 
 func (r *WebAppRouter) unprocessedMergeHandler(w http.ResponseWriter, req *http.Request) {
-	userID, code, err := r.GetUserIDFromSession(req)
+	familyID, code, err := r.GetFamilyIDFromRequest(req)
 	if err != nil {
 		r.RespondError(w, http.StatusText(code), code)
 		return
@@ -144,7 +144,7 @@ func (r *WebAppRouter) unprocessedMergeHandler(w http.ResponseWriter, req *http.
 		return
 	}
 
-	_, err = r.db.MergeTransactions(userID, duplicateOf, id)
+	_, err = r.db.MergeTransactions(familyID, duplicateOf, id)
 	if err != nil {
 		r.logger.Error("Failed to merge duplicate", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)

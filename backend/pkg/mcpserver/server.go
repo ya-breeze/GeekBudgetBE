@@ -4,23 +4,24 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/google/uuid"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 )
 
 // MCPServer wraps the MCP server with GeekBudget-specific context
 type MCPServer struct {
-	logger  *slog.Logger
-	storage database.Storage
-	userID  string
+	logger   *slog.Logger
+	storage  database.Storage
+	familyID uuid.UUID
 }
 
 // Run starts the MCP stdio server
-func Run(ctx context.Context, logger *slog.Logger, storage database.Storage, userID string) error {
+func Run(ctx context.Context, logger *slog.Logger, storage database.Storage, familyID uuid.UUID) error {
 	s := &MCPServer{
-		logger:  logger,
-		storage: storage,
-		userID:  userID,
+		logger:   logger,
+		storage:  storage,
+		familyID: familyID,
 	}
 
 	// Create MCP server with implementation info

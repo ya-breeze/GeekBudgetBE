@@ -20,9 +20,9 @@ func NewTemplatesAPIServiceImpl(logger *slog.Logger, db database.Storage) *Templ
 }
 
 func (s *TemplatesAPIServiceImpl) GetTemplates(ctx context.Context, accountId string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
 
@@ -31,7 +31,7 @@ func (s *TemplatesAPIServiceImpl) GetTemplates(ctx context.Context, accountId st
 		accountIDPtr = &accountId
 	}
 
-	templates, err := s.db.GetTemplates(userID, accountIDPtr)
+	templates, err := s.db.GetTemplates(familyID, accountIDPtr)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get templates")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
@@ -43,9 +43,9 @@ func (s *TemplatesAPIServiceImpl) GetTemplates(ctx context.Context, accountId st
 func (s *TemplatesAPIServiceImpl) CreateTemplate(
 	ctx context.Context, t goserver.TransactionTemplateNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
 
@@ -53,7 +53,7 @@ func (s *TemplatesAPIServiceImpl) CreateTemplate(
 		return goserver.Response(http.StatusBadRequest, "movements must not be empty"), nil
 	}
 
-	result, err := s.db.CreateTemplate(userID, &t)
+	result, err := s.db.CreateTemplate(familyID, &t)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create template")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
@@ -65,13 +65,13 @@ func (s *TemplatesAPIServiceImpl) CreateTemplate(
 func (s *TemplatesAPIServiceImpl) UpdateTemplate(
 	ctx context.Context, id string, t goserver.TransactionTemplateNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
 
-	result, err := s.db.UpdateTemplate(userID, id, &t)
+	result, err := s.db.UpdateTemplate(familyID, id, &t)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to update template")
 		return mapErrorToResponse(err), nil
@@ -81,13 +81,13 @@ func (s *TemplatesAPIServiceImpl) UpdateTemplate(
 }
 
 func (s *TemplatesAPIServiceImpl) DeleteTemplate(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}
 
-	if err := s.db.DeleteTemplate(userID, id); err != nil {
+	if err := s.db.DeleteTemplate(familyID, id); err != nil {
 		s.logger.With("error", err).Error("Failed to delete template")
 		return mapErrorToResponse(err), nil
 	}

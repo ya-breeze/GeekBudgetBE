@@ -25,7 +25,7 @@ func (s *MCPServer) registerMatcherTools(server *mcp.Server) {
 }
 
 func (s *MCPServer) listMatchers(ctx context.Context, req *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, any, error) {
-	matchers, err := s.storage.GetMatchers(s.userID)
+	matchers, err := s.storage.GetMatchers(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get matchers", "error", err)
 		return errorResult(err)
@@ -38,7 +38,7 @@ type getMatcherArgs struct {
 }
 
 func (s *MCPServer) getMatcher(ctx context.Context, req *mcp.CallToolRequest, args getMatcherArgs) (*mcp.CallToolResult, any, error) {
-	matcher, err := s.storage.GetMatcher(s.userID, args.ID)
+	matcher, err := s.storage.GetMatcher(s.familyID, args.ID)
 	if err != nil {
 		s.logger.Error("Failed to get matcher", "error", err, "id", args.ID)
 		return errorResult(err)

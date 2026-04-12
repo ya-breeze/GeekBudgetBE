@@ -11,7 +11,7 @@ type TransactionHistory struct {
 	gorm.Model
 
 	TransactionID uuid.UUID `gorm:"type:uuid;index"`
-	UserID        string    `gorm:"index"`
+	FamilyID      uuid.UUID `gorm:"type:uuid;index;not null"`
 	Action        string
 	// Snapshot of the transaction at the time of the action (or before for updates/deletes)
 	// Stored as JSON to be resilient to future schema changes in Transaction model

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -19,7 +20,7 @@ func TestTransactionHistoryInternal(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	// 1. Create
 	tr, err := st.CreateTransaction(userID, &goserver.TransactionNoId{

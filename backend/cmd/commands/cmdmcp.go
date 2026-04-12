@@ -42,16 +42,17 @@ access to accounts, transactions, budgets, and other financial data.`,
 				return fmt.Errorf("failed to open storage: %w", err)
 			}
 
-			// Resolve username to userID
-			userID, err := storage.GetUserID(username)
+			// Resolve username to familyID
+			user, err := storage.GetUserByUsername(username)
 			if err != nil {
-				return fmt.Errorf("failed to get user ID for username %q: %w", username, err)
+				return fmt.Errorf("failed to get user for username %q: %w", username, err)
 			}
+			familyID := user.FamilyID
 
-			logger.Info("Starting MCP server", "username", username, "userID", userID)
+			logger.Info("Starting MCP server", "username", username, "familyID", familyID)
 
 			// Run MCP server
-			return mcpserver.Run(cmd.Context(), logger, storage, userID)
+			return mcpserver.Run(cmd.Context(), logger, storage, familyID)
 		},
 		Args: cobra.NoArgs,
 	}

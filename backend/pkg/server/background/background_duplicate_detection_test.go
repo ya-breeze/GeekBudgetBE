@@ -20,7 +20,7 @@ var _ = Describe("Background Duplicate Detection", func() {
 		mockCtrl *gomock.Controller
 		mockDB   *mocks.MockStorage
 		logger   = test.CreateTestLogger()
-		userID   = "user1"
+		familyID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		ctx      = context.Background()
 	)
 
@@ -33,7 +33,7 @@ var _ = Describe("Background Duplicate Detection", func() {
 		mockCtrl.Finish()
 	})
 
-	Describe("processUserDuplicates", func() {
+	Describe("processFamilyDuplicates", func() {
 		It("should detect duplicates and create notifications", func() {
 			// Simulate inter-account transfer: outgoing from account A, incoming to account B
 			t1 := goserver.Transaction{
@@ -49,21 +49,21 @@ var _ = Describe("Background Duplicate Detection", func() {
 				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(100), CurrencyId: "USD"}},
 			}
 
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
-			mockDB.EXPECT().AddDuplicateRelationship(userID, t1.Id, t2.Id).Return(nil)
+			mockDB.EXPECT().GetTransactions(familyID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
+			mockDB.EXPECT().AddDuplicateRelationship(familyID, t1.Id, t2.Id).Return(nil)
 
 			// Expect both to be marked suspicious via internal method (system operation, no user notifications)
-			mockDB.EXPECT().UpdateTransactionInternal(userID, t1.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
-			mockDB.EXPECT().UpdateTransactionInternal(userID, t2.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
+			mockDB.EXPECT().UpdateTransactionInternal(familyID, t1.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
+			mockDB.EXPECT().UpdateTransactionInternal(familyID, t2.Id, gomock.Any()).Return(goserver.Transaction{}, nil)
 
 			// Expect notification
-			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+			mockDB.EXPECT().CreateNotification(familyID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Type).To(Equal(string(models.NotificationTypeDuplicateDetected)))
 				Expect(n.Description).To(ContainSubstring("2 potential duplicate"))
 				return goserver.Notification{}, nil
 			})
 
-			processUserDuplicates(ctx, logger, mockDB, userID)
+			processFamilyDuplicates(ctx, logger, mockDB, familyID)
 		})
 
 		It("should not flag two same-direction transactions as duplicates", func() {
@@ -81,10 +81,10 @@ var _ = Describe("Background Duplicate Detection", func() {
 				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(-100), CurrencyId: "USD"}},
 			}
 
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
+			mockDB.EXPECT().GetTransactions(familyID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
 			// No AddDuplicateRelationship, UpdateTransactionInternal, or CreateNotification expected
 
-			processUserDuplicates(ctx, logger, mockDB, userID)
+			processFamilyDuplicates(ctx, logger, mockDB, familyID)
 		})
 
 		It("should skip transactions with different amounts", func() {
@@ -101,10 +101,10 @@ var _ = Describe("Background Duplicate Detection", func() {
 				Movements:   []goserver.Movement{{Amount: decimal.NewFromInt(200), CurrencyId: "USD"}},
 			}
 
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
+			mockDB.EXPECT().GetTransactions(familyID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
 			// No UpdateTransaction or CreateNotification expected
 
-			processUserDuplicates(ctx, logger, mockDB, userID)
+			processFamilyDuplicates(ctx, logger, mockDB, familyID)
 		})
 
 		It("should respect DuplicateDismissed flag", func() {
@@ -122,10 +122,10 @@ var _ = Describe("Background Duplicate Detection", func() {
 				DuplicateDismissed: true, // User dismissed it
 			}
 
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
+			mockDB.EXPECT().GetTransactions(familyID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
 			// No UpdateTransaction or CreateNotification expected
 
-			processUserDuplicates(ctx, logger, mockDB, userID)
+			processFamilyDuplicates(ctx, logger, mockDB, familyID)
 		})
 
 		It("should not re-mark if already has DuplicateReason", func() {
@@ -145,12 +145,12 @@ var _ = Describe("Background Duplicate Detection", func() {
 				SuspiciousReasons: []string{models.DuplicateReason}, // Already marked
 			}
 
-			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
+			mockDB.EXPECT().GetTransactions(familyID, gomock.Any(), time.Time{}, false).Return([]goserver.Transaction{t1, t2}, nil)
 			// AddDuplicateRelationship still called even when already marked (idempotent link)
-			mockDB.EXPECT().AddDuplicateRelationship(userID, t1.Id, t2.Id).Return(nil)
+			mockDB.EXPECT().AddDuplicateRelationship(familyID, t1.Id, t2.Id).Return(nil)
 			// No UpdateTransactionInternal or CreateNotification expected (both already marked)
 
-			processUserDuplicates(ctx, logger, mockDB, userID)
+			processFamilyDuplicates(ctx, logger, mockDB, familyID)
 		})
 	})
 })

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -20,7 +21,7 @@ func TestReconciliationAudit(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	accountID := "11111111-1111-1111-1111-111111111111"
 	currencyID := "CZK"
 
@@ -46,8 +47,8 @@ func TestReconciliationAudit(t *testing.T) {
 		if history[0].Action != "CREATED" {
 			t.Errorf("expected CREATED action, got %s", history[0].Action)
 		}
-		if history[0].UserID != userID {
-			t.Errorf("expected UserID %s, got %s", userID, history[0].UserID)
+		if history[0].FamilyID != userID {
+			t.Errorf("expected FamilyID %s, got %s", userID, history[0].FamilyID)
 		}
 	}
 

@@ -23,12 +23,12 @@ func NewCurrenciesAPIServicer(logger *slog.Logger, db database.Storage) goserver
 }
 
 func (s *CurrenciesAPIServicerImpl) GetCurrencies(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	currencies, err := s.db.GetCurrencies(userID)
+	currencies, err := s.db.GetCurrencies(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get currencies")
 		return goserver.Response(500, nil), nil
@@ -40,13 +40,13 @@ func (s *CurrenciesAPIServicerImpl) GetCurrencies(ctx context.Context) (goserver
 func (s *CurrenciesAPIServicerImpl) CreateCurrency(
 	ctx context.Context, currencyNoID goserver.CurrencyNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	currency, err := s.db.CreateCurrency(userID, &currencyNoID)
+	currency, err := s.db.CreateCurrency(familyID, &currencyNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create currency")
 		return goserver.Response(500, nil), nil
@@ -58,13 +58,13 @@ func (s *CurrenciesAPIServicerImpl) CreateCurrency(
 func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
 	ctx context.Context, currencyID string, currencyNoID goserver.CurrencyNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	currency, err := s.db.UpdateCurrency(userID, currencyID, &currencyNoID)
+	currency, err := s.db.UpdateCurrency(familyID, currencyID, &currencyNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to update currency")
 		return goserver.Response(500, nil), nil
@@ -76,9 +76,9 @@ func (s *CurrenciesAPIServicerImpl) UpdateCurrency(
 func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
 	ctx context.Context, currencyID string, replaceWithCurrencyID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -87,7 +87,7 @@ func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
 		replaceWithRef = &replaceWithCurrencyID
 	}
 
-	err := s.db.DeleteCurrency(userID, currencyID, replaceWithRef)
+	err := s.db.DeleteCurrency(familyID, currencyID, replaceWithRef)
 	if err != nil {
 		if errors.Is(err, database.ErrCurrencyInUse) {
 			s.logger.With("error", err).Warn("Cannot delete currency in use without replacement")
@@ -103,12 +103,12 @@ func (s *CurrenciesAPIServicerImpl) DeleteCurrency(
 func (s *CurrenciesAPIServicerImpl) GetCurrency(
 	ctx context.Context, currencyID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	currency, err := s.db.GetCurrency(userID, currencyID)
+	currency, err := s.db.GetCurrency(familyID, currencyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get currency")
 		return goserver.Response(500, nil), nil

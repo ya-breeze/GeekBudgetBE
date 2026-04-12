@@ -17,14 +17,14 @@ func (r *WebAppRouter) accountsHandler(w http.ResponseWriter, req *http.Request)
 	}
 	data := utils.CreateTemplateData(req, "accounts")
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
-	accounts, err := r.db.GetAccounts(userID)
+	accounts, err := r.db.GetAccounts(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -47,14 +47,14 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 	}
 	data := map[string]interface{}{}
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
-	accounts, err := r.db.GetAccounts(userID)
+	accounts, err := r.db.GetAccounts(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -90,7 +90,7 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 					data["Error"] = "Account with this name already exists"
 				} else {
 					r.logger.Info("creating account", "name", name)
-					acc, err = r.db.CreateAccount(userID, &goserver.AccountNoId{
+					acc, err = r.db.CreateAccount(familyID, &goserver.AccountNoId{
 						Name:        name,
 						Type:        req.FormValue("type"),
 						Description: req.FormValue("description"),
@@ -104,7 +104,7 @@ func (r *WebAppRouter) accountsEditHandler(w http.ResponseWriter, req *http.Requ
 			}
 		} else {
 			r.logger.Info("updating account", "name", name)
-			acc, err = r.db.UpdateAccount(userID, req.FormValue("id"), &goserver.AccountNoId{
+			acc, err = r.db.UpdateAccount(familyID, req.FormValue("id"), &goserver.AccountNoId{
 				Name:        name,
 				Type:        req.FormValue("type"),
 				Description: req.FormValue("description"),

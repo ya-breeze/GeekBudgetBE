@@ -27,15 +27,16 @@ func CmdMatch(log *slog.Logger) *cobra.Command {
 				return fmt.Errorf("failed to open storage: %w", err)
 			}
 
-			userID, err := storage.GetUserID(username)
+			user, err := storage.GetUserByUsername(username)
 			if err != nil {
-				return fmt.Errorf("failed to get user ID by username %q: %w", username, err)
+				return fmt.Errorf("failed to get user by username %q: %w", username, err)
 			}
-			matcher, err := storage.GetMatcherRuntime(userID, matcherID)
+			familyID := user.FamilyID
+			matcher, err := storage.GetMatcherRuntime(familyID, matcherID)
 			if err != nil {
 				return fmt.Errorf("failed to get matcher %q: %w", matcherID, err)
 			}
-			transaction, err := storage.GetTransaction(userID, transactionID)
+			transaction, err := storage.GetTransaction(familyID, transactionID)
 			if err != nil {
 				return fmt.Errorf("failed to get transaction %q: %w", transactionID, err)
 			}

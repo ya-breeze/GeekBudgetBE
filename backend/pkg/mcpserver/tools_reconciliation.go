@@ -44,19 +44,19 @@ type reconciliationStatusResponse struct {
 }
 
 func (s *MCPServer) getReconciliationStatus(ctx context.Context, req *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, any, error) {
-	accounts, err := s.storage.GetAccounts(s.userID)
+	accounts, err := s.storage.GetAccounts(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get accounts", "error", err)
 		return errorResult(err)
 	}
 
-	bankImporters, err := s.storage.GetBankImporters(s.userID)
+	bankImporters, err := s.storage.GetBankImporters(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get bank importers", "error", err)
 		return errorResult(err)
 	}
 
-	currencies, err := s.storage.GetCurrencies(s.userID)
+	currencies, err := s.storage.GetCurrencies(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get currencies", "error", err)
 		return errorResult(err)
@@ -72,7 +72,7 @@ func (s *MCPServer) getReconciliationStatus(ctx context.Context, req *mcp.CallTo
 		accountsWithImporter[bi.AccountId] = true
 	}
 
-	bulkData, err := s.storage.GetBulkReconciliationData(s.userID)
+	bulkData, err := s.storage.GetBulkReconciliationData(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get bulk reconciliation data", "error", err)
 		return errorResult(err)
@@ -142,7 +142,7 @@ type getReconciliationHistoryArgs struct {
 }
 
 func (s *MCPServer) getReconciliationHistory(ctx context.Context, req *mcp.CallToolRequest, args getReconciliationHistoryArgs) (*mcp.CallToolResult, any, error) {
-	reconciliations, err := s.storage.GetReconciliationsForAccount(s.userID, args.AccountID)
+	reconciliations, err := s.storage.GetReconciliationsForAccount(s.familyID, args.AccountID)
 	if err != nil {
 		s.logger.Error("Failed to get reconciliation history", "error", err, "accountId", args.AccountID)
 		return errorResult(err)

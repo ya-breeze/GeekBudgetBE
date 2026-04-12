@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -22,9 +23,9 @@ type UnprocessedTransactionsAPIServiceImpl struct {
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAgainstMatcher(
-	ctx context.Context, userID string, matcherID string, excludeTransactionID string,
+	ctx context.Context, familyID uuid.UUID, matcherID string, excludeTransactionID string,
 ) ([]string, error) {
-	matcher, err := s.db.GetMatcher(userID, matcherID)
+	matcher, err := s.db.GetMatcher(familyID, matcherID)
 	if err != nil {
 		s.logger.With("error", err, "matcherId", matcherID).Error("Failed to get matcher for auto-processing")
 		return nil, err
@@ -42,7 +43,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 	}
 
 	// Get all matchers runtime to reuse the helper
-	matchersRuntime, err := s.db.GetMatchersRuntime(userID)
+	matchersRuntime, err := s.db.GetMatchersRuntime(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers runtime")
 		return nil, err
@@ -65,14 +66,14 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 	// Get all transactions to find unprocessed ones and for duplicate checking
 	// Optimization: This might be heavy if user has many transactions.
 	// We might want to filter by date or similar in future, but for now we follow the pattern in PrepareUnprocessedTransactions
-	allTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{}, false)
+	allTransactions, err := s.db.GetTransactions(familyID, time.Time{}, time.Time{}, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, err
 	}
 
 	// Load accounts for filtering
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts for auto-processing filtering")
 		return nil, err
@@ -158,7 +159,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 		}
 
 		// Persist
-		_, err = s.db.UpdateTransactionInternal(userID, t.Id, transactionNoId)
+		_, err = s.db.UpdateTransactionInternal(familyID, t.Id, transactionNoId)
 		if err != nil {
 			s.logger.With("error", err, "transactionId", t.Id).Error("Failed to auto-process transaction")
 			// We continue processing other transactions even if one fails
@@ -174,7 +175,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ProcessUnprocessedTransactionsAg
 		// Check balance after auto-processing
 		// We need to know which accounts were affected. For simplicity, we check the matcher's account.
 		if matcher.OutputAccountId != "" {
-			if err := s.CheckBalanceForAccount(ctx, userID, matcher.OutputAccountId); err != nil {
+			if err := s.CheckBalanceForAccount(ctx, familyID, matcher.OutputAccountId); err != nil {
 				s.logger.With("error", err, "accountId", matcher.OutputAccountId).Error("Failed to check balance after auto-processing")
 			}
 		}
@@ -189,11 +190,11 @@ func NewUnprocessedTransactionsAPIServiceImpl(logger *slog.Logger, db database.S
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) Convert(
-	ctx context.Context, userID string, id string, transactionNoID goserver.TransactionNoIdInterface,
+	ctx context.Context, familyID uuid.UUID, id string, transactionNoID goserver.TransactionNoIdInterface,
 ) (*goserver.Transaction, error) {
-	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", userID)
+	s.logger.Info("Converting unprocessed transaction", "transaction", id, "user", familyID)
 
-	transaction, err := s.db.UpdateTransactionInternal(userID, id, transactionNoID)
+	transaction, err := s.db.UpdateTransactionInternal(familyID, id, transactionNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to convert unprocessed transaction")
 		return nil, fmt.Errorf("failed to convert unprocessed transaction: %w", err)
@@ -203,9 +204,9 @@ func (s *UnprocessedTransactionsAPIServiceImpl) Convert(
 }
 
 func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
-	ctx context.Context, userID string, single bool, continuationID string,
+	ctx context.Context, familyID uuid.UUID, single bool, continuationID string,
 ) ([]goserver.UnprocessedTransaction, int, error) {
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts for unprocessed filtering")
 		return nil, 0, err
@@ -218,14 +219,14 @@ func (s *UnprocessedTransactionsAPIServiceImpl) PrepareUnprocessedTransactions(
 		}
 	}
 
-	matchers, err := s.db.GetMatchersRuntime(userID)
+	matchers, err := s.db.GetMatchersRuntime(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
 		return nil, 0, err
 	}
 
 	var transactions []goserver.Transaction
-	allTransactions, err := s.db.GetTransactions(userID, time.Time{}, time.Time{}, false)
+	allTransactions, err := s.db.GetTransactions(familyID, time.Time{}, time.Time{}, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, 0, err
@@ -329,12 +330,12 @@ func (s *UnprocessedTransactionsAPIServiceImpl) getDuplicateTransactions(
 func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 	ctx context.Context,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	res, _, err := s.PrepareUnprocessedTransactions(ctx, userID, false, "")
+	res, _, err := s.PrepareUnprocessedTransactions(ctx, familyID, false, "")
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -345,12 +346,12 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransactions(
 func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
 	ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	transaction, err := s.db.GetTransaction(userID, id)
+	transaction, err := s.db.GetTransaction(familyID, id)
 	if err != nil {
 		if err == database.ErrNotFound {
 			return goserver.Response(404, nil), nil
@@ -359,7 +360,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
 		return goserver.Response(500, nil), nil
 	}
 
-	matchers, err := s.db.GetMatchersRuntime(userID)
+	matchers, err := s.db.GetMatchersRuntime(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
 		return goserver.Response(500, nil), nil
@@ -374,7 +375,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) GetUnprocessedTransaction(
 	// Optimize duplicate search by time window +/- 2 days
 	dateFrom := transaction.Date.Add(-48 * time.Hour)
 	dateTo := transaction.Date.Add(48 * time.Hour)
-	candidateTransactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
+	candidateTransactions, err := s.db.GetTransactions(familyID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions for duplicate check")
 		return goserver.Response(500, nil), nil
@@ -397,7 +398,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	transactionNoID goserver.TransactionNoId,
 	matcherId string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -405,12 +406,12 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	var autoProcessedIds []string
 	// If a matcher ID is provided, record a confirmation and update transaction
 	if matcherId != "" {
-		if err := s.db.AddMatcherConfirmation(userID, matcherId, true); err != nil {
+		if err := s.db.AddMatcherConfirmation(familyID, matcherId, true); err != nil {
 			s.logger.With("error", err, "matcherId", matcherId).Error("Failed to add matcher confirmation")
 			// We continue even if confirmation stats fail, as the conversion is the primary action
 		} else {
 			// Confirmation added successfully, now check if we can auto-process others
-			ids, err := s.ProcessUnprocessedTransactionsAgainstMatcher(ctx, userID, matcherId, id)
+			ids, err := s.ProcessUnprocessedTransactionsAgainstMatcher(ctx, familyID, matcherId, id)
 			if err != nil {
 				// Log but don't fail the request
 				s.logger.With("error", err).Error("Failed to process unprocessed transactions against matcher")
@@ -422,7 +423,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 	}
 	transactionNoID.IsAuto = false
 
-	transaction, err := s.Convert(ctx, userID, id, &transactionNoID)
+	transaction, err := s.Convert(ctx, familyID, id, &transactionNoID)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -436,7 +437,7 @@ func (s *UnprocessedTransactionsAPIServiceImpl) ConvertUnprocessedTransaction(
 		}
 	}
 	for accID := range affectedAccounts {
-		if err := s.CheckBalanceForAccount(ctx, userID, accID); err != nil {
+		if err := s.CheckBalanceForAccount(ctx, familyID, accID); err != nil {
 			s.logger.With("error", err, "accountId", accID).Error("Failed to check balance after conversion")
 		}
 	}
@@ -518,8 +519,8 @@ func (s *UnprocessedTransactionsAPIServiceImpl) matchUnprocessedTransactions(
 	return res, nil
 }
 
-func (s *UnprocessedTransactionsAPIServiceImpl) CheckBalanceForAccount(ctx context.Context, userID, accountID string) error {
-	return common.CheckBalanceForAccount(ctx, s.logger, s.db, userID, accountID)
+func (s *UnprocessedTransactionsAPIServiceImpl) CheckBalanceForAccount(ctx context.Context, familyID uuid.UUID, accountID string) error {
+	return common.CheckBalanceForAccount(ctx, s.logger, s.db, familyID, accountID)
 }
 
 func sortAndRemoveDuplicates(input []string) []string {

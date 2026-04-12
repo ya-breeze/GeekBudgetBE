@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -24,24 +25,24 @@ func updateEntity[I any, O any](
 	entityName string,
 	id string,
 	input I,
-	updateFunc func(userID string, id string, input I) (O, error),
-) (O, string, error) {
+	updateFunc func(familyID uuid.UUID, id string, input I) (O, error),
+) (O, uuid.UUID, error) {
 	var empty O
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		logger.Error("UserID not found in context")
-		return empty, "", fmt.Errorf("UserID not found in context")
+		logger.Error("FamilyID not found in context")
+		return empty, uuid.UUID{}, fmt.Errorf("FamilyID not found in context")
 	}
 
-	res, err := updateFunc(userID, id, input)
+	res, err := updateFunc(familyID, id, input)
 	if err != nil {
 		if err == database.ErrNotFound {
-			logger.With("error", err, "id", id, "userID", userID).Warn("Entity not found for update", "entity", entityName)
+			logger.With("error", err, "id", id, "familyID", familyID).Warn("Entity not found for update", "entity", entityName)
 		} else {
-			logger.With("error", err, "id", id, "userID", userID).Error("Failed to update entity", "entity", entityName)
+			logger.With("error", err, "id", id, "familyID", familyID).Error("Failed to update entity", "entity", entityName)
 		}
-		return empty, userID, err
+		return empty, familyID, err
 	}
 
-	return res, userID, nil
+	return res, familyID, nil
 }

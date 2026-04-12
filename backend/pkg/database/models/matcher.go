@@ -24,8 +24,8 @@ type Matcher struct {
 	Simplified                 bool
 	Keywords                   []string `gorm:"serializer:json"`
 
-	UserID string    `gorm:"index"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FamilyID uuid.UUID `gorm:"type:uuid;index;not null"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (m *Matcher) FromDB() goserver.Matcher {
@@ -57,7 +57,7 @@ func (m *Matcher) FromDB() goserver.Matcher {
 	}
 }
 
-func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
+func MatcherToDB(m goserver.MatcherNoIdInterface, familyID uuid.UUID) *Matcher {
 	// Preserve confirmation history from the incoming model. Ensure non-nil slice.
 	history := m.GetConfirmationHistory()
 	if history == nil {
@@ -65,7 +65,7 @@ func MatcherToDB(m goserver.MatcherNoIdInterface, userID string) *Matcher {
 	}
 
 	return &Matcher{
-		UserID:                     userID,
+		FamilyID:                   familyID,
 		OutputDescription:          m.GetOutputDescription(),
 		OutputAccountID:            m.GetOutputAccountId(),
 		OutputTags:                 m.GetOutputTags(),

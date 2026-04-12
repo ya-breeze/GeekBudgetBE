@@ -10,11 +10,11 @@ import (
 
 func performUpdate[M any, I any, O any](
 	s *storage,
-	userID string,
+	familyID uuid.UUID,
 	entityType string,
 	id string,
 	input I,
-	toDB func(I, string) *M,
+	toDB func(I, uuid.UUID) *M,
 	fromDB func(*M) O,
 	setID func(*M, uuid.UUID),
 ) (O, error) {
@@ -25,7 +25,7 @@ func performUpdate[M any, I any, O any](
 	}
 
 	var data *M
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return empty, ErrNotFound
 		}
@@ -34,14 +34,14 @@ func performUpdate[M any, I any, O any](
 	}
 
 	oldData := data
-	data = toDB(input, userID)
+	data = toDB(input, familyID)
 	setID(data, idUUID)
 	if err := s.db.Save(data).Error; err != nil {
 		return empty, fmt.Errorf(StorageError, err)
 	}
 
 	// Record audit log with before/after comparison
-	if err := s.recordAuditLog(s.db, userID, entityType, id, "UPDATED", oldData, data); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, entityType, id, "UPDATED", oldData, data); err != nil {
 		s.log.Error("Failed to record audit log", "error", err, "entityType", entityType, "id", id)
 	}
 
