@@ -5,6 +5,10 @@
 
     @media (max-width: 767px) {
         padding: 12px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; // outer container doesn't scroll — expense section handles it
+        gap: 8px;
     }
 }
 
@@ -16,6 +20,7 @@
     margin-bottom: 16px;
     display: flex;
     justify-content: flex-end;
+    flex-shrink: 0;
 }
 
 .loading-container {
@@ -123,6 +128,7 @@
         align-items: stretch;
         gap: 12px;
         padding: 12px;
+        flex-shrink: 0;
     }
 
     .totals-container {
@@ -392,6 +398,13 @@
     display: flex;
     flex-direction: column;
     gap: 32px;
+
+    @media (max-width: 767px) {
+        flex: 1;
+        min-height: 0; // required for flex children to shrink below content size
+        overflow: auto; // currency title + table rows scroll together here
+        gap: 8px;
+    }
 }
 
 .currency-title {
@@ -401,6 +414,12 @@
     align-items: center;
     gap: 16px;
     justify-content: space-between;
+
+    @media (max-width: 767px) {
+        font-size: 14px;
+        margin-bottom: 4px;
+        flex-shrink: 0;
+    }
 }
 
 .currency-toggle {
@@ -417,10 +436,9 @@
         0 1px 1px 0 rgba(0, 0, 0, 0.14),
         0 1px 3px 0 rgba(0, 0, 0, 0.12);
 
-    // On mobile: fixed height so the table scrolls within its own box,
-    // which lets position:sticky on th work correctly within this container.
     @media (max-width: 767px) {
-        max-height: 60vh;
+        max-height: none; // expense-table-section owns the scroll now
+        overflow: visible; // transparent — let parent handle both scroll axes
     }
 }
 
