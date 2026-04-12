@@ -5,8 +5,6 @@
 
     @media (max-width: 767px) {
         padding: 12px;
-        height: auto;    // let mat-sidenav-content own the scroll; removes empty-space artifact
-        overflow: visible;
     }
 }
 
@@ -429,7 +427,9 @@
         0 1px 3px 0 rgba(0, 0, 0, 0.12);
 
     @media (max-width: 767px) {
-        overflow-x: auto;
+        // bounded height → scroll container on both axes → sticky th works
+        max-height: calc(100vh - 220px);
+        overflow: auto;
     }
 }
 
