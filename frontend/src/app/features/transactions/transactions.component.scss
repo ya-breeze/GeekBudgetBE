@@ -3,6 +3,10 @@
     height: 100%;
     overflow: auto;
 
+    @media (max-width: 767px) {
+        padding: 12px;
+    }
+
     .transaction-row {
         cursor: pointer;
         transition: background-color 0.2s;
@@ -22,6 +26,12 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+
+    @media (max-width: 767px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
 }
 
 .month-navigation {
@@ -57,7 +67,6 @@
     border: 2px solid #3f51b5;
     border-radius: 4px;
     padding: 4px 8px;
-    min-width: 340px;
     box-shadow: 0 2px 8px rgba(63, 81, 181, 0.15);
 
     .quick-entry-icon {
@@ -131,7 +140,7 @@
 .table-container {
     background: white;
     border-radius: 4px;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -318,4 +327,23 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+@media (max-width: 767px) {
+    .mat-column-movements,
+    .mat-column-tags {
+        display: none;
+    }
+
+    .selection-floating-bar {
+        left: 0 !important;
+        right: 0;
+        bottom: 0;
+        border-radius: 0;
+        padding: 10px 12px;
+
+        .selected-items-preview {
+            display: none;
+        }
+    }
 }

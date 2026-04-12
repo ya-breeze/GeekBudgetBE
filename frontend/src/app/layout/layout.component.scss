@@ -23,4 +23,12 @@
     flex: 1;
     padding: 16px 24px 24px 24px;
     overflow: auto;
+
+    @media (max-width: 767px) {
+        padding: 8px 12px 16px 12px;
+    }
+
+    &.mobile-nav-offset {
+        padding-bottom: 72px; // 56px nav + 16px breathing room
+    }
 }

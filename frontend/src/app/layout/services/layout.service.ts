@@ -1,13 +1,27 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
 })
 export class LayoutService {
-    readonly sidenavOpened = signal(true);
-    readonly sidenavWidth = 250; // Width in pixels
+    private readonly breakpointObserver = inject(BreakpointObserver);
+
+    readonly isMobile = toSignal(
+        this.breakpointObserver.observe('(max-width: 767px)').pipe(map((r) => r.matches)),
+        { initialValue: typeof window !== 'undefined' ? window.innerWidth < 768 : false },
+    );
+
+    readonly sidenavOpened = signal(!this.isMobile());
+    readonly sidenavWidth = 250;
 
     toggleSidenav(): void {
         this.sidenavOpened.update((value) => !value);
+    }
+
+    closeSidenav(): void {
+        this.sidenavOpened.set(false);
     }
 }
