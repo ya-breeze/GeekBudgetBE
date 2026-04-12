@@ -28,6 +28,9 @@ import { AccountDisplayComponent } from '../../shared/components/account-display
 import { ReconciliationService } from '../reconciliation/services/reconciliation.service';
 import { ReconciliationStatus } from '../../core/api/models/reconciliation-status';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AssetCard, AssetTotal } from './models/dashboard.models';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
 
 interface ExpenseTableCell {
     value: number;
@@ -69,6 +72,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         JsonPipe,
         RouterLink,
         AccountDisplayComponent,
+        BaseChartDirective,
     ],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.scss',
@@ -93,6 +97,36 @@ export class DashboardComponent implements OnInit {
     protected readonly isSmallScreen = signal(false);
     protected readonly includeHidden = signal(false);
     private readonly windowWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+    protected readonly sparklineOptions: ChartOptions<'line'> = {
+        responsive: true,
+        maintainAspectRatio: false,
+        elements: {
+            point: { radius: 0 },
+            line: { tension: 0.3, borderWidth: 2 },
+        },
+        scales: {
+            x: { display: false },
+            y: { display: false },
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+        },
+    };
+
+    protected getSparklineData(history: number[]): ChartConfiguration<'line'>['data'] {
+        return {
+            labels: history.map((_, i) => i.toString()),
+            datasets: [
+                {
+                    data: history,
+                    borderColor: '#1967d2',
+                    fill: false,
+                },
+            ],
+        };
+    }
 
     constructor() {
         // Use effect to react to sidenav state changes
@@ -287,6 +321,71 @@ export class DashboardComponent implements OnInit {
 
     protected readonly assetData = signal<Aggregation | null>(null);
     protected readonly reconciliationStatuses = signal<ReconciliationStatus[]>([]);
+    protected readonly showAssetDetails = signal(false);
+
+    protected readonly assetTotals = computed<AssetTotal[]>(() => {
+        const data = this.assetData();
+        const accounts = this.accounts();
+        const includeHidden = this.includeHidden();
+
+        if (!data || !accounts.length) return [];
+
+        const assetAccounts = accounts.filter(
+            (acc) => acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
+        );
+        const assetAccountIds = new Set(assetAccounts.map((a) => a.id));
+
+        return data.currencies
+            .map((currencyAgg) => {
+                let totalBalance = 0;
+                let prevTotalBalance = 0;
+                let history: number[] = new Array(data.intervals.length).fill(0);
+
+                currencyAgg.accounts.forEach((accAgg) => {
+                    if (!assetAccountIds.has(accAgg.accountId)) return;
+
+                    const bal = accAgg.total || 0;
+                    totalBalance += bal;
+
+                    // Calculate previous balance for trend
+                    const changePercent = accAgg.changePercent || 0;
+                    const prevBal = bal / (1 + changePercent / 100);
+                    prevTotalBalance += prevBal;
+
+                    // Build history
+                    accAgg.amounts.forEach((amt, idx) => {
+                        history[idx] += amt;
+                    });
+                });
+
+                let trendPercent = 0;
+                let trendDirection: 'up' | 'down' | 'neutral' = 'neutral';
+
+                if (prevTotalBalance > 0) {
+                    trendPercent = ((totalBalance - prevTotalBalance) / prevTotalBalance) * 100;
+                    if (trendPercent > 0.01) trendDirection = 'up';
+                    else if (trendPercent < -0.01) trendDirection = 'down';
+                }
+
+                const currency = this.currencyService
+                    .currencies()
+                    .find((c) => c.id === currencyAgg.currencyId);
+
+                return {
+                    currencyId: currencyAgg.currencyId,
+                    currencyName: currency?.name || currencyAgg.currencyId,
+                    totalBalance,
+                    trendPercent: Math.abs(trendPercent),
+                    trendDirection,
+                    history,
+                };
+            })
+            .filter((t) => t.totalBalance !== 0 || t.history.some((v) => v !== 0));
+    });
+
+    protected toggleAssetDetails(): void {
+        this.showAssetDetails.update((v) => !v);
+    }
 
     private readonly reconciliationTolerance = 0.01;
 
@@ -341,8 +440,9 @@ export class DashboardComponent implements OnInit {
             return [];
         }
 
+        const includeHidden = this.includeHidden();
         const assetAccounts = accounts.filter(
-            (acc) => acc.type === 'asset' && acc.showInDashboardSummary !== false,
+            (acc) => acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
         );
         if (!assetAccounts.length) {
             return [];
@@ -353,7 +453,7 @@ export class DashboardComponent implements OnInit {
         );
 
         // Map currency ID to symbol/name if needed (or just use code)
-        const cards: any[] = [];
+        const cards: AssetCard[] = [];
 
         // Group data by currency, but we need to extract account data
         data.currencies.forEach((currencyAgg) => {

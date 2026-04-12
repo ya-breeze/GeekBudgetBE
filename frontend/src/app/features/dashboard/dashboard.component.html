@@ -15,103 +15,153 @@
         </div>
     } @else {
         @if (assetCards().length) {
-            <div class="assets-section">
-                @for (card of assetCards(); track card.accountId) {
-                    <mat-card
-                        class="asset-card"
-                        [class.reconciled]="card.reconciliationState === 'reconciled'"
-                        [class.warning]="card.reconciliationState === 'warning'"
-                        [class.unreconciled]="card.reconciliationState === 'unreconciled'"
-                    >
-                        <mat-card-header>
-                            <mat-card-title>
-                                <button
-                                    mat-icon-button
-                                    class="settings-button"
-                                    (click)="onSettingsClick($event, card.accountId)"
-                                    aria-label="Edit account settings"
-                                >
-                                    <mat-icon>settings</mat-icon>
-                                </button>
-                                <app-account-display
-                                    [name]="card.accountName"
-                                    [image]="card.accountImage"
-                                    size="medium"
-                                ></app-account-display>
-                            </mat-card-title>
-                            <button
-                                mat-icon-button
-                                class="hide-button"
-                                (click)="onHideAccount(card.accountId)"
-                                aria-label="Hide account from summary"
-                            >
-                                <mat-icon>close</mat-icon>
-                            </button>
-                        </mat-card-header>
-                        <mat-card-content>
-                            <div
-                                class="balance-container clickable"
-                                (click)="onBalanceClick(card.accountId)"
-                            >
-                                <span class="balance">{{ card.balance | number: '1.0-2' }}</span>
-                                <span class="currency">{{ card.currencyName }}</span>
-                            </div>
-                            <div class="card-footer">
-                                <div
-                                    class="trend-container"
-                                    [class.positive]="card.trendDirection === 'up'"
-                                    [class.negative]="card.trendDirection === 'down'"
-                                >
-                                    <mat-icon class="trend-icon">
-                                        @if (card.trendDirection === 'up') {
-                                            north_east
-                                        } @else if (card.trendDirection === 'down') {
-                                            south_east
-                                        } @else {
-                                            remove
-                                        }
-                                    </mat-icon>
-                                    <span class="trend-value"
-                                        >{{ card.trendPercent | number: '1.1-1' }}%</span
-                                    >
-                                    <span class="trend-label">vs last month</span>
-                                </div>
-                                @if (card.reconciliationState !== 'none') {
+            <div class="asset-summary-banner">
+                <div class="totals-container">
+                    @for (total of assetTotals(); track total.currencyId) {
+                        <div class="total-item">
+                            <div class="total-content">
+                                <span class="total-label">Total {{ total.currencyName }}:</span>
+                                <div class="total-value-row">
+                                    <span class="total-value">{{
+                                        total.totalBalance | number: '1.0-2'
+                                    }}</span>
                                     <div
-                                        class="reconciliation-badge"
-                                        [class.reconciled]="
-                                            card.reconciliationState === 'reconciled'
-                                        "
-                                        [class.warning]="card.reconciliationState === 'warning'"
-                                        [class.unreconciled]="
-                                            card.reconciliationState === 'unreconciled'
-                                        "
-                                        [matTooltip]="card.reconciliationTooltip"
-                                        matTooltipPosition="above"
+                                        class="trend-badge"
+                                        [class.positive]="total.trendDirection === 'up'"
+                                        [class.negative]="total.trendDirection === 'down'"
                                     >
-                                        <mat-icon class="badge-icon">
-                                            @if (card.reconciliationState === 'reconciled') {
-                                                check_circle
-                                            } @else if (card.reconciliationState === 'warning') {
-                                                warning
+                                        <mat-icon class="trend-icon">
+                                            @if (total.trendDirection === 'up') {
+                                                north_east
+                                            } @else if (total.trendDirection === 'down') {
+                                                south_east
                                             } @else {
-                                                error
+                                                remove
                                             }
                                         </mat-icon>
-                                        @if (card.reconciliationState === 'reconciled') {
-                                            Reconciled
-                                        } @else if (card.reconciliationState === 'warning') {
-                                            Review
-                                        } @else {
-                                            Mismatch
-                                        }
+                                        <span class="trend-value"
+                                            >{{ total.trendPercent | number: '1.0-1' }}%</span
+                                        >
                                     </div>
-                                }
+                                </div>
                             </div>
-                        </mat-card-content>
-                    </mat-card>
-                }
+                            <div class="sparkline-container">
+                                <canvas
+                                    baseChart
+                                    [data]="getSparklineData(total.history)"
+                                    [options]="sparklineOptions"
+                                    [type]="'line'"
+                                >
+                                </canvas>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button mat-button class="details-toggle" (click)="toggleAssetDetails()">
+                    {{ showAssetDetails() ? 'Hide Details' : 'View Details' }}
+                    <mat-icon>{{ showAssetDetails() ? 'expand_less' : 'expand_more' }}</mat-icon>
+                </button>
             </div>
+
+            @if (showAssetDetails()) {
+                <div class="assets-section">
+                    @for (card of assetCards(); track card.accountId) {
+                        <mat-card
+                            class="asset-card"
+                            [class.reconciled]="card.reconciliationState === 'reconciled'"
+                            [class.warning]="card.reconciliationState === 'warning'"
+                            [class.unreconciled]="card.reconciliationState === 'unreconciled'"
+                        >
+                            <mat-card-header>
+                                <mat-card-title>
+                                    <button
+                                        mat-icon-button
+                                        class="settings-button"
+                                        (click)="onSettingsClick($event, card.accountId)"
+                                        aria-label="Edit account settings"
+                                    >
+                                        <mat-icon>settings</mat-icon>
+                                    </button>
+                                    <app-account-display
+                                        [name]="card.accountName"
+                                        [image]="card.accountImage"
+                                        size="medium"
+                                    ></app-account-display>
+                                </mat-card-title>
+                                <button
+                                    mat-icon-button
+                                    class="hide-button"
+                                    (click)="onHideAccount(card.accountId)"
+                                    aria-label="Hide account from summary"
+                                >
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </mat-card-header>
+                            <mat-card-content>
+                                <div
+                                    class="balance-container clickable"
+                                    (click)="onBalanceClick(card.accountId)"
+                                >
+                                    <span class="balance">{{ card.balance | number: '1.0-2' }}</span>
+                                    <span class="currency">{{ card.currencyName }}</span>
+                                </div>
+                                <div class="card-footer">
+                                    <div
+                                        class="trend-container"
+                                        [class.positive]="card.trendDirection === 'up'"
+                                        [class.negative]="card.trendDirection === 'down'"
+                                    >
+                                        <mat-icon class="trend-icon">
+                                            @if (card.trendDirection === 'up') {
+                                                north_east
+                                            } @else if (card.trendDirection === 'down') {
+                                                south_east
+                                            } @else {
+                                                remove
+                                            }
+                                        </mat-icon>
+                                        <span class="trend-value"
+                                            >{{ card.trendPercent | number: '1.1-1' }}%</span
+                                        >
+                                        <span class="trend-label">vs last month</span>
+                                    </div>
+                                    @if (card.reconciliationState !== 'none') {
+                                        <div
+                                            class="reconciliation-badge"
+                                            [class.reconciled]="
+                                                card.reconciliationState === 'reconciled'
+                                            "
+                                            [class.warning]="card.reconciliationState === 'warning'"
+                                            [class.unreconciled]="
+                                                card.reconciliationState === 'unreconciled'
+                                            "
+                                            [matTooltip]="card.reconciliationTooltip"
+                                            matTooltipPosition="above"
+                                        >
+                                            <mat-icon class="badge-icon">
+                                                @if (card.reconciliationState === 'reconciled') {
+                                                    check_circle
+                                                } @else if (card.reconciliationState === 'warning') {
+                                                    warning
+                                                } @else {
+                                                    error
+                                                }
+                                            </mat-icon>
+                                            @if (card.reconciliationState === 'reconciled') {
+                                                Reconciled
+                                            } @else if (card.reconciliationState === 'warning') {
+                                                Review
+                                            } @else {
+                                                Mismatch
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    }
+                </div>
+            }
         }
 
         @if (currencyTables().length) {
