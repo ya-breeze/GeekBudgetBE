@@ -1,6 +1,7 @@
 :host {
     display: block;
     height: 100%;
+    overflow-x: hidden; // prevent icon-button/chip overflow from causing horizontal scroll
 }
 
 .dialog-header {
@@ -110,6 +111,7 @@ mat-dialog-content {
             border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
             transition: all 0.2s ease;
+            overflow: hidden; // clip Material's 40px touch target to our 32px container
 
             &:hover {
                 background-color: #f5f5f5;
