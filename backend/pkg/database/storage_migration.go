@@ -186,7 +186,7 @@ func runMigrationIfNeeded(log *slog.Logger, db *gorm.DB) error {
 
 		inserted := 0
 		for _, row := range rows {
-			newRow := remapRow(cols, newCols, row, mapping)
+			newRow := remapRow(log, cols, newCols, row, mapping)
 			filteredCols, filteredRow := filterColumns(newCols, newRow, validNew)
 			if err := insertRow(db, table, filteredCols, filteredRow); err != nil {
 				return fmt.Errorf("insert row in %s: %w", table, err)
@@ -275,7 +275,7 @@ func remapColumns(cols []string) []string {
 }
 
 // remapRow returns a new row with the user_id value replaced by the mapped family_id UUID string.
-func remapRow(oldCols, newCols []string, row []interface{}, mapping userIDToFamilyID) []interface{} {
+func remapRow(log *slog.Logger, oldCols, newCols []string, row []interface{}, mapping userIDToFamilyID) []interface{} {
 	newRow := make([]interface{}, len(row))
 	copy(newRow, row)
 	for i, col := range oldCols {
@@ -285,7 +285,8 @@ func remapRow(oldCols, newCols []string, row []interface{}, mapping userIDToFami
 				if familyID, ok := mapping[userID]; ok {
 					newRow[i] = familyID.String()
 				} else {
-					// Unknown user_id — use zero UUID as fallback (shouldn't happen)
+					// Unknown user_id — use zero UUID as fallback. Log so orphaned rows are visible.
+					log.Warn("Unknown user_id during migration, mapping to uuid.Nil", "user_id", userID)
 					newRow[i] = uuid.Nil.String()
 				}
 			}
