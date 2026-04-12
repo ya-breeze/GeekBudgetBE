@@ -436,6 +436,11 @@
             left: 0;
             z-index: 1;
         }
+
+        @media (max-width: 767px) {
+            padding: 8px 10px;
+            white-space: nowrap;
+        }
     }
 
     th {
@@ -469,6 +474,30 @@
     .account-cell {
         background-color: white !important; // explicit for sticky positioning
         min-width: 120px;
+
+        @media (max-width: 767px) {
+            min-width: 0;
+            width: 88px;
+            max-width: 88px;
+            padding: 8px;
+
+            .account-info {
+                overflow: hidden;
+            }
+
+            ::ng-deep .account-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 60px;
+            }
+
+            .account-average {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
     }
 
     .account-info {
