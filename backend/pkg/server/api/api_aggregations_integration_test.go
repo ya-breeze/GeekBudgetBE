@@ -6,6 +6,7 @@ import (
 
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
@@ -22,7 +23,7 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 		sut    *api.AggregationsAPIServiceImpl
 		ctx    context.Context
 		log    = test.CreateTestLogger()
-		userID = "test-user"
+		userID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		usdID  = "usd-id"
 	)
 
@@ -31,7 +32,7 @@ var _ = Describe("Soft Delete Aggregation Integration", func() {
 		st = database.NewStorage(log, cfg)
 		Expect(st.Open()).To(Succeed())
 		sut = api.NewAggregationsAPIServiceImpl(log, st)
-		ctx = context.WithValue(context.Background(), constants.UserIDKey, userID)
+		ctx = context.WithValue(context.Background(), constants.FamilyIDKey, userID)
 
 		// Setup base data
 		_, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "USD"})

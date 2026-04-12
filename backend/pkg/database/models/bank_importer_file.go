@@ -11,7 +11,7 @@ import (
 type BankImporterFile struct {
 	gorm.Model
 
-	UserID         string    `gorm:"index"`
+	FamilyID       uuid.UUID `gorm:"type:uuid;index;not null"`
 	BankImporterID uuid.UUID `gorm:"type:uuid;index"`
 	Filename       string
 	Path           string // Relative path to the stored file

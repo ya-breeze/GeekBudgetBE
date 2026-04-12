@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
 	"github.com/golang/mock/gomock"
@@ -30,7 +31,7 @@ var _ = Describe("Transactions API", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockStorage = mocks.NewMockStorage(ctrl)
 		sut = api.NewTransactionsAPIService(log, mockStorage)
-		ctx = context.WithValue(context.Background(), constants.UserIDKey, "user-1")
+		ctx = context.WithValue(context.Background(), constants.FamilyIDKey, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	})
 
 	AfterEach(func() {
@@ -38,7 +39,7 @@ var _ = Describe("Transactions API", func() {
 	})
 
 	It("handles onlySuspicious parameter", func() {
-		userID := "user-1"
+		userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		dateFrom := time.Time{}
 		dateTo := time.Time{}
 
@@ -52,7 +53,7 @@ var _ = Describe("Transactions API", func() {
 	})
 
 	It("updates a transaction successfully", func() {
-		userID := "user-1"
+		userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		transactionID := "tx-1"
 
 		input := goserver.TransactionNoId{

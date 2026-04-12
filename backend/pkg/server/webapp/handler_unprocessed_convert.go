@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
+
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/api"
 )
 
@@ -15,14 +17,14 @@ func (r *WebAppRouter) unprocessedConvertHandler(w http.ResponseWriter, req *htt
 	}
 	transactionID := req.Form.Get("transaction_id")
 
-	userID, code, err := r.GetUserIDFromSession(req)
+	familyID, code, err := r.GetFamilyIDFromRequest(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		r.RespondError(w, err.Error(), code)
 		return
 	}
 
-	t, err := r.db.GetTransaction(userID, transactionID)
+	t, err := r.db.GetTransaction(familyID, transactionID)
 	if err != nil {
 		r.logger.Error("Failed to get transaction", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -41,26 +43,26 @@ func (r *WebAppRouter) unprocessedConvertHandler(w http.ResponseWriter, req *htt
 	}
 
 	s := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
-	_, err = s.Convert(req.Context(), userID, transactionID, &t)
+	_, err = s.Convert(req.Context(), familyID, transactionID, &t)
 	if err != nil {
 		r.logger.Error("Failed to convert unprocessed transaction", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	r.handleMatcherConfirmations(req, userID)
+	r.handleMatcherConfirmations(req, familyID)
 
 	http.Redirect(w, req, "/web/unprocessed?id="+t.Id, http.StatusSeeOther)
 }
 
 // handleMatcherConfirmations updates matcher confirmation history based on form fields.
 // Extracted to reduce cyclomatic complexity of the main handler.
-func (r *WebAppRouter) handleMatcherConfirmations(req *http.Request, userID string) {
+func (r *WebAppRouter) handleMatcherConfirmations(req *http.Request, familyID uuid.UUID) {
 	matcherID := req.Form.Get("matcher_id")
 	otherMatchers := req.Form.Get("other_matchers")
 
 	if matcherID != "" {
-		if err := r.db.AddMatcherConfirmation(userID, matcherID, true); err != nil {
+		if err := r.db.AddMatcherConfirmation(familyID, matcherID, true); err != nil {
 			r.logger.Warn("Failed to add confirmation to matcher", "matcher_id", matcherID, "error", err)
 		}
 	}
@@ -73,7 +75,7 @@ func (r *WebAppRouter) handleMatcherConfirmations(req *http.Request, userID stri
 				continue
 			}
 
-			if err := r.db.AddMatcherConfirmation(userID, id, false); err != nil {
+			if err := r.db.AddMatcherConfirmation(familyID, id, false); err != nil {
 				r.logger.Warn("Failed to add confirmation to other matcher", "matcher_id", id, "error", err)
 			}
 		}

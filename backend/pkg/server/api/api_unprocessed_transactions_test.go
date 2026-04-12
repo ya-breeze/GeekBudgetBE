@@ -7,6 +7,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
@@ -113,7 +114,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 
 	Describe("ProcessUnprocessedTransactionsAgainstMatcher", func() {
 		It("should skip auto-processing if a transaction matches multiple matchers", func() {
-			userID := "user1"
+			userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 			matcher1ID := "m1"
 			matcher2ID := "m2"
 
@@ -147,7 +148,7 @@ var _ = Describe("UnprocessedTransactions API", func() {
 			// We expect NO UpdateTransaction because of conflict
 			// (Mock will fail if unexpected calls occur)
 
-			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.FamilyIDKey, userID)
 			ids, err := sut.ProcessUnprocessedTransactionsAgainstMatcher(ctx, userID, matcher1ID, "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(ids).To(BeEmpty())

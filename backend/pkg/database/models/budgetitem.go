@@ -18,8 +18,8 @@ type BudgetItem struct {
 	Amount      decimal.Decimal `gorm:"type:decimal(20,8)"`
 	Description string
 
-	UserID string    `gorm:"index"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FamilyID uuid.UUID `gorm:"type:uuid;index;not null"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (a *BudgetItem) FromDB() goserver.BudgetItem {
@@ -32,9 +32,9 @@ func (a *BudgetItem) FromDB() goserver.BudgetItem {
 	}
 }
 
-func BudgetItemToDB(m goserver.BudgetItemNoIdInterface, userID string) *BudgetItem {
+func BudgetItemToDB(m goserver.BudgetItemNoIdInterface, familyID uuid.UUID) *BudgetItem {
 	return &BudgetItem{
-		UserID:      userID,
+		FamilyID:    familyID,
 		Date:        m.GetDate(),
 		AccountID:   m.GetAccountId(),
 		Amount:      m.GetAmount(),

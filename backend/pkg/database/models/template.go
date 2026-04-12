@@ -17,8 +17,8 @@ type TransactionTemplate struct {
 	Extra       string
 	Movements   []goserver.Movement `gorm:"serializer:json"`
 
-	UserID string    `gorm:"index"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FamilyID uuid.UUID `gorm:"type:uuid;index;not null"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (t *TransactionTemplate) FromDB() goserver.TransactionTemplate {
@@ -34,7 +34,7 @@ func (t *TransactionTemplate) FromDB() goserver.TransactionTemplate {
 	}
 }
 
-func TemplateToDB(t goserver.TransactionTemplateNoIdInterface, userID string) *TransactionTemplate {
+func TemplateToDB(t goserver.TransactionTemplateNoIdInterface, familyID uuid.UUID) *TransactionTemplate {
 	tags := t.GetTags()
 	if tags == nil {
 		tags = make([]string, 0)
@@ -46,7 +46,7 @@ func TemplateToDB(t goserver.TransactionTemplateNoIdInterface, userID string) *T
 	}
 
 	return &TransactionTemplate{
-		UserID:      userID,
+		FamilyID:    familyID,
 		Name:        t.GetName(),
 		Description: t.GetDescription(),
 		Place:       t.GetPlace(),

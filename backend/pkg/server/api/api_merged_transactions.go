@@ -20,12 +20,12 @@ func NewMergedTransactionsAPIService(logger *slog.Logger, db database.Storage) g
 }
 
 func (s *MergedTransactionsAPIServiceImpl) GetMergedTransactions(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	merged, err := s.db.GetMergedTransactions(userID)
+	merged, err := s.db.GetMergedTransactions(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get merged transactions")
 		return goserver.Response(500, nil), nil
@@ -35,12 +35,12 @@ func (s *MergedTransactionsAPIServiceImpl) GetMergedTransactions(ctx context.Con
 }
 
 func (s *MergedTransactionsAPIServiceImpl) GetMergedTransaction(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	merged, err := s.db.GetMergedTransaction(userID, id)
+	merged, err := s.db.GetMergedTransaction(familyID, id)
 	if err != nil {
 		if errors.Is(err, database.ErrNotFound) {
 			return goserver.Response(404, nil), nil
@@ -53,12 +53,12 @@ func (s *MergedTransactionsAPIServiceImpl) GetMergedTransaction(ctx context.Cont
 }
 
 func (s *MergedTransactionsAPIServiceImpl) UnmergeMergedTransaction(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	err := s.db.UnmergeTransaction(userID, id)
+	err := s.db.UnmergeTransaction(familyID, id)
 	if err != nil {
 		s.logger.With("error", err, "id", id).Error("Failed to unmerge transaction")
 		return goserver.Response(500, nil), nil

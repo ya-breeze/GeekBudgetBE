@@ -13,19 +13,19 @@ func (s *TransactionsAPIServiceImpl) ParseTransaction(
 	ctx context.Context,
 	req goserver.TransactionParseRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts for parser")
 		return goserver.Response(500, nil), nil
 	}
 
-	currencies, err := s.db.GetCurrencies(userID)
+	currencies, err := s.db.GetCurrencies(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get currencies for parser")
 		return goserver.Response(500, nil), nil

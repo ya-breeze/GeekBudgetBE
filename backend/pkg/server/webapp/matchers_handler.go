@@ -23,14 +23,14 @@ func (r *WebAppRouter) matchersHandler(w http.ResponseWriter, req *http.Request)
 	}
 	data := utils.CreateTemplateData(req, "matchers")
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
-	matchers, err := r.db.GetMatchers(userID)
+	matchers, err := r.db.GetMatchers(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get matchers", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -51,7 +51,7 @@ func (r *WebAppRouter) matchersDeleteHandler(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	userID, _, err := r.GetUserIDFromSession(req)
+	familyID, _, err := r.GetFamilyIDFromRequest(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		r.RespondError(w, err.Error(), http.StatusBadRequest)
@@ -64,7 +64,7 @@ func (r *WebAppRouter) matchersDeleteHandler(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	if err := r.db.DeleteMatcher(userID, id); err != nil {
+	if err := r.db.DeleteMatcher(familyID, id); err != nil {
 		r.logger.Error("Failed to delete matcher", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -89,14 +89,14 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 	matcherID := req.FormValue("id")
 	transactionID := req.FormValue("transaction_id")
 
-	userID, _, err := r.GetUserIDFromSession(req)
+	familyID, _, err := r.GetFamilyIDFromRequest(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		r.RespondError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	accounts, err := r.db.GetAccounts(userID)
+	accounts, err := r.db.GetAccounts(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -107,7 +107,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 	transaction := WebTransaction{}
 	if transactionID != "" {
 		var t goserver.Transaction
-		t, err = r.db.GetTransaction(userID, transactionID)
+		t, err = r.db.GetTransaction(familyID, transactionID)
 		if err != nil {
 			r.logger.Error("Failed to get transaction", "error", err)
 			r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -115,7 +115,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 		}
 
 		var currencies []goserver.Currency
-		currencies, err = r.db.GetCurrencies(userID)
+		currencies, err = r.db.GetCurrencies(familyID)
 		if err != nil {
 			r.logger.Error("Failed to get currencies", "error", err)
 			r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -128,7 +128,7 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 
 	var matcher goserver.Matcher
 	if matcherID != "" {
-		matcher, err = r.db.GetMatcher(userID, matcherID)
+		matcher, err = r.db.GetMatcher(familyID, matcherID)
 		if err != nil {
 			r.logger.Error("Failed to get matcher", "error", err)
 			r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -159,14 +159,14 @@ func (r *WebAppRouter) matcherEditHandler(w http.ResponseWriter, req *http.Reque
 
 		if matcherID == "" {
 			r.logger.Info("creating matcher", "matcher", matcher)
-			if matcher, err = r.db.CreateMatcher(userID, &matcher); err != nil {
+			if matcher, err = r.db.CreateMatcher(familyID, &matcher); err != nil {
 				r.logger.Error("Failed to create matcher", "error", err)
 				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			r.logger.Info("updating matcher", "matcher", matcher)
-			if matcher, err = r.db.UpdateMatcher(userID, matcherID, &matcher); err != nil {
+			if matcher, err = r.db.UpdateMatcher(familyID, matcherID, &matcher); err != nil {
 				r.logger.Error("Failed to save matcher", "error", err)
 				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -202,7 +202,7 @@ func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	userID, code, err := r.GetUserIDFromSession(req)
+	familyID, code, err := r.GetFamilyIDFromRequest(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		r.RespondError(w, "Unauthorized", code)
@@ -217,8 +217,8 @@ func (r *WebAppRouter) matcherCheckHandler(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	// Create a new context with the userID
-	ctx := context.WithValue(req.Context(), constants.UserIDKey, userID)
+	// Create a new context with the familyID
+	ctx := context.WithValue(req.Context(), constants.FamilyIDKey, familyID)
 
 	// Call the API service directly
 	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(r.logger, r.db)
@@ -247,7 +247,7 @@ func (r *WebAppRouter) matcherDeleteHandler(w http.ResponseWriter, req *http.Req
 		return
 	}
 
-	userID, _, err := r.GetUserIDFromSession(req)
+	familyID, _, err := r.GetFamilyIDFromRequest(req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		r.RespondError(w, err.Error(), http.StatusBadRequest)
@@ -260,7 +260,7 @@ func (r *WebAppRouter) matcherDeleteHandler(w http.ResponseWriter, req *http.Req
 		return
 	}
 
-	if err := r.db.DeleteMatcher(userID, id); err != nil {
+	if err := r.db.DeleteMatcher(familyID, id); err != nil {
 		r.logger.Error("Failed to delete matcher", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -58,27 +59,27 @@ func StartDuplicateDetection(
 func detectDuplicates(ctx context.Context, logger *slog.Logger, db database.Storage) {
 	logger.Info("Running duplicate detection...")
 
-	users, err := db.GetAllUserIDs()
+	familyIDs, err := db.GetAllFamilyIDs()
 	if err != nil {
-		logger.With("error", err).Error("Failed to get users for duplicate detection")
+		logger.With("error", err).Error("Failed to get families for duplicate detection")
 		return
 	}
 
-	for _, userID := range users {
-		processUserDuplicates(ctx, logger, db, userID)
+	for _, familyID := range familyIDs {
+		processFamilyDuplicates(ctx, logger, db, familyID)
 	}
 
 	logger.Info("Completed duplicate detection")
 }
 
-func processUserDuplicates(ctx context.Context, logger *slog.Logger, db database.Storage, userID string) {
-	logger.Info("Processing duplicates for user", "userID", userID)
+func processFamilyDuplicates(ctx context.Context, logger *slog.Logger, db database.Storage, familyID uuid.UUID) {
+	logger.Info("Processing duplicates for family", "familyID", familyID)
 
 	// Fetch transactions from the last 30 days to avoid scanning everything
 	dateFrom := time.Now().AddDate(0, 0, -30)
-	transactions, err := db.GetTransactions(userID, dateFrom, time.Time{}, false)
+	transactions, err := db.GetTransactions(familyID, dateFrom, time.Time{}, false)
 	if err != nil {
-		logger.With("error", err, "userID", userID).Error("Failed to get transactions for user")
+		logger.With("error", err, "familyID", familyID).Error("Failed to get transactions for family")
 		return
 	}
 
@@ -107,17 +108,17 @@ func processUserDuplicates(ctx context.Context, logger *slog.Logger, db database
 				// If they have same external IDs, they were already handled by bank importer deduplication
 				if hasDifferentSources(t1, t2) && hasOppositeDirections(t1.Movements, t2.Movements) {
 					// Link them together
-					if err := db.AddDuplicateRelationship(userID, t1.Id, t2.Id); err != nil {
+					if err := db.AddDuplicateRelationship(familyID, t1.Id, t2.Id); err != nil {
 						logger.With("error", err, "t1", t1.Id, "t2", t2.Id).Error("Failed to add duplicate relationship")
 					}
 
-					marked := markAsSuspicious(logger, db, userID, &t1)
+					marked := markAsSuspicious(logger, db, familyID, &t1)
 					if marked {
 						suspiciousCount++
 						// Update local copy to avoid double processing if it appears again
 						t1.SuspiciousReasons = append(t1.SuspiciousReasons, models.DuplicateReason)
 					}
-					marked = markAsSuspicious(logger, db, userID, &t2)
+					marked = markAsSuspicious(logger, db, familyID, &t2)
 					if marked {
 						suspiciousCount++
 						t2.SuspiciousReasons = append(t2.SuspiciousReasons, models.DuplicateReason)
@@ -128,15 +129,15 @@ func processUserDuplicates(ctx context.Context, logger *slog.Logger, db database
 	}
 
 	if suspiciousCount > 0 {
-		logger.Info("Detected duplicates for user", "userID", userID, "count", suspiciousCount)
-		_, err := db.CreateNotification(userID, &goserver.Notification{
+		logger.Info("Detected duplicates for family", "familyID", familyID, "count", suspiciousCount)
+		_, err := db.CreateNotification(familyID, &goserver.Notification{
 			Date:        time.Now(),
 			Type:        string(models.NotificationTypeDuplicateDetected),
 			Title:       "Potential Duplicate Transactions",
 			Description: fmt.Sprintf("Detected %d potential duplicate transactions from different sources. Please review them.", suspiciousCount),
 		})
 		if err != nil {
-			logger.With("error", err, "userID", userID).Error("Failed to create notification for duplicates")
+			logger.With("error", err, "familyID", familyID).Error("Failed to create notification for duplicates")
 		}
 	}
 }
@@ -178,7 +179,7 @@ func hasDifferentSources(t1, t2 goserver.Transaction) bool {
 	return true
 }
 
-func markAsSuspicious(logger *slog.Logger, db database.Storage, userID string, t *goserver.Transaction) bool {
+func markAsSuspicious(logger *slog.Logger, db database.Storage, familyID uuid.UUID, t *goserver.Transaction) bool {
 	if slices.Contains(t.SuspiciousReasons, models.DuplicateReason) {
 		return false
 	}
@@ -186,7 +187,7 @@ func markAsSuspicious(logger *slog.Logger, db database.Storage, userID string, t
 	t.SuspiciousReasons = append(t.SuspiciousReasons, models.DuplicateReason)
 	tNoId := models.TransactionWithoutID(t)
 
-	_, err := db.UpdateTransactionInternal(userID, t.Id, tNoId)
+	_, err := db.UpdateTransactionInternal(familyID, t.Id, tNoId)
 	if err != nil {
 		logger.With("error", err, "transactionID", t.Id).Error("Failed to update transaction with suspicious reason")
 		return false

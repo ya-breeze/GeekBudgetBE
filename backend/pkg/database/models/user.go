@@ -3,24 +3,19 @@ package models
 import (
 	"time"
 
-	"github.com/google/uuid"
+	coremodels "github.com/ya-breeze/kin-core/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
-	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-
-	ID                 uuid.UUID `gorm:"type:uuid;primaryKey"`
+	coremodels.User
 	StartDate          time.Time
-	Login              string `gorm:"unique"`
-	HashedPassword     string
 	FavoriteCurrencyID string
 }
 
 func (u User) FromDB() goserver.User {
 	return goserver.User{
-		Email:              u.Login,
+		Email:              u.Username,
 		StartDate:          u.StartDate,
 		FavoriteCurrencyId: u.FavoriteCurrencyID,
 	}

@@ -39,9 +39,9 @@ func NewMatchersAPIServiceImpl(
 
 func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.CheckMatcherRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
@@ -76,7 +76,7 @@ func (s *MatchersAPIServiceImpl) CheckMatcher(ctx context.Context, r goserver.Ch
 		Reason: matchDetails.FailureReason,
 	}
 
-	s.logger.With("userID", userID).With("matched", matchDetails.Matched).
+	s.logger.With("familyID", familyID).With("matched", matchDetails.Matched).
 		With("reason", matchDetails.FailureReason).Info("CheckMatcher result")
 
 	return goserver.Response(200, response), nil
@@ -105,13 +105,13 @@ func (s *MatchersAPIServiceImpl) CheckRegex(ctx context.Context, r goserver.Chec
 }
 
 func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	res, err := s.db.GetMatchers(userID)
+	res, err := s.db.GetMatchers(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
 		return goserver.Response(500, nil), nil
@@ -121,13 +121,13 @@ func (s *MatchersAPIServiceImpl) GetMatchers(ctx context.Context) (goserver.Impl
 }
 
 func (s *MatchersAPIServiceImpl) GetMatcher(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	res, err := s.db.GetMatcher(userID, id)
+	res, err := s.db.GetMatcher(familyID, id)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matcher")
 		return goserver.Response(500, nil), nil
@@ -138,13 +138,13 @@ func (s *MatchersAPIServiceImpl) GetMatcher(ctx context.Context, id string) (gos
 
 func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	res, err := s.db.CreateMatcher(userID, &m)
+	res, err := s.db.CreateMatcher(familyID, &m)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create matcher")
 		return goserver.Response(500, nil), nil
@@ -154,13 +154,13 @@ func (s *MatchersAPIServiceImpl) CreateMatcher(ctx context.Context, m goserver.M
 }
 
 func (s *MatchersAPIServiceImpl) DeleteMatcher(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	if err := s.db.DeleteMatcher(userID, id); err != nil {
+	if err := s.db.DeleteMatcher(familyID, id); err != nil {
 		s.logger.With("error", err, "matcherID", id).Error("Failed to delete matcher")
 		return goserver.Response(500, nil), nil
 	}
@@ -171,14 +171,14 @@ func (s *MatchersAPIServiceImpl) DeleteMatcher(ctx context.Context, id string) (
 
 func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m goserver.MatcherNoId,
 ) (goserver.ImplResponse, error) {
-	res, userID, err := updateEntity[goserver.MatcherNoIdInterface, goserver.Matcher](ctx, s.logger, "matcher", id, &m, s.db.UpdateMatcher)
+	res, familyID, err := updateEntity[goserver.MatcherNoIdInterface, goserver.Matcher](ctx, s.logger, "matcher", id, &m, s.db.UpdateMatcher)
 	if err != nil {
 		return mapErrorToResponse(err), nil
 	}
 
 	var autoProcessedIds []string
 	// Check if this matcher is now "perfect" and can auto-process existing transactions
-	autoIds, err := s.unprocessedService.ProcessUnprocessedTransactionsAgainstMatcher(ctx, userID, id, "")
+	autoIds, err := s.unprocessedService.ProcessUnprocessedTransactionsAgainstMatcher(ctx, familyID, id, "")
 	if err != nil {
 		// Log but don't fail the request
 		s.logger.With("error", err).Error("Failed to process unprocessed transactions against updated matcher")
@@ -195,13 +195,13 @@ func (s *MatchersAPIServiceImpl) UpdateMatcher(ctx context.Context, id string, m
 func (s *MatchersAPIServiceImpl) UploadMatcherImage(
 	ctx context.Context, matcherID string, file *os.File,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	matcher, err := s.db.GetMatcher(userID, matcherID)
+	matcher, err := s.db.GetMatcher(familyID, matcherID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matcher")
 		return goserver.Response(404, nil), nil
@@ -245,7 +245,7 @@ func (s *MatchersAPIServiceImpl) UploadMatcherImage(
 	// Update DB
 	mNoID := models.MatcherWithoutID(&matcher)
 	mNoID.Image = image.ID.String()
-	updatedMatcher, err := s.db.UpdateMatcher(userID, matcherID, mNoID)
+	updatedMatcher, err := s.db.UpdateMatcher(familyID, matcherID, mNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to update matcher with image")
 		return goserver.Response(500, nil), nil
@@ -257,13 +257,13 @@ func (s *MatchersAPIServiceImpl) UploadMatcherImage(
 func (s *MatchersAPIServiceImpl) DeleteMatcherImage(
 	ctx context.Context, matcherID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	matcher, err := s.db.GetMatcher(userID, matcherID)
+	matcher, err := s.db.GetMatcher(familyID, matcherID)
 	if err != nil {
 		return goserver.Response(404, nil), nil
 	}
@@ -276,7 +276,7 @@ func (s *MatchersAPIServiceImpl) DeleteMatcherImage(
 
 		mNoID := models.MatcherWithoutID(&matcher)
 		mNoID.Image = ""
-		updatedMatcher, err := s.db.UpdateMatcher(userID, matcherID, mNoID)
+		updatedMatcher, err := s.db.UpdateMatcher(familyID, matcherID, mNoID)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to update matcher (remove image)")
 			return goserver.Response(500, nil), nil

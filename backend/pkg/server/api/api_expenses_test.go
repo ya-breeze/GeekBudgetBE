@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
 	"github.com/golang/mock/gomock"
@@ -19,7 +20,7 @@ import (
 
 var _ = Describe("Expenses Aggregation API", func() {
 	log := test.CreateTestLogger()
-	ctx := context.WithValue(context.Background(), constants.UserIDKey, "user1")
+	ctx := context.WithValue(context.Background(), constants.FamilyIDKey, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 
 	var (
 		ctrl        *gomock.Controller
@@ -76,9 +77,9 @@ var _ = Describe("Expenses Aggregation API", func() {
 			},
 		}
 
-		mockStorage.EXPECT().GetAccounts("user1").Return([]goserver.Account{accountA}, nil)
-		mockStorage.EXPECT().GetTransactions("user1", from, to, false).Return(transactions, nil)
-		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{{Id: "USD", Name: "USD"}}, nil)
+		mockStorage.EXPECT().GetAccounts(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return([]goserver.Account{accountA}, nil)
+		mockStorage.EXPECT().GetTransactions(uuid.MustParse("00000000-0000-0000-0000-000000000001"), from, to, false).Return(transactions, nil)
+		mockStorage.EXPECT().GetCurrencies(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return([]goserver.Currency{{Id: "USD", Name: "USD"}}, nil)
 
 		resp, err := sut.GetExpenses(ctx, from, to, "", "year", false, "account", nil, nil)
 		Expect(err).ToNot(HaveOccurred())

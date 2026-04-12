@@ -8,8 +8,8 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
-func (s *storage) CreateNotification(userID string, notification *goserver.Notification) (goserver.Notification, error) {
-	n, err := models.NotificationToDB(notification, userID)
+func (s *storage) CreateNotification(familyID uuid.UUID, notification *goserver.Notification) (goserver.Notification, error) {
+	n, err := models.NotificationToDB(notification, familyID)
 	if err != nil {
 		return goserver.Notification{}, fmt.Errorf(StorageError, err)
 	}
@@ -25,8 +25,8 @@ func (s *storage) CreateNotification(userID string, notification *goserver.Notif
 	return n.FromDB(), nil
 }
 
-func (s *storage) GetNotifications(userID string) ([]goserver.Notification, error) {
-	result, err := s.db.Model(&models.Notification{}).Where("user_id = ?", userID).Order("date DESC").Rows()
+func (s *storage) GetNotifications(familyID uuid.UUID) ([]goserver.Notification, error) {
+	result, err := s.db.Model(&models.Notification{}).Where("family_id = ?", familyID).Order("date DESC").Rows()
 	if err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
@@ -45,8 +45,8 @@ func (s *storage) GetNotifications(userID string) ([]goserver.Notification, erro
 	return notifications, nil
 }
 
-func (s *storage) DeleteNotification(userID string, id string) error {
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Notification{}).Error; err != nil {
+func (s *storage) DeleteNotification(familyID uuid.UUID, id string) error {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).Delete(&models.Notification{}).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
 	}
 

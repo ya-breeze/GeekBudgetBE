@@ -58,25 +58,25 @@ type notificationSummary struct {
 }
 
 func (s *MCPServer) financialSummary(ctx context.Context, req *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, any, error) {
-	accounts, err := s.storage.GetAccounts(s.userID)
+	accounts, err := s.storage.GetAccounts(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get accounts", "error", err)
 		return errorResult(err)
 	}
 
-	currencies, err := s.storage.GetCurrencies(s.userID)
+	currencies, err := s.storage.GetCurrencies(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get currencies", "error", err)
 		return errorResult(err)
 	}
 
-	bulkData, err := s.storage.GetBulkReconciliationData(s.userID)
+	bulkData, err := s.storage.GetBulkReconciliationData(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get bulk reconciliation data", "error", err)
 		return errorResult(err)
 	}
 
-	notifications, err := s.storage.GetNotifications(s.userID)
+	notifications, err := s.storage.GetNotifications(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get notifications", "error", err)
 		return errorResult(err)
@@ -92,7 +92,7 @@ func (s *MCPServer) financialSummary(ctx context.Context, req *mcp.CallToolReque
 		accountMap[a.Id] = a.Name
 	}
 
-	bankImporters, err := s.storage.GetBankImporters(s.userID)
+	bankImporters, err := s.storage.GetBankImporters(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get bank importers", "error", err)
 		return errorResult(err)

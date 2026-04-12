@@ -12,7 +12,7 @@ import (
 type Transaction struct {
 	gorm.Model
 
-	Date           time.Time `gorm:"index;index:idx_transactions_user_merged_date,priority:3"`
+	Date           time.Time `gorm:"index;index:idx_transactions_family_merged_date,priority:3"`
 	Description    string
 	Place          string
 	Tags           []string `gorm:"serializer:json"`
@@ -38,7 +38,7 @@ type Transaction struct {
 	SuspiciousReasons []string `gorm:"serializer:json"`
 
 	// MergedIntoID is set when this transaction was marked as duplicate of another
-	MergedIntoID *uuid.UUID `gorm:"type:uuid;index;index:idx_transactions_user_merged_date,priority:2"`
+	MergedIntoID *uuid.UUID `gorm:"type:uuid;index;index:idx_transactions_family_merged_date,priority:2"`
 	// MergedAt records when this transaction was merged
 	MergedAt *time.Time
 
@@ -48,8 +48,8 @@ type Transaction struct {
 	// DuplicateDismissed is set to true when user marks duplicate detection as false positive
 	DuplicateDismissed bool `gorm:"default:false"`
 
-	UserID string    `gorm:"index;index:idx_transactions_user_merged_date,priority:1"`
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FamilyID uuid.UUID `gorm:"type:uuid;index;not null;index:idx_transactions_family_merged_date,priority:1"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 func (t *Transaction) FromDB() goserver.Transaction {
@@ -132,7 +132,7 @@ func (t *Transaction) WithoutID() *goserver.TransactionNoId {
 	}
 }
 
-func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID string) *Transaction {
+func TransactionToDB(transaction goserver.TransactionNoIdInterface, familyID uuid.UUID) *Transaction {
 	var matcherID *uuid.UUID
 	if transaction.GetMatcherId() != "" {
 		id, err := uuid.Parse(transaction.GetMatcherId())
@@ -174,7 +174,7 @@ func TransactionToDB(transaction goserver.TransactionNoIdInterface, userID strin
 		MergedAt:            mergedAt,
 		AutoMatchSkipReason: transaction.GetAutoMatchSkipReason(),
 		DuplicateDismissed:  transaction.GetDuplicateDismissed(),
-		UserID:              userID,
+		FamilyID:            familyID,
 	}
 }
 

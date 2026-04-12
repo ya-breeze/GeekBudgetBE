@@ -11,7 +11,7 @@ type AuditLog struct {
 	gorm.Model
 
 	ID           uuid.UUID `gorm:"type:uuid;primaryKey"`
-	UserID       string    `gorm:"index"`
+	FamilyID     uuid.UUID `gorm:"type:uuid;index;not null"`
 	EntityType   string    `gorm:"index"` // e.g., "Transaction", "Account", "Matcher"
 	EntityID     string    `gorm:"index"`
 	Action       string    // e.g., "CREATED", "UPDATED", "DELETED", "MERGED"

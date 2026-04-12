@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -20,7 +21,7 @@ func TestStorageBalanceCheck(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	// Create CZK currency
 	createdCur, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Czech Koruna"})

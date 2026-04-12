@@ -7,10 +7,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
+	"github.com/ya-breeze/kin-core/authdb"
 )
 
 func autoMigrateModels(db *gorm.DB) error {
 	if err := db.AutoMigrate(
+		&models.Family{},
 		&models.User{},
 		&models.Account{},
 		&models.Currency{},
@@ -30,6 +32,9 @@ func autoMigrateModels(db *gorm.DB) error {
 
 		&models.MergedTransaction{},
 		&models.TransactionTemplate{},
+
+		&authdb.RefreshToken{},
+		&authdb.BlacklistedToken{},
 	); err != nil {
 		return err
 	}
@@ -61,7 +66,7 @@ func migrateExistingMergedTransactions(db *gorm.DB) error {
 
 		archive := models.MergedTransaction{
 			ID:                    uuid.New(),
-			UserID:                t.UserID,
+			FamilyID:              t.FamilyID,
 			KeptTransactionID:     *t.MergedIntoID,
 			OriginalTransactionID: t.ID,
 			Date:                  t.Date,

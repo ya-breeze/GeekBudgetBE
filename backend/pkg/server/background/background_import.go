@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -40,7 +41,7 @@ func StartBankImporters(
 				logger.Info("Stopped bank importers")
 				return
 			case forcedImport := <-forcedImports:
-				logger.Info("Forced import", "userID", forcedImport.UserID, "BankImporterID", forcedImport.BankImporterID)
+				logger.Info("Forced import", "familyID", forcedImport.FamilyID, "BankImporterID", forcedImport.BankImporterID)
 
 				// Stop the timer if it was running to avoid double execution
 				if !timer.Stop() {
@@ -71,7 +72,7 @@ func StartBankImporters(
 						logger.Info("Skipping bank importer type", "type", pair.BankImporterType)
 						continue
 					}
-					i, err := importer.Fetch(ctx, pair.UserID, pair.BankImporterID, false)
+					i, err := importer.Fetch(ctx, pair.FamilyID, pair.BankImporterID, false)
 					if err != nil {
 						logger.With("error", err).Error("Failed to import bank transactions")
 						continue
@@ -103,39 +104,39 @@ func processUnprocessedTransactionsForAutoConversion(
 ) {
 	logger.Info("Processing unprocessed transactions for auto-conversion...")
 
-	// Get all users to process their unprocessed transactions
-	users, err := getAllUsers(db)
+	// Get all families to process their unprocessed transactions
+	familyIDs, err := getAllFamilies(db)
 	if err != nil {
-		logger.With("error", err).Error("Failed to get users for auto-conversion")
+		logger.With("error", err).Error("Failed to get families for auto-conversion")
 		return
 	}
 
 	unprocessedService := api.NewUnprocessedTransactionsAPIServiceImpl(logger, db)
 
-	for _, userID := range users {
-		logger.Info("Processing unprocessed transactions for user", "userID", userID)
+	for _, familyID := range familyIDs {
+		logger.Info("Processing unprocessed transactions for family", "familyID", familyID)
 
-		// Get all unprocessed transactions for this user
+		// Get all unprocessed transactions for this family
 		unprocessedTransactions, _, err := unprocessedService.PrepareUnprocessedTransactions(
-			ctx, userID, false, "",
+			ctx, familyID, false, "",
 		)
 		if err != nil {
-			logger.With("error", err, "userID", userID).Error("Failed to get unprocessed transactions")
+			logger.With("error", err, "familyID", familyID).Error("Failed to get unprocessed transactions")
 			continue
 		}
 
 		if len(unprocessedTransactions) == 0 {
-			logger.Info("No unprocessed transactions for user", "userID", userID)
+			logger.Info("No unprocessed transactions for family", "familyID", familyID)
 			continue
 		}
 
 		logger.Info("Found unprocessed transactions for auto-conversion",
-			"userID", userID, "count", len(unprocessedTransactions))
+			"familyID", familyID, "count", len(unprocessedTransactions))
 
 		// Process each unprocessed transaction
 		for _, unprocessed := range unprocessedTransactions {
 			processUnprocessedTransactionForAutoConversion(
-				ctx, logger, db, unprocessedService, userID, unprocessed,
+				ctx, logger, db, unprocessedService, familyID, unprocessed,
 			)
 		}
 	}
@@ -148,23 +149,23 @@ func processUnprocessedTransactionsForAutoConversion(
 func processUnprocessedTransactionForAutoConversion(
 	ctx context.Context, logger *slog.Logger, db database.Storage,
 	unprocessedService *api.UnprocessedTransactionsAPIServiceImpl,
-	userID string, unprocessed goserver.UnprocessedTransaction,
+	familyID uuid.UUID, unprocessed goserver.UnprocessedTransaction,
 ) {
 	// Do not auto-convert transactions flagged as potential duplicates — the user
 	// must resolve the duplicate first before the transaction can be processed.
 	if slices.Contains(unprocessed.Transaction.SuspiciousReasons, models.DuplicateReason) {
 		logger.Info("Skipping auto-conversion for potential duplicate transaction",
-			"transactionID", unprocessed.Transaction.Id, "userID", userID)
+			"transactionID", unprocessed.Transaction.Id, "familyID", familyID)
 		return
 	}
 
 	if len(unprocessed.Matched) == 0 {
 		logger.Info("No matched matchers for transaction",
-			"transactionID", unprocessed.Transaction.Id, "userID", userID)
+			"transactionID", unprocessed.Transaction.Id, "familyID", familyID)
 		return
 	}
 
-	perfectMatchers := findPerfectMatchers(db, logger, userID, unprocessed.Matched)
+	perfectMatchers := findPerfectMatchers(db, logger, familyID, unprocessed.Matched)
 
 	switch len(perfectMatchers) {
 	case 1:
@@ -172,37 +173,37 @@ func processUnprocessedTransactionForAutoConversion(
 		logger.Info("Auto-converting unprocessed transaction using perfect matcher",
 			"transactionID", unprocessed.Transaction.Id,
 			"matcherID", matcher.MatcherId,
-			"userID", userID)
+			"familyID", familyID)
 
 		// Convert the transaction using the perfect matcher
 		convertedTransaction, err := unprocessedService.Convert(
-			ctx, userID, unprocessed.Transaction.Id, &matcher.Transaction,
+			ctx, familyID, unprocessed.Transaction.Id, &matcher.Transaction,
 		)
 		if err != nil {
 			logger.With("error", err, "transactionID", unprocessed.Transaction.Id,
-				"matcherID", matcher.MatcherId, "userID", userID).Error(
+				"matcherID", matcher.MatcherId, "familyID", familyID).Error(
 				"Failed to auto-convert unprocessed transaction")
 			return
 		}
 
 		// Add successful confirmation to the matcher's history
-		if err := db.AddMatcherConfirmation(userID, matcher.MatcherId, true); err != nil {
-			logger.With("error", err, "matcherID", matcher.MatcherId, "userID", userID).Warn(
+		if err := db.AddMatcherConfirmation(familyID, matcher.MatcherId, true); err != nil {
+			logger.With("error", err, "matcherID", matcher.MatcherId, "familyID", familyID).Warn(
 				"Failed to add confirmation to matcher after auto-conversion")
 		}
 
 		logger.Info("Successfully auto-converted unprocessed transaction",
 			"transactionID", convertedTransaction.Id,
 			"matcherID", matcher.MatcherId,
-			"userID", userID)
+			"familyID", familyID)
 	case 0:
 		logger.Debug("No matchers with 100% success history for transaction",
 			"transactionID", unprocessed.Transaction.Id,
-			"userID", userID)
+			"familyID", familyID)
 	default:
 		logger.Debug("Multiple matchers with 100% success history, keeping transaction unprocessed",
 			"transactionID", unprocessed.Transaction.Id,
-			"userID", userID,
+			"familyID", familyID,
 			"perfectMatchersCount", len(perfectMatchers))
 	}
 }
@@ -210,15 +211,15 @@ func processUnprocessedTransactionForAutoConversion(
 // findPerfectMatchers returns matchers (from matchedList) whose confirmation
 // history exists and contains only successful confirmations (all true).
 func findPerfectMatchers(
-	db database.Storage, logger *slog.Logger, userID string,
+	db database.Storage, logger *slog.Logger, familyID uuid.UUID,
 	matchedList []goserver.MatcherAndTransaction,
 ) []goserver.MatcherAndTransaction {
 	perfect := make([]goserver.MatcherAndTransaction, 0, len(matchedList))
 
 	for _, matched := range matchedList {
-		matcher, err := db.GetMatcher(userID, matched.MatcherId)
+		matcher, err := db.GetMatcher(familyID, matched.MatcherId)
 		if err != nil {
-			logger.With("error", err, "matcherID", matched.MatcherId, "userID", userID).Warn(
+			logger.With("error", err, "matcherID", matched.MatcherId, "familyID", familyID).Warn(
 				"Failed to get matcher for auto-conversion check")
 			continue
 		}
@@ -226,7 +227,7 @@ func findPerfectMatchers(
 		history := matcher.GetConfirmationHistory()
 		if len(history) == 0 {
 			logger.Info("Matcher has no confirmation history",
-				"matcherID", matched.MatcherId, "userID", userID)
+				"matcherID", matched.MatcherId, "familyID", familyID)
 			continue
 		}
 
@@ -240,7 +241,7 @@ func findPerfectMatchers(
 
 		if len(history) < 10 {
 			logger.Info("Matcher has insufficient confirmation history",
-				"matcherID", matched.MatcherId, "userID", userID,
+				"matcherID", matched.MatcherId, "familyID", familyID,
 				"historyLength", len(history))
 			continue
 		}
@@ -248,7 +249,7 @@ func findPerfectMatchers(
 		if allSuccessful {
 			perfect = append(perfect, matched)
 			logger.Info("Found matcher with 100% success history",
-				"matcherID", matched.MatcherId, "userID", userID,
+				"matcherID", matched.MatcherId, "familyID", familyID,
 				"historyLength", len(history))
 		}
 	}
@@ -264,11 +265,11 @@ func ProcessUnprocessedTransactionsForAutoConversion(
 	processUnprocessedTransactionsForAutoConversion(ctx, logger, db)
 }
 
-// getAllUsers retrieves all user IDs from the database
-func getAllUsers(db database.Storage) ([]string, error) {
-	users, err := db.GetAllUserIDs()
+// getAllFamilies retrieves all family IDs from the database
+func getAllFamilies(db database.Storage) ([]uuid.UUID, error) {
+	ids, err := db.GetAllFamilyIDs()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get all user IDs: %w", err)
+		return nil, fmt.Errorf("failed to get all family IDs: %w", err)
 	}
-	return users, nil
+	return ids, nil
 }

@@ -18,14 +18,14 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	data := utils.CreateTemplateData(req, "home")
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
-	accounts, err := r.db.GetAccounts(userID)
+	accounts, err := r.db.GetAccounts(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -33,7 +33,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	data["Accounts"] = accounts
 
-	currencies, err := r.db.GetCurrencies(userID)
+	currencies, err := r.db.GetCurrencies(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -64,7 +64,7 @@ func (r *WebAppRouter) homeHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	expenses, err := a.GetAggregatedExpenses(req.Context(), userID, dateFrom, dateTo, outputCurrencyID, utils.GranularityMonth, false, "account", nil, nil)
+	expenses, err := a.GetAggregatedExpenses(req.Context(), familyID, dateFrom, dateTo, outputCurrencyID, utils.GranularityMonth, false, "account", nil, nil)
 	if err != nil {
 		r.logger.Error("Failed to get aggregated expenses", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)

@@ -41,17 +41,17 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 	}
 	data := utils.CreateTemplateData(req, "transactions")
 
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
-	data["UserID"] = userID
+	data["UserID"] = familyID
 
 	accountID := req.URL.Query().Get("accountID")
 	data["AccountID"] = accountID
 
-	accounts, err := r.db.GetAccounts(userID)
+	accounts, err := r.db.GetAccounts(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -59,7 +59,7 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 	}
 	data["Accounts"] = accounts
 
-	currencies, err := r.db.GetCurrencies(userID)
+	currencies, err := r.db.GetCurrencies(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -73,7 +73,7 @@ func (r *WebAppRouter) transactionsHandler(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	transactions, err := r.db.GetTransactions(userID, dateFrom, dateTo, false)
+	transactions, err := r.db.GetTransactions(familyID, dateFrom, dateTo, false)
 	if err != nil {
 		r.logger.Error("Failed to get transactions", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -121,13 +121,13 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 	transactionID := req.FormValue("id")
 
 	// Validate session and obtain user ID using the centralized helper
-	userID, err := r.ValidateUserID(tmpl, w, req)
+	familyID, err := r.ValidateUserID(tmpl, w, req)
 	if err != nil {
 		r.logger.Error("Failed to get user ID from session", "error", err)
 		return
 	}
 
-	accounts, err := r.db.GetAccounts(userID)
+	accounts, err := r.db.GetAccounts(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get accounts", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -136,7 +136,7 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 	data["Accounts"] = accounts
 
 	var currencies []goserver.Currency
-	currencies, err = r.db.GetCurrencies(userID)
+	currencies, err = r.db.GetCurrencies(familyID)
 	if err != nil {
 		r.logger.Error("Failed to get currencies", "error", err)
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -145,7 +145,7 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 
 	var transaction goserver.Transaction
 	if transactionID != "" {
-		transaction, err = r.db.GetTransaction(userID, transactionID)
+		transaction, err = r.db.GetTransaction(familyID, transactionID)
 		if err != nil {
 			r.logger.Error("Failed to get transaction", "error", err)
 			r.RespondError(w, err.Error(), http.StatusInternalServerError)
@@ -171,14 +171,14 @@ func (r *WebAppRouter) transactionsEditHandler(w http.ResponseWriter, req *http.
 
 		if transactionID == "" {
 			r.logger.Info("creating transaction", "transaction", transaction)
-			if transaction, err = r.db.CreateTransaction(userID, &transaction); err != nil {
+			if transaction, err = r.db.CreateTransaction(familyID, &transaction); err != nil {
 				r.logger.Error("Failed to create transaction", "error", err)
 				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			r.logger.Info("updating transaction", "transaction", transaction)
-			if transaction, err = r.db.UpdateTransaction(userID, transactionID, &transaction); err != nil {
+			if transaction, err = r.db.UpdateTransaction(familyID, transactionID, &transaction); err != nil {
 				r.logger.Error("Failed to save transaction", "error", err)
 				r.RespondError(w, err.Error(), http.StatusInternalServerError)
 				return

@@ -42,7 +42,7 @@ func (s *MCPServer) registerAccountTools(server *mcp.Server) {
 }
 
 func (s *MCPServer) listAccounts(ctx context.Context, req *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, any, error) {
-	accounts, err := s.storage.GetAccounts(s.userID)
+	accounts, err := s.storage.GetAccounts(s.familyID)
 	if err != nil {
 		s.logger.Error("Failed to get accounts", "error", err)
 		return errorResult(err)
@@ -55,7 +55,7 @@ type getAccountArgs struct {
 }
 
 func (s *MCPServer) getAccount(ctx context.Context, req *mcp.CallToolRequest, args getAccountArgs) (*mcp.CallToolResult, any, error) {
-	account, err := s.storage.GetAccount(s.userID, args.ID)
+	account, err := s.storage.GetAccount(s.familyID, args.ID)
 	if err != nil {
 		s.logger.Error("Failed to get account", "error", err, "id", args.ID)
 		return errorResult(err)
@@ -69,7 +69,7 @@ type getAccountBalanceArgs struct {
 }
 
 func (s *MCPServer) getAccountBalance(ctx context.Context, req *mcp.CallToolRequest, args getAccountBalanceArgs) (*mcp.CallToolResult, any, error) {
-	balance, err := s.storage.GetAccountBalance(s.userID, args.AccountID, args.CurrencyID)
+	balance, err := s.storage.GetAccountBalance(s.familyID, args.AccountID, args.CurrencyID)
 	if err != nil {
 		s.logger.Error("Failed to get account balance", "error", err, "accountId", args.AccountID, "currencyId", args.CurrencyID)
 		return errorResult(err)
@@ -82,7 +82,7 @@ type getAccountHistoryArgs struct {
 }
 
 func (s *MCPServer) getAccountHistory(ctx context.Context, req *mcp.CallToolRequest, args getAccountHistoryArgs) (*mcp.CallToolResult, any, error) {
-	transactions, err := s.storage.GetAccountHistory(s.userID, args.AccountID)
+	transactions, err := s.storage.GetAccountHistory(s.familyID, args.AccountID)
 	if err != nil {
 		s.logger.Error("Failed to get account history", "error", err, "accountId", args.AccountID)
 		return errorResult(err)

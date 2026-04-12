@@ -5,26 +5,27 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
 type DefaultCurrencyProvider struct {
-	db     database.Storage
-	userID string
+	db       database.Storage
+	familyID uuid.UUID
 
 	mu         sync.RWMutex
 	currencies map[string]string // name -> id
 }
 
-func NewDefaultCurrencyProvider(db database.Storage, userID string, initialCurrencies []goserver.Currency) *DefaultCurrencyProvider {
+func NewDefaultCurrencyProvider(db database.Storage, familyID uuid.UUID, initialCurrencies []goserver.Currency) *DefaultCurrencyProvider {
 	cache := make(map[string]string)
 	for _, c := range initialCurrencies {
 		cache[c.Name] = c.Id
 	}
 	return &DefaultCurrencyProvider{
 		db:         db,
-		userID:     userID,
+		familyID:   familyID,
 		currencies: cache,
 	}
 }
@@ -46,7 +47,7 @@ func (p *DefaultCurrencyProvider) GetCurrencyIdByName(_ context.Context, name st
 	}
 
 	// Not in cache, try to fetch all currencies from DB (maybe created by another process/thread)
-	currencies, err := p.db.GetCurrencies(p.userID)
+	currencies, err := p.db.GetCurrencies(p.familyID)
 	if err != nil {
 		return "", fmt.Errorf("can't get currencies from DB: %w", err)
 	}
@@ -63,7 +64,7 @@ func (p *DefaultCurrencyProvider) GetCurrencyIdByName(_ context.Context, name st
 	}
 
 	// Still not found, create it
-	newCur, err := p.db.CreateCurrency(p.userID, &goserver.CurrencyNoId{
+	newCur, err := p.db.CreateCurrency(p.familyID, &goserver.CurrencyNoId{
 		Name:        name,
 		Description: "Automatically created during bank import",
 	})

@@ -21,13 +21,13 @@ func NewNotificationsAPIServiceImpl(logger *slog.Logger, db database.Storage,
 
 func (s *NotificationsAPIServiceImpl) DeleteNotification(ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		s.logger.Error("DeleteNotification: UserID missing from context")
 		return goserver.Response(500, nil), nil
 	}
 
-	err := s.db.DeleteNotification(userID, id)
+	err := s.db.DeleteNotification(familyID, id)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to delete notification")
 		return goserver.Response(500, nil), nil
@@ -37,13 +37,13 @@ func (s *NotificationsAPIServiceImpl) DeleteNotification(ctx context.Context, id
 }
 
 func (s *NotificationsAPIServiceImpl) GetNotifications(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		s.logger.Error("GetNotifications: UserID missing from context")
 		return goserver.Response(500, nil), nil
 	}
 
-	notifications, err := s.db.GetNotifications(userID)
+	notifications, err := s.db.GetNotifications(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get notifications")
 		return goserver.Response(500, nil), nil

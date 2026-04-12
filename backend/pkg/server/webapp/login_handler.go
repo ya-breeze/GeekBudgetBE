@@ -1,15 +1,23 @@
 package webapp
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"time"
 
-	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
-	"github.com/ya-breeze/geekbudgetbe/pkg/utils"
+	"github.com/google/uuid"
+	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
+	"github.com/ya-breeze/geekbudgetbe/pkg/database"
+	kinauth "github.com/ya-breeze/kin-core/auth"
+	"github.com/ya-breeze/kin-core/authdb"
+	kincookies "github.com/ya-breeze/kin-core/cookies"
+)
+
+const (
+	webAccessTokenTTL  = 15 * time.Minute
+	webRefreshTokenTTL = 365 * 24 * time.Hour
 )
 
 //nolint:cyclop,funlen // refactor
@@ -27,58 +35,43 @@ func (r *WebAppRouter) loginHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// check that user exists in DB
-	userID, err := r.db.GetUserID(username)
-	if err != nil {
-		r.logger.Warn("failed to get user ID", "username", username)
-		r.RespondError(w, err.Error(), http.StatusBadRequest)
-		return
+	// Timing-safe credential verification
+	hash := kinauth.DummyHash
+	user, err := r.db.GetUserByUsername(username)
+	if err == nil {
+		hash = user.PasswordHash
 	}
-	user, err := r.db.GetUser(userID)
-	if err != nil {
-		r.logger.Warn("failed to get user", "ID", userID)
-		r.RespondError(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if user == nil {
-		r.logger.Warn("user not found", "ID", userID)
-		r.RespondError(w, "User not found", http.StatusBadRequest)
+	if !kinauth.VerifyPassword(password, hash) || err != nil {
+		if errors.Is(err, database.ErrNotFound) {
+			r.logger.Warn("User not found", "username", username)
+		} else if err != nil {
+			r.logger.Error("Failed to get user", "username", username, "error", err)
+		} else {
+			r.logger.Warn("Invalid password", "username", username)
+		}
+		r.RespondError(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
-	// check that password is correct and create JWT token
-	hashed, err := base64.StdEncoding.DecodeString(user.HashedPassword)
+	familyID := user.FamilyID
+	accessToken, err := kinauth.GenerateAccessToken(user.ID, &familyID, []byte(r.cfg.JWTSecret), webAccessTokenTTL)
 	if err != nil {
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
-	}
-	if !auth.CheckPasswordHash([]byte(password), hashed) {
-		r.RespondError(w, err.Error(), http.StatusUnauthorized)
-	}
-	token, err := auth.CreateJWT(userID, r.cfg.Issuer, r.cfg.JWTSecret)
-	if err != nil {
-		r.RespondError(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	// set JWT token in cookie
-	session, err := r.cookies.Get(req, r.cfg.CookieName)
-	if err != nil {
-		r.logger.Warn("failed to get session", "error", err)
-		r.RespondError(w, err.Error(), http.StatusInternalServerError)
-		return
+	cookieCfg := kincookies.Config{Secure: r.cfg.CookieSecure}
+
+	// Create refresh token
+	if r.gormDB != nil {
+		rt, rtErr := authdb.CreateRefreshToken(r.gormDB, user.ID, webRefreshTokenTTL)
+		if rtErr != nil {
+			r.logger.Warn("Failed to create refresh token", "error", rtErr)
+		} else {
+			kincookies.SetRefreshCookie(w, rt.Token, int(webRefreshTokenTTL.Seconds()), cookieCfg)
+		}
 	}
-	session.Values["token"] = token
-	// Allow to use without HTTPS - for local network
-	session.Options.Secure = false
-	session.Options.SameSite = http.SameSiteLaxMode
-	session.Options.Path = "/"
-	session.Options.HttpOnly = true
-	session.Options.MaxAge = 86400 * 30 // 30 days
-	err = session.Save(req, w)
-	if err != nil {
-		r.logger.Warn("failed to save session", "error", err)
-		r.RespondError(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	kincookies.SetAccessCookie(w, accessToken, int(webAccessTokenTTL.Seconds()), cookieCfg)
 
 	http.Redirect(w, req, "/", http.StatusSeeOther)
 }
@@ -89,14 +82,24 @@ func (r *WebAppRouter) logoutHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	c := &http.Cookie{
-		Name:     r.cfg.CookieName,
-		Value:    "",
-		Path:     "/",
-		Expires:  time.Unix(0, 0),
-		HttpOnly: true,
+	cookieCfg := kincookies.Config{Secure: r.cfg.CookieSecure}
+
+	if tokenStr := kincookies.GetAccessToken(req); tokenStr != "" {
+		if claims, parseErr := kinauth.ParseToken(tokenStr, []byte(r.cfg.JWTSecret)); parseErr == nil {
+			if r.gormDB != nil {
+				if err := authdb.BlacklistToken(r.gormDB, tokenStr, claims.ExpiresAt.Time); err != nil {
+					r.logger.Warn("Failed to blacklist token on logout", "error", err)
+				}
+			}
+		}
 	}
-	http.SetCookie(w, c)
+	if rtStr := kincookies.GetRefreshToken(req); rtStr != "" && r.gormDB != nil {
+		if err := authdb.RevokeRefreshToken(r.gormDB, rtStr); err != nil {
+			r.logger.Warn("Failed to revoke refresh token on logout", "error", err)
+		}
+	}
+
+	kincookies.ClearAuthCookies(w, cookieCfg)
 
 	tmpl, err := r.loadTemplates()
 	if err != nil {
@@ -104,46 +107,42 @@ func (r *WebAppRouter) logoutHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data := utils.CreateTemplateData(req, "login")
-
-	if err := tmpl.ExecuteTemplate(w, "login.tpl", data); err != nil {
+	if err := tmpl.ExecuteTemplate(w, "login.tpl", nil); err != nil {
 		r.RespondError(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (r *WebAppRouter) GetUserIDFromSession(req *http.Request) (string, int, error) {
-	session, err := r.cookies.Get(req, r.cfg.CookieName)
-	if err != nil {
-		r.logger.Error("Failed to get session", "error", err)
-		return "", http.StatusBadRequest, err
+// GetFamilyIDFromRequest extracts the family UUID from the request.
+// It first checks the context (set by auth middleware), then falls back to the kin_access cookie.
+func (r *WebAppRouter) GetFamilyIDFromRequest(req *http.Request) (uuid.UUID, int, error) {
+	// Try context first (set by middleware for non-web routes)
+	if familyID, ok := constants.GetFamilyID(req.Context()); ok {
+		return familyID, http.StatusOK, nil
 	}
 
-	token, ok := session.Values["token"].(string)
-	if !ok {
-		r.logger.Warn("failed to get token from session")
-		return "", http.StatusBadRequest, errors.New("token not found in session")
+	// Try kin-core access cookie
+	tokenStr := kincookies.GetAccessToken(req)
+	if tokenStr != "" {
+		claims, err := kinauth.ParseToken(tokenStr, []byte(r.cfg.JWTSecret))
+		if err == nil && claims.FamilyID != nil {
+			return *claims.FamilyID, http.StatusOK, nil
+		}
 	}
 
-	userID, err := auth.CheckJWT(token, r.cfg.Issuer, r.cfg.JWTSecret)
-	if err != nil {
-		r.logger.With("err", err).Warn("Invalid token")
-		return "", http.StatusUnauthorized, err
-	}
-
-	return userID, http.StatusOK, nil
+	return uuid.UUID{}, http.StatusUnauthorized, errors.New("not authenticated")
 }
 
 func (r *WebAppRouter) ValidateUserID(
 	tmpl *template.Template, w http.ResponseWriter, req *http.Request,
-) (string, error) {
-	userID, _, err := r.GetUserIDFromSession(req)
+) (uuid.UUID, error) {
+	familyID, _, err := r.GetFamilyIDFromRequest(req)
 	if err != nil {
 		if errTmpl := tmpl.ExecuteTemplate(w, "login.tpl", nil); errTmpl != nil {
 			r.logger.Warn("failed to execute login template", "error", errTmpl)
 			r.RespondError(w, errTmpl.Error(), http.StatusInternalServerError)
 		}
-		return "", fmt.Errorf("failed to get user ID from session: %w", err)
+		return uuid.UUID{}, fmt.Errorf("not authenticated: %w", err)
 	}
 
-	return userID, nil
+	return familyID, nil
 }

@@ -36,21 +36,21 @@ func NewBankImportersAPIServiceImpl(
 
 func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, input goserver.BankImporterNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	res, err := s.db.CreateBankImporter(userID, &input)
+	res, err := s.db.CreateBankImporter(familyID, &input)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create BankImporter")
 		return goserver.Response(500, nil), nil
 	}
 
 	if forcedImports := common.GetForcedImportChannel(ctx); forcedImports != nil {
-		s.logger.Info("Triggering forced import for new bank importer", "userID", userID, "bankImporterID", res.Id)
+		s.logger.Info("Triggering forced import for new bank importer", "familyID", familyID, "bankImporterID", res.Id)
 		forcedImports <- common.ForcedImport{
-			UserID:         userID,
+			FamilyID:       familyID,
 			BankImporterID: res.Id,
 		}
 	}
@@ -60,12 +60,12 @@ func (s *BankImportersAPIServiceImpl) CreateBankImporter(ctx context.Context, in
 
 func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	err := s.db.DeleteBankImporter(userID, id)
+	err := s.db.DeleteBankImporter(familyID, id)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to delete BankImporter")
 		return goserver.Response(500, nil), nil
@@ -75,12 +75,12 @@ func (s *BankImportersAPIServiceImpl) DeleteBankImporter(ctx context.Context, id
 }
 
 func (s *BankImportersAPIServiceImpl) GetBankImporters(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	bankImporters, err := s.db.GetBankImporters(userID)
+	bankImporters, err := s.db.GetBankImporters(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get bank importers")
 		return goserver.Response(500, nil), nil
@@ -92,15 +92,15 @@ func (s *BankImportersAPIServiceImpl) GetBankImporters(ctx context.Context) (gos
 func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 	ctx context.Context, id string, input goserver.BankImporterNoId,
 ) (goserver.ImplResponse, error) {
-	res, userID, err := updateEntity[goserver.BankImporterNoIdInterface, goserver.BankImporter](ctx, s.logger, "BankImporter", id, &input, s.db.UpdateBankImporter)
+	res, familyID, err := updateEntity[goserver.BankImporterNoIdInterface, goserver.BankImporter](ctx, s.logger, "BankImporter", id, &input, s.db.UpdateBankImporter)
 	if err != nil {
 		return mapErrorToResponse(err), nil
 	}
 
 	if forcedImports := common.GetForcedImportChannel(ctx); forcedImports != nil {
-		s.logger.Info("Triggering forced import for updated bank importer", "userID", userID, "bankImporterID", id)
+		s.logger.Info("Triggering forced import for updated bank importer", "familyID", familyID, "bankImporterID", id)
 		forcedImports <- common.ForcedImport{
-			UserID:         userID,
+			FamilyID:       familyID,
 			BankImporterID: id,
 		}
 	}
@@ -109,14 +109,14 @@ func (s *BankImportersAPIServiceImpl) UpdateBankImporter(
 }
 
 func (s *BankImportersAPIServiceImpl) Fetch(
-	ctx context.Context, userID, importerID string, isInteractive bool,
+	ctx context.Context, familyID uuid.UUID, importerID string, isInteractive bool,
 ) (*goserver.ImportResult, error) {
-	s.logger.Info("Fetching bank importer", "userID", userID, "bankImporterID", importerID)
-	info, transactions, wasFetchAll, err := s.fetchFioTransactions(ctx, userID, importerID, isInteractive)
+	s.logger.Info("Fetching bank importer", "familyID", familyID, "bankImporterID", importerID)
+	info, transactions, wasFetchAll, err := s.fetchFioTransactions(ctx, familyID, importerID, isInteractive)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to fetch for bank importer")
 		// Log failed import
-		_ = s.addImportResult(userID, importerID, goserver.ImportResult{
+		_ = s.addImportResult(familyID, importerID, goserver.ImportResult{
 			Date:        time.Now(),
 			Status:      "error",
 			Description: err.Error(),
@@ -124,12 +124,12 @@ func (s *BankImportersAPIServiceImpl) Fetch(
 		return nil, err
 	}
 
-	lastImport, err := s.saveImportedTransactions(userID, importerID, info, transactions, wasFetchAll)
+	lastImport, err := s.saveImportedTransactions(familyID, importerID, info, transactions, wasFetchAll)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to save imported transactions")
 		return nil, err
 	}
-	s.logger.Info("Bank importer fetched", "userID", userID, "result", lastImport)
+	s.logger.Info("Bank importer fetched", "familyID", familyID, "result", lastImport)
 
 	return lastImport, nil
 }
@@ -137,12 +137,12 @@ func (s *BankImportersAPIServiceImpl) Fetch(
 func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 	ctx context.Context, id string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	lastImport, err := s.Fetch(ctx, userID, id, true)
+	lastImport, err := s.Fetch(ctx, familyID, id, true)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to fetch")
 		return goserver.Response(500, nil), nil
@@ -152,26 +152,26 @@ func (s *BankImportersAPIServiceImpl) FetchBankImporter(
 }
 
 func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
-	ctx context.Context, userID, id string, isInteractive bool,
+	ctx context.Context, familyID uuid.UUID, id string, isInteractive bool,
 ) (*goserver.BankAccountInfo, []goserver.TransactionNoId, bool, error) {
-	s.logger.With("user", userID).Info("Fetching transactions for bank importer")
+	s.logger.With("user", familyID).Info("Fetching transactions for bank importer")
 
-	biData, err := s.db.GetBankImporter(userID, id)
+	biData, err := s.db.GetBankImporter(familyID, id)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("can't fetch bank importer: %w", err)
 	}
 
 	if !isInteractive && biData.IsStopped {
-		s.logger.With("userID", userID, "bankImporterID", id).Info("Bank importer is stopped, skipping fetch")
+		s.logger.With("familyID", familyID, "bankImporterID", id).Info("Bank importer is stopped, skipping fetch")
 		return nil, nil, false, fmt.Errorf("bank importer is stopped")
 	}
 
-	currencies, err := s.db.GetCurrencies(userID)
+	currencies, err := s.db.GetCurrencies(familyID)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("can't fetch currencies: %w", err)
 	}
 
-	cp := bankimporters.NewDefaultCurrencyProvider(s.db, userID, currencies)
+	cp := bankimporters.NewDefaultCurrencyProvider(s.db, familyID, currencies)
 
 	bi, err := bankimporters.NewFioConverter(s.logger, biData, cp)
 	if err != nil {
@@ -185,24 +185,24 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 	if err != nil {
 		// Stop fetching if it was not interactive and fetch all is false
 		if !biData.FetchAll && !isInteractive {
-			s.logger.With("bankImporterID", id).With("userID", userID).Info("Bank importer failed, stopping further fetches")
+			s.logger.With("bankImporterID", id).With("familyID", familyID).Info("Bank importer failed, stopping further fetches")
 			biData.IsStopped = true
-			_, updateErr := s.db.UpdateBankImporter(userID, id, &biData)
+			_, updateErr := s.db.UpdateBankImporter(familyID, id, &biData)
 			if updateErr != nil {
 				s.logger.With("error", updateErr).Error("Failed to set IsStopped after import failure")
 			}
 		}
 
 		if biData.FetchAll {
-			s.logger.With("bankImporterID", id).With("userID", userID).Info("All transactions fetch failed. Disabling FetchAll and creating notification")
+			s.logger.With("bankImporterID", id).With("familyID", familyID).Info("All transactions fetch failed. Disabling FetchAll and creating notification")
 			biData.FetchAll = false
-			_, updateErr := s.db.UpdateBankImporter(userID, id, &biData)
+			_, updateErr := s.db.UpdateBankImporter(familyID, id, &biData)
 			if updateErr != nil {
 				s.logger.With("error", updateErr).Error("Failed to reset FetchAll after import failure")
 			}
 
 			// Create notification
-			_, notifyErr := s.db.CreateNotification(userID, &goserver.Notification{
+			_, notifyErr := s.db.CreateNotification(familyID, &goserver.Notification{
 				Date:        time.Now(),
 				Type:        string(models.NotificationTypeError),
 				Title:       "Bank Import Failed",
@@ -213,7 +213,7 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 			}
 		} else if !isInteractive {
 			// Create notification for stopped importer
-			_, notifyErr := s.db.CreateNotification(userID, &goserver.Notification{
+			_, notifyErr := s.db.CreateNotification(familyID, &goserver.Notification{
 				Date:        time.Now(),
 				Type:        string(models.NotificationTypeError),
 				Title:       "Bank Import Stopped",
@@ -229,18 +229,18 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 	s.logger.With("info", info, "transactions", len(transactions)).Info("Imported transactions")
 
 	if biData.IsStopped {
-		s.logger.With("bankImporterID", id).With("userID", userID).Info("Bank importer fetched successfully, resetting IsStopped")
+		s.logger.With("bankImporterID", id).With("familyID", familyID).Info("Bank importer fetched successfully, resetting IsStopped")
 		biData.IsStopped = false
-		_, err = s.db.UpdateBankImporter(userID, id, &biData)
+		_, err = s.db.UpdateBankImporter(familyID, id, &biData)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to reset IsStopped after successful import")
 		}
 	}
 
 	if biData.FetchAll {
-		s.logger.With("bankImporterID", id).With("userID", userID).Info("All transactions fetched. Disabling FetchAll")
+		s.logger.With("bankImporterID", id).With("familyID", familyID).Info("All transactions fetched. Disabling FetchAll")
 		biData.FetchAll = false
-		_, err = s.db.UpdateBankImporter(userID, id, &biData)
+		_, err = s.db.UpdateBankImporter(familyID, id, &biData)
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("can't update BankImporter: %w", err)
 		}
@@ -250,7 +250,7 @@ func (s *BankImportersAPIServiceImpl) fetchFioTransactions(
 }
 
 func (s *BankImportersAPIServiceImpl) updateLastImportFields(
-	userID string, id string, info *goserver.BankAccountInfo, totalTransactionsCnt int, newTransactionsCnt int, suspiciousCnt int,
+	familyID uuid.UUID, id string, info *goserver.BankAccountInfo, totalTransactionsCnt int, newTransactionsCnt int, suspiciousCnt int,
 ) (*goserver.ImportResult, error) {
 	balances := []goserver.ImportResultBalancesInner{}
 	if info != nil {
@@ -271,7 +271,7 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 		SuspiciousCount: int32(suspiciousCnt),
 	}
 
-	if err := s.addImportResult(userID, id, lastImport); err != nil {
+	if err := s.addImportResult(familyID, id, lastImport); err != nil {
 		return nil, err
 	}
 
@@ -279,9 +279,9 @@ func (s *BankImportersAPIServiceImpl) updateLastImportFields(
 }
 
 func (s *BankImportersAPIServiceImpl) addImportResult(
-	userID, id string, result goserver.ImportResult,
+	familyID uuid.UUID, id string, result goserver.ImportResult,
 ) error {
-	biData, err := s.db.GetBankImporter(userID, id)
+	biData, err := s.db.GetBankImporter(familyID, id)
 	if err != nil {
 		return fmt.Errorf("can't fetch bank importer: %w", err)
 	}
@@ -297,7 +297,7 @@ func (s *BankImportersAPIServiceImpl) addImportResult(
 	if len(biData.LastImports) > 10 {
 		biData.LastImports = biData.LastImports[1:]
 	}
-	_, err = s.db.UpdateBankImporter(userID, id, &biData)
+	_, err = s.db.UpdateBankImporter(familyID, id, &biData)
 	if err != nil {
 		return fmt.Errorf("can't update BankImporter: %w", err)
 	}
@@ -305,10 +305,10 @@ func (s *BankImportersAPIServiceImpl) addImportResult(
 }
 
 func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
-	userID, id string, info *goserver.BankAccountInfo, transactions []goserver.TransactionNoId, checkMissing bool,
+	familyID uuid.UUID, id string, info *goserver.BankAccountInfo, transactions []goserver.TransactionNoId, checkMissing bool,
 ) (*goserver.ImportResult, error) {
 	if len(transactions) == 0 {
-		return s.updateLastImportFields(userID, id, info, 0, 0, 0)
+		return s.updateLastImportFields(familyID, id, info, 0, 0, 0)
 	}
 
 	// Calculate the date range for fetching existing transactions
@@ -325,18 +325,18 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 	}
 
 	// Fetch all transactions from the database (including deleted ones)
-	dbTransactions, err := s.db.GetTransactionsIncludingDeleted(userID, fetchFrom, time.Time{})
+	dbTransactions, err := s.db.GetTransactionsIncludingDeleted(familyID, fetchFrom, time.Time{})
 	if err != nil {
 		return nil, fmt.Errorf("can't fetch transactions from DB: %w", err)
 	}
 
-	matchers, err := s.db.GetMatchersRuntime(userID)
+	matchers, err := s.db.GetMatchersRuntime(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get matchers")
 		return nil, fmt.Errorf("can't get matchers: %w", err)
 	}
 
-	biData, err := s.db.GetBankImporter(userID, id)
+	biData, err := s.db.GetBankImporter(familyID, id)
 	if err != nil {
 		return nil, fmt.Errorf("can't get bank importer: %w", err)
 	}
@@ -491,7 +491,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			transactionInterfaces[i] = &transactionsToSave[i]
 		}
 
-		_, err = s.db.CreateTransactionsBatch(userID, transactionInterfaces)
+		_, err = s.db.CreateTransactionsBatch(familyID, transactionInterfaces)
 		if err != nil {
 			return nil, fmt.Errorf("can't save transaction batch (all %d transactions rolled back): %w", cnt, err)
 		}
@@ -499,7 +499,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 
 		// Now confirm matchers (this is safe to do after batch save)
 		for _, matcherID := range matcherIDsToConfirm {
-			if err := s.db.AddMatcherConfirmation(userID, matcherID, true); err != nil {
+			if err := s.db.AddMatcherConfirmation(familyID, matcherID, true); err != nil {
 				s.logger.Warn("Failed to add confirmation to matcher", "matcher_id", matcherID, "error", err)
 			}
 		}
@@ -561,7 +561,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 				dbtNoIdFull := models.TransactionWithoutID(&dbt)
 				dbtNoIdFull.SuspiciousReasons = []string{"Not present in importer transactions"}
 
-				_, err := s.db.UpdateTransactionInternal(userID, dbt.Id, dbtNoIdFull)
+				_, err := s.db.UpdateTransactionInternal(familyID, dbt.Id, dbtNoIdFull)
 				if err != nil {
 					// Ignore if not found (deleted)
 					s.logger.With("error", err, "transactionID", dbt.Id).Warn("Failed to mark transaction as suspicious (might be deleted)")
@@ -571,7 +571,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 			}
 		}
 		if suspiciousCnt > 0 {
-			_, err := s.db.CreateNotification(userID, &goserver.Notification{
+			_, err := s.db.CreateNotification(familyID, &goserver.Notification{
 				Date:        time.Now(),
 				Type:        string(models.NotificationTypeInfo),
 				Title:       "Suspicious Transactions Detected",
@@ -585,7 +585,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 
 	// if all transactions are processed then update account bank info
 	if info != nil && len(info.Balances) > 0 {
-		acc, err := s.db.GetAccount(userID, biData.AccountId)
+		acc, err := s.db.GetAccount(familyID, biData.AccountId)
 		if err == nil {
 			accNoId := models.AccountWithoutID(&acc)
 			// Update account bank info from the importer provided info
@@ -618,7 +618,7 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 				}
 			}
 
-			_, err = s.db.UpdateAccount(userID, biData.AccountId, accNoId)
+			_, err = s.db.UpdateAccount(familyID, biData.AccountId, accNoId)
 			if err != nil {
 				s.logger.With("error", err).Error("Failed to update account bank info")
 			} else {
@@ -631,13 +631,13 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 
 	// Trigger balance verification (only if account is linked)
 	if biData.AccountId != "" {
-		if err := common.CheckBalanceForAccount(context.Background(), s.logger, s.db, userID, biData.AccountId); err != nil {
+		if err := common.CheckBalanceForAccount(context.Background(), s.logger, s.db, familyID, biData.AccountId); err != nil {
 			s.logger.With("error", err).Error("Failed to check balance after import")
 		}
 	}
 
 	// update last import fields
-	lastImport, err := s.updateLastImportFields(userID, id, info, len(transactions), cnt, suspiciousCnt)
+	lastImport, err := s.updateLastImportFields(familyID, id, info, len(transactions), cnt, suspiciousCnt)
 	if err != nil {
 		return nil, fmt.Errorf("can't update last import fields: %w", err)
 	}
@@ -646,21 +646,21 @@ func (s *BankImportersAPIServiceImpl) saveImportedTransactions(
 }
 
 func (s *BankImportersAPIServiceImpl) Upload(
-	userID, id, format string, data []byte, containsAllTransactions bool,
+	familyID uuid.UUID, id, format string, data []byte, containsAllTransactions bool,
 ) (*goserver.ImportResult, error) {
-	biData, err := s.db.GetBankImporter(userID, id)
+	biData, err := s.db.GetBankImporter(familyID, id)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get BankImporter")
 		return nil, fmt.Errorf("can't get BankImporter: %w", err)
 	}
 
-	currencies, err := s.db.GetCurrencies(userID)
+	currencies, err := s.db.GetCurrencies(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get currencies")
 		return nil, fmt.Errorf("can't get currencies: %w", err)
 	}
 
-	cp := bankimporters.NewDefaultCurrencyProvider(s.db, userID, currencies)
+	cp := bankimporters.NewDefaultCurrencyProvider(s.db, familyID, currencies)
 
 	var bi bankimporters.Importer
 
@@ -679,7 +679,7 @@ func (s *BankImportersAPIServiceImpl) Upload(
 		}
 	default:
 		s.logger.With("type", biData.Type).Error("Unsupported bank importer type")
-		_ = s.addImportResult(userID, id, goserver.ImportResult{
+		_ = s.addImportResult(familyID, id, goserver.ImportResult{
 			Date:        time.Now(),
 			Status:      "error",
 			Description: fmt.Sprintf("Unsupported bank importer type: %s", biData.Type),
@@ -690,7 +690,7 @@ func (s *BankImportersAPIServiceImpl) Upload(
 	info, transactions, err := bi.ParseAndImport(format, string(data))
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to parse and import data")
-		_ = s.addImportResult(userID, id, goserver.ImportResult{
+		_ = s.addImportResult(familyID, id, goserver.ImportResult{
 			Date:        time.Now(),
 			Status:      "error",
 			Description: fmt.Sprintf("Failed to parse and import data: %s", err),
@@ -698,7 +698,7 @@ func (s *BankImportersAPIServiceImpl) Upload(
 		return nil, fmt.Errorf("can't parse and import data: %w", err)
 	}
 
-	lastImport, err := s.saveImportedTransactions(userID, id, info, transactions, containsAllTransactions)
+	lastImport, err := s.saveImportedTransactions(familyID, id, info, transactions, containsAllTransactions)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to save imported transactions")
 		return nil, fmt.Errorf("can't save imported transactions: %w", err)
@@ -710,7 +710,7 @@ func (s *BankImportersAPIServiceImpl) Upload(
 func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 	ctx context.Context, id, format string, containsAllTransactions bool, file *os.File,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -727,14 +727,14 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 		return goserver.Response(500, nil), nil
 	}
 
-	lastImport, err := s.Upload(userID, id, format, data, containsAllTransactions)
+	lastImport, err := s.Upload(familyID, id, format, data, containsAllTransactions)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to upload")
 		return goserver.Response(500, nil), nil
 	}
 
 	// Save file locally
-	userDir := filepath.Join(s.config.BankImporterFilesPath, userID)
+	userDir := filepath.Join(s.config.BankImporterFilesPath, familyID.String())
 	if err := os.MkdirAll(userDir, 0o755); err != nil {
 		s.logger.With("error", err).Error("Failed to create user directory for bank importer files")
 		return goserver.Response(500, nil), nil
@@ -776,12 +776,12 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 
 	// Create database record
 	importerUUID, _ := uuid.Parse(id)
-	_, err = s.db.CreateBankImporterFile(userID, &models.BankImporterFile{
+	_, err = s.db.CreateBankImporterFile(familyID, &models.BankImporterFile{
 		ID:             fileID,
-		UserID:         userID,
+		FamilyID:       familyID,
 		BankImporterID: importerUUID,
 		Filename:       originalFilename,
-		Path:           filepath.Join(userID, diskFilename),
+		Path:           filepath.Join(familyID.String(), diskFilename),
 		UploadDate:     time.Now(),
 	})
 	if err != nil {
@@ -793,12 +793,12 @@ func (s *BankImportersAPIServiceImpl) UploadBankImporter(
 }
 
 func (s *BankImportersAPIServiceImpl) GetBankImporterFiles(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusUnauthorized, nil), nil
 	}
 
-	files, err := s.db.GetBankImporterFiles(userID)
+	files, err := s.db.GetBankImporterFiles(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get bank importer files")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
@@ -808,12 +808,12 @@ func (s *BankImportersAPIServiceImpl) GetBankImporterFiles(ctx context.Context) 
 }
 
 func (s *BankImportersAPIServiceImpl) DownloadBankImporterFile(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusUnauthorized, nil), nil
 	}
 
-	fileRecord, err := s.db.GetBankImporterFile(userID, id)
+	fileRecord, err := s.db.GetBankImporterFile(familyID, id)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get bank importer file record")
 		return goserver.Response(http.StatusNotFound, nil), nil
@@ -831,12 +831,12 @@ func (s *BankImportersAPIServiceImpl) DownloadBankImporterFile(ctx context.Conte
 }
 
 func (s *BankImportersAPIServiceImpl) DeleteBankImporterFile(ctx context.Context, id string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(http.StatusUnauthorized, nil), nil
 	}
 
-	fileRecord, err := s.db.GetBankImporterFile(userID, id)
+	fileRecord, err := s.db.GetBankImporterFile(familyID, id)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get bank importer file record for deletion")
 		return goserver.Response(http.StatusNotFound, nil), nil
@@ -850,7 +850,7 @@ func (s *BankImportersAPIServiceImpl) DeleteBankImporterFile(ctx context.Context
 	}
 
 	// Delete from database
-	if err := s.db.DeleteBankImporterFile(userID, id); err != nil {
+	if err := s.db.DeleteBankImporterFile(familyID, id); err != nil {
 		s.logger.With("error", err).Error("Failed to delete bank importer file record")
 		return goserver.Response(http.StatusInternalServerError, nil), nil
 	}

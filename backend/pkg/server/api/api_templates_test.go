@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/mocks"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -31,7 +32,7 @@ var _ = Describe("TemplatesAPI", func() {
 			slog.New(slog.NewTextHandler(os.Stderr, nil)),
 			mockDB,
 		)
-		ctx = context.WithValue(context.Background(), constants.UserIDKey, "user1")
+		ctx = context.WithValue(context.Background(), constants.FamilyIDKey, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	})
 
 	AfterEach(func() {
@@ -40,7 +41,7 @@ var _ = Describe("TemplatesAPI", func() {
 
 	Describe("GetTemplates", func() {
 		It("returns 200 with list of templates", func() {
-			mockDB.EXPECT().GetTemplates("user1", nil).Return([]goserver.TransactionTemplate{
+			mockDB.EXPECT().GetTemplates(uuid.MustParse("00000000-0000-0000-0000-000000000001"), nil).Return([]goserver.TransactionTemplate{
 				{Id: "tpl-1", Name: "Rent"},
 			}, nil)
 
@@ -71,7 +72,7 @@ var _ = Describe("TemplatesAPI", func() {
 				Name:      "Rent",
 				Movements: []goserver.Movement{{CurrencyId: "c1", AccountId: "a1"}},
 			}
-			mockDB.EXPECT().CreateTemplate("user1", gomock.Any()).Return(goserver.TransactionTemplate{
+			mockDB.EXPECT().CreateTemplate(uuid.MustParse("00000000-0000-0000-0000-000000000001"), gomock.Any()).Return(goserver.TransactionTemplate{
 				Id: "new-id", Name: "Rent",
 			}, nil)
 
@@ -94,7 +95,7 @@ var _ = Describe("TemplatesAPI", func() {
 
 	Describe("DeleteTemplate", func() {
 		It("returns 204 on success", func() {
-			mockDB.EXPECT().DeleteTemplate("user1", "tpl-1").Return(nil)
+			mockDB.EXPECT().DeleteTemplate(uuid.MustParse("00000000-0000-0000-0000-000000000001"), "tpl-1").Return(nil)
 			resp, err := handler.DeleteTemplate(ctx, "tpl-1")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resp.Code).To(Equal(http.StatusNoContent))

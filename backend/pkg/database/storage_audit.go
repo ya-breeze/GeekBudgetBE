@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) buildAuditLog(userID string, entityType string, entityID string, action string, before interface{}, after interface{}) (models.AuditLog, error) {
+func (s *storage) buildAuditLog(familyID uuid.UUID, entityType string, entityID string, action string, before interface{}, after interface{}) (models.AuditLog, error) {
 	var beforeJSON, afterJSON *string
 
 	if before != nil {
@@ -41,7 +41,7 @@ func (s *storage) buildAuditLog(userID string, entityType string, entityID strin
 
 	return models.AuditLog{
 		ID:           uuid.New(),
-		UserID:       userID,
+		FamilyID:     familyID,
 		EntityType:   entityType,
 		EntityID:     entityID,
 		Action:       action,
@@ -52,17 +52,17 @@ func (s *storage) buildAuditLog(userID string, entityType string, entityID strin
 	}, nil
 }
 
-func (s *storage) recordAuditLog(tx *gorm.DB, userID string, entityType string, entityID string, action string, before interface{}, after interface{}) error {
-	auditLog, err := s.buildAuditLog(userID, entityType, entityID, action, before, after)
+func (s *storage) recordAuditLog(tx *gorm.DB, familyID uuid.UUID, entityType string, entityID string, action string, before interface{}, after interface{}) error {
+	auditLog, err := s.buildAuditLog(familyID, entityType, entityID, action, before, after)
 	if err != nil {
 		return err
 	}
 	return tx.Create(&auditLog).Error
 }
 
-func (s *storage) GetAuditLogs(userID string, filter AuditLogFilter) ([]models.AuditLog, error) {
+func (s *storage) GetAuditLogs(familyID uuid.UUID, filter AuditLogFilter) ([]models.AuditLog, error) {
 	var logs []models.AuditLog
-	query := s.db.Where("user_id = ?", userID)
+	query := s.db.Where("family_id = ?", familyID)
 
 	if filter.EntityType != nil {
 		query = query.Where("entity_type = ?", *filter.EntityType)

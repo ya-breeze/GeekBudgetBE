@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
 	"github.com/golang/mock/gomock"
@@ -19,7 +20,7 @@ import (
 
 var _ = Describe("Accounts API", func() {
 	log := test.CreateTestLogger()
-	ctx := context.WithValue(context.Background(), constants.UserIDKey, "user1")
+	ctx := context.WithValue(context.Background(), constants.FamilyIDKey, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	cfg := &config.Config{}
 
 	var (
@@ -43,12 +44,12 @@ var _ = Describe("Accounts API", func() {
 			accountID := "acc-1-in-use"
 
 			// Mock GetAccount (image check)
-			mockStorage.EXPECT().GetAccount("user1", accountID).Return(goserver.Account{Id: accountID}, nil)
+			mockStorage.EXPECT().GetAccount(uuid.MustParse("00000000-0000-0000-0000-000000000001"), accountID).Return(goserver.Account{Id: accountID}, nil)
 
 			// Mock DeleteAccount returning ErrAccountInUse
 			// Note: empty string for replaceWithAccountId means no replacement
 			emptyReplace := ""
-			mockStorage.EXPECT().DeleteAccount("user1", accountID, &emptyReplace).Return(database.ErrAccountInUse)
+			mockStorage.EXPECT().DeleteAccount(uuid.MustParse("00000000-0000-0000-0000-000000000001"), accountID, &emptyReplace).Return(database.ErrAccountInUse)
 
 			resp, err := sut.DeleteAccount(ctx, accountID, "")
 			Expect(err).ToNot(HaveOccurred())
@@ -59,7 +60,7 @@ var _ = Describe("Accounts API", func() {
 			accountID := "acc-1"
 
 			// Mock GetAccount (image check)
-			mockStorage.EXPECT().GetAccount("user1", accountID).Return(goserver.Account{Id: accountID}, nil)
+			mockStorage.EXPECT().GetAccount(uuid.MustParse("00000000-0000-0000-0000-000000000001"), accountID).Return(goserver.Account{Id: accountID}, nil)
 
 			// We expect NO calls to GetAccount for validation of replacement because the check happens before
 			// We expect NO calls to DeleteAccount
@@ -74,13 +75,13 @@ var _ = Describe("Accounts API", func() {
 			replaceID := "acc-2"
 
 			// Mock GetAccount (image check)
-			mockStorage.EXPECT().GetAccount("user1", accountID).Return(goserver.Account{Id: accountID}, nil)
+			mockStorage.EXPECT().GetAccount(uuid.MustParse("00000000-0000-0000-0000-000000000001"), accountID).Return(goserver.Account{Id: accountID}, nil)
 
 			// Mock validation of replacement account
-			mockStorage.EXPECT().GetAccount("user1", replaceID).Return(goserver.Account{Id: replaceID}, nil)
+			mockStorage.EXPECT().GetAccount(uuid.MustParse("00000000-0000-0000-0000-000000000001"), replaceID).Return(goserver.Account{Id: replaceID}, nil)
 
 			// Mock DeleteAccount success
-			mockStorage.EXPECT().DeleteAccount("user1", accountID, &replaceID).Return(nil)
+			mockStorage.EXPECT().DeleteAccount(uuid.MustParse("00000000-0000-0000-0000-000000000001"), accountID, &replaceID).Return(nil)
 
 			resp, err := sut.DeleteAccount(ctx, accountID, replaceID)
 			Expect(err).ToNot(HaveOccurred())

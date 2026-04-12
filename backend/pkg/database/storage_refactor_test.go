@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -20,7 +21,7 @@ func TestStorageRefactor_DeleteAccount(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	// Create two accounts
 	acc1, err := st.CreateAccount(userID, &goserver.AccountNoId{Name: "Account 1"})
@@ -90,7 +91,7 @@ func TestStorageRefactor_DeleteCurrency(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	// Create two currencies
 	cur1, err := st.CreateCurrency(userID, &goserver.CurrencyNoId{Name: "Currency 1"})

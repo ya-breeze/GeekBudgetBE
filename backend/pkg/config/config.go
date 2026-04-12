@@ -4,21 +4,19 @@ package config
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Users                         string `mapstructure:"users" default:""`
+	SeedUsers                     string `mapstructure:"seed_users" default:""`
 	JWTSecret                     string `mapstructure:"jwt_secret" default:""`
 	Verbose                       bool   `mapstructure:"verbose" default:"false"`
 	Port                          int    `mapstructure:"port" default:"8080"`
 	DBPath                        string `mapstructure:"dbpath" default:":memory:"`
 	DisableImporters              bool   `mapstructure:"disableimporters" default:"false"`
 	DisableCurrenciesRatesFetch   bool   `mapstructure:"disablecurrenciesratesfetch" default:"false"`
-	Issuer                        string `mapstructure:"issuer" default:"geekbudget"`
-	CookieName                    string `mapstructure:"cookiename" default:"geekbudgetcookie"`
-	SessionSecret                 string `mapstructure:"sessionsecret" default:""`
 	CookieSecure                  bool   `mapstructure:"cookiesecure" default:"true"`
 	MatcherConfirmationHistoryMax int    `mapstructure:"matcherconfirmationhistorymax" default:"10"`
 	BankImporterFilesPath         string `mapstructure:"bankimporterfilespath" default:"bank-importer-files"`
@@ -57,11 +55,13 @@ func setDefaultsFromStruct(s interface{}) {
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
 		defaultValue := field.Tag.Get("default")
-		// Use the field name as the default key for the configuration
-		name := field.Name
-		if tag := field.Tag.Get("mapstructure"); tag != "" {
-			name = tag
+		mapKey := field.Tag.Get("mapstructure")
+		if mapKey == "" {
+			mapKey = strings.ToLower(field.Name)
 		}
-		viper.SetDefault(name, defaultValue)
+		viper.SetDefault(mapKey, defaultValue)
+		// AutomaticEnv doesn't reliably find keys with underscores (e.g. jwt_secret →
+		// GB_JWT_SECRET), so bind each key explicitly.
+		_ = viper.BindEnv(mapKey)
 	}
 }

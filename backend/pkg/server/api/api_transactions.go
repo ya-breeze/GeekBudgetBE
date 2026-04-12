@@ -28,13 +28,13 @@ func (s *TransactionsAPIServiceImpl) GetTransactions(
 	dateFrom, dateTo time.Time,
 	onlySuspicious bool,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, onlySuspicious)
+	transactions, err := s.db.GetTransactions(familyID, dateFrom, dateTo, onlySuspicious)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return goserver.Response(500, nil), nil
@@ -46,14 +46,14 @@ func (s *TransactionsAPIServiceImpl) GetTransactions(
 func (s *TransactionsAPIServiceImpl) CreateTransaction(
 	ctx context.Context, transactionNoID goserver.TransactionNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
-	s.logger.Info("Processing transaction create", "user", userID)
+	s.logger.Info("Processing transaction create", "user", familyID)
 
-	transaction, err := s.db.CreateTransaction(userID, &transactionNoID)
+	transaction, err := s.db.CreateTransaction(familyID, &transactionNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create transaction")
 		return goserver.Response(500, nil), nil
@@ -77,13 +77,13 @@ func (s *TransactionsAPIServiceImpl) UpdateTransaction(
 func (s *TransactionsAPIServiceImpl) DeleteTransaction(
 	ctx context.Context, transactionID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	err := s.db.DeleteTransaction(userID, transactionID)
+	err := s.db.DeleteTransaction(familyID, transactionID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to delete transaction")
 		return goserver.Response(500, nil), nil
@@ -95,13 +95,13 @@ func (s *TransactionsAPIServiceImpl) DeleteTransaction(
 func (s *TransactionsAPIServiceImpl) GetTransaction(
 	ctx context.Context, transactionID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	transaction, err := s.db.GetTransaction(userID, transactionID)
+	transaction, err := s.db.GetTransaction(familyID, transactionID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transaction")
 		return goserver.Response(500, nil), nil
@@ -113,15 +113,15 @@ func (s *TransactionsAPIServiceImpl) GetTransaction(
 func (s *TransactionsAPIServiceImpl) MergeTransactions(
 	ctx context.Context, mergeRequest goserver.MergeTransactionsRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	s.logger.Info("Processing transactions merge", "keep", mergeRequest.KeepId, "merge", mergeRequest.MergeId, "user", userID)
+	s.logger.Info("Processing transactions merge", "keep", mergeRequest.KeepId, "merge", mergeRequest.MergeId, "user", familyID)
 
-	transaction, err := s.db.MergeTransactions(userID, mergeRequest.KeepId, mergeRequest.MergeId)
+	transaction, err := s.db.MergeTransactions(familyID, mergeRequest.KeepId, mergeRequest.MergeId)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to merge transactions")
 		return goserver.Response(400, nil), nil

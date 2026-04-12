@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
 	"github.com/golang/mock/gomock"
@@ -19,7 +20,7 @@ import (
 
 var _ = Describe("BudgetItems API", func() {
 	log := test.CreateTestLogger()
-	ctx := context.WithValue(context.Background(), constants.UserIDKey, "user1")
+	ctx := context.WithValue(context.Background(), constants.FamilyIDKey, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 
 	var (
 		ctrl        *gomock.Controller
@@ -73,13 +74,13 @@ var _ = Describe("BudgetItems API", func() {
 		}
 
 		// Mock Calls
-		mockStorage.EXPECT().GetBudgetItems("user1").Return(budgetItems, nil)
-		mockStorage.EXPECT().GetAccounts("user1").Return([]goserver.Account{
+		mockStorage.EXPECT().GetBudgetItems(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return(budgetItems, nil)
+		mockStorage.EXPECT().GetAccounts(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return([]goserver.Account{
 			{Id: "account-a", HideFromReports: false},
 		}, nil)
-		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{}, nil)
+		mockStorage.EXPECT().GetCurrencies(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return([]goserver.Currency{}, nil)
 		// It will fetch transactions from MinDate (Jan 1) to requested To date.
-		mockStorage.EXPECT().GetTransactions("user1", gomock.Any(), gomock.Any(), false).Return(transactions, nil)
+		mockStorage.EXPECT().GetTransactions(uuid.MustParse("00000000-0000-0000-0000-000000000001"), gomock.Any(), gomock.Any(), false).Return(transactions, nil)
 
 		// Call SUT for Jan and Feb status
 		resp, err := sut.GetBudgetStatus(ctx, startOfMonth, startOfMonth.AddDate(0, 2, 0), "", false)
@@ -125,12 +126,12 @@ var _ = Describe("BudgetItems API", func() {
 			},
 		}
 
-		mockStorage.EXPECT().GetBudgetItems("user1").Return(budgetItems, nil)
-		mockStorage.EXPECT().GetAccounts("user1").Return([]goserver.Account{
+		mockStorage.EXPECT().GetBudgetItems(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return(budgetItems, nil)
+		mockStorage.EXPECT().GetAccounts(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return([]goserver.Account{
 			{Id: "acc-b", HideFromReports: false},
 		}, nil)
-		mockStorage.EXPECT().GetCurrencies("user1").Return([]goserver.Currency{}, nil)
-		mockStorage.EXPECT().GetTransactions("user1", gomock.Any(), gomock.Any(), false).Return(transactions, nil)
+		mockStorage.EXPECT().GetCurrencies(uuid.MustParse("00000000-0000-0000-0000-000000000001")).Return([]goserver.Currency{}, nil)
+		mockStorage.EXPECT().GetTransactions(uuid.MustParse("00000000-0000-0000-0000-000000000001"), gomock.Any(), gomock.Any(), false).Return(transactions, nil)
 
 		resp, err := sut.GetBudgetStatus(ctx, startOfMonth, startOfMonth.AddDate(0, 2, 0), "", false)
 		Expect(err).ToNot(HaveOccurred())
@@ -160,7 +161,7 @@ var _ = Describe("BudgetItems API", func() {
 			Date:      input.Date,
 		}
 
-		mockStorage.EXPECT().UpdateBudgetItem("user1", budgetItemID, &input).Return(updatedItem, nil)
+		mockStorage.EXPECT().UpdateBudgetItem(uuid.MustParse("00000000-0000-0000-0000-000000000001"), budgetItemID, &input).Return(updatedItem, nil)
 
 		resp, err := sut.UpdateBudgetItem(ctx, budgetItemID, input)
 		Expect(err).ToNot(HaveOccurred())

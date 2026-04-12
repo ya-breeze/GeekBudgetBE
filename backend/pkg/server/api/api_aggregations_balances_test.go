@@ -7,6 +7,7 @@ import (
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/shopspring/decimal"
@@ -30,7 +31,7 @@ var _ = Describe("Balances Aggregation API", func() {
 		mockStorage = mocks.NewMockStorage(ctrl)
 		sut = api.NewAggregationsAPIServiceImpl(log, mockStorage)
 		// Inject UserID into context
-		ctx = context.WithValue(context.Background(), constants.UserIDKey, "user-1")
+		ctx = context.WithValue(context.Background(), constants.FamilyIDKey, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	})
 
 	AfterEach(func() {
@@ -38,7 +39,7 @@ var _ = Describe("Balances Aggregation API", func() {
 	})
 
 	It("calculates cumulative balances correctly", func() {
-		userID := "user-1"
+		userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		usdID := "usd-id"
 		accountID := "acc-1"
 		dateFrom := time.Date(2024, 9, 1, 0, 0, 0, 0, time.UTC)
@@ -124,7 +125,7 @@ var _ = Describe("Balances Aggregation API", func() {
 	})
 
 	It("respects opening and closing dates", func() {
-		userID := "user-1"
+		userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 		usdID := "usd-id"
 		accountID := "acc-1"
 		dateFrom := time.Date(2024, 9, 1, 0, 0, 0, 0, time.UTC)

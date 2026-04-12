@@ -26,7 +26,7 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 		sutBI    *BankImportersAPIServiceImpl
 		sutUT    *UnprocessedTransactionsAPIServiceImpl
 		logger   = test.CreateTestLogger()
-		userID   = "user1"
+		userID   = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	)
 
 	BeforeEach(func() {
@@ -88,7 +88,7 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{runtimeMatcher}, nil)
 
 			// EXPECT: Batch transaction created but NOT as auto, and with skip reason
-			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
 				Expect(transactions).To(HaveLen(1))
 				t := transactions[0].(*goserver.TransactionNoId)
 				Expect(t.IsAuto).To(BeFalse())
@@ -108,7 +108,7 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 
 	Describe("ProcessUnprocessedTransactionsAgainstMatcher duplicate transfer detection", func() {
 		It("should skip auto-match when a similar transfer already exists in DB", func() {
-			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.FamilyIDKey, userID)
 			existingDate := time.Now().Add(-time.Hour * 24)
 
 			// 1. Existing transfer in DB
@@ -157,7 +157,7 @@ var _ = Describe("Duplicate Transfer Handling", func() {
 			mockDB.EXPECT().GetTransactions(userID, gomock.Any(), gomock.Any(), gomock.Any()).Return([]goserver.Transaction{existingTx, unprocessedTx}, nil).AnyTimes()
 
 			// EXPECT: Transaction updated but NOT as auto, and with skip reason
-			mockDB.EXPECT().UpdateTransactionInternal(userID, unprocessedTx.Id, gomock.Any()).DoAndReturn(func(uid, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
+			mockDB.EXPECT().UpdateTransactionInternal(userID, unprocessedTx.Id, gomock.Any()).DoAndReturn(func(uid uuid.UUID, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
 				Expect(t.GetIsAuto()).To(BeFalse())
 				Expect(t.GetAutoMatchSkipReason()).To(ContainSubstring("Potential duplicate detected"))
 				Expect(t.GetMovements()[1].AccountId).To(Equal(""), "Movements should NOT be modified by matcher if skip")

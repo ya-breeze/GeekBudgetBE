@@ -28,21 +28,21 @@ func TestMigration(t *testing.T) {
 		t.Fatalf("failed to migrate initial schema: %v", err)
 	}
 
-	userID := "user-1"
+	familyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	kID := uuid.New()
 	tID := uuid.New()
 	now := time.Now()
 
 	// 2. Insert transactions representing an old-style merge (soft-deleted, with merged_into_id)
 	k := models.Transaction{
-		ID:          kID,
-		UserID:      userID,
-		Date:        now,
+		ID:       kID,
+		FamilyID: familyID,
+		Date:     now,
 		Description: "Keep",
 	}
 	m := models.Transaction{
 		ID:           tID,
-		UserID:       userID,
+		FamilyID:     familyID,
 		Date:         now,
 		Description:  "Merge",
 		MergedIntoID: &kID,
@@ -64,7 +64,7 @@ func TestMigration(t *testing.T) {
 	tID2 := uuid.New()
 	m2 := models.Transaction{
 		ID:           tID2,
-		UserID:       userID,
+		FamilyID:     familyID,
 		Date:         now,
 		Description:  "Merge 2",
 		MergedIntoID: &kID,

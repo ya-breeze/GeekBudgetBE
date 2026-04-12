@@ -12,8 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) GetMatchers(userID string) ([]goserver.Matcher, error) {
-	result, err := s.db.Model(&models.Matcher{}).Where("user_id = ?", userID).Rows()
+func (s *storage) GetMatchers(familyID uuid.UUID) ([]goserver.Matcher, error) {
+	result, err := s.db.Model(&models.Matcher{}).Where("family_id = ?", familyID).Rows()
 	if err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
@@ -32,14 +32,14 @@ func (s *storage) GetMatchers(userID string) ([]goserver.Matcher, error) {
 	return matchers, nil
 }
 
-func (s *storage) CreateMatcher(userID string, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error) {
-	data := models.MatcherToDB(matcher, userID)
+func (s *storage) CreateMatcher(familyID uuid.UUID, matcher goserver.MatcherNoIdInterface) (goserver.Matcher, error) {
+	data := models.MatcherToDB(matcher, familyID)
 	data.ID = uuid.New()
 	if err := s.db.Create(data).Error; err != nil {
 		return goserver.Matcher{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "Matcher", data.ID.String(), "CREATED", nil, data); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "Matcher", data.ID.String(), "CREATED", nil, data); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -142,8 +142,8 @@ func (s *storage) CreateMatcherRuntimeFromNoId(m goserver.MatcherNoIdInterface) 
 	return s.createMatcherRuntime(matcher)
 }
 
-func (s *storage) GetMatcherRuntime(userID, id string) (MatcherRuntime, error) {
-	m, err := s.GetMatcher(userID, id)
+func (s *storage) GetMatcherRuntime(familyID uuid.UUID, id string) (MatcherRuntime, error) {
+	m, err := s.GetMatcher(familyID, id)
 	if err != nil {
 		return MatcherRuntime{}, err
 	}
@@ -151,8 +151,8 @@ func (s *storage) GetMatcherRuntime(userID, id string) (MatcherRuntime, error) {
 	return s.createMatcherRuntime(m)
 }
 
-func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
-	matchers, err := s.GetMatchers(userID)
+func (s *storage) GetMatchersRuntime(familyID uuid.UUID) ([]MatcherRuntime, error) {
+	matchers, err := s.GetMatchers(familyID)
 	if err != nil {
 		return nil, err
 	}
@@ -170,18 +170,18 @@ func (s *storage) GetMatchersRuntime(userID string) ([]MatcherRuntime, error) {
 	return res, nil
 }
 
-func (s *storage) UpdateMatcher(userID string, id string, matcher goserver.MatcherNoIdInterface,
+func (s *storage) UpdateMatcher(familyID uuid.UUID, id string, matcher goserver.MatcherNoIdInterface,
 ) (goserver.Matcher, error) {
-	return performUpdate[models.Matcher, goserver.MatcherNoIdInterface, goserver.Matcher](s, userID, "Matcher", id, matcher,
+	return performUpdate[models.Matcher, goserver.MatcherNoIdInterface, goserver.Matcher](s, familyID, "Matcher", id, matcher,
 		models.MatcherToDB,
 		func(m *models.Matcher) goserver.Matcher { return m.FromDB() },
 		func(m *models.Matcher, id uuid.UUID) { m.ID = id },
 	)
 }
 
-func (s *storage) GetMatcher(userID string, id string) (goserver.Matcher, error) {
+func (s *storage) GetMatcher(familyID uuid.UUID, id string) (goserver.Matcher, error) {
 	var data models.Matcher
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return goserver.Matcher{}, ErrNotFound
 		}
@@ -192,15 +192,15 @@ func (s *storage) GetMatcher(userID string, id string) (goserver.Matcher, error)
 	return data.FromDB(), nil
 }
 
-func (s *storage) DeleteMatcher(userID string, id string) error {
+func (s *storage) DeleteMatcher(familyID uuid.UUID, id string) error {
 	var data models.Matcher
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
-		if err := s.recordAuditLog(s.db, userID, "Matcher", id, "DELETED", &data, nil); err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&data).Error; err == nil {
+		if err := s.recordAuditLog(s.db, familyID, "Matcher", id, "DELETED", &data, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 	}
 
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Matcher{}).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).Delete(&models.Matcher{}).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
 	}
 
@@ -209,12 +209,12 @@ func (s *storage) DeleteMatcher(userID string, id string) error {
 
 // AddMatcherConfirmation atomically appends a confirmation boolean to the matcher's
 // confirmation history and trims it to the configured maximum length.
-func (s *storage) AddMatcherConfirmation(userID string, id string, confirmed bool) error {
+func (s *storage) AddMatcherConfirmation(familyID uuid.UUID, id string, confirmed bool) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		var m models.Matcher
-		if err := tx.Where("id = ? AND user_id = ?", id, userID).First(&m).Error; err != nil {
+		if err := tx.Where("id = ? AND family_id = ?", id, familyID).First(&m).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				s.log.Warn("Matcher not found when adding confirmation", "userID", userID, "matcherID", id)
+				s.log.Warn("Matcher not found when adding confirmation", "familyID", familyID, "matcherID", id)
 				return ErrNotFound
 			}
 			s.log.Error("DB error when loading matcher for confirmation", "error", err)

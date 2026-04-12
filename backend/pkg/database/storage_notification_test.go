@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
@@ -19,7 +20,7 @@ func TestNotificationStorage(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	t.Run("Create Notification with empty ID", func(t *testing.T) {
 		n := &goserver.Notification{

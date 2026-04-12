@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
@@ -34,7 +35,7 @@ func TestStorage_Backup(t *testing.T) {
 	// Insert some data to verify backup content (optional, but good practice)
 	// For simplicity, we just rely on open/close and VACUUM success.
 	// But let's create a user to be sure DB is initialized
-	_, err = storage.CreateUser("testuser", "password")
+	_, err = storage.CreateUser("testuser", "password", uuid.New())
 	require.NoError(t, err)
 
 	// Perform backup
@@ -56,6 +57,6 @@ func TestStorage_Backup(t *testing.T) {
 	defer backupStorage.Close()
 
 	// Check if user exists in backup
-	_, err = backupStorage.GetUserID("testuser")
+	_, err = backupStorage.GetUserByUsername("testuser")
 	assert.NoError(t, err)
 }

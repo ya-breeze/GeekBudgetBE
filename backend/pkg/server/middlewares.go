@@ -2,108 +2,66 @@ package server
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
-	"github.com/ya-breeze/geekbudgetbe/pkg/auth"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/server/common"
+	kincookies "github.com/ya-breeze/kin-core/cookies"
+	kinmiddleware "github.com/ya-breeze/kin-core/middleware"
+	"gorm.io/gorm"
 )
 
-func AuthMiddleware(logger *slog.Logger, cfg *config.Config) mux.MiddlewareFunc {
-	// Use the configured session secret for the cookie store
-	store := sessions.NewCookieStore([]byte(cfg.SessionSecret))
+// skipAuthPaths lists paths that don't require authentication.
+var skipAuthPaths = map[string]bool{
+	"/v1/authorize": true,
+	"/auth/refresh": true,
+}
+
+func AuthMiddleware(logger *slog.Logger, cfg *config.Config, db *gorm.DB) mux.MiddlewareFunc {
+	kinCfg := kinmiddleware.Config{
+		JWTSecret: []byte(cfg.JWTSecret),
+		DB:        db,
+		CookieCfg: kincookies.Config{Secure: cfg.CookieSecure},
+	}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
-			// Skip authorization for OPTIONS requests (CORS preflight)
-			if req.Method == "OPTIONS" {
+			// Skip auth for OPTIONS (CORS preflight), root, web assets, and public endpoints
+			if req.Method == "OPTIONS" || req.URL.Path == "/" ||
+				strings.HasPrefix(req.URL.Path, "/web/") || skipAuthPaths[req.URL.Path] {
 				next.ServeHTTP(writer, req)
 				return
 			}
 
-			// Skip authorization for the root endpoint
-			if req.URL.Path == "/" || strings.HasPrefix(req.URL.Path, "/web/") {
-				next.ServeHTTP(writer, req)
+			// If no kin_access cookie, fall back to Authorization: Bearer header
+			// (needed for API clients like the generated goclient used in tests)
+			if bearer := req.Header.Get("Authorization"); bearer != "" &&
+				strings.HasPrefix(bearer, "Bearer ") {
+				if c, _ := req.Cookie("kin_access"); c == nil {
+					token := strings.TrimPrefix(bearer, "Bearer ")
+					req.AddCookie(&http.Cookie{Name: "kin_access", Value: token})
+				}
+			}
+
+			claims, err := kinmiddleware.ValidateRequest(req, kinCfg)
+			if err != nil {
+				logger.Warn("Unauthorized request", "path", req.URL.Path, "error", err)
+				http.Error(writer, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
-			// Skip authorization for the authorize endpoint
-			if req.URL.Path == "/v1/authorize" {
-				next.ServeHTTP(writer, req)
-				return
+			ctx := context.WithValue(req.Context(), constants.UserIDKey, claims.UserID)
+			if claims.FamilyID != nil {
+				ctx = context.WithValue(ctx, constants.FamilyIDKey, *claims.FamilyID)
 			}
-
-			// 1. Try Cookie Authentication
-			userID, err := getUserIDFromCookie(req, store, cfg.CookieName, cfg.Issuer, cfg.JWTSecret)
-			if err == nil {
-				ctx := context.WithValue(req.Context(), constants.UserIDKey, userID)
-				ctx = context.WithValue(ctx, constants.ChangeSourceKey, constants.ChangeSourceUser)
-				req = req.WithContext(ctx)
-				next.ServeHTTP(writer, req)
-				return
-			}
-			// Only log real errors, not just missing cookies
-			if !errors.Is(err, http.ErrNoCookie) && !strings.Contains(err.Error(), "session") {
-				logger.Debug("Cookie auth failed", "error", err)
-			}
-
-			// 2. Try Bearer Token Authentication
-			userID, err = getUserIDFromToken(req, cfg.Issuer, cfg.JWTSecret)
-			if err == nil {
-				ctx := context.WithValue(req.Context(), constants.UserIDKey, userID)
-				ctx = context.WithValue(ctx, constants.ChangeSourceKey, constants.ChangeSourceUser)
-				req = req.WithContext(ctx)
-				next.ServeHTTP(writer, req)
-				return
-			}
-			logger.Debug("Bearer token auth failed", "error", err)
-
-			// 3. Unauthorized
-			logger.Warn("Unauthorized access attempt", "path", req.URL.Path)
-			http.Error(writer, "Unauthorized", http.StatusUnauthorized)
+			ctx = context.WithValue(ctx, constants.ChangeSourceKey, constants.ChangeSourceUser)
+			next.ServeHTTP(writer, req.WithContext(ctx))
 		})
 	}
-}
-
-func getUserIDFromToken(req *http.Request, issuer, jwtSecret string) (string, error) {
-	authHeader := req.Header.Get("Authorization")
-	if authHeader == "" {
-		return "", errors.New("missing authorization header")
-	}
-	authHeaderParts := strings.Split(authHeader, " ")
-	if len(authHeaderParts) != 2 || authHeaderParts[0] != "Bearer" {
-		return "", errors.New("invalid authorization header format")
-	}
-	bearerToken := authHeaderParts[1]
-
-	return auth.CheckJWT(bearerToken, issuer, jwtSecret)
-}
-
-func getUserIDFromCookie(
-	req *http.Request, store *sessions.CookieStore, cookieName, issuer, jwtSecret string,
-) (string, error) {
-	// If cookieName is empty, use default from controller (though cfg should handle this)
-	if cookieName == "" {
-		cookieName = "geekbudgetcookie"
-	}
-
-	session, err := store.Get(req, cookieName)
-	if err != nil {
-		return "", err
-	}
-
-	token, ok := session.Values["token"].(string)
-	if !ok || token == "" {
-		return "", errors.New("token not found in session")
-	}
-
-	return auth.CheckJWT(token, issuer, jwtSecret)
 }
 
 func CORSMiddleware() mux.MiddlewareFunc {

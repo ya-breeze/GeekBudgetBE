@@ -22,7 +22,7 @@ type BankImporter struct {
 	Mappings             []goserver.BankImporterNoIdMappingsInner `gorm:"serializer:json"`
 	FetchAll             bool
 	IsStopped            bool
-	UserID               string    `gorm:"index"`
+	FamilyID             uuid.UUID `gorm:"type:uuid;index;not null"`
 	ID                   uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
@@ -43,9 +43,9 @@ func (t *BankImporter) FromDB() goserver.BankImporter {
 	}
 }
 
-func BankImporterToDB(m goserver.BankImporterNoIdInterface, userID string) *BankImporter {
+func BankImporterToDB(m goserver.BankImporterNoIdInterface, familyID uuid.UUID) *BankImporter {
 	return &BankImporter{
-		UserID:               userID,
+		FamilyID:             familyID,
 		Name:                 m.GetName(),
 		Description:          m.GetDescription(),
 		AccountID:            m.GetAccountId(),

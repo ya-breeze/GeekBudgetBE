@@ -6,21 +6,22 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
 	"github.com/ya-breeze/geekbudgetbe/pkg/generated/goserver"
 )
 
-func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db database.Storage, userID, accountID string) error {
-	logger.Info("Checking balance for account", "userID", userID, "accountID", accountID)
+func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db database.Storage, familyID uuid.UUID, accountID string) error {
+	logger.Info("Checking balance for account", "familyID", familyID, "accountID", accountID)
 
-	acc, err := db.GetAccount(userID, accountID)
+	acc, err := db.GetAccount(familyID, accountID)
 	if err != nil {
 		return fmt.Errorf("failed to get account: %w", err)
 	}
 
-	count, err := db.CountUnprocessedTransactionsForAccount(userID, accountID, acc.IgnoreUnprocessedBefore)
+	count, err := db.CountUnprocessedTransactionsForAccount(familyID, accountID, acc.IgnoreUnprocessedBefore)
 	if err != nil {
 		return fmt.Errorf("failed to count unprocessed transactions: %w", err)
 	}
@@ -31,14 +32,14 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 	}
 
 	for _, b := range acc.BankInfo.Balances {
-		appBalance, err := db.GetAccountBalance(userID, accountID, b.CurrencyId)
+		appBalance, err := db.GetAccountBalance(familyID, accountID, b.CurrencyId)
 		if err != nil {
 			logger.With("error", err, "currencyId", b.CurrencyId).Error("Failed to get account balance")
 			continue
 		}
 
 		currencyName := b.CurrencyId
-		if cur, err := db.GetCurrency(userID, b.CurrencyId); err == nil {
+		if cur, err := db.GetCurrency(familyID, b.CurrencyId); err == nil {
 			currencyName = cur.Name
 		}
 
@@ -49,7 +50,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 				"appBalance", appBalance,
 				"bankBalance", b.ClosingBalance)
 
-			_, err := db.CreateNotification(userID, &goserver.Notification{
+			_, err := db.CreateNotification(familyID, &goserver.Notification{
 				Date:  time.Now(),
 				Type:  string(models.NotificationTypeBalanceDoesntMatch),
 				Title: "Balance Mismatch Detected",
@@ -62,7 +63,7 @@ func CheckBalanceForAccount(ctx context.Context, logger *slog.Logger, db databas
 		} else {
 			logger.Info("Balance verified for account", "account", acc.Name, "currencyId", b.CurrencyId, "balance", appBalance)
 			// Create reconciliation record
-			rec, err := db.CreateReconciliation(userID, &goserver.ReconciliationNoId{
+			rec, err := db.CreateReconciliation(familyID, &goserver.ReconciliationNoId{
 				AccountId:         accountID,
 				CurrencyId:        b.CurrencyId,
 				ReconciledBalance: appBalance,

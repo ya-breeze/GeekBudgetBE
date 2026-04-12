@@ -38,7 +38,7 @@ var _ = Describe("BankImporters API", func() {
 		mockDB   *mocks.MockStorage
 		sut      *BankImportersAPIServiceImpl
 		logger   = test.CreateTestLogger()
-		userID   = "user1"
+		userID   = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	)
 
 	BeforeEach(func() {
@@ -84,7 +84,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{runtimeMatcher}, nil)
 
 			// Expect batch transaction creation with auto-converted fields
-			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
 				Expect(transactions).To(HaveLen(1))
 				t := transactions[0].(*goserver.TransactionNoId)
 				Expect(t.Description).To(Equal("Converted Desc"))
@@ -136,7 +136,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetMatchersRuntime(userID).Return([]database.MatcherRuntime{runtimeMatcher}, nil)
 
 			// Expect normal batch transaction creation without auto-conversion
-			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
 				Expect(transactions).To(HaveLen(1))
 				t := transactions[0].(*goserver.TransactionNoId)
 				Expect(t.Description).To(Equal("Test Transaction")) // Unchanged
@@ -189,7 +189,7 @@ var _ = Describe("BankImporters API", func() {
 			}, nil)
 
 			// Expect NORMAL batch transaction creation (not auto-converted) because of conflict
-			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
 				Expect(transactions).To(HaveLen(1))
 				t := transactions[0].(*goserver.TransactionNoId)
 				Expect(t.IsAuto).To(BeFalse())
@@ -265,7 +265,7 @@ var _ = Describe("BankImporters API", func() {
 			// DuplicateDB and Batch2 should be skipped
 
 			// We can capture the arguments to verify WHICH ones are saved
-			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid string, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
+			mockDB.EXPECT().CreateTransactionsBatch(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, transactions []goserver.TransactionNoIdInterface) ([]goserver.Transaction, error) {
 				// Should save exactly 2 transactions (txNew and txBatch1)
 				Expect(transactions).To(HaveLen(2))
 				for _, tx := range transactions {
@@ -279,7 +279,7 @@ var _ = Describe("BankImporters API", func() {
 
 			// Mock updateLastImportFields
 			mockDB.EXPECT().GetBankImporter(userID, "imp-dedup").Return(goserver.BankImporter{LastImports: []goserver.ImportResult{}}, nil).AnyTimes()
-			mockDB.EXPECT().UpdateBankImporter(userID, "imp-dedup", gomock.Any()).DoAndReturn(func(uid, id string, bi goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+			mockDB.EXPECT().UpdateBankImporter(userID, "imp-dedup", gomock.Any()).DoAndReturn(func(uid uuid.UUID, id string, bi goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
 				// Verify counts in description?
 				// The implementation calls updateLastImportFields with totalTransactionsCnt=4, newTransactionsCnt=2
 				// We can just return success
@@ -340,7 +340,7 @@ var _ = Describe("BankImporters API", func() {
 			}
 
 			// Expect UpdateTransactionInternal for txMissing with Suspicious=true (internal system operation, no user notifications)
-			mockDB.EXPECT().UpdateTransactionInternal(userID, txMissing.Id, gomock.Any()).DoAndReturn(func(uid, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
+			mockDB.EXPECT().UpdateTransactionInternal(userID, txMissing.Id, gomock.Any()).DoAndReturn(func(uid uuid.UUID, id string, t goserver.TransactionNoIdInterface) (goserver.Transaction, error) {
 				Expect(t.GetSuspiciousReasons()).To(Equal([]string{"Not present in importer transactions"}))
 				return goserver.Transaction{}, nil
 			})
@@ -349,7 +349,7 @@ var _ = Describe("BankImporters API", func() {
 			// (Mock controller ensures unexpected calls fail)
 
 			// Expect notification for suspicious transactions
-			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Title).To(Equal("Suspicious Transactions Detected"))
 				Expect(n.Type).To(Equal(string(models.NotificationTypeInfo)))
 				return goserver.Notification{}, nil
@@ -370,7 +370,7 @@ var _ = Describe("BankImporters API", func() {
 
 	Describe("FetchBankImporter", func() {
 		It("should reset FetchAll and create notification on failure when FetchAll is true", func() {
-			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.FamilyIDKey, userID)
 			importerID := "imp-fail-all"
 			bi := goserver.BankImporter{
 				Id:       importerID,
@@ -383,7 +383,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil)
 
 			// Expect FetchAll to be reset
-			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
 				Expect(data.GetFetchAll()).To(BeFalse())
 				return goserver.BankImporter{}, nil
 			})
@@ -412,7 +412,7 @@ var _ = Describe("BankImporters API", func() {
 			// Since we can't easily call Fetch with private isInteractive from public API, we call Fetch directly or mock internal logic?
 			// But Fetch is public on struct but not interface? No, Fetch is public helper on implementation.
 
-			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.FamilyIDKey, userID)
 			importerID := "imp-fail-stopped"
 			bi := goserver.BankImporter{
 				Id:        importerID,
@@ -426,7 +426,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetCurrencies(userID).Return([]goserver.Currency{}, nil)
 
 			// Expect IsStopped to be set to true
-			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
 				Expect(data.GetIsStopped()).To(BeTrue())
 				return goserver.BankImporter{}, nil
 			})
@@ -434,7 +434,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).Return(goserver.BankImporter{}, nil).After(updateCall1)
 
 			// Expect notification for stopped importer
-			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid string, n *goserver.Notification) (goserver.Notification, error) {
+			mockDB.EXPECT().CreateNotification(userID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, n *goserver.Notification) (goserver.Notification, error) {
 				Expect(n.Title).To(Equal("Bank Import Stopped"))
 				return goserver.Notification{}, nil
 			})
@@ -454,7 +454,7 @@ var _ = Describe("BankImporters API", func() {
 		})
 
 		It("should skip fetch if IsStopped is true and not interactive", func() {
-			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.FamilyIDKey, userID)
 			importerID := "imp-skipped"
 			bi := goserver.BankImporter{
 				Id:        importerID,
@@ -473,7 +473,7 @@ var _ = Describe("BankImporters API", func() {
 		})
 
 		It("should reset IsStopped on successful fetch", func() {
-			ctx := context.WithValue(context.Background(), constants.UserIDKey, userID)
+			ctx := context.WithValue(context.Background(), constants.FamilyIDKey, userID)
 			importerID := "imp-reset"
 			bi := goserver.BankImporter{
 				Id:        importerID,
@@ -501,7 +501,7 @@ var _ = Describe("BankImporters API", func() {
 			}
 
 			// Expect IsStopped to be reset to false
-			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
+			updateCall1 := mockDB.EXPECT().UpdateBankImporter(userID, importerID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, id string, data goserver.BankImporterNoIdInterface) (goserver.BankImporter, error) {
 				Expect(data.GetIsStopped()).To(BeFalse())
 				return goserver.BankImporter{}, nil
 			})
@@ -635,7 +635,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil).AnyTimes()
 
 			// EXPECT: Entire balance object replaced (OpeningBalance updated to 2000)
-			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
+			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
 				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(decimal.NewFromInt(2000)))
 				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(decimal.NewFromInt(2500)))
 				return goserver.Account{}, nil
@@ -684,7 +684,7 @@ var _ = Describe("BankImporters API", func() {
 			mockDB.EXPECT().GetAccount(userID, accountID).Return(existingAccount, nil).AnyTimes()
 
 			// EXPECT: OpeningBalance preserved at 1000, but ClosingBalance updated to 2500
-			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
+			mockDB.EXPECT().UpdateAccount(userID, accountID, gomock.Any()).DoAndReturn(func(uid uuid.UUID, aid string, acc *goserver.AccountNoId) (goserver.Account, error) {
 				Expect(acc.BankInfo.Balances[0].OpeningBalance).To(Equal(decimal.NewFromInt(1000))) // Preserved
 				Expect(acc.BankInfo.Balances[0].ClosingBalance).To(Equal(decimal.NewFromInt(2500))) // Updated
 				return goserver.Account{}, nil
@@ -727,7 +727,7 @@ var _ = Describe("BankImporters API", func() {
 			// The handler checks common.GetForcedImportChannel(ctx). If it's nil, it skips sending.
 			// Test context setup in BeforeEach doesn't set it, so safe.
 
-			resp, err := sut.UpdateBankImporter(context.WithValue(context.Background(), constants.UserIDKey, userID), importerID, input)
+			resp, err := sut.UpdateBankImporter(context.WithValue(context.Background(), constants.FamilyIDKey, userID), importerID, input)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Code).To(Equal(http.StatusOK))
 			Expect(resp.Body.(goserver.BankImporter).Name).To(Equal(input.Name))

@@ -23,24 +23,24 @@ func NewReconciliationAPIServiceImpl(logger *slog.Logger, db database.Storage) *
 
 // GetReconciliationStatus returns reconciliation status for all asset accounts
 func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Context) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts")
 		return goserver.Response(500, nil), nil
 	}
 
-	bankImporters, err := s.db.GetBankImporters(userID)
+	bankImporters, err := s.db.GetBankImporters(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get bank importers")
 		return goserver.Response(500, nil), nil
 	}
 
-	currencies, err := s.db.GetCurrencies(userID)
+	currencies, err := s.db.GetCurrencies(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get currencies")
 		return goserver.Response(500, nil), nil
@@ -57,7 +57,7 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 		accountsWithImporter[bi.AccountId] = true
 	}
 
-	bulkData, err := s.db.GetBulkReconciliationData(userID)
+	bulkData, err := s.db.GetBulkReconciliationData(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get bulk reconciliation data")
 		return goserver.Response(500, nil), nil
@@ -128,7 +128,7 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationStatus(ctx context.Conte
 func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 	ctx context.Context, id string, body goserver.ReconcileAccountRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -137,7 +137,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 	// Use GetBankImporters (same as GetReconciliationStatus) rather than inspecting
 	// BankInfo.Balances — an importer that has never run would have no Balances entries
 	// but is still a configured importer and should enforce the tolerance check.
-	importers, err := s.db.GetBankImporters(userID)
+	importers, err := s.db.GetBankImporters(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get bank importers")
 		return goserver.Response(500, nil), nil
@@ -153,7 +153,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 	// Resolve balance: if frontend sends 0, use the current computed account balance.
 	balance := body.Balance
 	if balance.IsZero() {
-		balance, err = s.db.GetAccountBalance(userID, id, body.CurrencyId)
+		balance, err = s.db.GetAccountBalance(familyID, id, body.CurrencyId)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to get account balance")
 			return goserver.Response(500, nil), nil
@@ -165,7 +165,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 
 	if hasImporter {
 		// Importer path: derive expected balance from last import data and enforce tolerance.
-		acc, accErr := s.db.GetAccount(userID, id)
+		acc, accErr := s.db.GetAccount(familyID, id)
 		if accErr != nil {
 			return goserver.Response(404, nil), nil
 		}
@@ -186,7 +186,7 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 		expectedBalance = balance
 	}
 
-	rec, err := s.db.CreateReconciliation(userID, &goserver.ReconciliationNoId{
+	rec, err := s.db.CreateReconciliation(familyID, &goserver.ReconciliationNoId{
 		AccountId:         id,
 		CurrencyId:        body.CurrencyId,
 		ReconciledBalance: balance,
@@ -205,13 +205,13 @@ func (s *ReconciliationAPIServiceImpl) ReconcileAccount(
 func (s *ReconciliationAPIServiceImpl) GetTransactionsSinceReconciliation(
 	ctx context.Context, id string, currencyId string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
 	// Get last reconciliation from new entity
-	lastRec, err := s.db.GetLatestReconciliation(userID, id, currencyId)
+	lastRec, err := s.db.GetLatestReconciliation(familyID, id, currencyId)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get reconciliation")
 		return goserver.Response(500, nil), nil
@@ -223,7 +223,7 @@ func (s *ReconciliationAPIServiceImpl) GetTransactionsSinceReconciliation(
 	}
 
 	// Get all transactions from that date
-	allTransactions, err := s.db.GetTransactions(userID, dateFrom, time.Time{}, false)
+	allTransactions, err := s.db.GetTransactions(familyID, dateFrom, time.Time{}, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return goserver.Response(500, nil), nil
@@ -247,13 +247,13 @@ func (s *ReconciliationAPIServiceImpl) GetTransactionsSinceReconciliation(
 func (s *ReconciliationAPIServiceImpl) EnableAccountReconciliation(
 	ctx context.Context, id string, body goserver.EnableReconciliationRequest,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
 	// Create initial reconciliation record
-	rec, err := s.db.CreateReconciliation(userID, &goserver.ReconciliationNoId{
+	rec, err := s.db.CreateReconciliation(familyID, &goserver.ReconciliationNoId{
 		AccountId:         id,
 		CurrencyId:        body.CurrencyId,
 		ReconciledBalance: body.InitialBalance,
@@ -270,12 +270,12 @@ func (s *ReconciliationAPIServiceImpl) EnableAccountReconciliation(
 
 // GetReconciliationHistory returns all reconciliation records for an account+currency pair
 func (s *ReconciliationAPIServiceImpl) GetReconciliationHistory(ctx context.Context, id string, currencyId string) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	recs, err := s.db.GetReconciliationsForAccountAndCurrency(userID, id, currencyId)
+	recs, err := s.db.GetReconciliationsForAccountAndCurrency(familyID, id, currencyId)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get reconciliation history")
 		return goserver.Response(500, nil), nil
@@ -286,13 +286,13 @@ func (s *ReconciliationAPIServiceImpl) GetReconciliationHistory(ctx context.Cont
 
 // AnalyzeDisbalance find transactions that might explain the disbalance
 func (s *ReconciliationAPIServiceImpl) AnalyzeDisbalance(ctx context.Context, id string, body goserver.AnalyzeDisbalanceRequest) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
 	// Fetch transactions since last reconciliation
-	lastRec, err := s.db.GetLatestReconciliation(userID, id, body.CurrencyId)
+	lastRec, err := s.db.GetLatestReconciliation(familyID, id, body.CurrencyId)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get reconciliation")
 		return goserver.Response(500, nil), nil
@@ -303,7 +303,7 @@ func (s *ReconciliationAPIServiceImpl) AnalyzeDisbalance(ctx context.Context, id
 		dateFrom = lastRec.ReconciledAt
 	}
 
-	allTransactions, err := s.db.GetTransactions(userID, dateFrom, time.Time{}, false)
+	allTransactions, err := s.db.GetTransactions(familyID, dateFrom, time.Time{}, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return goserver.Response(500, nil), nil

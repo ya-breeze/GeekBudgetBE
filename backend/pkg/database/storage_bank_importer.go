@@ -11,8 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *storage) GetBankImporters(userID string) ([]goserver.BankImporter, error) {
-	result, err := s.db.Model(&models.BankImporter{}).Where("user_id = ?", userID).Rows()
+func (s *storage) GetBankImporters(familyID uuid.UUID) ([]goserver.BankImporter, error) {
+	result, err := s.db.Model(&models.BankImporter{}).Where("family_id = ?", familyID).Rows()
 	if err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
@@ -31,15 +31,15 @@ func (s *storage) GetBankImporters(userID string) ([]goserver.BankImporter, erro
 	return importers, nil
 }
 
-func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankImporterNoId,
+func (s *storage) CreateBankImporter(familyID uuid.UUID, bankImporter *goserver.BankImporterNoId,
 ) (goserver.BankImporter, error) {
-	data := models.BankImporterToDB(bankImporter, userID)
+	data := models.BankImporterToDB(bankImporter, familyID)
 	data.ID = uuid.New()
 	if err := s.db.Create(data).Error; err != nil {
 		return goserver.BankImporter{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "BankImporter", data.ID.String(), "CREATED", nil, data); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "BankImporter", data.ID.String(), "CREATED", nil, data); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
@@ -48,33 +48,33 @@ func (s *storage) CreateBankImporter(userID string, bankImporter *goserver.BankI
 	return data.FromDB(), nil
 }
 
-func (s *storage) UpdateBankImporter(userID string, id string, bankImporter goserver.BankImporterNoIdInterface,
+func (s *storage) UpdateBankImporter(familyID uuid.UUID, id string, bankImporter goserver.BankImporterNoIdInterface,
 ) (goserver.BankImporter, error) {
-	return performUpdate[models.BankImporter, goserver.BankImporterNoIdInterface, goserver.BankImporter](s, userID, "BankImporter", id, bankImporter,
+	return performUpdate[models.BankImporter, goserver.BankImporterNoIdInterface, goserver.BankImporter](s, familyID, "BankImporter", id, bankImporter,
 		models.BankImporterToDB,
 		func(m *models.BankImporter) goserver.BankImporter { return m.FromDB() },
 		func(m *models.BankImporter, id uuid.UUID) { m.ID = id },
 	)
 }
 
-func (s *storage) DeleteBankImporter(userID string, id string) error {
+func (s *storage) DeleteBankImporter(familyID uuid.UUID, id string) error {
 	var data models.BankImporter
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
-		if err := s.recordAuditLog(s.db, userID, "BankImporter", id, "DELETED", &data, nil); err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&data).Error; err == nil {
+		if err := s.recordAuditLog(s.db, familyID, "BankImporter", id, "DELETED", &data, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 	}
 
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.BankImporter{}).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).Delete(&models.BankImporter{}).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
 	}
 
 	return nil
 }
 
-func (s *storage) GetBankImporter(userID string, id string) (goserver.BankImporter, error) {
+func (s *storage) GetBankImporter(familyID uuid.UUID, id string) (goserver.BankImporter, error) {
 	var data models.BankImporter
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return goserver.BankImporter{}, ErrNotFound
 		}
@@ -100,7 +100,7 @@ func (s *storage) GetAllBankImporters() ([]ImportInfo, error) {
 		}
 
 		importers = append(importers, ImportInfo{
-			UserID:           imp.UserID,
+			FamilyID:         imp.FamilyID,
 			BankImporterID:   imp.ID.String(),
 			BankImporterType: imp.Type,
 			FetchAll:         imp.FetchAll,
@@ -110,9 +110,9 @@ func (s *storage) GetAllBankImporters() ([]ImportInfo, error) {
 	return importers, nil
 }
 
-func (s *storage) GetBankImporterFiles(userID string) ([]goserver.BankImporterFile, error) {
+func (s *storage) GetBankImporterFiles(familyID uuid.UUID) ([]goserver.BankImporterFile, error) {
 	var files []models.BankImporterFile
-	if err := s.db.Where("user_id = ?", userID).Order("upload_date DESC").Find(&files).Error; err != nil {
+	if err := s.db.Where("family_id = ?", familyID).Order("upload_date DESC").Find(&files).Error; err != nil {
 		return nil, fmt.Errorf(StorageError, err)
 	}
 
@@ -124,9 +124,9 @@ func (s *storage) GetBankImporterFiles(userID string) ([]goserver.BankImporterFi
 	return result, nil
 }
 
-func (s *storage) GetBankImporterFile(userID string, id string) (models.BankImporterFile, error) {
+func (s *storage) GetBankImporterFile(familyID uuid.UUID, id string) (models.BankImporterFile, error) {
 	var file models.BankImporterFile
-	if err := s.db.Where("user_id = ? AND id = ?", userID, id).First(&file).Error; err != nil {
+	if err := s.db.Where("family_id = ? AND id = ?", familyID, id).First(&file).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return models.BankImporterFile{}, ErrNotFound
 		}
@@ -136,8 +136,8 @@ func (s *storage) GetBankImporterFile(userID string, id string) (models.BankImpo
 	return file, nil
 }
 
-func (s *storage) CreateBankImporterFile(userID string, file *models.BankImporterFile) (goserver.BankImporterFile, error) {
-	file.UserID = userID
+func (s *storage) CreateBankImporterFile(familyID uuid.UUID, file *models.BankImporterFile) (goserver.BankImporterFile, error) {
+	file.FamilyID = familyID
 	file.ID = uuid.New()
 	if file.UploadDate.IsZero() {
 		file.UploadDate = time.Now()
@@ -147,22 +147,22 @@ func (s *storage) CreateBankImporterFile(userID string, file *models.BankImporte
 		return goserver.BankImporterFile{}, fmt.Errorf(StorageError, err)
 	}
 
-	if err := s.recordAuditLog(s.db, userID, "BankImporterFile", file.ID.String(), "CREATED", nil, file); err != nil {
+	if err := s.recordAuditLog(s.db, familyID, "BankImporterFile", file.ID.String(), "CREATED", nil, file); err != nil {
 		s.log.Error("Failed to record audit log", "error", err)
 	}
 
 	return file.FromDB(), nil
 }
 
-func (s *storage) DeleteBankImporterFile(userID string, id string) error {
+func (s *storage) DeleteBankImporterFile(familyID uuid.UUID, id string) error {
 	var data models.BankImporterFile
-	if err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&data).Error; err == nil {
-		if err := s.recordAuditLog(s.db, userID, "BankImporterFile", id, "DELETED", &data, nil); err != nil {
+	if err := s.db.Where("id = ? AND family_id = ?", id, familyID).First(&data).Error; err == nil {
+		if err := s.recordAuditLog(s.db, familyID, "BankImporterFile", id, "DELETED", &data, nil); err != nil {
 			s.log.Error("Failed to record audit log", "error", err)
 		}
 	}
 
-	if err := s.db.Where("user_id = ? AND id = ?", userID, id).Delete(&models.BankImporterFile{}).Error; err != nil {
+	if err := s.db.Where("family_id = ? AND id = ?", familyID, id).Delete(&models.BankImporterFile{}).Error; err != nil {
 		return fmt.Errorf(StorageError, err)
 	}
 	return nil

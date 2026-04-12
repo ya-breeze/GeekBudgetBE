@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/config"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database/models"
@@ -21,7 +22,7 @@ func TestReconciliationNotificationBehavior(t *testing.T) {
 	}
 	defer st.Close()
 
-	userID := "user-notify-1"
+	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	currencyID := "CZK"
 
 	// Create Currency
@@ -57,7 +58,7 @@ func TestReconciliationNotificationBehavior(t *testing.T) {
 	checkpoint := time.Now().Add(-24 * time.Hour)
 
 	// Clear initial notifications if any
-	_ = st.db.Where("user_id = ?", userID).Delete(&models.Notification{})
+	_ = st.db.Where("family_id = ?", userID).Delete(&models.Notification{})
 
 	t.Run("Create Transaction (Past) - No Notification", func(t *testing.T) {
 		createRec(checkpoint)
@@ -89,7 +90,7 @@ func TestReconciliationNotificationBehavior(t *testing.T) {
 
 		createRec(checkpoint)
 		// Clear notifications from initial transaction creation if any (should be 0 anyway)
-		_ = st.db.Where("user_id = ?", userID).Delete(&models.Notification{})
+		_ = st.db.Where("family_id = ?", userID).Delete(&models.Notification{})
 
 		// Now update it (user style which preserves protected fields)
 
@@ -108,7 +109,7 @@ func TestReconciliationNotificationBehavior(t *testing.T) {
 			t.Error("expected notification for user update, got none")
 		}
 		// Clean up for next subtest
-		_ = st.db.Where("user_id = ?", userID).Delete(&models.Notification{})
+		_ = st.db.Where("family_id = ?", userID).Delete(&models.Notification{})
 	})
 
 	t.Run("Update Transaction (Internal) - No Notification", func(t *testing.T) {
@@ -122,7 +123,7 @@ func TestReconciliationNotificationBehavior(t *testing.T) {
 		}
 
 		createRec(checkpoint)
-		_ = st.db.Where("user_id = ?", userID).Delete(&models.Notification{})
+		_ = st.db.Where("family_id = ?", userID).Delete(&models.Notification{})
 
 		// Update internal style
 
@@ -153,7 +154,7 @@ func TestReconciliationNotificationBehavior(t *testing.T) {
 		}
 
 		createRec(checkpoint)
-		_ = st.db.Where("user_id = ?", userID).Delete(&models.Notification{})
+		_ = st.db.Where("family_id = ?", userID).Delete(&models.Notification{})
 
 		err = st.DeleteTransaction(userID, tr.Id)
 		if err != nil {

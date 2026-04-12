@@ -32,13 +32,13 @@ func NewAccountsAPIService(logger *slog.Logger, db database.Storage, cfg *config
 func (s *AccountsAPIServicerImpl) CreateAccount(
 	ctx context.Context, acc goserver.AccountNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	account, err := s.db.CreateAccount(userID, &acc)
+	account, err := s.db.CreateAccount(familyID, &acc)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to create account")
 		return goserver.Response(500, nil), nil
@@ -50,13 +50,13 @@ func (s *AccountsAPIServicerImpl) CreateAccount(
 func (s *AccountsAPIServicerImpl) GetAccounts(
 	ctx context.Context,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts")
 		return goserver.Response(500, nil), nil
@@ -68,13 +68,13 @@ func (s *AccountsAPIServicerImpl) GetAccounts(
 func (s *AccountsAPIServicerImpl) UpdateAccount(
 	ctx context.Context, accountID string, acc goserver.AccountNoId,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	account, err := s.db.UpdateAccount(userID, accountID, &acc)
+	account, err := s.db.UpdateAccount(familyID, accountID, &acc)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to update account")
 		return goserver.Response(500, nil), nil
@@ -86,14 +86,14 @@ func (s *AccountsAPIServicerImpl) UpdateAccount(
 func (s *AccountsAPIServicerImpl) DeleteAccount(
 	ctx context.Context, accountID string, replaceWithAccountId string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
 	// Delete image if exists
-	account, err := s.db.GetAccount(userID, accountID)
+	account, err := s.db.GetAccount(familyID, accountID)
 	if err == nil && account.Image != "" {
 		if err := s.db.DeleteImage(account.Image); err != nil {
 			s.logger.With("error", err, "imageID", account.Image).Warn("Failed to delete account image")
@@ -105,13 +105,13 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 			s.logger.With("error", "replaceWithAccountId equals accountID").Warn("Cannot replace account with itself")
 			return goserver.Response(400, nil), nil
 		}
-		if _, err := s.db.GetAccount(userID, replaceWithAccountId); err != nil {
+		if _, err := s.db.GetAccount(familyID, replaceWithAccountId); err != nil {
 			s.logger.With("error", err, "replaceWithAccountId", replaceWithAccountId).Warn("Replacement account not found")
 			return goserver.Response(400, nil), nil
 		}
 	}
 
-	if err := s.db.DeleteAccount(userID, accountID, &replaceWithAccountId); err != nil {
+	if err := s.db.DeleteAccount(familyID, accountID, &replaceWithAccountId); err != nil {
 		if errors.Is(err, database.ErrAccountInUse) {
 			s.logger.With("error", err).Warn("Cannot delete account in use without replacement")
 			return goserver.Response(400, "account is in use"), nil
@@ -126,13 +126,13 @@ func (s *AccountsAPIServicerImpl) DeleteAccount(
 func (s *AccountsAPIServicerImpl) GetAccountHistory(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	history, err := s.db.GetAccountHistory(userID, accountID)
+	history, err := s.db.GetAccountHistory(familyID, accountID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get account history")
 		return goserver.Response(500, nil), nil
@@ -144,13 +144,13 @@ func (s *AccountsAPIServicerImpl) GetAccountHistory(
 func (s *AccountsAPIServicerImpl) GetAccount(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	account, err := s.db.GetAccount(userID, accountID)
+	account, err := s.db.GetAccount(familyID, accountID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get account")
 		return goserver.Response(500, nil), nil
@@ -162,14 +162,14 @@ func (s *AccountsAPIServicerImpl) GetAccount(
 func (s *AccountsAPIServicerImpl) UploadAccountImage(
 	ctx context.Context, accountID string, file *os.File,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
 	// Validation: Check if account exists and belongs to user
-	account, err := s.db.GetAccount(userID, accountID)
+	account, err := s.db.GetAccount(familyID, accountID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get account")
 		return goserver.Response(404, nil), nil
@@ -214,7 +214,7 @@ func (s *AccountsAPIServicerImpl) UploadAccountImage(
 	// Update DB
 	accNoID := models.AccountWithoutID(&account)
 	accNoID.Image = image.ID.String()
-	updatedAccount, err := s.db.UpdateAccount(userID, accountID, accNoID)
+	updatedAccount, err := s.db.UpdateAccount(familyID, accountID, accNoID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to update account with image")
 		return goserver.Response(500, nil), nil
@@ -226,13 +226,13 @@ func (s *AccountsAPIServicerImpl) UploadAccountImage(
 func (s *AccountsAPIServicerImpl) DeleteAccountImage(
 	ctx context.Context, accountID string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
-		s.logger.Error("UserID not found in context")
+		s.logger.Error("FamilyID not found in context")
 		return goserver.Response(500, nil), nil
 	}
 
-	account, err := s.db.GetAccount(userID, accountID)
+	account, err := s.db.GetAccount(familyID, accountID)
 	if err != nil {
 		return goserver.Response(404, nil), nil
 	}
@@ -245,7 +245,7 @@ func (s *AccountsAPIServicerImpl) DeleteAccountImage(
 
 		accNoID := models.AccountWithoutID(&account)
 		accNoID.Image = ""
-		updatedAccount, err := s.db.UpdateAccount(userID, accountID, accNoID)
+		updatedAccount, err := s.db.UpdateAccount(familyID, accountID, accNoID)
 		if err != nil {
 			s.logger.With("error", err).Error("Failed to update account (remove image)")
 			return goserver.Response(500, nil), nil

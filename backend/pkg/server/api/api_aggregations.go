@@ -6,6 +6,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/ya-breeze/geekbudgetbe/pkg/constants"
 	"github.com/ya-breeze/geekbudgetbe/pkg/database"
@@ -27,12 +28,12 @@ func NewAggregationsAPIServiceImpl(logger *slog.Logger, db database.Storage) *Ag
 }
 
 func (s *AggregationsAPIServiceImpl) GetIncomes(ctx context.Context, from time.Time, to time.Time, outputCurrencyID string, includeHidden bool) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	aggregation, err := s.GetAggregatedIncomes(ctx, userID, from, to, outputCurrencyID, includeHidden)
+	aggregation, err := s.GetAggregatedIncomes(ctx, familyID, from, to, outputCurrencyID, includeHidden)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -80,7 +81,7 @@ func (s *AggregationsAPIServiceImpl) calculatePostAggregationData(res *goserver.
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
+	ctx context.Context, familyID uuid.UUID, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
@@ -89,19 +90,19 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
 		dateTo = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
 	}
 
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts")
 		return nil, nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
+	transactions, err := s.db.GetTransactions(familyID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, nil
 	}
 
-	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+	currencyMap := buildCurrencyMap(s.logger, s.db, familyID)
 	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
 
 	res := Aggregate(
@@ -123,7 +124,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedIncomes(
 func (s *AggregationsAPIServiceImpl) GetExpenses(
 	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, granularity string, includeHidden bool, groupBy string, tags []string, accounts []string,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
@@ -133,7 +134,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 		aggGranularity = utils.GranularityYear
 	}
 
-	aggregation, err := s.GetAggregatedExpenses(ctx, userID, dateFrom, dateTo, outputCurrencyID, aggGranularity, includeHidden, groupBy, tags, accounts)
+	aggregation, err := s.GetAggregatedExpenses(ctx, familyID, dateFrom, dateTo, outputCurrencyID, aggGranularity, includeHidden, groupBy, tags, accounts)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -142,7 +143,7 @@ func (s *AggregationsAPIServiceImpl) GetExpenses(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, granularity utils.Granularity, includeHidden bool, groupBy string, tagsFilter []string, accountsFilter []string,
+	ctx context.Context, familyID uuid.UUID, dateFrom, dateTo time.Time, outputCurrencyID string, granularity utils.Granularity, includeHidden bool, groupBy string, tagsFilter []string, accountsFilter []string,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		dateFrom = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, false)
@@ -151,7 +152,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		dateTo = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
 	}
 
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts")
 		return nil, nil
@@ -167,14 +168,14 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 		accounts = filteredAccounts
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
+	transactions, err := s.db.GetTransactions(familyID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, nil
 	}
 
 	// Prepare map currencyID->CurrencyName for all currencies of the current user.
-	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+	currencyMap := buildCurrencyMap(s.logger, s.db, familyID)
 
 	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
 	res := Aggregate(
@@ -196,12 +197,12 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedExpenses(
 func (s *AggregationsAPIServiceImpl) GetBalances(
 	ctx context.Context, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
 ) (goserver.ImplResponse, error) {
-	userID, ok := ctx.Value(constants.UserIDKey).(string)
+	familyID, ok := constants.GetFamilyID(ctx)
 	if !ok {
 		return goserver.Response(500, nil), nil
 	}
 
-	aggregation, err := s.GetAggregatedBalances(ctx, userID, dateFrom, dateTo, outputCurrencyID, includeHidden)
+	aggregation, err := s.GetAggregatedBalances(ctx, familyID, dateFrom, dateTo, outputCurrencyID, includeHidden)
 	if err != nil {
 		return goserver.Response(500, nil), nil
 	}
@@ -210,7 +211,7 @@ func (s *AggregationsAPIServiceImpl) GetBalances(
 }
 
 func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
-	ctx context.Context, userID string, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
+	ctx context.Context, familyID uuid.UUID, dateFrom, dateTo time.Time, outputCurrencyID string, includeHidden bool,
 ) (*goserver.Aggregation, error) {
 	if dateFrom.IsZero() {
 		// Use a very old date to capture all history
@@ -220,19 +221,19 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 		dateTo = utils.RoundToGranularity(time.Now(), utils.GranularityMonth, true)
 	}
 
-	accounts, err := s.db.GetAccounts(userID)
+	accounts, err := s.db.GetAccounts(familyID)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get accounts")
 		return nil, nil
 	}
 
-	transactions, err := s.db.GetTransactions(userID, dateFrom, dateTo, false)
+	transactions, err := s.db.GetTransactions(familyID, dateFrom, dateTo, false)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to get transactions")
 		return nil, nil
 	}
 
-	currencyMap := buildCurrencyMap(s.logger, s.db, userID)
+	currencyMap := buildCurrencyMap(s.logger, s.db, familyID)
 	currenciesRatesFetcher := common.NewCurrenciesRatesFetcher(s.logger, s.db)
 
 	filter := func(a goserver.Account) bool {
@@ -277,7 +278,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 
 	// Calculate initial balances (before dateFrom) to make the graph cumulative
 	initialBalances, err := s.calculateInitialBalances(
-		ctx, userID, accounts, dateFrom, outputCurrencyID, currencyMap, currenciesRatesFetcher, filter)
+		ctx, familyID, accounts, dateFrom, outputCurrencyID, currencyMap, currenciesRatesFetcher, filter)
 	if err != nil {
 		s.logger.With("error", err).Error("Failed to calculate initial balances")
 		return nil, nil
@@ -346,7 +347,7 @@ func (s *AggregationsAPIServiceImpl) GetAggregatedBalances(
 }
 
 func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
-	ctx context.Context, userID string, accounts []goserver.Account, dateFrom time.Time,
+	ctx context.Context, familyID uuid.UUID, accounts []goserver.Account, dateFrom time.Time,
 	outputCurrencyID string, currencyMap map[string]string,
 	currenciesRatesFetcher *common.CurrenciesRatesFetcher,
 	filter AccountFilter,
@@ -393,7 +394,7 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 	// 2. Sum up Past Transactions (if any)
 	beginningOfTime := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 	if dateFrom.After(beginningOfTime) {
-		pastTransactions, err := s.db.GetTransactions(userID, beginningOfTime, dateFrom, false)
+		pastTransactions, err := s.db.GetTransactions(familyID, beginningOfTime, dateFrom, false)
 		if err != nil {
 			return nil, err
 		}
@@ -430,10 +431,10 @@ func (s *AggregationsAPIServiceImpl) calculateInitialBalances(
 	return balances, nil
 }
 
-func buildCurrencyMap(logger *slog.Logger, storage database.Storage, userID string) map[string]string {
-	currencies, err := storage.GetCurrencies(userID)
+func buildCurrencyMap(logger *slog.Logger, storage database.Storage, familyID uuid.UUID) map[string]string {
+	currencies, err := storage.GetCurrencies(familyID)
 	if err != nil {
-		logger.With("error", err, "userID", userID).Error("Failed to get currencies for user")
+		logger.With("error", err, "familyID", familyID).Error("Failed to get currencies for user")
 		return make(map[string]string)
 	}
 
@@ -442,7 +443,7 @@ func buildCurrencyMap(logger *slog.Logger, storage database.Storage, userID stri
 		currencyMap[currency.Id] = currency.Name
 	}
 
-	logger.Debug("Built currency map", "userID", userID, "currencyCount", len(currencyMap))
+	logger.Debug("Built currency map", "familyID", familyID, "currencyCount", len(currencyMap))
 	return currencyMap
 }
 
