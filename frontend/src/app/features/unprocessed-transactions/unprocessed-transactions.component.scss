@@ -19,7 +19,7 @@
     background: white;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow-x: auto;
     position: relative; // For loading overlay
     min-height: 200px;
 }
@@ -71,7 +71,7 @@
     .mat-column-description {
         overflow-wrap: break-word;
         word-break: break-word;
-        min-width: 200px;
+        min-width: 140px;
     }
 
     .skip-reason {

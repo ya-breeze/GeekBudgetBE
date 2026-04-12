@@ -2,6 +2,10 @@
     padding: 24px;
     height: 100%;
     overflow: auto;
+
+    @media (max-width: 767px) {
+        padding: 12px;
+    }
 }
 
 .page-title {
@@ -130,6 +134,11 @@
         border: 1px solid #e0e0e0;
         min-width: 240px;
 
+        @media (max-width: 767px) {
+            min-width: 0;
+            flex: 1 1 calc(50% - 16px);
+        }
+
         .total-content {
             display: flex;
             flex-direction: column;
@@ -206,6 +215,10 @@
     gap: 16px;
     margin-bottom: 24px;
     margin-top: 8px;
+
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+    }
 }
 
 .asset-card {
@@ -441,6 +454,10 @@
     .account-cell {
         background-color: white;
         min-width: 200px;
+
+        @media (max-width: 767px) {
+            min-width: 120px;
+        }
     }
 
     .account-info {

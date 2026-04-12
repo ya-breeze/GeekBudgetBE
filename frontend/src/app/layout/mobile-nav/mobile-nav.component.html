@@ -1,0 +1,23 @@
+<nav class="mobile-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+    </a>
+    <a routerLink="/unprocessed" routerLinkActive="active" class="nav-item">
+        <mat-icon
+            [matBadge]="unprocessedCount().length"
+            [matBadgeHidden]="unprocessedCount().length === 0"
+            matBadgeSize="small"
+            matBadgeColor="warn"
+        >pending_actions</mat-icon>
+        <span>Unprocessed</span>
+    </a>
+    <a routerLink="/transactions" routerLinkActive="active" class="nav-item">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Transactions</span>
+    </a>
+    <a routerLink="/budget" routerLinkActive="active" class="nav-item">
+        <mat-icon>savings</mat-icon>
+        <span>Budget</span>
+    </a>
+</nav>
