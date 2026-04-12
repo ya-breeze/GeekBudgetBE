@@ -411,12 +411,17 @@
 .table-container {
     background: white;
     border-radius: 4px;
-    overflow-x: auto;
-    overflow-y: clip; // clip (not auto/hidden) so sticky thead works vs outer scroll container
+    overflow: auto;
     box-shadow:
         0 2px 1px -1px rgba(0, 0, 0, 0.2),
         0 1px 1px 0 rgba(0, 0, 0, 0.14),
         0 1px 3px 0 rgba(0, 0, 0, 0.12);
+
+    // On mobile: fixed height so the table scrolls within its own box,
+    // which lets position:sticky on th work correctly within this container.
+    @media (max-width: 767px) {
+        max-height: 60vh;
+    }
 }
 
 .expense-table {
