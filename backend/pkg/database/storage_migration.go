@@ -161,17 +161,34 @@ func runMigrationIfNeeded(log *slog.Logger, db *gorm.DB) error {
 	}
 	log.Info("Users migrated", "count", len(oldUsers))
 
+	// Get new table columns to filter out old columns that no longer exist.
+	newTableCols := make(map[string]map[string]bool)
+	for _, table := range userScopedTables {
+		cols, err := getTableColumns(sqlDB, table)
+		if err != nil {
+			return fmt.Errorf("get new columns for %s: %w", table, err)
+		}
+		set := make(map[string]bool, len(cols))
+		for _, c := range cols {
+			set[c] = true
+		}
+		newTableCols[table] = set
+	}
+
 	// Data tables: copy all rows, replacing user_id with mapped family_id.
+	// Only insert columns that exist in the new schema (drops obsolete old columns).
 	for _, table := range userScopedTables {
 		cols := tableColumns[table]
 		rows := tableData[table]
 
 		newCols := remapColumns(cols)
+		validNew := newTableCols[table]
 
 		inserted := 0
 		for _, row := range rows {
 			newRow := remapRow(cols, newCols, row, mapping)
-			if err := insertRow(db, table, newCols, newRow); err != nil {
+			filteredCols, filteredRow := filterColumns(newCols, newRow, validNew)
+			if err := insertRow(db, table, filteredCols, filteredRow); err != nil {
 				return fmt.Errorf("insert row in %s: %w", table, err)
 			}
 			inserted++
@@ -181,6 +198,37 @@ func runMigrationIfNeeded(log *slog.Logger, db *gorm.DB) error {
 
 	log.Info("Migration complete")
 	return nil
+}
+
+// getTableColumns returns the column names for a table using SQLite pragma.
+func getTableColumns(sqlDB *sql.DB, table string) ([]string, error) {
+	rows, err := sqlDB.Query(fmt.Sprintf("SELECT name FROM pragma_table_info('%s')", table)) //nolint:gosec
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var cols []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		cols = append(cols, name)
+	}
+	return cols, rows.Err()
+}
+
+// filterColumns returns only the columns (and their values) that are in validSet.
+func filterColumns(cols []string, vals []interface{}, validSet map[string]bool) ([]string, []interface{}) {
+	var filteredCols []string
+	var filteredVals []interface{}
+	for i, c := range cols {
+		if validSet[c] {
+			filteredCols = append(filteredCols, c)
+			filteredVals = append(filteredVals, vals[i])
+		}
+	}
+	return filteredCols, filteredVals
 }
 
 // readTableRows reads all rows from a table. Returns column names and row values.
