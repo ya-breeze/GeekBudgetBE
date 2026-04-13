@@ -20,9 +20,9 @@
         >3 Months</button>
         <button
             mat-flat-button
-            [class.active]="selectedPeriod() === 'this-year'"
-            (click)="onPeriodSelect('this-year')"
-        >This Year</button>
+            [class.active]="selectedPeriod() === 'last-12-months'"
+            (click)="onPeriodSelect('last-12-months')"
+        >Last 12 Months</button>
         <button
             mat-flat-button
             [class.active]="selectedPeriod() === 'custom'"

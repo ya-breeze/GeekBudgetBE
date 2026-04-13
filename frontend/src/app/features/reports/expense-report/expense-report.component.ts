@@ -50,7 +50,7 @@ interface CurrencyReport {
 
 type SortColumn = 'category' | 'amount';
 type SortDirection = 'asc' | 'desc';
-type Period = 'this-month' | 'last-month' | 'last-3-months' | 'this-year' | 'custom';
+type Period = 'this-month' | 'last-month' | 'last-3-months' | 'last-12-months' | 'custom';
 
 @Component({
     selector: 'app-expense-report',
@@ -303,9 +303,9 @@ export class ExpenseReportComponent implements OnInit {
                 start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
                 end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 break;
-            case 'this-year':
-                start = new Date(now.getFullYear(), 0, 1);
-                end = new Date(now.getFullYear(), 11, 31);
+            case 'last-12-months':
+                start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 break;
         }
 
