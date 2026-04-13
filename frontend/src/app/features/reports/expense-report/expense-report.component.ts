@@ -45,10 +45,12 @@ interface CurrencyReport {
     grandTotal: number;
     categoryChartData: ChartConfiguration['data'];
     monthlyChartData: ChartConfiguration['data'];
+    pieChartData: ChartConfiguration['data'];
 }
 
 type SortColumn = 'category' | 'amount';
 type SortDirection = 'asc' | 'desc';
+type Period = 'this-month' | 'last-month' | 'last-3-months' | 'this-year' | 'custom';
 
 @Component({
     selector: 'app-expense-report',
@@ -88,6 +90,7 @@ export class ExpenseReportComponent implements OnInit {
     protected readonly sortDirection = signal<SortDirection>('desc');
     protected readonly selectedOutputCurrencyId = signal<string | null>(null);
     protected readonly includeHidden = signal(false);
+    protected readonly selectedPeriod = signal<Period>('this-month');
 
     protected readonly currencyReports = computed<CurrencyReport[]>(() => {
         const data = this.expenseData();
@@ -154,11 +157,13 @@ export class ExpenseReportComponent implements OnInit {
             };
 
             const colors = [
-                'rgba(33, 150, 243, 0.6)',
-                'rgba(76, 175, 80, 0.6)',
-                'rgba(255, 152, 0, 0.6)',
-                'rgba(156, 39, 176, 0.6)',
-                'rgba(244, 67, 54, 0.6)',
+                'rgba(33, 150, 243, 0.8)',
+                'rgba(76, 175, 80, 0.8)',
+                'rgba(255, 152, 0, 0.8)',
+                'rgba(156, 39, 176, 0.8)',
+                'rgba(244, 67, 54, 0.8)',
+                'rgba(0, 188, 212, 0.8)',
+                'rgba(103, 58, 183, 0.8)',
             ];
 
             const topCategories = sortedSummaries.slice(0, 5);
@@ -169,11 +174,23 @@ export class ExpenseReportComponent implements OnInit {
                     data: data.intervals.map(
                         (interval) => category.monthlyAmounts.get(interval) || 0,
                     ),
-                    borderColor: colors[index % colors.length].replace('0.6', '1'),
+                    borderColor: colors[index % colors.length].replace('0.8', '1'),
                     backgroundColor: colors[index % colors.length],
                     fill: false,
                     tension: 0.1,
                 })),
+            };
+
+            const pieChartData: ChartConfiguration['data'] = {
+                labels: sortedSummaries.map((s) => s.categoryName),
+                datasets: [
+                    {
+                        data: sortedSummaries.map((s) => s.total),
+                        backgroundColor: sortedSummaries.map(
+                            (_, i) => colors[i % colors.length],
+                        ),
+                    },
+                ],
             };
 
             reports.push({
@@ -183,6 +200,7 @@ export class ExpenseReportComponent implements OnInit {
                 grandTotal,
                 categoryChartData,
                 monthlyChartData,
+                pieChartData,
             });
         });
 
@@ -219,6 +237,21 @@ export class ExpenseReportComponent implements OnInit {
         },
     };
 
+    protected readonly pieChartOptions: ChartConfiguration['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'right',
+            },
+            title: {
+                display: true,
+                text: 'Expenses by Category',
+            },
+        },
+    };
+
     constructor() {
         const now = new Date();
         const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1); // First day of month 12 months ago
@@ -233,19 +266,51 @@ export class ExpenseReportComponent implements OnInit {
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
 
-        // Load user data and set default currency
+        // Load user data, set default currency, then auto-load this month
         this.userService.loadUser().subscribe({
             next: (user) => {
                 if (user.favoriteCurrencyId && !this.selectedOutputCurrencyId()) {
                     this.selectedOutputCurrencyId.set(user.favoriteCurrencyId);
                 }
-                this.loadExpenseData();
+                this.onPeriodSelect('this-month');
             },
             error: () => {
-                // If user loading fails, still load expense data
-                this.loadExpenseData();
+                this.onPeriodSelect('this-month');
             },
         });
+    }
+
+    protected onPeriodSelect(period: Period): void {
+        this.selectedPeriod.set(period);
+        if (period === 'custom') {
+            return;
+        }
+
+        const now = new Date();
+        let start: Date;
+        let end: Date;
+
+        switch (period) {
+            case 'this-month':
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                break;
+            case 'last-month':
+                start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                end = new Date(now.getFullYear(), now.getMonth(), 0);
+                break;
+            case 'last-3-months':
+                start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+                end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                break;
+            case 'this-year':
+                start = new Date(now.getFullYear(), 0, 1);
+                end = new Date(now.getFullYear(), 11, 31);
+                break;
+        }
+
+        this.filterForm.patchValue({ startDate: start!, endDate: end! });
+        this.loadExpenseData();
     }
 
     protected onFilterSubmit(): void {
