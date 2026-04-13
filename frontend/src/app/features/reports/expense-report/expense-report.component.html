@@ -1,61 +1,101 @@
 <div class="expense-report-container">
     <h1>Expense Report</h1>
-    <p class="subtitle">Detailed expense breakdown by category and time period</p>
 
-    <!-- Filter Section -->
-    <mat-card class="filter-card">
-        <mat-card-content>
-            <form [formGroup]="filterForm" (ngSubmit)="onFilterSubmit()" class="filter-form">
-                <div class="filter-fields">
-                    <mat-form-field appearance="outline">
-                        <mat-label>Start Date</mat-label>
-                        <input
-                            matInput
-                            [matDatepicker]="startPicker"
-                            formControlName="startDate"
-                            required
-                        />
-                        <mat-datepicker-toggle
-                            matSuffix
-                            [for]="startPicker"
-                        ></mat-datepicker-toggle>
-                        <mat-datepicker #startPicker></mat-datepicker>
-                    </mat-form-field>
+    <!-- Period Selector -->
+    <div class="period-selector">
+        <button
+            mat-flat-button
+            [class.active]="selectedPeriod() === 'this-month'"
+            (click)="onPeriodSelect('this-month')"
+        >This Month</button>
+        <button
+            mat-flat-button
+            [class.active]="selectedPeriod() === 'last-month'"
+            (click)="onPeriodSelect('last-month')"
+        >Last Month</button>
+        <button
+            mat-flat-button
+            [class.active]="selectedPeriod() === 'last-3-months'"
+            (click)="onPeriodSelect('last-3-months')"
+        >3 Months</button>
+        <button
+            mat-flat-button
+            [class.active]="selectedPeriod() === 'last-12-months'"
+            (click)="onPeriodSelect('last-12-months')"
+        >Last 12 Months</button>
+        <button
+            mat-flat-button
+            [class.active]="selectedPeriod() === 'custom'"
+            (click)="onPeriodSelect('custom')"
+        >Custom</button>
+    </div>
 
-                    <mat-form-field appearance="outline">
-                        <mat-label>End Date</mat-label>
-                        <input
-                            matInput
-                            [matDatepicker]="endPicker"
-                            formControlName="endDate"
-                            required
-                        />
-                        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-                        <mat-datepicker #endPicker></mat-datepicker>
-                    </mat-form-field>
+    <!-- Custom Date Filter (shown only when Custom is selected) -->
+    @if (selectedPeriod() === 'custom') {
+        <mat-card class="filter-card">
+            <mat-card-content>
+                <form [formGroup]="filterForm" (ngSubmit)="onFilterSubmit()" class="filter-form">
+                    <div class="filter-fields">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Start Date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="startPicker"
+                                formControlName="startDate"
+                                required
+                            />
+                            <mat-datepicker-toggle
+                                matSuffix
+                                [for]="startPicker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #startPicker></mat-datepicker>
+                        </mat-form-field>
 
-                    <mat-slide-toggle
-                        [checked]="includeHidden()"
-                        (change)="onIncludeHiddenToggle()"
-                        color="primary"
-                        style="margin-right: 16px; align-self: center"
-                    >
-                        Include Hidden
-                    </mat-slide-toggle>
+                        <mat-form-field appearance="outline">
+                            <mat-label>End Date</mat-label>
+                            <input
+                                matInput
+                                [matDatepicker]="endPicker"
+                                formControlName="endDate"
+                                required
+                            />
+                            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                            <mat-datepicker #endPicker></mat-datepicker>
+                        </mat-form-field>
 
-                    <button
-                        mat-raised-button
-                        color="primary"
-                        type="submit"
-                        [disabled]="!filterForm.valid || loading()"
-                    >
-                        <mat-icon>search</mat-icon>
-                        Generate Report
-                    </button>
-                </div>
-            </form>
-        </mat-card-content>
-    </mat-card>
+                        <mat-slide-toggle
+                            [checked]="includeHidden()"
+                            (change)="onIncludeHiddenToggle()"
+                            color="primary"
+                            style="margin-right: 16px; align-self: center"
+                        >
+                            Include Hidden
+                        </mat-slide-toggle>
+
+                        <button
+                            mat-raised-button
+                            color="primary"
+                            type="submit"
+                            [disabled]="!filterForm.valid || loading()"
+                        >
+                            <mat-icon>search</mat-icon>
+                            Generate Report
+                        </button>
+                    </div>
+                </form>
+            </mat-card-content>
+        </mat-card>
+    } @else {
+        <div class="include-hidden-row">
+            <mat-slide-toggle
+                [checked]="includeHidden()"
+                (change)="onIncludeHiddenToggle()"
+                color="primary"
+            >
+                Include Hidden
+            </mat-slide-toggle>
+        </div>
+    }
 
     @if (loading()) {
         <div class="loading-container">
@@ -84,9 +124,9 @@
                         <div class="chart-container">
                             <canvas
                                 baseChart
-                                [data]="report.categoryChartData"
-                                [options]="categoryChartOptions"
-                                type="bar"
+                                [data]="report.pieChartData"
+                                [options]="pieChartOptions"
+                                type="doughnut"
                             ></canvas>
                         </div>
                     </mat-card-content>

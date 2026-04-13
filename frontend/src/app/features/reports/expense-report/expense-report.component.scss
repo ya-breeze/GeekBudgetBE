@@ -2,11 +2,33 @@
     padding: 24px;
     max-width: 1400px;
     margin: 0 auto;
+
+    h1 {
+        margin: 0 0 16px 0;
+    }
 }
 
-.subtitle {
-    margin: 0 0 24px 0;
-    color: rgba(0, 0, 0, 0.6);
+.period-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    button {
+        border-radius: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        min-width: unset;
+        padding: 0 16px;
+
+        &.active {
+            background-color: #1967d2;
+            color: white;
+        }
+    }
+}
+
+.include-hidden-row {
+    margin-bottom: 16px;
 }
 
 .filter-card {
@@ -43,7 +65,7 @@
 
 .charts-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
     gap: 24px;
     margin-bottom: 24px;
 }
@@ -131,4 +153,18 @@
 
 mat-card {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 767px) {
+    .expense-report-container {
+        padding: 12px;
+    }
+
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-card .chart-container {
+        height: 260px;
+    }
 }
