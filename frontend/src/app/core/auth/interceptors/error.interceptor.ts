@@ -1,10 +1,13 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { ApiConfiguration } from '../../api/api-configuration';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const authService = inject(AuthService);
+    const http = inject(HttpClient);
+    const apiConfig = inject(ApiConfiguration);
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
@@ -17,8 +20,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 // Server-side error
                 switch (error.status) {
                     case 401:
-                        if (!req.url.includes('/logout') && !req.url.includes('/v1/user')) {
-                            authService.logout();
+                        if (!req.url.includes('/logout') && !req.url.includes('/v1/user') && !req.url.includes('/auth/refresh')) {
+                            return http.post(`${apiConfig.rootUrl}/auth/refresh`, {}, { withCredentials: true }).pipe(
+                                switchMap(() => next(req)),
+                                catchError(() => {
+                                    authService.logout();
+                                    return throwError(() => new Error('Session expired. Please login again.'));
+                                }),
+                            );
                         }
                         errorMessage = 'Session expired. Please login again.';
                         break;
