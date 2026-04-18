@@ -365,12 +365,18 @@ export class DashboardComponent implements OnInit {
                 if (visibleMonths.has(interval)) grandTotal += t;
             });
 
+            // Global max across all rows × visible months for a unified heat scale
+            const globalMax = Math.max(
+                ...rowsData.flatMap((r) =>
+                    Array.from(visibleMonths).map((m) => Math.max(0, r.monthValues.get(m) ?? 0)),
+                ),
+            );
+
             const rows: ExpenseTableRow[] = rowsData.map((rowData) => {
                 const vals = Array.from(visibleMonths).map((m) => rowData.monthValues.get(m) ?? 0);
-                const rowMax = Math.max(...vals.map((v) => Math.max(0, v)));
                 const monthCells = new Map<string, ExpenseTableCell>();
                 rowData.monthValues.forEach((value, interval) => {
-                    monthCells.set(interval, { value, heatClass: this.heatClass(value, rowMax) });
+                    monthCells.set(interval, { value, heatClass: this.heatClass(value, globalMax) });
                 });
                 const nonZero = vals.filter((v) => v > 0);
                 const avg = nonZero.length ? nonZero.reduce((a, b) => a + b, 0) / nonZero.length : 0;
@@ -390,10 +396,8 @@ export class DashboardComponent implements OnInit {
             const sorted = this.sortRows(rows);
 
             const totalRowCells = new Map<string, ExpenseTableCell>();
-            const totVals = Array.from(visibleMonths).map((m) => monthTotals.get(m) ?? 0);
-            const totMax = Math.max(...totVals.map((v) => Math.max(0, v)));
             monthTotals.forEach((value, interval) => {
-                totalRowCells.set(interval, { value, heatClass: this.heatClass(value, totMax) });
+                totalRowCells.set(interval, { value, heatClass: this.heatClass(value, globalMax) });
             });
 
             const totalRow: ExpenseTableRow = {
