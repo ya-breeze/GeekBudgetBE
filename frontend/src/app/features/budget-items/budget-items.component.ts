@@ -1,23 +1,15 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
-import { MatTableModule } from '@angular/material/table';
-import { MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe, CurrencyPipe, CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BudgetItemService } from './services/budget-item.service';
 import { AccountService } from '../accounts/services/account.service';
-import { UserService } from '../../core/services/user.service'; // Added
-import { CurrencyService } from '../currencies/services/currency.service'; // Added
+import { UserService } from '../../core/services/user.service';
+import { CurrencyService } from '../currencies/services/currency.service';
 import { BudgetItem } from '../../core/api/models/budget-item';
 import { BudgetStatus } from '../../core/api/models/budget-status';
 import { LayoutService } from '../../layout/services/layout.service';
@@ -29,8 +21,8 @@ interface MatrixCell {
     amount: number; // Planned (Converted)
     rawAmount: number; // For editing
     spent: number; // (Converted)
-    budgetItemId?: string; // If exists for editing
-    calculatedAvailable?: number; // For styling
+    budgetItemId?: string;
+    calculatedAvailable?: number;
     isVirtual?: boolean;
     isPastMonth?: boolean;
 }
@@ -43,11 +35,20 @@ interface MatrixRow {
     averageSpent: number;
 }
 
+interface ListRow {
+    account: { id: string; name: string };
+    totalPlanned: number;
+    totalSpent: number;
+    averageSpent: number;
+    percent: number;
+    isOver: boolean;
+    isVirtual: boolean;
+    progressWidth: number;
+}
+
 @Component({
     selector: 'app-budget-items',
     imports: [
-        MatTableModule,
-        MatSortModule,
         MatButtonModule,
         MatIconModule,
         MatProgressSpinnerModule,
@@ -55,19 +56,13 @@ interface MatrixRow {
         DatePipe,
         CurrencyPipe,
         CommonModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
         MatDialogModule,
         MatSlideToggleModule,
     ],
     template: `
         <div class="budget-items-container">
             @if (!sidenavOpened()) {
-                <h1 class="page-title">Budget Items</h1>
+                <h1 class="page-title">Budget</h1>
             }
 
             @if (loading()) {
@@ -75,248 +70,181 @@ interface MatrixRow {
                     <mat-spinner></mat-spinner>
                 </div>
             } @else {
-                <div class="matrix-container">
-                    <div
-                        class="matrix-header"
-                        style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #eee;"
-                    >
-                        <div
-                            class="title-row"
-                            style="display: flex; align-items: center; gap: 16px;"
-                        >
-                            <h2>Budget Matrix</h2>
-                            <span
-                                class="currency-badge"
-                                style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;"
-                                *ngIf="targetCurrencySymbol() as curr"
-                                >Currency: {{ curr }}</span
-                            >
-                        </div>
+                <div class="budget-container">
+                    <!-- Header -->
+                    <div class="list-header">
+                        <div class="nav-row">
+                            <button mat-icon-button (click)="shiftMonths(-1)">
+                                <mat-icon>chevron_left</mat-icon>
+                            </button>
+                            <span class="period-display">
+                                {{ months()[0] | date: 'MMM yyyy' }}
+                                @if (selectedPeriod() > 1) {
+                                    &ndash; {{ months()[months().length - 1] | date: 'MMM yyyy' }}
+                                }
+                            </span>
+                            <button mat-icon-button (click)="shiftMonths(1)">
+                                <mat-icon>chevron_right</mat-icon>
+                            </button>
 
-                        <div
-                            class="controls-row"
-                            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
-                        >
-                            <div
-                                class="nav-controls"
-                                style="display: flex; align-items: center; gap: 8px;"
-                            >
-                                <button mat-icon-button (click)="shiftMonths(-1)">
-                                    <mat-icon>chevron_left</mat-icon>
-                                </button>
-                                <div
-                                    class="month-display"
-                                    style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 14px; min-width: 150px; justify-content: center;"
-                                >
-                                    <span>{{ months()[0] | date: 'MMM yyyy' }}</span>
-                                    <span class="separator">-</span>
-                                    <span>{{
-                                        months()[months().length - 1] | date: 'MMM yyyy'
-                                    }}</span>
-                                </div>
-                                <button mat-icon-button (click)="shiftMonths(1)">
-                                    <mat-icon>chevron_right</mat-icon>
-                                </button>
+                            <div class="period-selector">
+                                @for (p of periodOptions; track p) {
+                                    <button
+                                        class="period-btn"
+                                        [class.active]="selectedPeriod() === p"
+                                        (click)="selectPeriod(p)"
+                                    >
+                                        {{ p }}m
+                                    </button>
+                                }
                             </div>
 
-                            <div
-                                class="density-controls"
-                                style="display: flex; align-items: center; gap: 4px;"
-                            >
-                                <button
-                                    mat-icon-button
-                                    (click)="changeMonthCount(-1)"
-                                    [disabled]="monthCount() <= 1"
-                                >
-                                    <mat-icon>remove</mat-icon>
-                                </button>
-                                <span style="font-size: 12px; color: #666; font-weight: 500;"
-                                    >{{ monthCount() }} Months</span
-                                >
-                                <button
-                                    mat-icon-button
-                                    (click)="changeMonthCount(1)"
-                                    [disabled]="monthCount() >= 12"
-                                >
-                                    <mat-icon>add</mat-icon>
-                                </button>
-                            </div>
+                            @if (targetCurrencySymbol(); as curr) {
+                                <span class="currency-badge">{{ curr }}</span>
+                            }
 
                             <mat-slide-toggle
                                 [checked]="includeHidden()"
                                 (change)="includeHidden.set($event.checked)"
                                 color="primary"
-                                style="margin-left: 16px;"
+                                class="hidden-toggle"
                             >
-                                <span style="font-size: 12px;">Hidden</span>
+                                <span class="toggle-label">Hidden</span>
                             </mat-slide-toggle>
+                        </div>
+
+                        <!-- Summary progress bar -->
+                        <div class="summary-bar">
+                            <div class="summary-progress">
+                                <div
+                                    class="summary-fill"
+                                    [style.width.%]="grandTotalPercent()"
+                                    [class.fill-over]="grandTotal().spent > grandTotal().planned"
+                                ></div>
+                            </div>
+                            <span class="summary-text">
+                                {{
+                                    grandTotal().spent
+                                        | currency
+                                            : preferredCurrency()?.name || ''
+                                            : 'symbol-narrow'
+                                            : '1.0-0'
+                                }}
+                                /
+                                {{
+                                    grandTotal().planned
+                                        | currency
+                                            : preferredCurrency()?.name || ''
+                                            : 'symbol-narrow'
+                                            : '1.0-0'
+                                }}
+                            </span>
                         </div>
                     </div>
 
-                    <div class="grid-wrapper">
-                        <table class="matrix-table">
-                            <thead>
-                                <tr>
-                                    <th class="sticky-col-header">Account</th>
-                                    @for (month of months(); track month) {
-                                        <th>{{ month | date: 'MMM yy' }}</th>
-                                    }
-                                    <th class="total-col-header">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (row of matrixData(); track row.account.id) {
-                                    <tr>
-                                        <td class="sticky-col-header row-header">
-                                            <div class="account-cell">
-                                                <span class="account-name">{{
-                                                    row.account.name
-                                                }}</span>
-                                                <span class="account-average"
-                                                    >Avg:
-                                                    {{
-                                                        row.averageSpent
-                                                            | currency
-                                                                : preferredCurrency()?.name || ''
-                                                    }}</span
-                                                >
-                                            </div>
-                                        </td>
-                                        @for (cell of row.cells; track cell.month) {
-                                            <td
-                                                class="cell-interactive"
-                                                [class.status-ok]="
-                                                    !!cell.budgetItemId &&
-                                                    (cell.calculatedAvailable || 0) >= 0
-                                                "
-                                                [class.status-over]="
-                                                    (cell.calculatedAvailable || 0) < 0
-                                                "
-                                                [class.status-virtual]="cell.isVirtual"
-                                                (click)="editCell(row.account, cell)"
-                                            >
-                                                <div class="cell-content-modern">
-                                                    <div class="cell-row top-row">
-                                                        <span class="label">Budget</span>
-                                                        <span class="value-primary">{{
-                                                            cell.amount
-                                                                | currency
-                                                                    : preferredCurrency()?.name ||
-                                                                          ''
-                                                                    : 'symbol-narrow'
-                                                                    : '1.0-0'
-                                                        }}</span>
-                                                    </div>
-                                                    <div class="cell-row middle-row">
-                                                        <span class="label">Spent</span>
-                                                        <span class="value-secondary">{{
-                                                            cell.spent
-                                                                | currency
-                                                                    : preferredCurrency()?.name ||
-                                                                          ''
-                                                                    : 'symbol-narrow'
-                                                                    : '1.0-0'
-                                                        }}</span>
-                                                    </div>
-                                                    <div class="progress-bar-container">
-                                                        <div
-                                                            class="progress-bar-fill"
-                                                            [style.width.%]="
-                                                                (cell.amount > 0
-                                                                    ? (cell.spent / cell.amount) *
-                                                                      100
-                                                                    : cell.spent > 0
-                                                                      ? 100
-                                                                      : 0
-                                                                ) | number: '1.0-0'
-                                                            "
-                                                            [class.over-budget]="
-                                                                cell.spent > cell.amount
-                                                            "
-                                                            [class.unbudgeted-spent]="
-                                                                cell.isVirtual
-                                                            "
-                                                        ></div>
-                                                    </div>
-                                                    <div class="percentage-label">
-                                                        {{
-                                                            cell.amount > 0
-                                                                ? (cell.spent / cell.amount
-                                                                  | percent: '1.0-0')
-                                                                : '0%'
-                                                        }}
-                                                    </div>
-                                                </div>
-                                            </td>
+                    <!-- Account list -->
+                    <div class="budget-list">
+                        @for (row of listData(); track row.account.id) {
+                            <div
+                                class="budget-row"
+                                [class.over-budget]="row.isOver"
+                                [class.unbudgeted]="row.isVirtual && !row.isOver"
+                                (click)="editCurrentMonth(row.account)"
+                            >
+                                <div class="row-info">
+                                    <span class="account-name">{{ row.account.name }}</span>
+                                    <span class="account-avg">
+                                        Avg:
+                                        {{
+                                            row.averageSpent
+                                                | currency
+                                                    : preferredCurrency()?.name || ''
+                                                    : 'symbol-narrow'
+                                                    : '1.0-0'
+                                        }}
+                                    </span>
+                                </div>
+                                <div class="row-progress-area">
+                                    <div class="progress-track">
+                                        <div
+                                            class="progress-fill"
+                                            [style.width.%]="row.progressWidth"
+                                            [class.fill-over]="row.isOver"
+                                            [class.fill-virtual]="row.isVirtual && !row.isOver"
+                                        ></div>
+                                    </div>
+                                    <div class="row-stats">
+                                        <span class="pct" [class.text-over]="row.isOver">
+                                            {{ row.percent | number: '1.0-0' }}%
+                                        </span>
+                                        @if (row.isOver) {
+                                            <mat-icon class="warn-icon">warning</mat-icon>
                                         }
-                                        <td
-                                            class="total-cell"
-                                            [class.status-over]="
-                                                row.totalPlanned - row.totalSpent < 0
-                                            "
-                                            [class.status-ok]="
-                                                row.totalPlanned - row.totalSpent >= 0
-                                            "
-                                        >
-                                            <div class="cell-content">
-                                                <span class="planned">{{
-                                                    row.totalPlanned
-                                                        | currency: preferredCurrency()?.name || ''
-                                                }}</span>
-                                                <span class="divider">/</span>
-                                                <span class="spent">{{
-                                                    row.totalSpent
-                                                        | currency: preferredCurrency()?.name || ''
-                                                }}</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                                <!-- Grand Total Row -->
-                                <tr class="total-row">
-                                    <td class="sticky-col-header row-header">Total</td>
-                                    @for (col of columnTotals(); track col.month) {
-                                        <td
-                                            [class.status-over]="col.planned - col.spent < 0"
-                                            [class.status-ok]="col.planned - col.spent >= 0"
-                                        >
-                                            <div class="cell-content">
-                                                <span class="planned">{{
-                                                    col.planned
-                                                        | currency: preferredCurrency()?.name || ''
-                                                }}</span>
-                                                <span class="divider">/</span>
-                                                <span class="spent">{{
-                                                    col.spent
-                                                        | currency: preferredCurrency()?.name || ''
-                                                }}</span>
-                                            </div>
-                                        </td>
-                                    }
-                                    <td
-                                        class="total-cell"
-                                        [class.status-over]="
-                                            grandTotal().planned - grandTotal().spent < 0
-                                        "
-                                        [class.status-ok]="
-                                            grandTotal().planned - grandTotal().spent >= 0
-                                        "
-                                    >
-                                        <div class="cell-content">
-                                            <span class="planned">{{
-                                                grandTotal().planned
-                                                    | currency: preferredCurrency()?.name || ''
-                                            }}</span>
-                                            <span class="divider">/</span>
-                                            <span class="spent">{{
-                                                grandTotal().spent
-                                                    | currency: preferredCurrency()?.name || ''
-                                            }}</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        <span class="amounts">
+                                            {{
+                                                row.totalSpent
+                                                    | currency
+                                                        : preferredCurrency()?.name || ''
+                                                        : 'symbol-narrow'
+                                                        : '1.0-0'
+                                            }}
+                                            /
+                                            {{
+                                                row.totalPlanned
+                                                    | currency
+                                                        : preferredCurrency()?.name || ''
+                                                        : 'symbol-narrow'
+                                                        : '1.0-0'
+                                            }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Total row -->
+                    <div
+                        class="total-row"
+                        [class.over-budget]="grandTotal().spent > grandTotal().planned"
+                    >
+                        <div class="row-info">
+                            <span class="account-name">Total</span>
+                        </div>
+                        <div class="row-progress-area">
+                            <div class="progress-track">
+                                <div
+                                    class="progress-fill"
+                                    [style.width.%]="grandTotalPercent()"
+                                    [class.fill-over]="grandTotal().spent > grandTotal().planned"
+                                ></div>
+                            </div>
+                            <div class="row-stats">
+                                <span
+                                    class="pct"
+                                    [class.text-over]="grandTotal().spent > grandTotal().planned"
+                                >
+                                    {{ grandTotalPercent() | number: '1.0-0' }}%
+                                </span>
+                                <span class="amounts">
+                                    {{
+                                        grandTotal().spent
+                                            | currency
+                                                : preferredCurrency()?.name || ''
+                                                : 'symbol-narrow'
+                                                : '1.0-0'
+                                    }}
+                                    /
+                                    {{
+                                        grandTotal().planned
+                                            | currency
+                                                : preferredCurrency()?.name || ''
+                                                : 'symbol-narrow'
+                                                : '1.0-0'
+                                    }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             }
@@ -332,10 +260,8 @@ export class BudgetItemsComponent implements OnInit {
     private readonly userService = inject(UserService);
     private readonly currencyService = inject(CurrencyService);
     private readonly dialog = inject(MatDialog);
-    private readonly fb = inject(FormBuilder);
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
-    protected readonly Creating = signal(false);
 
     protected readonly budgetItems = this.budgetItemService.budgetItems;
     protected readonly budgetStatus = this.budgetItemService.budgetStatus;
@@ -344,10 +270,12 @@ export class BudgetItemsComponent implements OnInit {
     protected readonly currencies = this.currencyService.currencies;
     protected readonly user = this.userService.user;
 
-    // Configuration Signals
-    protected readonly startDate = signal(new Date()); // Start of the view
-    protected readonly monthCount = signal(3); // Number of months to show
+    // Configuration
+    protected readonly startDate = signal(new Date());
+    protected readonly monthCount = signal(1);
     protected readonly includeHidden = signal(false);
+    protected readonly selectedPeriod = signal<1 | 3 | 6 | 12>(1);
+    protected readonly periodOptions = [1, 3, 6, 12] as const;
 
     // Computed state
     protected readonly preferredCurrency = computed(() => {
@@ -360,7 +288,7 @@ export class BudgetItemsComponent implements OnInit {
     });
 
     protected readonly currencyMap = computed(() => {
-        const map = new Map<string, string>(); // Id -> Symbol/Name
+        const map = new Map<string, string>();
         this.currencies().forEach((c) => map.set(c.id, c.name));
         return map;
     });
@@ -370,13 +298,10 @@ export class BudgetItemsComponent implements OnInit {
     });
 
     protected readonly months = computed(() => {
-        const anchor = this.startDate(); // This is now the END of the view (inclusive)
+        const anchor = this.startDate();
         const count = this.monthCount();
         const result: string[] = [];
-
-        // Use UTC to avoid timezone shifts when calling toISOString
         const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
-
         for (let i = -(count - 1); i <= 0; i++) {
             const d = new Date(anchorMonth);
             d.setUTCMonth(d.getUTCMonth() + i);
@@ -385,16 +310,13 @@ export class BudgetItemsComponent implements OnInit {
         return result;
     });
 
-    protected readonly matrixData = computed(() => {
-        // ... existing matrixData logic ...
+    protected readonly matrixData = computed((): MatrixRow[] => {
         const accs = this.accounts().filter((a) => a.type === 'expense');
-
         const items = this.budgetItems();
         const status = this.budgetStatus();
         const months = this.months();
         const averages = this.accountService.averages();
 
-        // Maps
         const itemMap = new Map<string, BudgetItem>();
         items.forEach((i) => {
             const m = i.date ? i.date.substring(0, 7) : '';
@@ -413,7 +335,7 @@ export class BudgetItemsComponent implements OnInit {
         const currentYear = now.getUTCFullYear();
         const currentMonth = now.getUTCMonth();
 
-        const rows: MatrixRow[] = accs.map((acc) => {
+        return accs.map((acc) => {
             let rowTotalPlanned = 0;
             let rowTotalSpent = 0;
 
@@ -422,17 +344,11 @@ export class BudgetItemsComponent implements OnInit {
                 const item = itemMap.get(`${acc.id}_${mKey}`);
                 const stat = statusMap.get(`${acc.id}_${mKey}`);
 
-                // Check if this cell is for the current month (Real World time)
                 const cellDate = new Date(mStr);
                 const isCurrentMonth =
                     cellDate.getUTCFullYear() === currentYear &&
                     cellDate.getUTCMonth() === currentMonth;
 
-                // Check if past month (simple comparison since we iterate)
-                // Actually easier to compare tokens or date objects
-                // currentYear/Month is local time from new Date()
-                // cellDate is UTC from string.
-                // Let's rely on flexible comparison:
                 const nowTotalMonths = currentYear * 12 + currentMonth;
                 const cellTotalMonths = cellDate.getUTCFullYear() * 12 + cellDate.getUTCMonth();
                 const isPastMonth = cellTotalMonths < nowTotalMonths;
@@ -444,15 +360,11 @@ export class BudgetItemsComponent implements OnInit {
                 let isVirtual = false;
 
                 if (item) {
-                    // Explicit budget exists
                     amountDisplay = stat?.budgeted ?? item.amount;
                 } else {
-                    // No explicit budget
                     if (isCurrentMonth) {
-                        // Current month: No virtual budget. Strict.
                         amountDisplay = 0;
                     } else {
-                        // Past/Future months: Virtual budget = Spent
                         amountDisplay = spentDisplay;
                         if (spentDisplay > 0) {
                             isVirtual = true;
@@ -461,19 +373,18 @@ export class BudgetItemsComponent implements OnInit {
                 }
 
                 const available = amountDisplay - spentDisplay;
-
                 rowTotalPlanned += amountDisplay;
                 rowTotalSpent += spentDisplay;
 
                 return {
                     month: mStr,
                     amount: amountDisplay,
-                    rawAmount: rawAmount,
+                    rawAmount,
                     spent: spentDisplay,
                     budgetItemId: item?.id,
                     calculatedAvailable: available,
-                    isVirtual: isVirtual,
-                    isPastMonth: isPastMonth,
+                    isVirtual,
+                    isPastMonth,
                 };
             });
 
@@ -485,8 +396,6 @@ export class BudgetItemsComponent implements OnInit {
                 averageSpent: avgMap.get(acc.id) ?? 0,
             };
         });
-
-        return rows;
     });
 
     protected readonly columnTotals = computed(() => {
@@ -494,9 +403,7 @@ export class BudgetItemsComponent implements OnInit {
         const months = this.months();
         if (rows.length === 0) return [];
 
-        // Init totals
         const totals = months.map((m) => ({ month: m, planned: 0, spent: 0 }));
-
         rows.forEach((row) => {
             row.cells.forEach((cell, idx) => {
                 if (totals[idx]) {
@@ -509,8 +416,7 @@ export class BudgetItemsComponent implements OnInit {
     });
 
     protected readonly grandTotal = computed(() => {
-        const cols = this.columnTotals();
-        return cols.reduce(
+        return this.columnTotals().reduce(
             (acc, curr) => ({
                 planned: acc.planned + curr.planned,
                 spent: acc.spent + curr.spent,
@@ -519,32 +425,51 @@ export class BudgetItemsComponent implements OnInit {
         );
     });
 
-    // Effects
+    protected readonly listData = computed((): ListRow[] => {
+        return this.matrixData().map((row) => {
+            const { totalPlanned, totalSpent } = row;
+            const pct =
+                totalPlanned > 0 ? (totalSpent / totalPlanned) * 100 : totalSpent > 0 ? 100 : 0;
+            // "unbudgeted" = no explicit budget item in any cell of the period
+            const isVirtual = row.cells.length > 0 && row.cells.every((c) => !c.budgetItemId);
+            return {
+                account: row.account,
+                totalPlanned,
+                totalSpent,
+                averageSpent: row.averageSpent,
+                percent: pct,
+                isOver: totalSpent > totalPlanned && totalPlanned > 0,
+                isVirtual,
+                progressWidth: Math.min(pct, 100),
+            };
+        });
+    });
+
+    protected readonly grandTotalPercent = computed((): number => {
+        const gt = this.grandTotal();
+        if (gt.planned <= 0) return gt.spent > 0 ? 100 : 0;
+        return Math.min((gt.spent / gt.planned) * 100, 100);
+    });
+
     constructor() {
-        // Reload data when params change
         effect(() => {
             const anchor = this.startDate();
             const count = this.monthCount();
             const currency = this.preferredCurrency();
             const includeHidden = this.includeHidden();
 
-            // Calculate query range
             const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
 
-            // From: Anchor - (count-1) months
             const fromDate = new Date(anchorMonth);
             fromDate.setUTCMonth(fromDate.getUTCMonth() - (count - 1));
 
-            // To: Anchor + 1 month (exclusive)
             const toDate = new Date(anchorMonth);
             toDate.setUTCMonth(toDate.getUTCMonth() + 1);
 
             const from = fromDate.toISOString();
             const to = toDate.toISOString();
-
             const currencyId = currency?.id;
 
-            // Load status with conversion
             if (currencyId) {
                 this.budgetItemService
                     .loadBudgetStatus(from, to, currencyId, includeHidden)
@@ -563,31 +488,35 @@ export class BudgetItemsComponent implements OnInit {
         this.budgetItemService.loadBudgetItems().subscribe();
         this.accountService.loadAccounts().subscribe();
         this.currencyService.loadCurrencies().subscribe();
-        this.userService.loadUser().subscribe(); // Loads user -> triggers effect via preferredCurrency
+        this.userService.loadUser().subscribe();
     }
 
-    // Actions
+    protected selectPeriod(p: 1 | 3 | 6 | 12): void {
+        this.selectedPeriod.set(p);
+        this.monthCount.set(p);
+    }
+
     protected shiftMonths(delta: number): void {
         const current = this.startDate();
-        this.startDate.set(new Date(current.getFullYear(), current.getMonth() + delta, 1));
+        const step = this.selectedPeriod();
+        this.startDate.set(new Date(current.getFullYear(), current.getMonth() + delta * step, 1));
     }
 
-    protected changeMonthCount(delta: number): void {
-        const current = this.monthCount();
-        const next = Math.max(1, Math.min(12, current + delta));
-        this.monthCount.set(next);
+    protected editCurrentMonth(account: { id: string; name: string }): void {
+        const months = this.months();
+        const lastMonth = months[months.length - 1];
+        const row = this.matrixData().find((r) => r.account.id === account.id);
+        const lastCell = row?.cells[row.cells.length - 1];
+        const cell: MatrixCell = lastCell ?? {
+            month: lastMonth,
+            amount: 0,
+            rawAmount: 0,
+            spent: 0,
+        };
+        this.editCell(account, cell);
     }
 
-    protected editCell(account: { id: string; name: string }, cell: MatrixCell): void {
-        // We pass the RAW amount for editing if we can find it?
-        // Wait, cell.amount is CONVERTED. cell.rawAmount is RAW.
-        // If we don't have a budget item yet, rawAmount is 0.
-        // The dialog should behave effectively.
-
-        // We need to tell the dialog what currency the Account checks?
-        // The dialog just shows "Amount".
-        // I added `rawAmount` to MatrixCell interface in computed above. I need to update interface def.
-
+    private editCell(account: { id: string; name: string }, cell: MatrixCell): void {
         const dialogRef = this.dialog.open(BudgetMatrixEditComponent, {
             data: {
                 accountId: account.id,
@@ -609,10 +538,10 @@ export class BudgetItemsComponent implements OnInit {
         if (cell.budgetItemId) {
             this.budgetItemService
                 .update(cell.budgetItemId, {
-                    accountId: accountId,
+                    accountId,
                     amount: newAmount,
                     date: cell.month,
-                    description: 'Matrix Edit',
+                    description: 'Budget Edit',
                 })
                 .subscribe({
                     next: () => this.refreshData(),
@@ -622,10 +551,10 @@ export class BudgetItemsComponent implements OnInit {
         } else {
             this.budgetItemService
                 .create({
-                    accountId: accountId,
+                    accountId,
                     amount: newAmount,
                     date: cell.month,
-                    description: 'Matrix Create',
+                    description: 'Budget Create',
                 })
                 .subscribe({
                     next: () => this.refreshData(),
@@ -635,30 +564,25 @@ export class BudgetItemsComponent implements OnInit {
         }
     }
 
-    private refreshData() {
+    private refreshData(): void {
         this.snackBar.open('Budget saved', 'Close', { duration: 2000 });
         this.budgetItemService.loadBudgetItems().subscribe();
 
-        // We need to trigger re-fetch of status with current signals using correct view logic
         const anchor = this.startDate();
         const count = this.monthCount();
         const currency = this.preferredCurrency();
         const includeHidden = this.includeHidden();
 
-        // Use UTC to avoid timezone shifts
         const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
 
-        // From: Anchor - (count-1) months
         const fromDate = new Date(anchorMonth);
         fromDate.setUTCMonth(fromDate.getUTCMonth() - (count - 1));
 
-        // To: Anchor + 1 month (exclusive)
         const toDate = new Date(anchorMonth);
         toDate.setUTCMonth(toDate.getUTCMonth() + 1);
 
         const from = fromDate.toISOString();
         const to = toDate.toISOString();
-
         const currencyId = currency?.id;
 
         if (currencyId) {
