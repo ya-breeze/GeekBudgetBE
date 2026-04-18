@@ -164,6 +164,14 @@
             background: #ffecec;
         }
     }
+
+    &.unbudgeted {
+        background: #fffde7;
+
+        &:hover {
+            background: #fff9c4;
+        }
+    }
 }
 
 // ---- Total row ----

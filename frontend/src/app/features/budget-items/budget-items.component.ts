@@ -148,6 +148,7 @@ interface ListRow {
                             <div
                                 class="budget-row"
                                 [class.over-budget]="row.isOver"
+                                [class.unbudgeted]="row.isVirtual && !row.isOver"
                                 (click)="editCurrentMonth(row.account)"
                             >
                                 <div class="row-info">
@@ -429,7 +430,8 @@ export class BudgetItemsComponent implements OnInit {
             const { totalPlanned, totalSpent } = row;
             const pct =
                 totalPlanned > 0 ? (totalSpent / totalPlanned) * 100 : totalSpent > 0 ? 100 : 0;
-            const isVirtual = row.cells.length > 0 && row.cells.every((c) => c.isVirtual);
+            // "unbudgeted" = no explicit budget item in any cell of the period
+            const isVirtual = row.cells.length > 0 && row.cells.every((c) => !c.budgetItemId);
             return {
                 account: row.account,
                 totalPlanned,
