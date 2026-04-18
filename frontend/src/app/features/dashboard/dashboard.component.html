@@ -240,7 +240,7 @@
                                                 } @else if ((row.monthCells.get(month)?.value ?? 0) < 0) {
                                                     <span class="neg">{{ fmt(row.monthCells.get(month)!.value) }}</span>
                                                 } @else {
-                                                    {{ fmt(row.monthCells.get(month)!.value) }}
+                                                    <span>{{ fmt(row.monthCells.get(month)!.value) }}</span>
                                                 }
                                             </td>
                                         }
@@ -283,7 +283,7 @@
                                     <td class="col-cat total-label">Total</td>
                                     @for (month of monthColumns(); track month) {
                                         <td class="cell-num heat" [class]="table.totalRow.monthCells.get(month)?.heatClass ?? ''">
-                                            {{ fmt(table.totalRow.monthCells.get(month)?.value ?? 0) }}
+                                            <span>{{ fmt(table.totalRow.monthCells.get(month)?.value ?? 0) }}</span>
                                         </td>
                                     }
                                     <td class="col-total cell-num grand-total">{{ fmt(table.totalRow.total) }}</td>
