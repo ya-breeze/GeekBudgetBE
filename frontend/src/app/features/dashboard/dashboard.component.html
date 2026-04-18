@@ -1,331 +1,324 @@
-<div class="dashboard-container">
-    @if (!sidenavOpened()) {
-        <h1 class="page-title">Dashboard</h1>
-    }
-
-    <div class="dashboard-actions option-toggle">
-        <mat-slide-toggle [checked]="includeHidden()" (change)="onIncludeHiddenToggle()">
-            Include Hidden Accounts
-        </mat-slide-toggle>
-    </div>
-
+<div class="gb-dash">
     @if (loading()) {
-        <div class="loading-container">
-            <mat-spinner></mat-spinner>
-        </div>
+        <div class="loading-wrap"><mat-spinner /></div>
     } @else {
+
+        <!-- ═══ ASSET BANNER ═══ -->
         @if (assetCards().length) {
-            <div class="asset-summary-banner">
-                <div class="totals-container">
+            <div class="asset-banner">
+                <div class="asset-totals">
                     @for (total of assetTotals(); track total.currencyId) {
-                        <div class="total-item">
-                            <div class="total-content">
-                                <span class="total-label">Total {{ total.currencyName }}:</span>
-                                <div class="total-value-row">
-                                    <span class="total-value">{{
-                                        total.totalBalance | number: '1.0-2'
-                                    }}</span>
-                                    <div
-                                        class="trend-badge"
-                                        [class.positive]="total.trendDirection === 'up'"
-                                        [class.negative]="total.trendDirection === 'down'"
-                                    >
-                                        <mat-icon class="trend-icon">
-                                            @if (total.trendDirection === 'up') {
-                                                north_east
-                                            } @else if (total.trendDirection === 'down') {
-                                                south_east
-                                            } @else {
-                                                remove
-                                            }
+                        <div class="asset-total-item">
+                            <div class="ati-content">
+                                <span class="ati-label">Total {{ total.currencyName }}</span>
+                                <div class="ati-value-row">
+                                    <span class="ati-value">{{ total.totalBalance | number: '1.0-2' }}</span>
+                                    <span class="trend-badge" [class.pos]="total.trendDirection === 'up'" [class.neg]="total.trendDirection === 'down'">
+                                        <mat-icon class="trend-ico">
+                                            @if (total.trendDirection === 'up') { north_east }
+                                            @else if (total.trendDirection === 'down') { south_east }
+                                            @else { remove }
                                         </mat-icon>
-                                        <span class="trend-value"
-                                            >{{ total.trendPercent | number: '1.0-1' }}%</span
-                                        >
-                                    </div>
+                                        {{ total.trendPercent | number: '1.0-1' }}%
+                                    </span>
                                 </div>
                             </div>
-                            <div class="sparkline-container">
-                                <canvas
-                                    baseChart
-                                    [data]="getSparklineData(total.history)"
-                                    [options]="sparklineOptions"
-                                    [type]="'line'"
-                                >
-                                </canvas>
+                            <div class="ati-spark">
+                                <canvas baseChart [data]="getSparklineData(total.history)" [options]="sparklineOptions" type="line"></canvas>
                             </div>
                         </div>
                     }
                 </div>
-                <button mat-button class="details-toggle" (click)="toggleAssetDetails()">
-                    {{ showAssetDetails() ? 'Hide Details' : 'View Details' }}
-                    <mat-icon>{{ showAssetDetails() ? 'expand_less' : 'expand_more' }}</mat-icon>
-                </button>
+                <div class="asset-banner-actions">
+                    <mat-slide-toggle [checked]="includeHidden()" (change)="onIncludeHiddenToggle()">
+                        Include hidden
+                    </mat-slide-toggle>
+                    <button mat-button (click)="toggleAssetDetails()">
+                        {{ showAssetDetails() ? 'Hide details' : 'View details' }}
+                        <mat-icon>{{ showAssetDetails() ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    </button>
+                </div>
             </div>
 
             @if (showAssetDetails()) {
-                <div class="assets-section">
+                <div class="asset-cards">
                     @for (card of assetCards(); track card.accountId) {
-                        <mat-card
-                            class="asset-card"
-                            [class.reconciled]="card.reconciliationState === 'reconciled'"
-                            [class.warning]="card.reconciliationState === 'warning'"
-                            [class.unreconciled]="card.reconciliationState === 'unreconciled'"
-                        >
-                            <mat-card-header>
-                                <mat-card-title>
-                                    <button
-                                        mat-icon-button
-                                        class="settings-button"
-                                        (click)="onSettingsClick($event, card.accountId)"
-                                        aria-label="Edit account settings"
-                                    >
-                                        <mat-icon>settings</mat-icon>
-                                    </button>
-                                    <app-account-display
-                                        [name]="card.accountName"
-                                        [image]="card.accountImage"
-                                        size="medium"
-                                    ></app-account-display>
-                                </mat-card-title>
-                                <button
-                                    mat-icon-button
-                                    class="hide-button"
-                                    (click)="onHideAccount(card.accountId)"
-                                    aria-label="Hide account from summary"
-                                >
-                                    <mat-icon>close</mat-icon>
+                        <div class="asset-card" [class.reconciled]="card.reconciliationState === 'reconciled'" [class.warning]="card.reconciliationState === 'warning'" [class.unreconciled]="card.reconciliationState === 'unreconciled'">
+                            <div class="ac-header">
+                                <button mat-icon-button (click)="onSettingsClick($event, card.accountId)">
+                                    <mat-icon>settings</mat-icon>
                                 </button>
-                            </mat-card-header>
-                            <mat-card-content>
-                                <div
-                                    class="balance-container clickable"
-                                    (click)="onBalanceClick(card.accountId)"
-                                >
-                                    <span class="balance">{{ card.balance | number: '1.0-2' }}</span>
-                                    <span class="currency">{{ card.currencyName }}</span>
-                                </div>
-                                <div class="card-footer">
-                                    <div
-                                        class="trend-container"
-                                        [class.positive]="card.trendDirection === 'up'"
-                                        [class.negative]="card.trendDirection === 'down'"
-                                    >
-                                        <mat-icon class="trend-icon">
-                                            @if (card.trendDirection === 'up') {
-                                                north_east
-                                            } @else if (card.trendDirection === 'down') {
-                                                south_east
-                                            } @else {
-                                                remove
-                                            }
+                                <app-account-display [name]="card.accountName" [image]="card.accountImage" size="medium" />
+                                <button mat-icon-button (click)="onHideAccount(card.accountId)"><mat-icon>close</mat-icon></button>
+                            </div>
+                            <div class="ac-balance clickable" (click)="onBalanceClick(card.accountId)">
+                                <span class="ac-bal-value">{{ card.balance | number: '1.0-2' }}</span>
+                                <span class="ac-bal-curr">{{ card.currencyName }}</span>
+                            </div>
+                            <div class="ac-footer">
+                                <span class="trend-badge sm" [class.pos]="card.trendDirection === 'up'" [class.neg]="card.trendDirection === 'down'">
+                                    <mat-icon class="trend-ico">
+                                        @if (card.trendDirection === 'up') { north_east }
+                                        @else if (card.trendDirection === 'down') { south_east }
+                                        @else { remove }
+                                    </mat-icon>
+                                    {{ card.trendPercent | number: '1.1-1' }}% vs last month
+                                </span>
+                                @if (card.reconciliationState !== 'none') {
+                                    <span class="rec-badge" [class.reconciled]="card.reconciliationState === 'reconciled'" [class.warning]="card.reconciliationState === 'warning'" [class.unreconciled]="card.reconciliationState === 'unreconciled'" [matTooltip]="card.reconciliationTooltip" matTooltipPosition="above">
+                                        <mat-icon>
+                                            @if (card.reconciliationState === 'reconciled') { check_circle }
+                                            @else if (card.reconciliationState === 'warning') { warning }
+                                            @else { error }
                                         </mat-icon>
-                                        <span class="trend-value"
-                                            >{{ card.trendPercent | number: '1.1-1' }}%</span
-                                        >
-                                        <span class="trend-label">vs last month</span>
-                                    </div>
-                                    @if (card.reconciliationState !== 'none') {
-                                        <div
-                                            class="reconciliation-badge"
-                                            [class.reconciled]="
-                                                card.reconciliationState === 'reconciled'
-                                            "
-                                            [class.warning]="card.reconciliationState === 'warning'"
-                                            [class.unreconciled]="
-                                                card.reconciliationState === 'unreconciled'
-                                            "
-                                            [matTooltip]="card.reconciliationTooltip"
-                                            matTooltipPosition="above"
-                                        >
-                                            <mat-icon class="badge-icon">
-                                                @if (card.reconciliationState === 'reconciled') {
-                                                    check_circle
-                                                } @else if (card.reconciliationState === 'warning') {
-                                                    warning
-                                                } @else {
-                                                    error
-                                                }
-                                            </mat-icon>
-                                            @if (card.reconciliationState === 'reconciled') {
-                                                Reconciled
-                                            } @else if (card.reconciliationState === 'warning') {
-                                                Review
-                                            } @else {
-                                                Mismatch
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                            </mat-card-content>
-                        </mat-card>
+                                        @if (card.reconciliationState === 'reconciled') { Reconciled }
+                                        @else if (card.reconciliationState === 'warning') { Review }
+                                        @else { Mismatch }
+                                    </span>
+                                }
+                            </div>
+                        </div>
                     }
                 </div>
             }
         }
 
+        <!-- ═══ EXPENSE SECTION ═══ -->
         @if (currencyTables().length) {
-            <!-- Expense Tables per Currency -->
-            <div class="expense-table-section">
-                @for (table of currencyTables(); track table.currencyId) {
-                    <h2 class="currency-title">
-                        Currency: {{ table.currencyName }}
-                        <mat-button-toggle
-                            class="currency-toggle"
-                            [checked]="selectedOutputCurrencyId() === table.currencyId"
-                            (click)="onOutputCurrencyToggle(table.currencyId)"
-                        >
-                            Use as output currency
-                        </mat-button-toggle>
-                    </h2>
-                    <div class="table-container">
-                        <table class="expense-table">
+            @for (table of currencyTables(); track table.currencyId) {
+
+                <!-- Topbar -->
+                <div class="exp-topbar">
+                    <div class="exp-crumb">
+                        <span class="crumb-dim">Expenses</span>
+                        <span class="crumb-sep">/</span>
+                        <span>{{ table.currencyName }}</span>
+                    </div>
+                    <div class="topbar-actions">
+                        <!-- Output currency toggle -->
+                        @if (currencyTables().length > 1) {
+                            <button class="tb-chip" [class.active]="selectedOutputCurrencyId() === table.currencyId" (click)="onOutputCurrencyToggle(table.currencyId)">
+                                Use as output
+                            </button>
+                        }
+                        <mat-slide-toggle [checked]="includeHidden()" (change)="onIncludeHiddenToggle()">Hidden</mat-slide-toggle>
+                        <!-- Range selector -->
+                        <div class="seg">
+                            @for (r of rangeOptions; track r.id) {
+                                <button [class.active]="selectedRange() === r.id" (click)="selectedRange.set(r.id)">{{ r.label }}</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HERO: KPIs + Stacked chart -->
+                @if (kpis(); as k) {
+                    <div class="hero">
+                        <div class="kpi-stack">
+                            <div class="kpi-card kpi-main">
+                                <div class="kpi-label">Total this month · {{ k.curMonthLabel }}</div>
+                                <div class="kpi-value">{{ fmt(k.curTotal) }} <span class="kpi-unit">{{ table.currencyName }}</span></div>
+                                @if (k.delta !== null) {
+                                    <div class="kpi-delta" [class.up]="k.delta >= 0" [class.down]="k.delta < 0">
+                                        <mat-icon class="kpi-delta-ico">{{ k.delta >= 0 ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+                                        {{ k.delta | number: '1.1-1' }}% vs {{ k.prevMonthLabel }}
+                                    </div>
+                                }
+                            </div>
+                            <div class="kpi-row">
+                                <div class="kpi-card kpi-mini">
+                                    <div class="kpi-label">Avg / month</div>
+                                    <div class="kpi-value kpi-value--sm">{{ fmtK(k.avgPerMonth) }}</div>
+                                </div>
+                                <div class="kpi-card kpi-mini">
+                                    <div class="kpi-label">Top category</div>
+                                    <div class="kpi-value kpi-value--sm kpi-cat-name">{{ k.topName }}</div>
+                                    <div class="kpi-cat-sub">{{ fmtK(k.topTotal) }} · {{ k.topPct | number: '1.0-0' }}% of spend</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-panel">
+                            <div class="chart-head">
+                                <div>
+                                    <div class="chart-title">Month-over-month by category</div>
+                                    <div class="chart-sub">stacked · {{ table.currencyName }} · {{ monthColumns().length }} months</div>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas baseChart [data]="stackedBarChartData()" [options]="stackedBarOptions" type="bar"></canvas>
+                            </div>
+                            <div class="chart-legend">
+                                @for (row of table.rows; track row.accountId) {
+                                    <span class="lg-item">
+                                        <span class="lg-swatch" [style.background]="getAccountColor(row.accountId)"></span>
+                                        {{ row.accountName }}
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- RANKED PANEL -->
+                @if (rankedCategories().length) {
+                    <div class="rank-panel">
+                        <div class="chart-head">
+                            <div class="chart-title">Ranked by total spend</div>
+                            <div class="chart-sub">{{ monthColumns().length }}-month window · click to drill in</div>
+                        </div>
+                        <div class="rank-grid">
+                            @for (cat of rankedCategories(); track cat.accountId) {
+                                <div class="rank-row" (click)="onToggleExpand(cat.accountId)">
+                                    <div class="rank-num">{{ cat.rank | number: '2.0-0' }}</div>
+                                    <div class="rank-name">
+                                        <span class="rank-dot" [style.background]="cat.color"></span>
+                                        {{ cat.accountName }}
+                                    </div>
+                                    <div class="rank-bar">
+                                        <i [style.width.%]="cat.barPct" [style.background]="cat.color"></i>
+                                    </div>
+                                    <div class="rank-amt">{{ fmtK(cat.total) }}</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- EXPENSE TABLE -->
+                <div class="table-card">
+                    <div class="table-head">
+                        <div class="th-left">
+                            <div class="th-title">Expense breakdown</div>
+                            <div class="th-sub">categories × months · heatmap · click a row to drill in</div>
+                        </div>
+                        <div class="th-right">
+                            <input class="search-input" placeholder="Search categories…" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="fx-table">
                             <thead>
                                 <tr>
-                                    <th
-                                        class="account-header sortable"
-                                        (click)="onColumnClick('accountName')"
-                                    >
-                                        Account
-                                        @if (sortColumn() === 'accountName') {
-                                            <span class="sort-indicator">{{
-                                                sortDirection() === 'asc' ? '▲' : '▼'
-                                            }}</span>
-                                        }
+                                    <th class="col-cat sortable" [class.sorted]="sortColumn() === 'accountName'" (click)="onColumnClick('accountName')">
+                                        Category <span class="sort-arrow">{{ sortColumn() === 'accountName' ? (sortDirection() === 'asc' ? '▲' : '▼') : '↕' }}</span>
                                     </th>
                                     @for (month of monthColumns(); track month) {
-                                        <th
-                                            class="month-header sortable"
-                                            (click)="onColumnClick(month)"
-                                        >
-                                            {{ formatMonth(month) }}
-                                            @if (sortColumn() === month) {
-                                                <span class="sort-indicator">{{
-                                                    sortDirection() === 'asc' ? '▲' : '▼'
-                                                }}</span>
-                                            }
+                                        <th class="sortable" [class.sorted]="sortColumn() === month" (click)="onColumnClick(month)">
+                                            {{ formatMonthShort(month) }}
+                                            <span class="sort-arrow">{{ sortColumn() === month ? (sortDirection() === 'asc' ? '▲' : '▼') : '↕' }}</span>
                                         </th>
                                     }
-                                    <th
-                                        class="total-header sortable"
-                                        (click)="onColumnClick('total')"
-                                    >
-                                        Total
-                                        @if (sortColumn() === 'total') {
-                                            <span class="sort-indicator">{{
-                                                sortDirection() === 'asc' ? '▲' : '▼'
-                                            }}</span>
-                                        }
+                                    <th class="col-total sortable" [class.sorted]="sortColumn() === 'total'" (click)="onColumnClick('total')">
+                                        Total <span class="sort-arrow">{{ sortColumn() === 'total' ? (sortDirection() === 'asc' ? '▲' : '▼') : '↕' }}</span>
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @for (row of table.rows; track row.accountId) {
-                                    <tr>
-                                        <td class="account-cell">
-                                            <div class="account-info">
-                                                <div class="account-name-row">
-                                                    <app-account-display
-                                                        [name]="row.accountName"
-                                                        [image]="row.accountImage"
-                                                        size="small"
-                                                    ></app-account-display>
+                                @for (row of filteredRows(table.rows); track row.accountId) {
+                                    <!-- Data row -->
+                                    <tr [class.expanded]="expandedRowId() === row.accountId" (click)="onToggleExpand(row.accountId)">
+                                        <td class="col-cat">
+                                            <div class="cat-cell">
+                                                <div class="cat-glyph" [style.background]="getAccountColor(row.accountId)">
+                                                    {{ getAccountGlyph(row.accountName) }}
                                                 </div>
-                                                @if (
-                                                    row.averageSpent > 0 &&
-                                                    row.accountId !== 'total'
-                                                ) {
-                                                    <span class="account-average"
-                                                        >Avg:
-                                                        {{
-                                                            row.averageSpent | number: '1.0-2'
-                                                        }}</span
-                                                    >
-                                                }
+                                                <div class="cat-meta">
+                                                    <div class="cat-name">{{ row.accountName }}</div>
+                                                    <div class="cat-sub">
+                                                        <span class="cat-spark">
+                                                            <canvas baseChart [data]="getInlineSparklineData(row)" [options]="inlineSparklineOptions" type="line" width="60" height="14"></canvas>
+                                                        </span>
+                                                        avg {{ fmt(row.averageSpent, 0) }}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                         @for (month of monthColumns(); track month) {
-                                            <td
-                                                class="expense-cell clickable"
-                                                [style.background-color]="
-                                                    row.monthCells.get(month)?.color || 'white'
-                                                "
-                                                (click)="onCellClick(row.accountId, month)"
-                                            >
-                                                {{
-                                                    row.monthCells.get(month)?.value || 0
-                                                        | number: '1.2-2'
-                                                }}
+                                            <td class="cell-num heat" [class]="row.monthCells.get(month)?.heatClass ?? ''" (click)="$event.stopPropagation(); onCellClick(row.accountId, month)">
+                                                @if ((row.monthCells.get(month)?.value ?? 0) === 0) {
+                                                    <span class="zero">0</span>
+                                                } @else if ((row.monthCells.get(month)?.value ?? 0) < 0) {
+                                                    <span class="neg">{{ fmt(row.monthCells.get(month)!.value) }}</span>
+                                                } @else {
+                                                    {{ fmt(row.monthCells.get(month)!.value) }}
+                                                }
                                             </td>
                                         }
-                                        <td
-                                            class="total-cell"
-                                            [style.background-color]="row.total.color"
-                                        >
-                                            {{ row.total.value | number: '1.2-2' }}
-                                        </td>
+                                        <td class="col-total cell-num">{{ fmt(row.total) }}</td>
                                     </tr>
+
+                                    <!-- Drill-down row -->
+                                    @if (expandedRowId() === row.accountId) {
+                                        <tr class="drill-row">
+                                            <td [attr.colspan]="monthColumns().length + 2">
+                                                <div class="drill-inner">
+                                                    <div class="drill-chart-col">
+                                                        <div class="drill-sub">Trend · {{ formatMonthShort(monthColumns()[0]) }} → {{ formatMonthShort(monthColumns()[monthColumns().length - 1]) }}</div>
+                                                        <div class="drill-chart">
+                                                            <canvas baseChart [data]="getDrillSparklineData(row)" [options]="drillSparklineOptions" type="line"></canvas>
+                                                        </div>
+                                                        @if (getDrillStats(row); as s) {
+                                                            <div class="drill-stats">
+                                                                <div class="drill-stat"><div class="ds-label">Total</div><div class="ds-val">{{ fmt(s.total) }}</div></div>
+                                                                <div class="drill-stat"><div class="ds-label">Avg / month</div><div class="ds-val">{{ fmt(s.avg) }}</div></div>
+                                                                <div class="drill-stat"><div class="ds-label">Peak</div><div class="ds-val">{{ fmt(s.peak) }} <span class="ds-sub">{{ s.peakMonth }}</span></div></div>
+                                                                <div class="drill-stat"><div class="ds-label">Volatility σ</div><div class="ds-val">{{ fmt(s.stdev) }}</div></div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="drill-actions-col">
+                                                        <button mat-button class="drill-link" (click)="navigateToTransactions(row.accountId)">
+                                                            <mat-icon>open_in_new</mat-icon>
+                                                            View transactions
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
-                                <!-- Total Row -->
+
+                                <!-- Total row -->
                                 <tr class="total-row">
-                                    <td class="account-cell total-label">Total</td>
+                                    <td class="col-cat total-label">Total</td>
                                     @for (month of monthColumns(); track month) {
-                                        <td
-                                            class="expense-cell total-cell"
-                                            [style.background-color]="
-                                                table.totalRow.monthCells.get(month)?.color ||
-                                                'white'
-                                            "
-                                        >
-                                            {{
-                                                table.totalRow.monthCells.get(month)?.value || 0
-                                                    | number: '1.2-2'
-                                            }}
+                                        <td class="cell-num heat" [class]="table.totalRow.monthCells.get(month)?.heatClass ?? ''">
+                                            {{ fmt(table.totalRow.monthCells.get(month)?.value ?? 0) }}
                                         </td>
                                     }
-                                    <td
-                                        class="total-cell grand-total"
-                                        [style.background-color]="table.totalRow.total.color"
-                                    >
-                                        {{ table.totalRow.total.value | number: '1.2-2' }}
-                                    </td>
+                                    <td class="col-total cell-num grand-total">{{ fmt(table.totalRow.total) }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                }
-            </div>
+                </div>
+
+            }
         }
 
+        <!-- ═══ WELCOME ═══ -->
         @if (!assetCards().length && !currencyTables().length) {
-            <div class="welcome-container">
-                <mat-icon class="welcome-icon">savings</mat-icon>
+            <div class="welcome-wrap">
+                <mat-icon class="welcome-ico">savings</mat-icon>
                 <h2>Welcome to GeekBudget!</h2>
-                <p class="welcome-subtitle">Your personal finance tracker is ready. Here's how to get started:</p>
+                <p class="welcome-sub">Your personal finance tracker is ready. Here's how to get started:</p>
                 <div class="welcome-steps">
                     <div class="welcome-step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <strong>Add currencies</strong>
-                            <span>Go to <a routerLink="/currencies">Currencies</a> and add the currencies you use (e.g. USD, EUR).</span>
-                        </div>
+                        <div class="step-num">1</div>
+                        <div><strong>Add currencies</strong><br><span>Go to <a routerLink="/currencies">Currencies</a> and add the currencies you use.</span></div>
                     </div>
                     <div class="welcome-step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <strong>Create accounts</strong>
-                            <span>Go to <a routerLink="/accounts">Accounts</a> and add your bank accounts (type: Asset) and spending categories (type: Expense).</span>
-                        </div>
+                        <div class="step-num">2</div>
+                        <div><strong>Create accounts</strong><br><span>Go to <a routerLink="/accounts">Accounts</a> and add your bank accounts and spending categories.</span></div>
                     </div>
                     <div class="welcome-step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <strong>Add transactions</strong>
-                            <span>Go to <a routerLink="/transactions">Transactions</a> to manually add transactions or import them from your bank.</span>
-                        </div>
+                        <div class="step-num">3</div>
+                        <div><strong>Add transactions</strong><br><span>Go to <a routerLink="/transactions">Transactions</a> to add or import transactions.</span></div>
                     </div>
                 </div>
             </div>
         }
+
     }
 </div>
