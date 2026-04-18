@@ -75,7 +75,8 @@ interface RankedCategory {
 
 type RangeId = '3m' | '6m' | '12m' | 'ytd';
 
-const HUES = [142, 18, 290, 220, 200, 35, 340, 260, 0, 170, 155, 310, 195, 245, 28];
+// Golden-angle hue stepping: each consecutive color is ~137.5° away, maximising distance
+const HUES = [0, 138, 275, 53, 190, 328, 105, 243, 20, 158, 295, 73, 210, 348, 125];
 
 @Component({
     selector: 'app-dashboard',
@@ -268,6 +269,7 @@ export class DashboardComponent implements OnInit {
             legend: { display: false },
             tooltip: {
                 mode: 'index',
+                itemSort: (a, b) => (b.raw as number) - (a.raw as number),
                 callbacks: {
                     label: (ctx) => {
                         const v = ctx.raw as number;
