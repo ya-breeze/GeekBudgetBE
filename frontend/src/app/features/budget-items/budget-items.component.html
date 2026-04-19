@@ -1,0 +1,426 @@
+<div class="budget-container" [class.drawer-open]="!!selectedAccountId()">
+
+    @if (loading()) {
+        <div class="loading-container"><mat-spinner/></div>
+    } @else {
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="crumbs">Workspace / <span>Budget</span></div>
+            <div class="tb-actions">
+                <button class="chip" (click)="shiftMonths(-1)">
+                    <mat-icon>chevron_left</mat-icon>
+                </button>
+                <span class="period-label">{{ focusedMonthLabel() }}</span>
+                <button class="chip" (click)="shiftMonths(1)">
+                    <mat-icon>chevron_right</mat-icon>
+                </button>
+                @if (currencyName()) {
+                    <span class="currency-badge">{{ currencyName() }}</span>
+                }
+                <mat-slide-toggle
+                    [checked]="includeHidden()"
+                    (change)="includeHidden.set($event.checked)"
+                    color="primary">
+                    <span class="toggle-label">Hidden</span>
+                </mat-slide-toggle>
+            </div>
+        </div>
+
+        <!-- Hero summary -->
+        @let ft = focusedTotals();
+        <section class="tba-wrap">
+            <div class="tba" [class.zero]="ft.available === 0" [class.over-budget]="ft.available < 0">
+                <div class="tba-lbl">{{ ft.available < 0 ? 'Over budget' : 'Available total' }}</div>
+                <div class="tba-val">
+                    {{ ft.available | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}
+                </div>
+                <div class="tba-cta">
+                    {{ fmtK(ft.assigned) }} assigned &middot; {{ (ft.pct * 100).toFixed(0) }}% used
+                </div>
+            </div>
+            <div class="tba-meta">
+                <div>
+                    <div class="m-lbl">Assigned</div>
+                    <div class="m-val">{{ fmtK(ft.assigned) }} <span class="sub">{{ currencyName() }}</span></div>
+                </div>
+                <div>
+                    <div class="m-lbl">Spent</div>
+                    <div class="m-val">
+                        {{ fmtK(ft.spent) }}
+                        <span class="sub">{{ ft.assigned > 0 ? ((ft.pct * 100).toFixed(0) + '%') : '' }}</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="m-lbl">Available</div>
+                    <div class="m-val"
+                         [style.color]="ft.available < 0 ? 'oklch(0.55 0.18 25)' : 'var(--pos)'">
+                        {{ fmtK(ft.available) }} <span class="sub">{{ currencyName() }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline (hidden in focus mode) -->
+        @if (viewMode() !== 'focus') {
+            <section class="timeline">
+                <div class="tl-head">
+                    <div>
+                        <div class="chart-title">{{ focusedMonthLabel() }}</div>
+                        <div class="chart-sub">12-month plan &middot; click any month to focus</div>
+                    </div>
+                    <div class="seg">
+                        <button [class.active]="viewMode() === 'split'" (click)="setViewMode('split')">Split</button>
+                        <button [class.active]="viewMode() === 'focus'" (click)="setViewMode('focus')">Month focus</button>
+                        <button [class.active]="viewMode() === 'year'" (click)="setViewMode('year')">Year grid</button>
+                    </div>
+                </div>
+                <div class="tl-months">
+                    @for (m of months(); track m; let i = $index) {
+                        @let mt = monthTotals(i);
+                        <div class="tl-cell"
+                             [class.current]="safeFocusedIdx() === i"
+                             (click)="setFocusedMonth(i)">
+                            <div class="tl-m-name">{{ m | date:'MMM yy' }}</div>
+                            <div class="tl-m-val">
+                                {{ fmtK(mt.spent) }}
+                                <span>/ {{ fmtK(mt.assigned) }}</span>
+                            </div>
+                            <div class="tl-m-bar">
+                                <i [class.over]="mt.pct > 1"
+                                   [style.width.%]="Math.min(100, mt.pct * 100)"></i>
+                            </div>
+                            <div class="tl-m-pct">{{ (mt.pct * 100).toFixed(0) }}% used</div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+        <!-- Main table card -->
+        <div class="table-card">
+            <div class="table-head">
+                <div class="th-left">
+                    <div class="th-title">Plan &middot; {{ focusedMonthLabel() }}</div>
+                    <div class="th-sub">click assigned to edit &middot; click row for details &middot; available = carry + assigned &minus; spent</div>
+                </div>
+                <div class="th-right">
+                    @if (viewMode() === 'focus') {
+                        <div class="seg" style="margin-right: 8px;">
+                            <button [class.active]="viewMode() === 'split'" (click)="setViewMode('split')">Split</button>
+                            <button [class.active]="viewMode() === 'focus'" (click)="setViewMode('focus')">Month</button>
+                            <button [class.active]="viewMode() === 'year'" (click)="setViewMode('year')">Year</button>
+                        </div>
+                    }
+                    <div class="seg">
+                        <button [class.active]="density() === 'comfortable'" (click)="density.set('comfortable')">cozy</button>
+                        <button [class.active]="density() === 'compact'" (click)="density.set('compact')">dense</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan table (split + focus) -->
+            @if (viewMode() !== 'year') {
+                <div style="overflow-x: auto;">
+                    <table class="b-table" [attr.data-density]="density()">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Carry-in</th>
+                                <th>Assigned</th>
+                                <th>Spent</th>
+                                <th>Progress</th>
+                                <th>Available</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (row of focusedMonthRows(); track row.account.id) {
+                                <tr class="cat"
+                                    [class.selected]="selectedAccountId() === row.account.id"
+                                    (click)="selectedAccountId.set(row.account.id)">
+                                    <!-- Category -->
+                                    <td>
+                                        <div class="b-cat">
+                                            <div class="cat-glyph"
+                                                 [style.background]="catColor(row.hue)">
+                                                {{ row.account.name.substring(0, 2).toUpperCase() }}
+                                            </div>
+                                            <div>
+                                                <div class="b-cat-name">{{ row.account.name }}</div>
+                                                <div class="b-cat-sub">
+                                                    @if (row.cell.rollover > 0) {
+                                                        +{{ fmtK(row.cell.rollover) }} carry
+                                                    } @else if (row.cell.rollover < 0) {
+                                                        {{ fmtK(row.cell.rollover) }} overspend
+                                                    } @else {
+                                                        fresh start
+                                                    }
+                                                </div>
+                                                @if (row.averageSpent > 0) {
+                                                    <div class="b-cat-avg">avg&thinsp;·&thinsp;{{ fmtK(row.averageSpent) }}</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- Carry-in -->
+                                    <td>
+                                        <span class="b-num"
+                                              [class.muted]="row.cell.rollover === 0"
+                                              [style.color]="row.cell.rollover < 0 ? 'oklch(0.55 0.18 25)' : null">
+                                            {{ row.cell.rollover === 0 ? '—' : (row.cell.rollover | currency: currencyName() : 'symbol-narrow' : '1.0-0') }}
+                                        </span>
+                                    </td>
+                                    <!-- Assigned (click to edit) -->
+                                    <td (click)="$event.stopPropagation(); editAssigned(row.account, row.cell)">
+                                        <span class="b-edit">
+                                            {{ row.cell.amount | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}
+                                        </span>
+                                    </td>
+                                    <!-- Spent -->
+                                    <td>
+                                        <span class="b-num" [class.muted]="row.cell.spent === 0">
+                                            {{ row.cell.isFutureMonth && row.cell.spent === 0 ? '—' : (row.cell.spent | currency: currencyName() : 'symbol-narrow' : '1.0-0') }}
+                                        </span>
+                                    </td>
+                                    <!-- Progress -->
+                                    <td>
+                                        <div class="b-prog">
+                                            <div class="b-prog-bar">
+                                                <i [class]="row.status"
+                                                   [style.width.%]="row.progressWidth"></i>
+                                                @if (row.pct > 1) {
+                                                    <span class="overshoot"
+                                                          [style.width.%]="Math.min(100, (row.pct - 1) * 100)"></span>
+                                                }
+                                            </div>
+                                            <div class="b-prog-pct">
+                                                {{ row.cell.amount === 0 && row.cell.spent === 0 ? '—' : ((row.pct * 100).toFixed(0) + '%') }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- Available -->
+                                    <td>
+                                        <span class="b-avail"
+                                              [class.zero]="row.cell.available === 0"
+                                              [class.over]="row.cell.available < 0">
+                                            {{ row.cell.available | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}
+                                            @if (row.cell.rollover !== 0) {
+                                                <span class="carry-tag">w/ carry</span>
+                                            }
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>Totals &middot; {{ focusedMonthLabel() }}</td>
+                                <td></td>
+                                <td>{{ ft.assigned | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}</td>
+                                <td>{{ ft.spent | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}</td>
+                                <td style="text-align: right; color: var(--ink-3);">{{ (ft.pct * 100).toFixed(0) }}%</td>
+                                <td>{{ ft.available | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Mobile card list -->
+                <div class="mobile-b-list">
+                    @for (row of focusedMonthRows(); track row.account.id) {
+                        <div class="mbl-card" (click)="selectedAccountId.set(row.account.id)">
+                            <div class="mbl-top">
+                                <div class="cat-glyph" style="width:28px;height:28px;font-size:10px;"
+                                     [style.background]="catColor(row.hue)">
+                                    {{ row.account.name.substring(0, 2).toUpperCase() }}
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div class="b-cat-name">{{ row.account.name }}</div>
+                                    <div class="b-cat-sub">
+                                        @if (row.cell.rollover > 0) { +{{ fmtK(row.cell.rollover) }} carry }
+                                        @else if (row.cell.rollover < 0) { {{ fmtK(row.cell.rollover) }} over }
+                                        @else { fresh }
+                                        @if (row.averageSpent > 0) { &nbsp;·&nbsp;avg {{ fmtK(row.averageSpent) }} }
+                                    </div>
+                                </div>
+                                <span class="b-avail"
+                                      [class.zero]="row.cell.available === 0"
+                                      [class.over]="row.cell.available < 0">
+                                    {{ fmtK(row.cell.available) }}
+                                </span>
+                            </div>
+                            <div class="mbl-bar">
+                                <i [class]="row.status" [style.width.%]="row.progressWidth"></i>
+                            </div>
+                            <div class="mbl-row">
+                                <div>
+                                    <div class="lbl">Assigned</div>
+                                    <div class="val">{{ fmtK(row.cell.amount) }}</div>
+                                </div>
+                                <div>
+                                    <div class="lbl">Spent</div>
+                                    <div class="val">{{ fmtK(row.cell.spent) }}</div>
+                                </div>
+                                <div>
+                                    <div class="lbl">Used</div>
+                                    <div class="val">
+                                        {{ row.cell.amount === 0 && row.cell.spent === 0 ? '—' : ((row.pct * 100).toFixed(0) + '%') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="mbl-totals">
+                        <div><div class="lbl">Total assigned</div><div class="val">{{ fmtK(ft.assigned) }}</div></div>
+                        <div><div class="lbl">Total spent</div><div class="val">{{ fmtK(ft.spent) }}</div></div>
+                        <div><div class="lbl">Available</div><div class="val">{{ fmtK(ft.available) }}</div></div>
+                        <div><div class="lbl">Used</div><div class="val">{{ (ft.pct * 100).toFixed(0) }}%</div></div>
+                    </div>
+                </div>
+            }
+
+            <!-- Year grid -->
+            @if (viewMode() === 'year') {
+                <div style="overflow-x: auto;">
+                    <table class="b-table year-grid">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                @for (m of months(); track m) {
+                                    <th>{{ m | date:'MMM yy' }}</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (row of matrixData(); track row.account.id) {
+                                <tr class="cat" (click)="selectedAccountId.set(row.account.id)">
+                                    <td>
+                                        <div class="b-cat">
+                                            <div class="cat-glyph"
+                                                 [style.background]="catColor(row.hue)">
+                                                {{ row.account.name.substring(0, 2).toUpperCase() }}
+                                            </div>
+                                            <div class="b-cat-name">{{ row.account.name }}</div>
+                                        </div>
+                                    </td>
+                                    @for (cell of row.cells; track cell.month; let i = $index) {
+                                        <td class="heat"
+                                            [class.current-col]="safeFocusedIdx() === i"
+                                            [style.background]="heatBg(cell.spent, maxCellSpent())"
+                                            (click)="$event.stopPropagation(); editYearCell(row.account, cell)">
+                                            <span class="cell-num" [class.zero]="cell.spent === 0">
+                                                {{ cell.isFutureMonth && cell.spent === 0 ? '—' : fmtK(cell.spent) }}
+                                            </span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <!-- Side drawer -->
+        @if (selectedAccount()) {
+            @let sa = selectedAccount();
+            @let sc = sa?.cells?.[safeFocusedIdx()];
+            <div class="drawer open">
+                <div class="drawer-head">
+                    <div class="cat-glyph drawer-glyph"
+                         [style.background]="catColor(sa?.hue ?? 200)">
+                        {{ (sa?.account?.name ?? '').substring(0, 2).toUpperCase() }}
+                    </div>
+                    <div>
+                        <div class="d-title">{{ sa?.account?.name }}</div>
+                        <div class="d-sub">{{ focusedMonthLabel() }}</div>
+                    </div>
+                    <button class="close" (click)="selectedAccountId.set(null)">&#x00D7;</button>
+                </div>
+
+                <div class="drawer-body">
+                    @if (sc) {
+                        <!-- Available -->
+                        <div class="d-section">
+                            <h5>Available</h5>
+                            <div class="d-big"
+                                 [style.color]="sc.available < 0 ? 'oklch(0.55 0.18 25)' : 'var(--pos)'">
+                                {{ sc.available | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}
+                            </div>
+                            <div class="d-formula">
+                                <b>{{ sc.rollover | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}</b> carry-in
+                                &nbsp;+&nbsp;
+                                <b>{{ sc.amount | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}</b> assigned
+                                &nbsp;&minus;&nbsp;
+                                <b>{{ sc.spent | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}</b> spent
+                                &nbsp;=&nbsp;
+                                <b>{{ sc.available | currency: currencyName() : 'symbol-narrow' : '1.0-0' }}</b>
+                            </div>
+                        </div>
+
+                        <!-- KPIs -->
+                        <div class="d-section">
+                            <h5>Month at a glance</h5>
+                            <div class="d-grid">
+                                <div class="d-kpi">
+                                    <div class="lbl">Used</div>
+                                    <div class="val">{{ sc.amount > 0 ? ((sc.spent / sc.amount * 100).toFixed(0) + '%') : '—' }}</div>
+                                </div>
+                                <div class="d-kpi">
+                                    <div class="lbl">12-mo avg spend</div>
+                                    <div class="val">{{ fmtK(sa?.averageSpent ?? 0) }}</div>
+                                </div>
+                                <div class="d-kpi">
+                                    <div class="lbl">Assigned</div>
+                                    <div class="val">{{ fmtK(sc.amount) }}</div>
+                                </div>
+                                <div class="d-kpi">
+                                    <div class="lbl">Spent</div>
+                                    <div class="val">{{ fmtK(sc.spent) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sparkline trend -->
+                        <div class="d-section">
+                            <h5>Trend &middot; last {{ sa?.cells?.length ?? 0 }} months</h5>
+                            <svg width="100%" height="60" viewBox="0 0 340 60"
+                                 style="overflow:visible; display:block;">
+                                <path [attr.d]="sparklineAreaPath(selectedSpentHistory())"
+                                      [attr.fill]="catColor(sa?.hue ?? 200, 0.55, 0.15)"
+                                      opacity="0.12"/>
+                                <path [attr.d]="sparklinePath(selectedSpentHistory())"
+                                      fill="none"
+                                      [attr.stroke]="catColor(sa?.hue ?? 200, 0.55, 0.15)"
+                                      stroke-width="1.5"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+
+                        <!-- Quick actions -->
+                        <div class="d-section">
+                            <h5>Quick actions</h5>
+                            <div class="d-actions">
+                                <div class="d-action" (click)="drawerAssignAvg()">
+                                    <span>Assign 12-mo average ({{ fmtK(sa?.averageSpent ?? 0) }})</span>
+                                    <span class="k">&#x21E7;A</span>
+                                </div>
+                                <div class="d-action" (click)="drawerCopyFromPrev()">
+                                    <span>Copy from {{ prevMonthLabel() }}</span>
+                                    <span class="k">&#x21E7;P</span>
+                                </div>
+                                @if (sc.available < 0) {
+                                    <div class="d-action" (click)="drawerCoverOverspend()">
+                                        <span>Cover overspend (+{{ fmtK(Math.abs(sc.available)) }})</span>
+                                        <span class="k">&#x21E7;O</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -6,43 +6,53 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe, CurrencyPipe, CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { RouterLink } from '@angular/router';
+
+import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs';
+import { ApiConfiguration } from '../../core/api/api-configuration';
 import { BudgetItemService } from './services/budget-item.service';
 import { AccountService } from '../accounts/services/account.service';
 import { UserService } from '../../core/services/user.service';
 import { CurrencyService } from '../currencies/services/currency.service';
+import { LayoutService } from '../../layout/services/layout.service';
+import { BudgetMatrixEditComponent } from './components/budget-matrix-edit/budget-matrix-edit.component';
 import { BudgetItem } from '../../core/api/models/budget-item';
 import { BudgetStatus } from '../../core/api/models/budget-status';
-import { LayoutService } from '../../layout/services/layout.service';
+import { Aggregation } from '../../core/api/models/aggregation';
+import { getExpenses } from '../../core/api/fn/aggregations/get-expenses';
 
-import { BudgetMatrixEditComponent } from './components/budget-matrix-edit/budget-matrix-edit.component';
+export type ViewMode = 'split' | 'focus' | 'year';
 
 interface MatrixCell {
-    month: string; // YYYY-MM-01
-    amount: number; // Planned (Converted)
-    rawAmount: number; // For editing
-    spent: number; // (Converted)
+    month: string;
+    amount: number;
+    rawAmount: number;
+    spent: number;
+    rollover: number;
+    available: number;
     budgetItemId?: string;
-    calculatedAvailable?: number;
     isVirtual?: boolean;
     isPastMonth?: boolean;
+    isFutureMonth?: boolean;
 }
 
 interface MatrixRow {
     account: { id: string; name: string };
+    hue: number;
     cells: MatrixCell[];
     totalPlanned: number;
     totalSpent: number;
     averageSpent: number;
 }
 
-interface ListRow {
+interface FocusedRow {
     account: { id: string; name: string };
-    totalPlanned: number;
-    totalSpent: number;
+    hue: number;
     averageSpent: number;
-    percent: number;
-    isOver: boolean;
-    isVirtual: boolean;
+    cell: MatrixCell;
+    status: string;
+    pct: number;
     progressWidth: number;
 }
 
@@ -58,201 +68,14 @@ interface ListRow {
         CommonModule,
         MatDialogModule,
         MatSlideToggleModule,
+        RouterLink,
     ],
-    template: `
-        <div class="budget-items-container">
-            @if (!sidenavOpened()) {
-                <h1 class="page-title">Budget</h1>
-            }
-
-            @if (loading()) {
-                <div class="loading-container">
-                    <mat-spinner></mat-spinner>
-                </div>
-            } @else {
-                <div class="budget-container">
-                    <!-- Header -->
-                    <div class="list-header">
-                        <div class="nav-row">
-                            <button mat-icon-button (click)="shiftMonths(-1)">
-                                <mat-icon>chevron_left</mat-icon>
-                            </button>
-                            <span class="period-display">
-                                {{ months()[0] | date: 'MMM yyyy' }}
-                                @if (selectedPeriod() > 1) {
-                                    &ndash; {{ months()[months().length - 1] | date: 'MMM yyyy' }}
-                                }
-                            </span>
-                            <button mat-icon-button (click)="shiftMonths(1)">
-                                <mat-icon>chevron_right</mat-icon>
-                            </button>
-
-                            <div class="period-selector">
-                                @for (p of periodOptions; track p) {
-                                    <button
-                                        class="period-btn"
-                                        [class.active]="selectedPeriod() === p"
-                                        (click)="selectPeriod(p)"
-                                    >
-                                        {{ p }}m
-                                    </button>
-                                }
-                            </div>
-
-                            @if (targetCurrencySymbol(); as curr) {
-                                <span class="currency-badge">{{ curr }}</span>
-                            }
-
-                            <mat-slide-toggle
-                                [checked]="includeHidden()"
-                                (change)="includeHidden.set($event.checked)"
-                                color="primary"
-                                class="hidden-toggle"
-                            >
-                                <span class="toggle-label">Hidden</span>
-                            </mat-slide-toggle>
-                        </div>
-
-                        <!-- Summary progress bar -->
-                        <div class="summary-bar">
-                            <div class="summary-progress">
-                                <div
-                                    class="summary-fill"
-                                    [style.width.%]="grandTotalPercent()"
-                                    [class.fill-over]="grandTotal().spent > grandTotal().planned"
-                                ></div>
-                            </div>
-                            <span class="summary-text">
-                                {{
-                                    grandTotal().spent
-                                        | currency
-                                            : preferredCurrency()?.name || ''
-                                            : 'symbol-narrow'
-                                            : '1.0-0'
-                                }}
-                                /
-                                {{
-                                    grandTotal().planned
-                                        | currency
-                                            : preferredCurrency()?.name || ''
-                                            : 'symbol-narrow'
-                                            : '1.0-0'
-                                }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Account list -->
-                    <div class="budget-list">
-                        @for (row of listData(); track row.account.id) {
-                            <div
-                                class="budget-row"
-                                [class.over-budget]="row.isOver"
-                                [class.unbudgeted]="row.isVirtual && !row.isOver"
-                                (click)="editCurrentMonth(row.account)"
-                            >
-                                <div class="row-info">
-                                    <span class="account-name">{{ row.account.name }}</span>
-                                    <span class="account-avg">
-                                        Avg:
-                                        {{
-                                            row.averageSpent
-                                                | currency
-                                                    : preferredCurrency()?.name || ''
-                                                    : 'symbol-narrow'
-                                                    : '1.0-0'
-                                        }}
-                                    </span>
-                                </div>
-                                <div class="row-progress-area">
-                                    <div class="progress-track">
-                                        <div
-                                            class="progress-fill"
-                                            [style.width.%]="row.progressWidth"
-                                            [class.fill-over]="row.isOver"
-                                            [class.fill-virtual]="row.isVirtual && !row.isOver"
-                                        ></div>
-                                    </div>
-                                    <div class="row-stats">
-                                        <span class="pct" [class.text-over]="row.isOver">
-                                            {{ row.percent | number: '1.0-0' }}%
-                                        </span>
-                                        @if (row.isOver) {
-                                            <mat-icon class="warn-icon">warning</mat-icon>
-                                        }
-                                        <span class="amounts">
-                                            {{
-                                                row.totalSpent
-                                                    | currency
-                                                        : preferredCurrency()?.name || ''
-                                                        : 'symbol-narrow'
-                                                        : '1.0-0'
-                                            }}
-                                            /
-                                            {{
-                                                row.totalPlanned
-                                                    | currency
-                                                        : preferredCurrency()?.name || ''
-                                                        : 'symbol-narrow'
-                                                        : '1.0-0'
-                                            }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Total row -->
-                    <div
-                        class="total-row"
-                        [class.over-budget]="grandTotal().spent > grandTotal().planned"
-                    >
-                        <div class="row-info">
-                            <span class="account-name">Total</span>
-                        </div>
-                        <div class="row-progress-area">
-                            <div class="progress-track">
-                                <div
-                                    class="progress-fill"
-                                    [style.width.%]="grandTotalPercent()"
-                                    [class.fill-over]="grandTotal().spent > grandTotal().planned"
-                                ></div>
-                            </div>
-                            <div class="row-stats">
-                                <span
-                                    class="pct"
-                                    [class.text-over]="grandTotal().spent > grandTotal().planned"
-                                >
-                                    {{ grandTotalPercent() | number: '1.0-0' }}%
-                                </span>
-                                <span class="amounts">
-                                    {{
-                                        grandTotal().spent
-                                            | currency
-                                                : preferredCurrency()?.name || ''
-                                                : 'symbol-narrow'
-                                                : '1.0-0'
-                                    }}
-                                    /
-                                    {{
-                                        grandTotal().planned
-                                            | currency
-                                                : preferredCurrency()?.name || ''
-                                                : 'symbol-narrow'
-                                                : '1.0-0'
-                                    }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    `,
+    templateUrl: './budget-items.component.html',
     styleUrl: './budget-items.component.scss',
 })
 export class BudgetItemsComponent implements OnInit {
+    private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject(ApiConfiguration);
     private readonly budgetItemService = inject(BudgetItemService);
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
@@ -262,22 +85,24 @@ export class BudgetItemsComponent implements OnInit {
     private readonly dialog = inject(MatDialog);
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
-
     protected readonly budgetItems = this.budgetItemService.budgetItems;
     protected readonly budgetStatus = this.budgetItemService.budgetStatus;
     protected readonly accounts = this.accountService.accounts;
     protected readonly loading = this.budgetItemService.loading;
     protected readonly currencies = this.currencyService.currencies;
     protected readonly user = this.userService.user;
+    protected readonly Math = Math;
 
-    // Configuration
     protected readonly startDate = signal(new Date());
-    protected readonly monthCount = signal(1);
+    protected readonly viewMode = signal<ViewMode>('split');
+    protected readonly density = signal<'comfortable' | 'compact'>('comfortable');
+    protected readonly selectedAccountId = signal<string | null>(null);
+    protected readonly focusedMonthIdx = signal(11);
     protected readonly includeHidden = signal(false);
-    protected readonly selectedPeriod = signal<1 | 3 | 6 | 12>(1);
-    protected readonly periodOptions = [1, 3, 6, 12] as const;
+    protected readonly monthlyExpenses = signal<Aggregation | null>(null);
 
-    // Computed state
+    protected readonly monthCount = computed(() => 12);
+
     protected readonly preferredCurrency = computed(() => {
         const user = this.user();
         const currencies = this.currencies();
@@ -287,15 +112,7 @@ export class BudgetItemsComponent implements OnInit {
         return currencies.length > 0 ? currencies[0] : null;
     });
 
-    protected readonly currencyMap = computed(() => {
-        const map = new Map<string, string>();
-        this.currencies().forEach((c) => map.set(c.id, c.name));
-        return map;
-    });
-
-    protected readonly targetCurrencySymbol = computed(() => {
-        return this.preferredCurrency()?.name || '';
-    });
+    protected readonly currencyName = computed(() => this.preferredCurrency()?.name || '');
 
     protected readonly months = computed(() => {
         const anchor = this.startDate();
@@ -308,6 +125,25 @@ export class BudgetItemsComponent implements OnInit {
             result.push(d.toISOString());
         }
         return result;
+    });
+
+    protected readonly safeFocusedIdx = computed(() =>
+        Math.min(this.focusedMonthIdx(), this.months().length - 1),
+    );
+
+    protected readonly focusedMonthLabel = computed(() => {
+        const months = this.months();
+        if (months.length === 0) return '';
+        const d = new Date(months[this.safeFocusedIdx()]);
+        return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    });
+
+    protected readonly prevMonthLabel = computed(() => {
+        const months = this.months();
+        const idx = this.safeFocusedIdx();
+        if (idx === 0 || months.length === 0) return 'previous month';
+        const d = new Date(months[idx - 1]);
+        return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     });
 
     protected readonly matrixData = computed((): MatrixRow[] => {
@@ -329,6 +165,25 @@ export class BudgetItemsComponent implements OnInit {
             statusMap.set(`${s.accountId}_${m}`, s);
         });
 
+        // Build fallback monthly spending from getExpenses aggregation
+        // (BudgetStatus only returns rows for months with budget items)
+        const expMap = new Map<string, Map<string, number>>();
+        const agg = this.monthlyExpenses();
+        if (agg) {
+            const currId = this.preferredCurrency()?.id;
+            const currAgg =
+                agg.currencies.find((c) => c.currencyId === currId) ?? agg.currencies[0];
+            if (currAgg) {
+                currAgg.accounts.forEach((accAgg) => {
+                    const accMap = new Map<string, number>();
+                    agg.intervals.forEach((interval, idx) => {
+                        accMap.set(interval.substring(0, 7), accAgg.amounts[idx] ?? 0);
+                    });
+                    expMap.set(accAgg.accountId, accMap);
+                });
+            }
+        }
+
         const avgMap = new Map(averages.map((a) => [a.accountId, a.averageSpent]));
 
         const now = new Date();
@@ -338,6 +193,7 @@ export class BudgetItemsComponent implements OnInit {
         return accs.map((acc) => {
             let rowTotalPlanned = 0;
             let rowTotalSpent = 0;
+            const hue = this.hueFromId(acc.id);
 
             const cells: MatrixCell[] = months.map((mStr) => {
                 const mKey = mStr.substring(0, 7);
@@ -350,10 +206,14 @@ export class BudgetItemsComponent implements OnInit {
                     cellDate.getUTCMonth() === currentMonth;
 
                 const nowTotalMonths = currentYear * 12 + currentMonth;
-                const cellTotalMonths = cellDate.getUTCFullYear() * 12 + cellDate.getUTCMonth();
+                const cellTotalMonths =
+                    cellDate.getUTCFullYear() * 12 + cellDate.getUTCMonth();
                 const isPastMonth = cellTotalMonths < nowTotalMonths;
+                const isFutureMonth = cellTotalMonths > nowTotalMonths;
 
-                const spentDisplay = stat?.spent ?? 0;
+                const spentDisplay =
+                    stat?.spent ?? expMap.get(acc.id)?.get(mKey) ?? 0;
+                const rollover = stat?.rollover ?? 0;
 
                 let amountDisplay = 0;
                 const rawAmount = item?.amount ?? 0;
@@ -362,17 +222,14 @@ export class BudgetItemsComponent implements OnInit {
                 if (item) {
                     amountDisplay = stat?.budgeted ?? item.amount;
                 } else {
-                    if (isCurrentMonth) {
-                        amountDisplay = 0;
-                    } else {
+                    if (!isCurrentMonth) {
                         amountDisplay = spentDisplay;
-                        if (spentDisplay > 0) {
-                            isVirtual = true;
-                        }
+                        if (spentDisplay > 0) isVirtual = true;
                     }
                 }
 
-                const available = amountDisplay - spentDisplay;
+                const available = stat?.available ?? amountDisplay + rollover - spentDisplay;
+
                 rowTotalPlanned += amountDisplay;
                 rowTotalSpent += spentDisplay;
 
@@ -381,15 +238,18 @@ export class BudgetItemsComponent implements OnInit {
                     amount: amountDisplay,
                     rawAmount,
                     spent: spentDisplay,
+                    rollover,
+                    available,
                     budgetItemId: item?.id,
-                    calculatedAvailable: available,
                     isVirtual,
                     isPastMonth,
+                    isFutureMonth,
                 };
             });
 
             return {
                 account: { id: acc.id, name: acc.name },
+                hue,
                 cells,
                 totalPlanned: rowTotalPlanned,
                 totalSpent: rowTotalSpent,
@@ -398,57 +258,57 @@ export class BudgetItemsComponent implements OnInit {
         });
     });
 
-    protected readonly columnTotals = computed(() => {
-        const rows = this.matrixData();
-        const months = this.months();
-        if (rows.length === 0) return [];
-
-        const totals = months.map((m) => ({ month: m, planned: 0, spent: 0 }));
-        rows.forEach((row) => {
-            row.cells.forEach((cell, idx) => {
-                if (totals[idx]) {
-                    totals[idx].planned += cell.amount;
-                    totals[idx].spent += cell.spent;
-                }
-            });
-        });
-        return totals;
-    });
-
-    protected readonly grandTotal = computed(() => {
-        return this.columnTotals().reduce(
-            (acc, curr) => ({
-                planned: acc.planned + curr.planned,
-                spent: acc.spent + curr.spent,
-            }),
-            { planned: 0, spent: 0 },
-        );
-    });
-
-    protected readonly listData = computed((): ListRow[] => {
+    protected readonly focusedMonthRows = computed((): FocusedRow[] => {
+        const idx = this.safeFocusedIdx();
         return this.matrixData().map((row) => {
-            const { totalPlanned, totalSpent } = row;
+            const cell = row.cells[idx] ?? {
+                month: '',
+                amount: 0,
+                rawAmount: 0,
+                spent: 0,
+                rollover: 0,
+                available: 0,
+            };
             const pct =
-                totalPlanned > 0 ? (totalSpent / totalPlanned) * 100 : totalSpent > 0 ? 100 : 0;
-            // "unbudgeted" = no explicit budget item in any cell of the period
-            const isVirtual = row.cells.length > 0 && row.cells.every((c) => !c.budgetItemId);
+                cell.amount > 0 ? cell.spent / cell.amount : cell.spent > 0 ? 1 : 0;
             return {
                 account: row.account,
-                totalPlanned,
-                totalSpent,
+                hue: row.hue,
                 averageSpent: row.averageSpent,
-                percent: pct,
-                isOver: totalSpent > totalPlanned && totalPlanned > 0,
-                isVirtual,
-                progressWidth: Math.min(pct, 100),
+                cell,
+                status: this.statusFor(cell.amount, cell.spent),
+                pct,
+                progressWidth: Math.min(100, pct * 100),
             };
         });
     });
 
-    protected readonly grandTotalPercent = computed((): number => {
-        const gt = this.grandTotal();
-        if (gt.planned <= 0) return gt.spent > 0 ? 100 : 0;
-        return Math.min((gt.spent / gt.planned) * 100, 100);
+    protected readonly focusedTotals = computed(() => {
+        const rows = this.focusedMonthRows();
+        const assigned = rows.reduce((s, r) => s + r.cell.amount, 0);
+        const spent = rows.reduce((s, r) => s + r.cell.spent, 0);
+        const available = rows.reduce((s, r) => s + r.cell.available, 0);
+        return { assigned, spent, available, pct: assigned > 0 ? spent / assigned : 0 };
+    });
+
+    protected readonly maxCellSpent = computed(() => {
+        let max = 0;
+        this.matrixData().forEach((row) =>
+            row.cells.forEach((c) => {
+                if (c.spent > max) max = c.spent;
+            }),
+        );
+        return max || 1;
+    });
+
+    protected readonly selectedAccount = computed((): MatrixRow | null => {
+        const id = this.selectedAccountId();
+        if (!id) return null;
+        return this.matrixData().find((r) => r.account.id === id) ?? null;
+    });
+
+    protected readonly selectedSpentHistory = computed((): number[] => {
+        return this.selectedAccount()?.cells.map((c) => c.spent) ?? [];
     });
 
     constructor() {
@@ -459,10 +319,8 @@ export class BudgetItemsComponent implements OnInit {
             const includeHidden = this.includeHidden();
 
             const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
-
             const fromDate = new Date(anchorMonth);
             fromDate.setUTCMonth(fromDate.getUTCMonth() - (count - 1));
-
             const toDate = new Date(anchorMonth);
             toDate.setUTCMonth(toDate.getUTCMonth() + 1);
 
@@ -481,6 +339,17 @@ export class BudgetItemsComponent implements OnInit {
                     .subscribe();
                 this.accountService.loadYearlyExpenses().subscribe();
             }
+
+            getExpenses(this.http, this.apiConfig.rootUrl, {
+                from,
+                to,
+                granularity: 'month',
+                groupBy: 'account',
+                outputCurrencyId: currencyId,
+                includeHidden,
+            })
+                .pipe(map((r) => r.body))
+                .subscribe((data) => this.monthlyExpenses.set(data));
         });
     }
 
@@ -491,77 +360,94 @@ export class BudgetItemsComponent implements OnInit {
         this.userService.loadUser().subscribe();
     }
 
-    protected selectPeriod(p: 1 | 3 | 6 | 12): void {
-        this.selectedPeriod.set(p);
-        this.monthCount.set(p);
-    }
-
     protected shiftMonths(delta: number): void {
         const current = this.startDate();
-        const step = this.selectedPeriod();
-        this.startDate.set(new Date(current.getFullYear(), current.getMonth() + delta * step, 1));
+        this.startDate.set(new Date(current.getFullYear(), current.getMonth() + delta * 12, 1));
+        this.focusedMonthIdx.set(11);
     }
 
-    protected editCurrentMonth(account: { id: string; name: string }): void {
-        const months = this.months();
-        const lastMonth = months[months.length - 1];
-        const row = this.matrixData().find((r) => r.account.id === account.id);
-        const lastCell = row?.cells[row.cells.length - 1];
-        const cell: MatrixCell = lastCell ?? {
-            month: lastMonth,
-            amount: 0,
-            rawAmount: 0,
-            spent: 0,
-        };
-        this.editCell(account, cell);
+    protected setFocusedMonth(idx: number): void {
+        this.focusedMonthIdx.set(idx);
     }
 
-    private editCell(account: { id: string; name: string }, cell: MatrixCell): void {
+    protected setViewMode(mode: ViewMode): void {
+        this.viewMode.set(mode);
+        this.focusedMonthIdx.set(11);
+    }
+
+    protected editAssigned(account: { id: string; name: string }, cell: MatrixCell): void {
+        this.openEditDialog(account, cell, cell.rawAmount);
+    }
+
+    protected editYearCell(account: { id: string; name: string }, cell: MatrixCell): void {
+        this.openEditDialog(account, cell, cell.rawAmount);
+    }
+
+    protected drawerAssignAvg(): void {
+        const sa = this.selectedAccount();
+        if (!sa) return;
+        const cell = sa.cells[this.safeFocusedIdx()];
+        if (!cell) return;
+        this.openEditDialog(sa.account, cell, Math.round(sa.averageSpent));
+    }
+
+    protected drawerCopyFromPrev(): void {
+        const sa = this.selectedAccount();
+        if (!sa) return;
+        const idx = this.safeFocusedIdx();
+        if (idx === 0) return;
+        const cell = sa.cells[idx];
+        const prevCell = sa.cells[idx - 1];
+        if (!cell) return;
+        this.openEditDialog(sa.account, cell, prevCell?.rawAmount ?? 0);
+    }
+
+    protected drawerCoverOverspend(): void {
+        const sa = this.selectedAccount();
+        if (!sa) return;
+        const cell = sa.cells[this.safeFocusedIdx()];
+        if (!cell || cell.available >= 0) return;
+        this.openEditDialog(sa.account, cell, cell.amount + Math.abs(cell.available));
+    }
+
+    private openEditDialog(
+        account: { id: string; name: string },
+        cell: MatrixCell,
+        prefillAmount: number,
+    ): void {
         const dialogRef = this.dialog.open(BudgetMatrixEditComponent, {
             data: {
                 accountId: account.id,
                 accountName: account.name,
                 month: cell.month,
-                currentAmount: cell.rawAmount ?? 0,
+                currentAmount: prefillAmount,
             },
             width: '300px',
         });
-
         dialogRef.afterClosed().subscribe((result) => {
-            if (result !== undefined) {
-                this.saveBudget(account.id, cell, Number(result));
-            }
+            if (result !== undefined) this.saveBudget(account.id, cell, Number(result));
         });
     }
 
     private saveBudget(accountId: string, cell: MatrixCell, newAmount: number): void {
-        if (cell.budgetItemId) {
-            this.budgetItemService
-                .update(cell.budgetItemId, {
-                    accountId,
-                    amount: newAmount,
-                    date: cell.month,
-                    description: 'Budget Edit',
-                })
-                .subscribe({
-                    next: () => this.refreshData(),
-                    error: () =>
-                        this.snackBar.open('Failed to update', 'Close', { duration: 3000 }),
-                });
-        } else {
-            this.budgetItemService
-                .create({
-                    accountId,
-                    amount: newAmount,
-                    date: cell.month,
-                    description: 'Budget Create',
-                })
-                .subscribe({
-                    next: () => this.refreshData(),
-                    error: () =>
-                        this.snackBar.open('Failed to create', 'Close', { duration: 3000 }),
-                });
-        }
+        const obs = cell.budgetItemId
+            ? this.budgetItemService.update(cell.budgetItemId, {
+                  accountId,
+                  amount: newAmount,
+                  date: cell.month,
+                  description: 'Budget Edit',
+              })
+            : this.budgetItemService.create({
+                  accountId,
+                  amount: newAmount,
+                  date: cell.month,
+                  description: 'Budget Create',
+              });
+
+        obs.subscribe({
+            next: () => this.refreshData(),
+            error: () => this.snackBar.open('Failed to save', 'Close', { duration: 3000 }),
+        });
     }
 
     private refreshData(): void {
@@ -572,27 +458,89 @@ export class BudgetItemsComponent implements OnInit {
         const count = this.monthCount();
         const currency = this.preferredCurrency();
         const includeHidden = this.includeHidden();
-
         const anchorMonth = new Date(Date.UTC(anchor.getFullYear(), anchor.getMonth(), 1));
-
         const fromDate = new Date(anchorMonth);
         fromDate.setUTCMonth(fromDate.getUTCMonth() - (count - 1));
-
         const toDate = new Date(anchorMonth);
         toDate.setUTCMonth(toDate.getUTCMonth() + 1);
-
-        const from = fromDate.toISOString();
-        const to = toDate.toISOString();
         const currencyId = currency?.id;
 
         if (currencyId) {
             this.budgetItemService
-                .loadBudgetStatus(from, to, currencyId, includeHidden)
+                .loadBudgetStatus(fromDate.toISOString(), toDate.toISOString(), currencyId, includeHidden)
                 .subscribe();
             this.accountService.loadYearlyExpenses(currencyId).subscribe();
         } else {
-            this.budgetItemService.loadBudgetStatus(from, to, undefined, includeHidden).subscribe();
+            this.budgetItemService
+                .loadBudgetStatus(fromDate.toISOString(), toDate.toISOString(), undefined, includeHidden)
+                .subscribe();
             this.accountService.loadYearlyExpenses().subscribe();
         }
+    }
+
+    protected monthTotals(idx: number): { assigned: number; spent: number; pct: number } {
+        const rows = this.matrixData();
+        if (rows.length === 0) return { assigned: 0, spent: 0, pct: 0 };
+        const assigned = rows.reduce((s, r) => s + (r.cells[idx]?.amount ?? 0), 0);
+        const spent = rows.reduce((s, r) => s + (r.cells[idx]?.spent ?? 0), 0);
+        return { assigned, spent, pct: assigned > 0 ? spent / assigned : spent > 0 ? 1 : 0 };
+    }
+
+    protected statusFor(assigned: number, spent: number): string {
+        if (assigned === 0 && spent === 0) return '';
+        if (spent > assigned) return 'over';
+        const pct = assigned > 0 ? spent / assigned : 0;
+        if (spent === assigned || spent > assigned * 0.98) return 'done';
+        if (pct > 0.85) return 'warn';
+        return 'ok';
+    }
+
+    protected fmtK(n: number): string {
+        const abs = Math.abs(n);
+        if (abs >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+        if (abs >= 1e3) return (n / 1e3).toFixed(1) + 'k';
+        return n.toFixed(0);
+    }
+
+    protected hueFromId(id: string): number {
+        let hash = 5381;
+        for (let i = 0; i < id.length; i++) {
+            hash = ((hash << 5) + hash) ^ id.charCodeAt(i);
+        }
+        return Math.abs(hash) % 360;
+    }
+
+    protected catColor(hue: number, l = 0.65, c = 0.14): string {
+        return `oklch(${l} ${c} ${hue})`;
+    }
+
+    protected heatBg(spent: number, maxSpent: number): string {
+        const pct = maxSpent > 0 ? spent / maxSpent : 0;
+        if (pct <= 0) return 'transparent';
+        if (pct < 0.2) return 'oklch(0.975 0.012 255)';
+        if (pct < 0.4) return 'oklch(0.93 0.04 255)';
+        if (pct < 0.6) return 'oklch(0.87 0.08 255)';
+        if (pct < 0.8) return 'oklch(0.78 0.12 255)';
+        return 'oklch(0.65 0.17 255)';
+    }
+
+    protected sparklinePath(values: number[], width = 340, height = 60): string {
+        if (values.length < 2) return '';
+        const maxAbs = Math.max(...values.map((v) => Math.abs(v))) || 1;
+        const min = Math.min(...values, 0);
+        const range = maxAbs - min || 1;
+        const step = width / (values.length - 1);
+        const pts = values.map((v, i) => {
+            const x = i * step;
+            const y = height - ((v - min) / range) * (height - 2) - 1;
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+        });
+        return 'M' + pts.join(' L');
+    }
+
+    protected sparklineAreaPath(values: number[], width = 340, height = 60): string {
+        const line = this.sparklinePath(values, width, height);
+        if (!line) return '';
+        return `${line} L${width},${height} L0,${height} Z`;
     }
 }
