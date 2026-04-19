@@ -27,14 +27,6 @@
             </div>
         </div>
 
-        <!-- Sub-nav -->
-        <div class="subnav">
-            <a routerLink="/dashboard">Overview</a>
-            <a href="#" class="active">Plan</a>
-            <a href="#">Activity</a>
-            <a href="#">Goals</a>
-        </div>
-
         <!-- Hero summary -->
         @let ft = focusedTotals();
         <section class="tba-wrap">
@@ -75,7 +67,7 @@
                 <div class="tl-head">
                     <div>
                         <div class="chart-title">{{ focusedMonthLabel() }}</div>
-                        <div class="chart-sub">{{ months().length }}-month plan &middot; click any month to focus</div>
+                        <div class="chart-sub">12-month plan &middot; click any month to focus</div>
                     </div>
                     <div class="seg">
                         <button [class.active]="viewMode() === 'split'" (click)="setViewMode('split')">Split</button>
@@ -375,7 +367,7 @@
                                     <div class="val">{{ sc.amount > 0 ? ((sc.spent / sc.amount * 100).toFixed(0) + '%') : '—' }}</div>
                                 </div>
                                 <div class="d-kpi">
-                                    <div class="lbl">6-mo avg spend</div>
+                                    <div class="lbl">12-mo avg spend</div>
                                     <div class="val">{{ fmtK(sa?.averageSpent ?? 0) }}</div>
                                 </div>
                                 <div class="d-kpi">
@@ -411,7 +403,7 @@
                             <h5>Quick actions</h5>
                             <div class="d-actions">
                                 <div class="d-action" (click)="drawerAssignAvg()">
-                                    <span>Assign 6-mo average ({{ fmtK(sa?.averageSpent ?? 0) }})</span>
+                                    <span>Assign 12-mo average ({{ fmtK(sa?.averageSpent ?? 0) }})</span>
                                     <span class="k">&#x21E7;A</span>
                                 </div>
                                 <div class="d-action" (click)="drawerCopyFromPrev()">

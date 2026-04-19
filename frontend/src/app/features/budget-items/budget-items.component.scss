@@ -269,8 +269,8 @@
 
 .tl-months {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 6px;
 }
 
 .tl-cell {
@@ -684,7 +684,7 @@
 .drawer {
     position: fixed;
     right: 0;
-    top: 0;
+    top: 0;      /* header is hidden when sidenav is open (desktop) */
     bottom: 0;
     width: 380px;
     background: var(--panel);
@@ -992,8 +992,8 @@
     }
 
     .tl-months {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
     }
 
     .b-table {

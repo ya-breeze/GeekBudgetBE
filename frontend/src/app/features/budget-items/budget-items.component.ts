@@ -8,6 +8,9 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { RouterLink } from '@angular/router';
 
+import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs';
+import { ApiConfiguration } from '../../core/api/api-configuration';
 import { BudgetItemService } from './services/budget-item.service';
 import { AccountService } from '../accounts/services/account.service';
 import { UserService } from '../../core/services/user.service';
@@ -16,6 +19,8 @@ import { LayoutService } from '../../layout/services/layout.service';
 import { BudgetMatrixEditComponent } from './components/budget-matrix-edit/budget-matrix-edit.component';
 import { BudgetItem } from '../../core/api/models/budget-item';
 import { BudgetStatus } from '../../core/api/models/budget-status';
+import { Aggregation } from '../../core/api/models/aggregation';
+import { getExpenses } from '../../core/api/fn/aggregations/get-expenses';
 
 export type ViewMode = 'split' | 'focus' | 'year';
 
@@ -69,6 +74,8 @@ interface FocusedRow {
     styleUrl: './budget-items.component.scss',
 })
 export class BudgetItemsComponent implements OnInit {
+    private readonly http = inject(HttpClient);
+    private readonly apiConfig = inject(ApiConfiguration);
     private readonly budgetItemService = inject(BudgetItemService);
     private readonly snackBar = inject(MatSnackBar);
     private readonly layoutService = inject(LayoutService);
@@ -90,10 +97,11 @@ export class BudgetItemsComponent implements OnInit {
     protected readonly viewMode = signal<ViewMode>('split');
     protected readonly density = signal<'comfortable' | 'compact'>('comfortable');
     protected readonly selectedAccountId = signal<string | null>(null);
-    protected readonly focusedMonthIdx = signal(5);
+    protected readonly focusedMonthIdx = signal(11);
     protected readonly includeHidden = signal(false);
+    protected readonly monthlyExpenses = signal<Aggregation | null>(null);
 
-    protected readonly monthCount = computed(() => (this.viewMode() === 'year' ? 12 : 6));
+    protected readonly monthCount = computed(() => 12);
 
     protected readonly preferredCurrency = computed(() => {
         const user = this.user();
@@ -157,6 +165,25 @@ export class BudgetItemsComponent implements OnInit {
             statusMap.set(`${s.accountId}_${m}`, s);
         });
 
+        // Build fallback monthly spending from getExpenses aggregation
+        // (BudgetStatus only returns rows for months with budget items)
+        const expMap = new Map<string, Map<string, number>>();
+        const agg = this.monthlyExpenses();
+        if (agg) {
+            const currId = this.preferredCurrency()?.id;
+            const currAgg =
+                agg.currencies.find((c) => c.currencyId === currId) ?? agg.currencies[0];
+            if (currAgg) {
+                currAgg.accounts.forEach((accAgg) => {
+                    const accMap = new Map<string, number>();
+                    agg.intervals.forEach((interval, idx) => {
+                        accMap.set(interval.substring(0, 7), accAgg.amounts[idx] ?? 0);
+                    });
+                    expMap.set(accAgg.accountId, accMap);
+                });
+            }
+        }
+
         const avgMap = new Map(averages.map((a) => [a.accountId, a.averageSpent]));
 
         const now = new Date();
@@ -184,7 +211,8 @@ export class BudgetItemsComponent implements OnInit {
                 const isPastMonth = cellTotalMonths < nowTotalMonths;
                 const isFutureMonth = cellTotalMonths > nowTotalMonths;
 
-                const spentDisplay = stat?.spent ?? 0;
+                const spentDisplay =
+                    stat?.spent ?? expMap.get(acc.id)?.get(mKey) ?? 0;
                 const rollover = stat?.rollover ?? 0;
 
                 let amountDisplay = 0;
@@ -311,6 +339,17 @@ export class BudgetItemsComponent implements OnInit {
                     .subscribe();
                 this.accountService.loadYearlyExpenses().subscribe();
             }
+
+            getExpenses(this.http, this.apiConfig.rootUrl, {
+                from,
+                to,
+                granularity: 'month',
+                groupBy: 'account',
+                outputCurrencyId: currencyId,
+                includeHidden,
+            })
+                .pipe(map((r) => r.body))
+                .subscribe((data) => this.monthlyExpenses.set(data));
         });
     }
 
@@ -323,9 +362,8 @@ export class BudgetItemsComponent implements OnInit {
 
     protected shiftMonths(delta: number): void {
         const current = this.startDate();
-        const step = this.monthCount();
-        this.startDate.set(new Date(current.getFullYear(), current.getMonth() + delta * step, 1));
-        this.focusedMonthIdx.set(step - 1);
+        this.startDate.set(new Date(current.getFullYear(), current.getMonth() + delta * 12, 1));
+        this.focusedMonthIdx.set(11);
     }
 
     protected setFocusedMonth(idx: number): void {
@@ -334,8 +372,7 @@ export class BudgetItemsComponent implements OnInit {
 
     protected setViewMode(mode: ViewMode): void {
         this.viewMode.set(mode);
-        const newCount = mode === 'year' ? 12 : 6;
-        this.focusedMonthIdx.set(newCount - 1);
+        this.focusedMonthIdx.set(11);
     }
 
     protected editAssigned(account: { id: string; name: string }, cell: MatrixCell): void {
