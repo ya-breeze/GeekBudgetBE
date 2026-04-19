@@ -164,6 +164,9 @@
                                                         fresh start
                                                     }
                                                 </div>
+                                                @if (row.averageSpent > 0) {
+                                                    <div class="b-cat-avg">avg&thinsp;·&thinsp;{{ fmtK(row.averageSpent) }}</div>
+                                                }
                                             </div>
                                         </div>
                                     </td>
@@ -184,7 +187,7 @@
                                     <!-- Spent -->
                                     <td>
                                         <span class="b-num" [class.muted]="row.cell.spent === 0">
-                                            {{ row.cell.spent === 0 ? '—' : (row.cell.spent | currency: currencyName() : 'symbol-narrow' : '1.0-0') }}
+                                            {{ row.cell.isFutureMonth && row.cell.spent === 0 ? '—' : (row.cell.spent | currency: currencyName() : 'symbol-narrow' : '1.0-0') }}
                                         </span>
                                     </td>
                                     <!-- Progress -->
@@ -245,6 +248,7 @@
                                         @if (row.cell.rollover > 0) { +{{ fmtK(row.cell.rollover) }} carry }
                                         @else if (row.cell.rollover < 0) { {{ fmtK(row.cell.rollover) }} over }
                                         @else { fresh }
+                                        @if (row.averageSpent > 0) { &nbsp;·&nbsp;avg {{ fmtK(row.averageSpent) }} }
                                     </div>
                                 </div>
                                 <span class="b-avail"
@@ -313,7 +317,7 @@
                                             [style.background]="heatBg(cell.spent, maxCellSpent())"
                                             (click)="$event.stopPropagation(); editYearCell(row.account, cell)">
                                             <span class="cell-num" [class.zero]="cell.spent === 0">
-                                                {{ cell.spent === 0 ? '—' : fmtK(cell.spent) }}
+                                                {{ cell.isFutureMonth && cell.spent === 0 ? '—' : fmtK(cell.spent) }}
                                             </span>
                                         </td>
                                     }

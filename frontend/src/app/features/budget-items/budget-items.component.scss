@@ -514,6 +514,14 @@
     color: var(--ink-3);
 }
 
+.b-cat-avg {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 1px;
+    letter-spacing: 0.02em;
+}
+
 /* ---- Numeric cells ---- */
 .b-num {
     font-family: var(--mono);

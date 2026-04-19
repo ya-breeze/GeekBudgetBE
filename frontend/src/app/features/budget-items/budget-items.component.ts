@@ -29,6 +29,7 @@ interface MatrixCell {
     budgetItemId?: string;
     isVirtual?: boolean;
     isPastMonth?: boolean;
+    isFutureMonth?: boolean;
 }
 
 interface MatrixRow {
@@ -181,6 +182,7 @@ export class BudgetItemsComponent implements OnInit {
                 const cellTotalMonths =
                     cellDate.getUTCFullYear() * 12 + cellDate.getUTCMonth();
                 const isPastMonth = cellTotalMonths < nowTotalMonths;
+                const isFutureMonth = cellTotalMonths > nowTotalMonths;
 
                 const spentDisplay = stat?.spent ?? 0;
                 const rollover = stat?.rollover ?? 0;
@@ -213,6 +215,7 @@ export class BudgetItemsComponent implements OnInit {
                     budgetItemId: item?.id,
                     isVirtual,
                     isPastMonth,
+                    isFutureMonth,
                 };
             });
 
