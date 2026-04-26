@@ -23,33 +23,49 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 // Server-side error
                 switch (error.status) {
                     case 401:
-                        if (!req.url.includes('/logout') && !req.url.includes('/v1/user') && !req.url.includes('/auth/refresh')) {
+                        if (
+                            !req.url.includes('/logout') &&
+                            !req.url.includes('/auth/refresh')
+                        ) {
                             if (!isRefreshing) {
                                 isRefreshing = true;
                                 refreshSubject.next(null);
-                                return http.post(`${apiConfig.rootUrl}/auth/refresh`, {}, { withCredentials: true }).pipe(
-                                    switchMap(() => {
-                                        isRefreshing = false;
-                                        refreshSubject.next(true);
-                                        return next(req);
-                                    }),
-                                    catchError(() => {
-                                        isRefreshing = false;
-                                        refreshSubject.next(false);
-                                        authService.logout();
-                                        return throwError(() => new Error('Session expired. Please login again.'));
-                                    }),
-                                );
+                                return http
+                                    .post(
+                                        `${apiConfig.rootUrl}/auth/refresh`,
+                                        {},
+                                        { withCredentials: true },
+                                    )
+                                    .pipe(
+                                        switchMap(() => {
+                                            isRefreshing = false;
+                                            refreshSubject.next(true);
+                                            return next(req);
+                                        }),
+                                        catchError(() => {
+                                            isRefreshing = false;
+                                            refreshSubject.next(false);
+                                            authService.logout();
+                                            return throwError(
+                                                () =>
+                                                    new Error(
+                                                        'Session expired. Please login again.',
+                                                    ),
+                                            );
+                                        }),
+                                    );
                             }
                             // Another request is already refreshing — wait for it
                             return refreshSubject.pipe(
-                                filter(result => result !== null),
+                                filter((result) => result !== null),
                                 take(1),
-                                switchMap(success => {
+                                switchMap((success) => {
                                     if (success) {
                                         return next(req);
                                     }
-                                    return throwError(() => new Error('Session expired. Please login again.'));
+                                    return throwError(
+                                        () => new Error('Session expired. Please login again.'),
+                                    );
                                 }),
                             );
                         }
