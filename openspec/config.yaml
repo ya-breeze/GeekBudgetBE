@@ -1,0 +1,26 @@
+schema: spec-driven
+
+context: |
+  GeekBudget — full-stack personal finance management for a single family.
+  Tech stack: Go backend (Gorilla Mux + GORM + SQLite, oapi-style generated server),
+  Angular 20 frontend (active), Next.js 15 frontend (in development).
+  Auth: JWT bearer token (24h TTL) issued by kin-core; all endpoints require auth except /v1/authorize.
+  Data scoping: every entity carries FamilyID — family members share all financial data
+  (accounts, transactions, matchers, budgets). There is no per-user data isolation.
+  Money: all amounts use shopspring/decimal, never float. Decimals serialize as JSON numbers
+  (decimal.MarshalJSONWithoutQuotes = true in cmd/main.go).
+  Bookkeeping: double-entry — a Transaction owns a list of Movements; each Movement references
+  one Account + one Currency + a signed Amount. A movement with empty AccountId means the
+  transaction is "unprocessed" (imported but not yet categorized).
+  API: OpenAPI 3.0 (api/openapi.yaml) is the source of truth; backend and frontend clients are
+  generated from it. Never hand-edit backend/pkg/generated/.
+  Storage: single SQLite file via GORM AutoMigrate (no versioned migration files).
+  Background tasks: scheduled bank import (FIO only, every 24h; 1h retry on error),
+  CNB currency rates (24h), duplicate detection (24h), database backup (24h) — all timer-based
+  goroutines tied to the server context. KB/Revolut importers are not auto-fetched; they import
+  via manual statement-file upload.
+
+rules:
+  spec:
+    - Describe current implemented behavior, not aspirations.
+    - Use GIVEN/WHEN/THEN scenarios grounded in real endpoints and storage methods.
