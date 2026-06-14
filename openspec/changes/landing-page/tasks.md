@@ -30,4 +30,4 @@
 ## 6. Verify
 
 - [x] 6.1 Run `make lint` (frontend ESLint + Angular checks) and fix any issues
-- [ ] 6.2 Deploy to WIP stack and manually verify: login works from landing hero, error shows on bad credentials, desktop shows two-column hero, mobile shows tagline + "Sign In" toggle that expands the form, Key Concepts section is the last content section before the footer
+- [x] 6.2 Deploy to WIP stack and manually verify: login works from landing hero, error shows on bad credentials, desktop shows two-column hero, mobile shows tagline + "Sign In" toggle that expands the form, Key Concepts section is the last content section before the footer
