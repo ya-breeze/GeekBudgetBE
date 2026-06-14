@@ -1,18 +1,42 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AuthService } from '../../../core/auth/services/auth.service';
 
 @Component({
     selector: 'app-landing',
     standalone: true,
-    imports: [CommonModule, RouterModule, MatCardModule, MatButtonModule, MatIconModule],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        RouterModule,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatProgressSpinnerModule,
+    ],
     templateUrl: './landing.component.html',
     styleUrls: ['./landing.component.scss'],
 })
 export class LandingComponent {
+    private readonly fb = inject(FormBuilder);
+    private readonly authService = inject(AuthService);
+    private readonly router = inject(Router);
+
+    loginForm: FormGroup;
+    isLoading = false;
+    errorMessage = '';
+    showLoginForm = false;
+
     features = [
         {
             icon: 'cloud_download',
@@ -123,6 +147,36 @@ export class LandingComponent {
                 'Organize your spending into meaningful groups like "Groceries", "Transportation", or "Entertainment". Use categories for budgeting and financial analysis.',
         },
     ];
+
+    constructor() {
+        this.loginForm = this.fb.group({
+            email: ['', [Validators.required, Validators.email]],
+            password: ['', [Validators.required, Validators.minLength(4)]],
+        });
+    }
+
+    onSubmit(): void {
+        if (this.loginForm.valid) {
+            this.isLoading = true;
+            this.errorMessage = '';
+            const { email, password } = this.loginForm.value;
+            this.authService.login(email, password).subscribe({
+                next: () => {
+                    this.isLoading = false;
+                    this.router.navigate(['/dashboard']);
+                },
+                error: (error) => {
+                    this.isLoading = false;
+                    this.errorMessage = error.message || 'Login failed. Please try again.';
+                },
+            });
+        }
+    }
+
+    toggleLoginForm(): void {
+        this.showLoginForm = !this.showLoginForm;
+        this.errorMessage = '';
+    }
 
     scrollToFeatures(): void {
         const element = document.getElementById('features');

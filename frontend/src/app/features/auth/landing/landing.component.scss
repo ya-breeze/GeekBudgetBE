@@ -16,16 +16,41 @@
 // Hero Section
 .hero-section {
     padding: 6rem 0;
-    text-align: center;
 
     @media (max-width: 768px) {
-        padding: 4rem 0;
+        padding: 3rem 0;
     }
 }
 
 .hero-content {
-    max-width: 900px;
-    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+
+        .hero-login-card {
+            display: none;
+        }
+
+        .mobile-signin-toggle {
+            display: inline-flex !important;
+        }
+    }
+}
+
+.hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    @media (max-width: 768px) {
+        align-items: center;
+        text-align: center;
+    }
 }
 
 .badge {
@@ -67,9 +92,6 @@
     font-size: 1.25rem;
     color: var(--mat-app-on-surface-variant);
     margin-bottom: 2rem;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
 
     @media (max-width: 768px) {
         font-size: 1rem;
@@ -79,28 +101,79 @@
 .hero-actions {
     display: flex;
     gap: 1rem;
-    justify-content: center;
     flex-wrap: wrap;
 
     @media (max-width: 768px) {
-        flex-direction: column;
-        padding: 0 1rem;
+        justify-content: center;
     }
 
-    .cta-button,
-    .learn-more-button {
-        min-width: 150px;
+    .learn-more-button,
+    .mobile-signin-toggle {
         height: 48px;
         font-size: 1rem;
-
-        @media (max-width: 768px) {
-            width: 100%;
-        }
 
         mat-icon {
             margin-left: 0.5rem;
         }
     }
+}
+
+.mobile-signin-toggle {
+    display: none;
+}
+
+// Mobile expandable login form
+.mobile-login-form {
+    margin-top: 1.5rem;
+    width: 100%;
+    animation: slideDown 0.25s ease-out;
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Desktop login card (right column)
+.hero-login-card {
+    mat-card {
+        padding: 0.5rem;
+    }
+
+    mat-card-header {
+        margin-bottom: 0.5rem;
+    }
+
+    mat-card-content {
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+    }
+}
+
+// Shared form styles
+.full-width {
+    width: 100%;
+}
+
+.error-message {
+    color: var(--mat-error-color, #f44336);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
 }
 
 // Section Headers
@@ -275,52 +348,6 @@
         font-size: 0.875rem;
         line-height: 1.5;
         margin: 0;
-    }
-}
-
-// CTA Section
-.cta-section {
-    padding: 4rem 0;
-}
-
-.cta-card {
-    background: linear-gradient(135deg, #673ab7 0%, #512da8 100%);
-    color: white;
-    text-align: center;
-
-    mat-card-content {
-        padding: 3rem;
-
-        @media (max-width: 768px) {
-            padding: 2rem 1rem;
-        }
-    }
-
-    h2 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-
-        @media (max-width: 768px) {
-            font-size: 2rem;
-        }
-    }
-
-    p {
-        font-size: 1.125rem;
-        opacity: 0.9;
-        max-width: 700px;
-        margin: 0 auto 2rem;
-    }
-
-    .cta-button {
-        min-width: 150px;
-        height: 48px;
-        font-size: 1rem;
-
-        mat-icon {
-            margin-left: 0.5rem;
-        }
     }
 }
 
