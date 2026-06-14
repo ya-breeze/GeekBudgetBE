@@ -34,6 +34,7 @@ import { CurrencyService } from '../../currencies/services/currency.service';
 import { UserService } from '../../../core/services/user.service';
 import { AccountService } from '../../accounts/services/account.service';
 import { Account } from '../../../core/api/models/account';
+import { ChartPaletteService } from '../../../shared/services/chart-palette.service';
 
 interface TagSummary {
     tagName: string;
@@ -86,6 +87,7 @@ export class TagAnalyticsComponent implements OnInit {
     private readonly currencyService = inject(CurrencyService);
     private readonly userService = inject(UserService);
     private readonly accountService = inject(AccountService);
+    private readonly chartPalette = inject(ChartPaletteService);
 
     protected readonly filterForm: FormGroup;
     protected readonly loading = signal(false);
@@ -157,22 +159,14 @@ export class TagAnalyticsComponent implements OnInit {
                     {
                         label: 'Total Expenses by Tag',
                         data: sortedSummaries.map((s) => s.total),
-                        backgroundColor: 'rgba(33, 150, 243, 0.6)',
-                        borderColor: 'rgba(33, 150, 243, 1)',
+                        backgroundColor: sortedSummaries.map((_, i) =>
+                            this.chartPalette.getColorWithAlpha(i, 0.6),
+                        ),
+                        borderColor: sortedSummaries.map((_, i) => this.chartPalette.getColor(i)),
                         borderWidth: 1,
                     },
                 ],
             };
-
-            const colors = [
-                'rgba(33, 150, 243, 0.6)',
-                'rgba(76, 175, 80, 0.6)',
-                'rgba(255, 152, 0, 0.6)',
-                'rgba(156, 39, 176, 0.6)',
-                'rgba(244, 67, 54, 0.6)',
-                'rgba(0, 188, 212, 0.6)',
-                'rgba(103, 58, 183, 0.6)',
-            ];
 
             const monthlyChartData: ChartConfiguration['data'] = {
                 labels: data.intervals.map((interval) => this.formatMonth(interval)),
@@ -182,8 +176,8 @@ export class TagAnalyticsComponent implements OnInit {
                     data: data.intervals.map(
                         (interval) => tagSum.monthlyAmounts.get(interval) || 0,
                     ),
-                    borderColor: colors[index % colors.length].replace('0.6', '1'),
-                    backgroundColor: colors[index % colors.length],
+                    borderColor: this.chartPalette.getColor(index),
+                    backgroundColor: this.chartPalette.getColorWithAlpha(index, 0.6),
                     fill: false,
                     tension: 0.1,
                 })),
