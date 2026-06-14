@@ -143,12 +143,31 @@ export class DashboardComponent implements OnInit {
         this.accounts().filter((acc) => acc.type === 'expense'),
     );
 
-    // ---- Computed: color map ----
+    // ---- Computed: color map keyed by spend rank in the active window ----
     private readonly accountColorMap = computed(() => {
+        const data = this.expenseData();
+        const months = this.monthColumns();
         const map = new Map<string, string>();
-        this.accountColumns().forEach((acc, i) => {
-            map.set(acc.id!, this.chartPalette.getColor(i));
-        });
+        if (!data || !months.length) return map;
+
+        const cur = data.currencies[0];
+        if (!cur) return map;
+
+        const allIntervals = data.intervals;
+        const idxs = months.map((m) => allIntervals.indexOf(m)).filter((i) => i >= 0);
+
+        const ranked = this.accountColumns()
+            .map((acc) => {
+                const accAgg = cur.accounts.find((a) => a.accountId === acc.id);
+                const total = idxs.reduce(
+                    (s, mi) => s + Math.max(0, accAgg?.amounts[mi] ?? 0),
+                    0,
+                );
+                return { id: acc.id!, total };
+            })
+            .sort((a, b) => b.total - a.total);
+
+        ranked.forEach((entry, i) => map.set(entry.id, this.chartPalette.getColor(i)));
         return map;
     });
 
@@ -221,6 +240,8 @@ export class DashboardComponent implements OnInit {
         const allIntervals = data.intervals;
         const idxs = months.map((m) => allIntervals.indexOf(m));
 
+        const colorMap = this.accountColorMap();
+
         const entries = this.accountColumns().map((acc) => {
             const accAgg = cur.accounts.find((a) => a.accountId === acc.id);
             const values = idxs.map((mi) =>
@@ -230,13 +251,13 @@ export class DashboardComponent implements OnInit {
             return { acc, accAgg, values, total };
         });
 
-        // Sort by total spend descending so the biggest category gets palette index 0
+        // Render largest spender at the bottom of each bar (Chart.js stacks in dataset order)
         entries.sort((a, b) => b.total - a.total);
 
-        const datasets = entries.map((entry, i) => ({
+        const datasets = entries.map((entry) => ({
             label: entry.acc.name,
             data: entry.values,
-            backgroundColor: this.chartPalette.getColor(i),
+            backgroundColor: colorMap.get(entry.acc.id!) ?? '#888',
             borderRadius: 2,
             borderSkipped: false as const,
         }));

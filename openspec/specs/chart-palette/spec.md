@@ -72,10 +72,22 @@ Every Angular component that renders a Chart.js chart SHALL inject `ChartPalette
 use its methods to assign `backgroundColor` and `borderColor`. No component SHALL contain a
 local `colors`, `HUES`, or `PALETTE` array for chart coloring purposes.
 
-#### Scenario: Dashboard stacked bar uses palette in spend-rank order
+#### Scenario: Dashboard uses a single spend-rank color map for all three sections
 
-- **WHEN** the dashboard renders the month-over-month stacked bar chart
-- **THEN** categories are sorted by total spend over the visible period (descending) before color assignment, so the highest-spending category receives palette index 0 and the lowest receives the highest index. Datasets are rendered in this spend-rank order (largest segment at the bottom of each bar).
+- **WHEN** the dashboard computes chart and list data for any time range (3m, 6m, 12m, ytd)
+- **THEN** a single `accountColorMap` computed signal ranks every expense category by its total
+  spend over the **active visible window** (descending) and assigns palette colors in that order
+  (rank 0 → `getColor(0)`, rank 1 → `getColor(1)`, …).
+- **AND** all three dashboard sections consume the same map:
+  - **Month-over-month stacked bar** — datasets are rendered in spend-rank order (largest
+    segment at the bottom of each bar); each dataset's `backgroundColor` comes from
+    `accountColorMap`.
+  - **Ranked by total spend** — each category dot/bar uses the color from `accountColorMap`.
+  - **Expense breakdown table** — each row's color indicator uses the color from
+    `accountColorMap`.
+- **AND** when the user switches time ranges (e.g., from 12m to 3m), `accountColorMap`
+  recomputes, potentially reordering colors to reflect the new spend rankings, and all three
+  sections update consistently.
 
 #### Scenario: Expense report charts use palette
 
