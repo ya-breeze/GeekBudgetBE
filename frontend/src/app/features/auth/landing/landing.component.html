@@ -3,35 +3,187 @@
     <section class="hero-section">
         <div class="container">
             <div class="hero-content">
-                <div class="badge">
-                    <mat-icon>account_balance_wallet</mat-icon>
-                    Personal Finance Management
+                <!-- Left: tagline -->
+                <div class="hero-text">
+                    <div class="badge">
+                        <mat-icon>account_balance_wallet</mat-icon>
+                        Personal Finance Management
+                    </div>
+                    <h1 class="hero-title">
+                        Take Control of Your
+                        <span class="highlight">Finances</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        GeekBudget is your comprehensive personal finance manager with automated
+                        bank imports, intelligent transaction matching, and powerful budgeting
+                        tools.
+                    </p>
+                    <div class="hero-actions">
+                        <button
+                            mat-stroked-button
+                            (click)="scrollToFeatures()"
+                            class="learn-more-button"
+                        >
+                            Learn More
+                        </button>
+                        <!-- Mobile-only Sign In toggle -->
+                        <button
+                            mat-raised-button
+                            color="primary"
+                            class="mobile-signin-toggle"
+                            (click)="toggleLoginForm()"
+                        >
+                            {{ showLoginForm ? 'Cancel' : 'Sign In' }}
+                            <mat-icon>{{ showLoginForm ? 'close' : 'login' }}</mat-icon>
+                        </button>
+                    </div>
+
+                    <!-- Mobile-only expandable login form -->
+                    @if (showLoginForm) {
+                        <div class="mobile-login-form">
+                            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Email</mat-label>
+                                    <input
+                                        matInput
+                                        type="email"
+                                        formControlName="email"
+                                        placeholder="Enter your email"
+                                    />
+                                    @if (
+                                        loginForm.get('email')?.hasError('required') &&
+                                        loginForm.get('email')?.touched
+                                    ) {
+                                        <mat-error>Email is required</mat-error>
+                                    }
+                                    @if (
+                                        loginForm.get('email')?.hasError('email') &&
+                                        loginForm.get('email')?.touched
+                                    ) {
+                                        <mat-error>Please enter a valid email</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Password</mat-label>
+                                    <input
+                                        matInput
+                                        type="password"
+                                        formControlName="password"
+                                        placeholder="Enter your password"
+                                    />
+                                    @if (
+                                        loginForm.get('password')?.hasError('required') &&
+                                        loginForm.get('password')?.touched
+                                    ) {
+                                        <mat-error>Password is required</mat-error>
+                                    }
+                                    @if (
+                                        loginForm.get('password')?.hasError('minlength') &&
+                                        loginForm.get('password')?.touched
+                                    ) {
+                                        <mat-error
+                                            >Password must be at least 4 characters</mat-error
+                                        >
+                                    }
+                                </mat-form-field>
+
+                                @if (errorMessage) {
+                                    <div class="error-message">{{ errorMessage }}</div>
+                                }
+
+                                <button
+                                    mat-raised-button
+                                    color="primary"
+                                    type="submit"
+                                    class="full-width"
+                                    [disabled]="isLoading || loginForm.invalid"
+                                >
+                                    @if (isLoading) {
+                                        <mat-spinner diameter="20"></mat-spinner>
+                                    } @else {
+                                        Sign In
+                                    }
+                                </button>
+                            </form>
+                        </div>
+                    }
                 </div>
-                <h1 class="hero-title">
-                    Take Control of Your
-                    <span class="highlight">Finances</span>
-                </h1>
-                <p class="hero-subtitle">
-                    GeekBudget is your comprehensive personal finance manager with automated bank
-                    imports, intelligent transaction matching, and powerful budgeting tools.
-                </p>
-                <div class="hero-actions">
-                    <button
-                        mat-raised-button
-                        color="primary"
-                        routerLink="/auth/login"
-                        class="cta-button"
-                    >
-                        Get Started
-                        <mat-icon>arrow_forward</mat-icon>
-                    </button>
-                    <button
-                        mat-stroked-button
-                        (click)="scrollToFeatures()"
-                        class="learn-more-button"
-                    >
-                        Learn More
-                    </button>
+
+                <!-- Right: desktop login card -->
+                <div class="hero-login-card">
+                    <mat-card>
+                        <mat-card-header>
+                            <mat-card-title>Sign In</mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Email</mat-label>
+                                    <input
+                                        matInput
+                                        type="email"
+                                        formControlName="email"
+                                        placeholder="Enter your email"
+                                    />
+                                    @if (
+                                        loginForm.get('email')?.hasError('required') &&
+                                        loginForm.get('email')?.touched
+                                    ) {
+                                        <mat-error>Email is required</mat-error>
+                                    }
+                                    @if (
+                                        loginForm.get('email')?.hasError('email') &&
+                                        loginForm.get('email')?.touched
+                                    ) {
+                                        <mat-error>Please enter a valid email</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Password</mat-label>
+                                    <input
+                                        matInput
+                                        type="password"
+                                        formControlName="password"
+                                        placeholder="Enter your password"
+                                    />
+                                    @if (
+                                        loginForm.get('password')?.hasError('required') &&
+                                        loginForm.get('password')?.touched
+                                    ) {
+                                        <mat-error>Password is required</mat-error>
+                                    }
+                                    @if (
+                                        loginForm.get('password')?.hasError('minlength') &&
+                                        loginForm.get('password')?.touched
+                                    ) {
+                                        <mat-error
+                                            >Password must be at least 4 characters</mat-error
+                                        >
+                                    }
+                                </mat-form-field>
+
+                                @if (errorMessage) {
+                                    <div class="error-message">{{ errorMessage }}</div>
+                                }
+
+                                <button
+                                    mat-raised-button
+                                    color="primary"
+                                    type="submit"
+                                    class="full-width"
+                                    [disabled]="isLoading || loginForm.invalid"
+                                >
+                                    @if (isLoading) {
+                                        <mat-spinner diameter="20"></mat-spinner>
+                                    } @else {
+                                        Sign In
+                                    }
+                                </button>
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
                 </div>
             </div>
         </div>
@@ -100,31 +252,6 @@
                     </mat-card>
                 }
             </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <mat-card class="cta-card">
-                <mat-card-content>
-                    <h2>Ready to Master Your Finances?</h2>
-                    <p>
-                        Join GeekBudget today and take the first step towards better financial
-                        management. Import your transactions, set your budgets, and gain insights
-                        into your spending.
-                    </p>
-                    <button
-                        mat-raised-button
-                        color="accent"
-                        routerLink="/auth/login"
-                        class="cta-button"
-                    >
-                        Sign In Now
-                        <mat-icon>arrow_forward</mat-icon>
-                    </button>
-                </mat-card-content>
-            </mat-card>
         </div>
     </section>
 
