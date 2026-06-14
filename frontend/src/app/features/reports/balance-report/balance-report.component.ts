@@ -32,6 +32,7 @@ import { AccountService } from '../../accounts/services/account.service';
 import { CurrencyService } from '../../currencies/services/currency.service';
 import { UserService } from '../../../core/services/user.service';
 import { AccountDisplayComponent } from '../../../shared/components/account-display/account-display.component';
+import { ChartPaletteService } from '../../../shared/services/chart-palette.service';
 
 interface AccountSummary {
     accountId: string;
@@ -83,6 +84,7 @@ export class BalanceReportComponent implements OnInit {
     private readonly currencyService = inject(CurrencyService);
     private readonly userService = inject(UserService);
     private readonly route = inject(ActivatedRoute);
+    private readonly chartPalette = inject(ChartPaletteService);
 
     protected readonly filterForm: FormGroup;
     protected readonly loading = signal(false);
@@ -149,22 +151,14 @@ export class BalanceReportComponent implements OnInit {
             if (!accountSummaries.length) return;
 
             // Chart Data (Stacked Area)
-            const colors = [
-                'rgba(46, 204, 113, 0.5)', // Emerald
-                'rgba(52, 152, 219, 0.5)', // Blue
-                'rgba(155, 89, 182, 0.5)', // Amethyst
-                'rgba(241, 194, 50, 0.5)', // Sun Flower
-                'rgba(231, 76, 60, 0.5)', // Alizarin
-            ];
-
             const chartData: ChartConfiguration['data'] = {
                 labels: data.intervals.map((i) => this.formatMonth(i)),
                 datasets: accountSummaries.map((acc, index) => ({
                     label: acc.accountName,
                     data: acc.history,
                     fill: true,
-                    backgroundColor: colors[index % colors.length],
-                    borderColor: colors[index % colors.length].replace('0.5', '1'),
+                    backgroundColor: this.chartPalette.getColorWithAlpha(index, 0.5),
+                    borderColor: this.chartPalette.getColor(index),
                     pointRadius: 2,
                     tension: 0.3,
                 })),

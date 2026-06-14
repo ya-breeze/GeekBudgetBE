@@ -29,6 +29,7 @@ import { AssetCard, AssetTotal } from './models/dashboard.models';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ChartPaletteService } from '../../shared/services/chart-palette.service';
 
 interface ExpenseTableCell {
     value: number;
@@ -75,9 +76,6 @@ interface RankedCategory {
 
 type RangeId = '3m' | '6m' | '12m' | 'ytd';
 
-// Golden-angle hue stepping: each consecutive color is ~137.5° away, maximising distance
-const HUES = [0, 138, 275, 53, 190, 328, 105, 243, 20, 158, 295, 73, 210, 348, 125];
-
 @Component({
     selector: 'app-dashboard',
     imports: [
@@ -107,6 +105,7 @@ export class DashboardComponent implements OnInit {
     private readonly dialog = inject(MatDialog);
     private readonly router = inject(Router);
     private readonly reconciliationService = inject(ReconciliationService);
+    private readonly chartPalette = inject(ChartPaletteService);
 
     protected readonly sidenavOpened = this.layoutService.sidenavOpened;
     protected readonly loading = signal(true);
@@ -148,7 +147,7 @@ export class DashboardComponent implements OnInit {
     private readonly accountColorMap = computed(() => {
         const map = new Map<string, string>();
         this.accountColumns().forEach((acc, i) => {
-            map.set(acc.id!, `oklch(0.62 0.14 ${HUES[i % HUES.length]})`);
+            map.set(acc.id!, this.chartPalette.getColor(i));
         });
         return map;
     });
@@ -183,7 +182,8 @@ export class DashboardComponent implements OnInit {
             cur.accounts.reduce((s, a) => s + Math.max(0, a.amounts[mi] ?? 0), 0),
         );
         const curTotal = totalsPerMonth[totalsPerMonth.length - 1];
-        const prevTotal = totalsPerMonth.length >= 2 ? totalsPerMonth[totalsPerMonth.length - 2] : null;
+        const prevTotal =
+            totalsPerMonth.length >= 2 ? totalsPerMonth[totalsPerMonth.length - 2] : null;
         const avgPerMonth = totalsPerMonth.reduce((a, b) => a + b, 0) / totalsPerMonth.length;
         const delta = prevTotal ? ((curTotal - prevTotal) / prevTotal) * 100 : null;
 
@@ -227,7 +227,9 @@ export class DashboardComponent implements OnInit {
             const accAgg = cur.accounts.find((a) => a.accountId === acc.id);
             return {
                 label: acc.name,
-                data: idxs.map((mi) => (mi >= 0 && accAgg ? Math.max(0, accAgg.amounts[mi] ?? 0) : 0)),
+                data: idxs.map((mi) =>
+                    mi >= 0 && accAgg ? Math.max(0, accAgg.amounts[mi] ?? 0) : 0,
+                ),
                 backgroundColor: color,
                 borderRadius: 2,
                 borderSkipped: false as const,
@@ -296,7 +298,12 @@ export class DashboardComponent implements OnInit {
         const cats = this.accountColumns().map((acc) => {
             const accAgg = cur.accounts.find((a) => a.accountId === acc.id);
             const total = idxs.reduce((s, mi) => s + Math.max(0, accAgg?.amounts[mi] ?? 0), 0);
-            return { accountId: acc.id!, accountName: acc.name, total, color: colorMap.get(acc.id!) ?? '#888' };
+            return {
+                accountId: acc.id!,
+                accountName: acc.name,
+                total,
+                color: colorMap.get(acc.id!) ?? '#888',
+            };
         });
         cats.sort((a, b) => b.total - a.total);
         const max = cats[0]?.total || 1;
@@ -313,10 +320,11 @@ export class DashboardComponent implements OnInit {
 
         const expenseAccounts = this.accountColumns();
         const currencies = this.currencyService.currencies();
-        const currenciesById = new Map<string, Currency>(currencies.map((c: Currency) => [c.id, c]));
+        const currenciesById = new Map<string, Currency>(
+            currencies.map((c: Currency) => [c.id, c]),
+        );
 
         const visibleMonths = new Set(this.monthColumns());
-        const colorMap = this.accountColorMap();
         const allIntervals = data.intervals;
         const tables: CurrencyTable[] = [];
 
@@ -376,18 +384,24 @@ export class DashboardComponent implements OnInit {
                 const vals = Array.from(visibleMonths).map((m) => rowData.monthValues.get(m) ?? 0);
                 const monthCells = new Map<string, ExpenseTableCell>();
                 rowData.monthValues.forEach((value, interval) => {
-                    monthCells.set(interval, { value, heatClass: this.heatClass(value, globalMax) });
+                    monthCells.set(interval, {
+                        value,
+                        heatClass: this.heatClass(value, globalMax),
+                    });
                 });
                 const nonZero = vals.filter((v) => v > 0);
-                const avg = nonZero.length ? nonZero.reduce((a, b) => a + b, 0) / nonZero.length : 0;
+                const avg = nonZero.length
+                    ? nonZero.reduce((a, b) => a + b, 0) / nonZero.length
+                    : 0;
                 return {
                     accountId: rowData.accountId,
                     accountName: rowData.accountName,
                     monthCells,
                     total: rowData.rowTotal,
                     averageSpent:
-                        this.accountService.averages().find((a) => a.accountId === rowData.accountId)
-                            ?.averageSpent ?? avg,
+                        this.accountService
+                            .averages()
+                            .find((a) => a.accountId === rowData.accountId)?.averageSpent ?? avg,
                     accountImage: rowData.accountImage,
                     sparkValues: rowData.sparkValues,
                 };
@@ -528,7 +542,8 @@ export class DashboardComponent implements OnInit {
         const includeHidden = this.includeHidden();
         if (!data || !accounts.length) return [];
         const assetAccounts = accounts.filter(
-            (acc) => acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
+            (acc) =>
+                acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
         );
         const assetAccountIds = new Set(assetAccounts.map((a) => a.id));
         return data.currencies
@@ -541,7 +556,9 @@ export class DashboardComponent implements OnInit {
                     const bal = accAgg.total || 0;
                     totalBalance += bal;
                     prevTotalBalance += bal / (1 + (accAgg.changePercent || 0) / 100);
-                    accAgg.amounts.forEach((amt, idx) => { history[idx] += amt; });
+                    accAgg.amounts.forEach((amt, idx) => {
+                        history[idx] += amt;
+                    });
                 });
                 let trendPercent = 0;
                 let trendDirection: 'up' | 'down' | 'neutral' = 'neutral';
@@ -550,8 +567,17 @@ export class DashboardComponent implements OnInit {
                     if (trendPercent > 0.01) trendDirection = 'up';
                     else if (trendPercent < -0.01) trendDirection = 'down';
                 }
-                const currency = this.currencyService.currencies().find((c) => c.id === currencyAgg.currencyId);
-                return { currencyId: currencyAgg.currencyId, currencyName: currency?.name || currencyAgg.currencyId, totalBalance, trendPercent: Math.abs(trendPercent), trendDirection, history };
+                const currency = this.currencyService
+                    .currencies()
+                    .find((c) => c.id === currencyAgg.currencyId);
+                return {
+                    currencyId: currencyAgg.currencyId,
+                    currencyName: currency?.name || currencyAgg.currencyId,
+                    totalBalance,
+                    trendPercent: Math.abs(trendPercent),
+                    trendDirection,
+                    history,
+                };
             })
             .filter((t) => t.totalBalance !== 0 || t.history.some((v) => v !== 0));
     });
@@ -563,10 +589,13 @@ export class DashboardComponent implements OnInit {
         if (!data || !accounts.length) return [];
         const includeHidden = this.includeHidden();
         const assetAccounts = accounts.filter(
-            (acc) => acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
+            (acc) =>
+                acc.type === 'asset' && (includeHidden || acc.showInDashboardSummary !== false),
         );
         if (!assetAccounts.length) return [];
-        const statusByAccountId = new Map<string, ReconciliationStatus>(statuses.map((s) => [s.accountId, s]));
+        const statusByAccountId = new Map<string, ReconciliationStatus>(
+            statuses.map((s) => [s.accountId, s]),
+        );
         const cards: AssetCard[] = [];
         data.currencies.forEach((currencyAgg) => {
             currencyAgg.accounts.forEach((accAgg) => {
@@ -577,17 +606,32 @@ export class DashboardComponent implements OnInit {
                 let trendDirection: 'up' | 'down' | 'neutral' = 'neutral';
                 if (trendPercent > 0.01) trendDirection = 'up';
                 else if (trendPercent < -0.01) trendDirection = 'down';
-                const currency = this.currencyService.currencies().find((c) => c.id === currencyAgg.currencyId);
+                const currency = this.currencyService
+                    .currencies()
+                    .find((c) => c.id === currencyAgg.currencyId);
                 const reconciliationStatus = statusByAccountId.get(account.id!);
-                const { state: reconciliationState, tooltip: reconciliationTooltip } = this.getReconciliationState(reconciliationStatus);
-                cards.push({ accountId: account.id, accountName: account.name, balance: totalBalance, currencyId: currencyAgg.currencyId, currencyName: currency?.name || currencyAgg.currencyId, trendPercent: Math.abs(trendPercent), trendDirection, accountImage: account.image, reconciliationState, reconciliationTooltip });
+                const { state: reconciliationState, tooltip: reconciliationTooltip } =
+                    this.getReconciliationState(reconciliationStatus);
+                cards.push({
+                    accountId: account.id,
+                    accountName: account.name,
+                    balance: totalBalance,
+                    currencyId: currencyAgg.currencyId,
+                    currencyName: currency?.name || currencyAgg.currencyId,
+                    trendPercent: Math.abs(trendPercent),
+                    trendDirection,
+                    accountImage: account.image,
+                    reconciliationState,
+                    reconciliationTooltip,
+                });
             });
         });
         return cards;
     });
 
     protected readonly sparklineOptions: ChartOptions<'line'> = {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         elements: { point: { radius: 0 }, line: { tension: 0.3, borderWidth: 2 } },
         scales: { x: { display: false }, y: { display: false } },
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
@@ -626,16 +670,42 @@ export class DashboardComponent implements OnInit {
     protected onHideAccount(accountId: string): void {
         const account = this.accounts().find((a) => a.id === accountId);
         if (!account?.id) return;
-        this.dialog.open(ConfirmationDialogComponent, {
-            data: { title: 'Hide Account', message: `Hide "${account.name}" from the dashboard?`, confirmText: 'Hide', cancelText: 'Cancel' },
-        }).afterClosed().subscribe((result) => {
-            if (!result) return;
-            const update: AccountNoId = { name: account.name!, type: account.type, description: account.description, bankInfo: account.bankInfo, showInDashboardSummary: false };
-            this.accountService.update(account.id!, update).subscribe({
-                next: () => this.snackBar.open('Account hidden', 'Undo', { duration: 3000 }).onAction().subscribe(() => this.accountService.update(account.id!, { ...update, showInDashboardSummary: true }).subscribe()),
-                error: () => this.snackBar.open('Failed to hide account', 'Close', { duration: 3000 }),
+        this.dialog
+            .open(ConfirmationDialogComponent, {
+                data: {
+                    title: 'Hide Account',
+                    message: `Hide "${account.name}" from the dashboard?`,
+                    confirmText: 'Hide',
+                    cancelText: 'Cancel',
+                },
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (!result) return;
+                const update: AccountNoId = {
+                    name: account.name!,
+                    type: account.type,
+                    description: account.description,
+                    bankInfo: account.bankInfo,
+                    showInDashboardSummary: false,
+                };
+                this.accountService.update(account.id!, update).subscribe({
+                    next: () =>
+                        this.snackBar
+                            .open('Account hidden', 'Undo', { duration: 3000 })
+                            .onAction()
+                            .subscribe(() =>
+                                this.accountService
+                                    .update(account.id!, {
+                                        ...update,
+                                        showInDashboardSummary: true,
+                                    })
+                                    .subscribe(),
+                            ),
+                    error: () =>
+                        this.snackBar.open('Failed to hide account', 'Close', { duration: 3000 }),
+                });
             });
-        });
     }
 
     protected onOutputCurrencyToggle(currencyId: string): void {
@@ -653,8 +723,10 @@ export class DashboardComponent implements OnInit {
         event.stopPropagation();
         const account = this.accounts().find((a) => a.id === accountId);
         if (!account) return;
-        this.dialog.open(AccountFormDialogComponent, { width: '600px', data: { mode: 'edit', account } })
-            .afterClosed().subscribe((result) => {
+        this.dialog
+            .open(AccountFormDialogComponent, { width: '600px', data: { mode: 'edit', account } })
+            .afterClosed()
+            .subscribe((result) => {
                 if (result && account.id) {
                     this.accountService.handleAccountDialogResult(account, result, this.snackBar);
                 }
@@ -664,7 +736,9 @@ export class DashboardComponent implements OnInit {
     protected onBalanceClick(accountId: string): void {
         const now = new Date();
         const oneYearAgo = new Date(now.getFullYear(), now.getMonth() - 11, now.getDate());
-        this.router.navigate(['/reports/balance'], { queryParams: { accountId, from: oneYearAgo.toISOString(), to: now.toISOString() } });
+        this.router.navigate(['/reports/balance'], {
+            queryParams: { accountId, from: oneYearAgo.toISOString(), to: now.toISOString() },
+        });
     }
 
     protected onColumnClick(column: string): void {
@@ -678,16 +752,23 @@ export class DashboardComponent implements OnInit {
 
     protected onCellClick(accountId: string, monthDateString: string): void {
         const d = new Date(monthDateString);
-        this.router.navigate(['/transactions'], { queryParams: { accountId, month: d.getMonth(), year: d.getFullYear() } });
+        this.router.navigate(['/transactions'], {
+            queryParams: { accountId, month: d.getMonth(), year: d.getFullYear() },
+        });
     }
 
     protected navigateToTransactions(accountId: string): void {
         const months = this.monthColumns();
-        if (!months.length) { this.router.navigate(['/transactions'], { queryParams: { accountId } }); return; }
+        if (!months.length) {
+            this.router.navigate(['/transactions'], { queryParams: { accountId } });
+            return;
+        }
         const from = new Date(months[0]);
         const to = new Date(months[months.length - 1]);
         to.setMonth(to.getMonth() + 1);
-        this.router.navigate(['/transactions'], { queryParams: { accountId, from: from.toISOString(), to: to.toISOString() } });
+        this.router.navigate(['/transactions'], {
+            queryParams: { accountId, from: from.toISOString(), to: to.toISOString() },
+        });
     }
 
     protected getAccountColor(accountId: string): string {
@@ -695,7 +776,11 @@ export class DashboardComponent implements OnInit {
     }
 
     protected getAccountGlyph(accountName: string): string {
-        return accountName.replace(/^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier_Base}\s]+/u, '').trim().slice(0, 2).toUpperCase();
+        return accountName
+            .replace(/^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier_Base}\s]+/u, '')
+            .trim()
+            .slice(0, 2)
+            .toUpperCase();
     }
 
     // ---- Helpers ----
@@ -705,7 +790,11 @@ export class DashboardComponent implements OnInit {
 
     protected formatMonthShort(dateStr: string): string {
         const d = new Date(dateStr);
-        return d.toLocaleDateString('en-US', { month: 'short' }) + " '" + String(d.getFullYear()).slice(2);
+        return (
+            d.toLocaleDateString('en-US', { month: 'short' }) +
+            " '" +
+            String(d.getFullYear()).slice(2)
+        );
     }
 
     protected fmtK(n: number): string {
@@ -726,21 +815,33 @@ export class DashboardComponent implements OnInit {
         const t = Math.min(1, value / (rowMax || 1));
         if (t < 0.15) return 'heat-1';
         if (t < 0.35) return 'heat-2';
-        if (t < 0.60) return 'heat-3';
+        if (t < 0.6) return 'heat-3';
         if (t < 0.85) return 'heat-4';
         return 'heat-5';
     }
 
     private readonly reconciliationTolerance = 0.01;
 
-    private getReconciliationState(status: ReconciliationStatus | undefined): { state: 'reconciled' | 'warning' | 'unreconciled' | 'none'; tooltip: string } {
-        if (!status || (status.lastReconciledAt == null && status.bankBalance == null)) return { state: 'none', tooltip: '' };
+    private getReconciliationState(status: ReconciliationStatus | undefined): {
+        state: 'reconciled' | 'warning' | 'unreconciled' | 'none';
+        tooltip: string;
+    } {
+        if (!status || (status.lastReconciledAt == null && status.bankBalance == null))
+            return { state: 'none', tooltip: '' };
         const delta = Math.abs(status.delta ?? 0);
         const isBalanced = delta <= this.reconciliationTolerance;
-        if (status.hasUnprocessedTransactions) return { state: 'warning', tooltip: 'Has unprocessed transactions' };
-        if (!isBalanced) return { state: 'unreconciled', tooltip: `Balance mismatch: ${(status.delta ?? 0) > 0 ? '+' : ''}${status.delta?.toFixed(2)} ${status.currencySymbol ?? ''}` };
-        if (status.hasTransactionsAfterBankBalance) return { state: 'warning', tooltip: 'Reconciled, but newer transactions exist' };
-        const date = status.lastReconciledAt ? new Date(status.lastReconciledAt).toLocaleDateString() : '';
+        if (status.hasUnprocessedTransactions)
+            return { state: 'warning', tooltip: 'Has unprocessed transactions' };
+        if (!isBalanced)
+            return {
+                state: 'unreconciled',
+                tooltip: `Balance mismatch: ${(status.delta ?? 0) > 0 ? '+' : ''}${status.delta?.toFixed(2)} ${status.currencySymbol ?? ''}`,
+            };
+        if (status.hasTransactionsAfterBankBalance)
+            return { state: 'warning', tooltip: 'Reconciled, but newer transactions exist' };
+        const date = status.lastReconciledAt
+            ? new Date(status.lastReconciledAt).toLocaleDateString()
+            : '';
         return { state: 'reconciled', tooltip: date ? `Reconciled on ${date}` : 'Reconciled' };
     }
 
@@ -750,7 +851,12 @@ export class DashboardComponent implements OnInit {
         const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
         const outputCurrencyId = this.selectedOutputCurrencyId();
         const includeHidden = this.includeHidden();
-        const params: { from: string; to: string; outputCurrencyId?: string; includeHidden?: boolean } = {
+        const params: {
+            from: string;
+            to: string;
+            outputCurrencyId?: string;
+            includeHidden?: boolean;
+        } = {
             from: twelveMonthsAgo.toISOString(),
             to: now.toISOString(),
             includeHidden,
@@ -759,8 +865,12 @@ export class DashboardComponent implements OnInit {
 
         forkJoin({
             accounts: this.accountService.loadAccounts(),
-            expenseData: getExpenses(this.http, this.apiConfig.rootUrl, params).pipe(map((r) => r.body)),
-            assetData: getBalances(this.http, this.apiConfig.rootUrl, params).pipe(map((r) => r.body)),
+            expenseData: getExpenses(this.http, this.apiConfig.rootUrl, params).pipe(
+                map((r) => r.body),
+            ),
+            assetData: getBalances(this.http, this.apiConfig.rootUrl, params).pipe(
+                map((r) => r.body),
+            ),
             averages: this.accountService.loadYearlyExpenses(outputCurrencyId ?? undefined),
             reconciliationStatuses: this.reconciliationService.loadStatuses(),
         }).subscribe({

@@ -30,6 +30,7 @@ import { Currency } from '../../../core/api/models/currency';
 import { AccountService } from '../../accounts/services/account.service';
 import { CurrencyService } from '../../currencies/services/currency.service';
 import { UserService } from '../../../core/services/user.service';
+import { ChartPaletteService } from '../../../shared/services/chart-palette.service';
 
 interface CategorySummary {
     categoryId: string;
@@ -82,6 +83,7 @@ export class ExpenseReportComponent implements OnInit {
     private readonly accountService = inject(AccountService);
     private readonly currencyService = inject(CurrencyService);
     private readonly userService = inject(UserService);
+    private readonly chartPalette = inject(ChartPaletteService);
 
     protected readonly filterForm: FormGroup;
     protected readonly loading = signal(false);
@@ -149,22 +151,14 @@ export class ExpenseReportComponent implements OnInit {
                     {
                         label: 'Total Expenses by Category',
                         data: sortedSummaries.map((s) => s.total),
-                        backgroundColor: 'rgba(33, 150, 243, 0.6)',
-                        borderColor: 'rgba(33, 150, 243, 1)',
+                        backgroundColor: sortedSummaries.map((_, i) =>
+                            this.chartPalette.getColorWithAlpha(i, 0.8),
+                        ),
+                        borderColor: sortedSummaries.map((_, i) => this.chartPalette.getColor(i)),
                         borderWidth: 1,
                     },
                 ],
             };
-
-            const colors = [
-                'rgba(33, 150, 243, 0.8)',
-                'rgba(76, 175, 80, 0.8)',
-                'rgba(255, 152, 0, 0.8)',
-                'rgba(156, 39, 176, 0.8)',
-                'rgba(244, 67, 54, 0.8)',
-                'rgba(0, 188, 212, 0.8)',
-                'rgba(103, 58, 183, 0.8)',
-            ];
 
             const topCategories = sortedSummaries.slice(0, 5);
             const monthlyChartData: ChartConfiguration['data'] = {
@@ -174,8 +168,8 @@ export class ExpenseReportComponent implements OnInit {
                     data: data.intervals.map(
                         (interval) => category.monthlyAmounts.get(interval) || 0,
                     ),
-                    borderColor: colors[index % colors.length].replace('0.8', '1'),
-                    backgroundColor: colors[index % colors.length],
+                    borderColor: this.chartPalette.getColor(index),
+                    backgroundColor: this.chartPalette.getColorWithAlpha(index, 0.8),
                     fill: false,
                     tension: 0.1,
                 })),
@@ -186,8 +180,8 @@ export class ExpenseReportComponent implements OnInit {
                 datasets: [
                     {
                         data: sortedSummaries.map((s) => s.total),
-                        backgroundColor: sortedSummaries.map(
-                            (_, i) => colors[i % colors.length],
+                        backgroundColor: sortedSummaries.map((_, i) =>
+                            this.chartPalette.getColor(i),
                         ),
                     },
                 ],
