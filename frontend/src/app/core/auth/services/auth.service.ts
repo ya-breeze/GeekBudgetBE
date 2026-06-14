@@ -50,7 +50,7 @@ export class AuthService {
             currentUrl === '/' || currentUrl === '/landing' || currentUrl.startsWith('/auth');
 
         if (!isPublicRoute) {
-            this.router.navigate(['/auth/login']);
+            this.router.navigate(['/landing']);
         }
     }
 
