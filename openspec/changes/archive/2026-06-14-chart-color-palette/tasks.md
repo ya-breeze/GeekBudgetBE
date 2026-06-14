@@ -27,4 +27,4 @@
 ## 6. Verify and lint
 
 - [x] 6.1 Run `make lint` and fix any ESLint issues
-- [ ] 6.2 Deploy to WIP stack and visually verify dashboard, expense report, tag analytics, and balance report all render with the new consistent palette
+- [x] 6.2 Deploy to WIP stack and visually verify dashboard, expense report, tag analytics, and balance report all render with the new consistent palette
