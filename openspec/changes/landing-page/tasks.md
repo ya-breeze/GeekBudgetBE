@@ -16,12 +16,18 @@
 - [ ] 3.2 Add mobile breakpoint (`max-width: 768px`) to collapse the grid to a single column
 - [ ] 3.3 Style the login card in the right column (use `mat-card` with appropriate padding; ensure it matches the app's Material theme)
 
-## 4. LandingComponent — remove CTA section
+## 4. LandingComponent — mobile collapsible login
 
-- [ ] 4.1 Remove the entire `<section class="cta-section">` block from `landing.component.html`
-- [ ] 4.2 Remove `.cta-section` and `.cta-card` CSS rules from `landing.component.scss`
+- [ ] 4.1 Add `showLoginForm = false` boolean field to `LandingComponent` and a `toggleLoginForm()` method
+- [ ] 4.2 In the mobile breakpoint template: show a "Sign In" button that calls `toggleLoginForm()`; wrap the form fields in `@if (showLoginForm)` so they only render when expanded
+- [ ] 4.3 Add Angular `animations` to `LandingComponent` (or use CSS `max-height` transition) to animate the form expansion/collapse smoothly
 
-## 5. Verify
+## 5. LandingComponent — remove CTA section
 
-- [ ] 5.1 Run `make lint` (frontend ESLint + Angular checks) and fix any issues
-- [ ] 5.2 Deploy to WIP stack and manually verify: login works from landing hero, error shows on bad credentials, mobile layout stacks correctly, Key Concepts section is the last content section before the footer
+- [ ] 5.1 Remove the entire `<section class="cta-section">` block from `landing.component.html`
+- [ ] 5.2 Remove `.cta-section` and `.cta-card` CSS rules from `landing.component.scss`
+
+## 6. Verify
+
+- [ ] 6.1 Run `make lint` (frontend ESLint + Angular checks) and fix any issues
+- [ ] 6.2 Deploy to WIP stack and manually verify: login works from landing hero, error shows on bad credentials, desktop shows two-column hero, mobile shows tagline + "Sign In" toggle that expands the form, Key Concepts section is the last content section before the footer

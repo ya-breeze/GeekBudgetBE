@@ -28,7 +28,7 @@ The login form is small (2 fields + button + error) and tightly coupled to the h
 
 *Alternative considered:* Embed `<app-login>` inside the hero — rejected because `LoginComponent` wraps everything in a `mat-card` with its own padding and header, which would fight the hero layout.
 
-### D2: Hero becomes a CSS Grid two-column layout
+### D2: Hero becomes a CSS Grid two-column layout; mobile uses a collapsible form
 
 The hero section switches from a single centered `max-width: 900px` column to a CSS Grid:
 ```
@@ -37,7 +37,9 @@ grid-template-columns: 1fr 1fr
 Left cell: badge + title + subtitle + "Learn More" button.
 Right cell: login card (email, password, submit, error).
 
-On mobile (`max-width: 768px`), the grid collapses to a single column with the login form appearing below the tagline.
+On mobile (`max-width: 768px`), the grid collapses to a single column. The login form is hidden by default — a "Sign In" button is shown instead. Tapping it reveals the form fields inline with a CSS/Angular animation. This keeps the hero clean on first glance while still allowing one-tap access to login.
+
+*Alternative considered:* Show the login form below the tagline on mobile unconditionally — rejected because on typical phone viewports the form would be pushed off-screen, requiring a scroll to find it. The collapsible approach keeps the tagline visible and login accessible in one tap.
 
 ### D3: Keep `/auth/login` route and LoginComponent intact
 
