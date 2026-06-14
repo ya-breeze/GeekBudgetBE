@@ -220,21 +220,26 @@ export class DashboardComponent implements OnInit {
 
         const allIntervals = data.intervals;
         const idxs = months.map((m) => allIntervals.indexOf(m));
-        const colorMap = this.accountColorMap();
 
-        const datasets = this.accountColumns().map((acc) => {
-            const color = colorMap.get(acc.id!) ?? '#888';
+        const entries = this.accountColumns().map((acc) => {
             const accAgg = cur.accounts.find((a) => a.accountId === acc.id);
-            return {
-                label: acc.name,
-                data: idxs.map((mi) =>
-                    mi >= 0 && accAgg ? Math.max(0, accAgg.amounts[mi] ?? 0) : 0,
-                ),
-                backgroundColor: color,
-                borderRadius: 2,
-                borderSkipped: false as const,
-            };
+            const values = idxs.map((mi) =>
+                mi >= 0 && accAgg ? Math.max(0, accAgg.amounts[mi] ?? 0) : 0,
+            );
+            const total = values.reduce((s, v) => s + v, 0);
+            return { acc, accAgg, values, total };
         });
+
+        // Sort by total spend descending so the biggest category gets palette index 0
+        entries.sort((a, b) => b.total - a.total);
+
+        const datasets = entries.map((entry, i) => ({
+            label: entry.acc.name,
+            data: entry.values,
+            backgroundColor: this.chartPalette.getColor(i),
+            borderRadius: 2,
+            borderSkipped: false as const,
+        }));
 
         return {
             labels: months.map((m) => this.formatMonthShort(m)),

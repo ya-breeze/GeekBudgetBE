@@ -72,10 +72,10 @@ Every Angular component that renders a Chart.js chart SHALL inject `ChartPalette
 use its methods to assign `backgroundColor` and `borderColor`. No component SHALL contain a
 local `colors`, `HUES`, or `PALETTE` array for chart coloring purposes.
 
-#### Scenario: Dashboard stacked bar uses palette
+#### Scenario: Dashboard stacked bar uses palette in spend-rank order
 
 - **WHEN** the dashboard renders the month-over-month stacked bar chart
-- **THEN** each expense category bar segment uses the color at the category's index in the palette
+- **THEN** categories are sorted by total spend over the visible period (descending) before color assignment, so the highest-spending category receives palette index 0 and the lowest receives the highest index. Datasets are rendered in this spend-rank order (largest segment at the bottom of each bar).
 
 #### Scenario: Expense report charts use palette
 
