@@ -1,3 +1,11 @@
+# Landing Page Specification
+
+## Purpose
+
+How the unauthenticated landing page presents the product and lets returning users log in inline from the hero section.
+
+## Requirements
+
 ### Requirement: Inline login form in hero
 The landing page SHALL display the login form (email, password, submit button) in the right column of the hero section, visible without scrolling, so users can authenticate without navigating to a separate page.
 
