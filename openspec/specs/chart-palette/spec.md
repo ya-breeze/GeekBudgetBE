@@ -6,7 +6,7 @@
 Angular frontend. It exposes a fixed 25-color palette and helper methods so every chart
 component produces consistent, visually distinct colors without defining its own palette.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Canonical 25-color palette
 
